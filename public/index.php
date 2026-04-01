@@ -6,22 +6,15 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../autoload.php';
 
-use App\Infrastructure\Persistence\MySQLServiceRepository;
+use App\Infrastructure\Controllers\Router;
+use App\Infrastructure\Controllers\PageController;
 
-// 1. Configuración inicial
-$lang = $_GET['lang'] ?? 'fr'; // El idioma viene de la URL
-$pageTitle = "Canal du Midi | Version 2.0";
+// 1. Detectar ruta e idioma (El Router hace su magia)
+$router = new Router();
+$request = $router->handleRequest();
 
-// 2. Obtención de Datos (Capa de Aplicación / Infraestructura)
-$repository = new MySQLServiceRepository();
-$allServices = $repository->findAll($lang);
+// 2. Ejecutar el controlador (Él se encarga de los datos y las vistas)
+$controller = new PageController();
+$controller->render($request['page'], $request['lang'], $request['params']);
 
-// Filtramos los datos para la vista
-$destinations = array_filter($allServices, fn($s) => $s->type === 'destination');
-$tours = array_filter($allServices, fn($s) => $s->type === 'tour');
-
-// 3. Renderizado de Vistas
-// Pasamos los datos a las vistas simplemente incluyéndolas
-require_once __DIR__ . '/../src/Infrastructure/Views/layout/header.php';
-require_once __DIR__ . '/../src/Infrastructure/Views/home.php';
-require_once __DIR__ . '/../src/Infrastructure/Views/layout/footer.php';
+// FIN DEL ARCHIVO. No debe haber nada más aquí.

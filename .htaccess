@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /canal_du_midi/
+
+    # Si pides un archivo que existe (CSS, imagen, JS), Apache lo sirve normal
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # TODO lo demás se envía al index.php de la raíz
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

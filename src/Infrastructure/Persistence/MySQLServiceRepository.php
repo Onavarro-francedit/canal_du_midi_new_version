@@ -42,31 +42,32 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function findById(int $id, string $lang): ?Service {
-        // (Implementación similar para un solo servicio)
         $sql = "SELECT s.*, c.slug as category_name, 
-                       t_title.field_value as title, 
-                       t_tag.field_value as tag
+                    t_title.field_value as title, 
+                    t_desc.field_value as description,
+                    t_tag.field_value as tag
                 FROM services s
                 JOIN categories c ON s.category_id = c.id
                 LEFT JOIN translations t_title ON s.id = t_title.rel_id 
-                     AND t_title.rel_type = 'service' AND t_title.lang_code = :lang AND t_title.field_name = 'title'
+                    AND t_title.rel_type = 'service' AND t_title.lang_code = :lang AND t_title.field_name = 'title'
+                LEFT JOIN translations t_desc ON s.id = t_desc.rel_id 
+                    AND t_desc.rel_type = 'service' AND t_desc.lang_code = :lang AND t_desc.field_name = 'description'
                 LEFT JOIN translations t_tag ON s.id = t_tag.rel_id 
-                     AND t_tag.rel_type = 'service' AND t_tag.lang_code = :lang AND t_tag.field_name = 'tag'
+                    AND t_tag.rel_type = 'service' AND t_tag.lang_code = :lang AND t_tag.field_name = 'tag'
                 WHERE s.id = :id";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id, 'lang' => $lang]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            return new Service(
-                $row['id'],
-                $row['category_name'],
-                (float)$row['price'],
-                $row['image_url'],
-                ['title' => $row['title'], 'tag' => $row['tag']]
-            );
-        }
-        return null;
+        if (!$row) return null;
+
+        return new Service(
+            $row['id'],
+            $row['category_name'],
+            (float)$row['price'],
+            $row['image_url'],
+            ['title' => $row['title'], 'description' => $row['description'], 'tag' => $row['tag']]
+        );
     }
 }

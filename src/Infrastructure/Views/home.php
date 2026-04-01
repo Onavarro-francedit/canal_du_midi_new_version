@@ -128,16 +128,18 @@
             </div>
             <div class="tour-grid">
                 <?php foreach ($tours as $tour): ?>
-                    <article class="tour-card">
-                        <img src="<?= htmlspecialchars($tour->imageUrl) ?>" alt="<?= htmlspecialchars($tour->translations['title'] ?? 'Tour') ?>">
-                        <div class="tour-body">
-                            <h3><?= htmlspecialchars($tour->translations['title'] ?? 'Titre non disponible') ?></h3>
-                            <div class="tour-meta">
-                                <span><?= htmlspecialchars($tour->translations['tag'] ?? 'Durée flexible') ?></span>
-                                <span><?= $tour->getFormattedPrice() ?></span>
+                    <a href="/canal_du_midi/<?= $lang ?>/service/<?= $tour->id ?>">
+                        <article class="tour-card">
+                            <img src="<?= htmlspecialchars($tour->imageUrl) ?>" alt="<?= htmlspecialchars($tour->translations['title'] ?? 'Tour') ?>">
+                            <div class="tour-body">
+                                <h3><?= htmlspecialchars($tour->translations['title'] ?? 'Titre non disponible') ?></h3>
+                                <div class="tour-meta">
+                                    <span><?= htmlspecialchars($tour->translations['tag'] ?? 'Durée flexible') ?></span>
+                                    <span><?= $tour->getFormattedPrice() ?></span>
+                                </div>
                             </div>
-                        </div>
-                    </article>
+                        </article>
+                    </a>
                 <?php endforeach; ?>
             </div>
         </div>

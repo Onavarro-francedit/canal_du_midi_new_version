@@ -8,7 +8,11 @@ class Service {
         public float $price,
         public string $imageUrl,
         public array $translations = [] // Título, descripción, etc.
-    ) {}
+    ) {
+        $this->translations['title'] = $this->translations['title'] ?? 'Sans titre';
+        $this->translations['description'] = $this->translations['description'] ?? '';
+        $this->translations['tag'] = $this->translations['tag'] ?? '';
+    }
 
     // Aquí irían las reglas de negocio, ej: aplicar descuentos
     public function getFormattedPrice(): string {
