@@ -2,41 +2,55 @@
 namespace App\Infrastructure\Controllers;
 
 class Router {
-    private string $lang = 'fr'; // Idioma por defecto
-    private string $page = 'home'; // Página por defecto
-    private ?string $params = null; // Parámetros adicionales
-
+    private string $lang = 'fr';
+    private string $page = 'home';
+    private ?string $params = null;
 
     public function handleRequest() {
-    // Obtenemos la URI completa (ej: /canal_du_midi/fr/home)
-    $uri = $_SERVER['REQUEST_URI'];
-    
-    // Eliminamos los parámetros de la URL si existen (?id=1...)
-    $uri = explode('?', $uri)[0];
+        $uri = $_SERVER['REQUEST_URI'];
+        $uriPath = explode('?', $uri)[0];
 
-    // Eliminamos la carpeta base de la ruta
-    $path = str_replace('/canal_du_midi/', '', $uri);
-    $path = trim($path, '/');
-    
-    $parts = explode('/', $path);
+        // Detectar la carpeta base de forma idéntica a config.php
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+        $basePath = rtrim(str_replace('/public', '', str_replace('\\', '/', dirname($scriptName))), '/');
 
-    // Valores por defecto
-    $this->lang = $parts[0] ?? 'fr';
-    $this->page = $parts[1] ?? 'home';
-    $this->params = $parts[2] ?? null;
+        // Extraer la ruta relativa
+        // Si entras a localhost/canal_du_midi/, el path será "" o "/"
+        $path = str_replace($basePath, '', $uriPath);
+        $path = trim($path, '/');
 
-    if (!empty($parts[0]) && strlen($parts[0]) === 2) {
-        $this->lang = $parts[0];
-        
-        if (!empty($parts[1])) {
-            $this->page = $parts[1];
+        // Valores por defecto
+        $this->lang = 'fr';
+        $this->page = 'home';
+        $this->params = null;
+
+        if (!empty($path)) {
+            $parts = explode('/', $path);
+
+            // Caso 1: La URL empieza por idioma (ej: /es/home)
+            if (strlen($parts[0]) === 2) {
+                $this->lang = $parts[0];
+                $this->page = (!empty($parts[1])) ? $parts[1] : 'home';
+                $this->params = $parts[2] ?? null;
+            } 
+            // Caso 2: La URL no tiene idioma (ej: /home o /index.php)
+            else {
+                if ($parts[0] !== 'index.php') {
+                    $this->page = $parts[0];
+                    $this->params = $parts[1] ?? null;
+                }
+            }
         }
-    }
 
-    return [
-        'lang' => $this->lang,
-        'page' => $this->page,
-        'params' => $this->params
-    ];
-}
+        // Limpieza final por si el path fue "index.php"
+        if ($this->page === 'index.php' || empty($this->page)) {
+            $this->page = 'home';
+        }
+
+        return [
+            'lang' => $this->lang,
+            'page' => $this->page,
+            'params' => $this->params
+        ];
+    }
 }

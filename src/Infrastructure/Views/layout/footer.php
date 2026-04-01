@@ -26,6 +26,14 @@
                 </div>
             </footer>
         </div>
-        <script src="/canal_du_midi/public/assets/js/main.js"></script>
+        <script src="<?= BASE_URL ?>public/assets/js/main.js"></script>
+         <!-- CARGA CONDICIONAL DE SCRIPTS -->
+        <?php if (isset($page) && $page === 'service'): ?>
+            <!-- Leaflet JS -->
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+            <script src="<?= BASE_URL ?>public/assets/js/map.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/lightbox.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/booking.js"></script>
+        <?php endif; ?>
     </body>
 </html>

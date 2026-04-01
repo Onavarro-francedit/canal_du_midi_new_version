@@ -3,19 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?? 'Canal du Midi | Voyages et escapades' ?></title>
+    <title><?= htmlspecialchars($seo['title'] ?? 'Canal du Midi | Voyages et escapades') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($seo['description'] ?? 'Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.') ?>">
+    <meta name="keywords" content="<?= htmlspecialchars($seo['keywords'] ?? 'Canal du Midi, voyage, tourisme, Occitanie, péniche, vélo, hôtel') ?>">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/canal_du_midi/public/assets/css/styles.css">
-    <link rel="stylesheet" href="/canal_du_midi/public/assets/css/errors.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/styles.css">
+   
+    <!-- Open Graph (Para que se vea bien en Facebook/WhatsApp) -->
+    <meta property="og:title" content="<?= htmlspecialchars($seo['title'] ?? 'Canal du Midi | Voyages et escapades') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($seo['description'] ?? 'Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.') ?>">
+    <meta property="og:type" content="website">
 
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+   
+    <link rel="canonical" href="<?= BASE_URL . $lang . '/' . $page . (isset($params) ? '/' . $params : '') ?>">
+    
     <?php if (isset($page) && $page === 'service'): ?>
-        <link rel="stylesheet" href="/canal_du_midi/public/assets/css/service_detail.css">
+         <!-- Leaflet CSS -->
+         <meta property="og:image" content="<?= htmlspecialchars($service->imageUrl ?? BASE_URL . 'public/assets/images/default_service.jpg') ?>">
+         <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/service_detail.css">
+         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <?php endif; ?>
 
     <?php if (!isset($service) && $page !== 'home'): ?>
-        <link rel="stylesheet" href="/canal_du_midi/public/assets/css/errors.css">
+        <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/errors.css">
+    <?php endif; ?>
+
+    <?php if (isset($page) && $page === 'home'): ?>
+        <script type="application/ld+json">
+            <?= \App\Infrastructure\Views\Helpers\SchemaGenerator::generateHome($lang) ?>
+        </script>
+    <?php elseif (isset($service) && $service instanceof \App\Domain\Models\Service): ?>
+        <script type="application/ld+json">
+            <?= \App\Infrastructure\Views\Helpers\SchemaGenerator::generate($service, $lang) ?>
+        </script>
     <?php endif; ?>
 </head>
 <body>
@@ -30,16 +55,16 @@
                     <span></span><span></span>
                 </button>
                 <nav id="primary-nav" class="main-nav">
-                    <a href="/canal_du_midi/<?= $lang ?>/home#destinations">Destinations</a>
-                    <a href="/canal_du_midi/<?= $lang ?>/home#experiences">Expériences</a>
-                    <a href="/canal_du_midi/<?= $lang ?>/home#why-us">Pourquoi nous</a>
-                    <a href="/canal_du_midi/<?= $lang ?>/home#reviews">Avis</a>
-                    <a href="/canal_du_midi/<?= $lang ?>/home#news">Actualités</a>
+                    <a href="<?= BASE_URL . $lang ?>/home#destinations">Destinations</a>
+                    <a href="<?= BASE_URL . $lang ?>/home#experiences">Expériences</a>
+                    <a href="<?= BASE_URL . $lang ?>/home#why-us">Pourquoi nous</a>
+                    <a href="<?= BASE_URL . $lang ?>/home#reviews">Avis</a>
+                    <a href="<?= BASE_URL . $lang ?>/home#news">Actualités</a>
                 </nav>
                 <div class="lang-selector">
-                    <a href="/canal_du_midi/fr/home">FR</a> | 
-                    <a href="/canal_du_midi/es/home">ES</a> | 
-                    <a href="/canal_du_midi/en/home">EN</a>
+                    <a href="<?= BASE_URL ?>fr/home">FR</a> | 
+                    <a href="<?= BASE_URL ?>es/home">ES</a> | 
+                    <a href="<?= BASE_URL ?>en/home">EN</a>
                 </div>
                 <a class="button button-small button-ghost" href="#newsletter">S'inscrire</a>
             </div>
