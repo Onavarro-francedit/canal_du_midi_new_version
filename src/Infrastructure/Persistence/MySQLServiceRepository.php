@@ -142,4 +142,28 @@ class MySQLServiceRepository implements ServiceRepository {
             'comment'       => $data['comment']
         ]);
     }
+
+    public function getNearbyPOIs(float $lat, float $lng, string $lang, float $radiusKm = 10): array {
+        // Consulta SQL que usa una aproximación de distancia para no sobrecargar
+        $sql = "SELECT p.*, t.name, p.image_url
+                FROM points_of_interest p
+                JOIN poi_translations t ON p.id = t.poi_id AND t.lang_code = :lang
+                WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(p.lat)) * cos(radians(p.lng) - radians(:lng)) + sin(radians(:lat)) * sin(radians(p.lat)))) < :radius
+                ORDER BY (abs(p.lat - :lat2) + abs(p.lng - :lng2)) ASC
+                LIMIT 4";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'lat' => $lat, 'lng' => $lng, 'lang' => $lang, 
+            'radius' => $radiusKm, 'lat2' => $lat, 'lng2' => $lng
+        ]);
+
+        $pois = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $poi = new \App\Domain\Models\POI($row['id'], $row['type'], $row['name'], $row['lat'], $row['lng'], $row['image_url']);
+            $poi->calculateDistanceFrom($lat, $lng);
+            $pois[] = $poi;
+        }
+        return $pois;
+    }
 }

@@ -2,6 +2,12 @@
 namespace App\Domain\Models;
 
 class Service {
+    public array $nearbyPOIs = []; 
+    public float $avgRating = 0;
+    public int $reviewCount = 0;
+    public array $reviews = [];
+
+
     public function __construct(
         public ?int $id,
         public string $type,
@@ -13,10 +19,7 @@ class Service {
         public array $gallery = [],    
         public array $features = [],   
         public float $lat = 0,
-        public float $lng = 0,
-        public float $avgRating = 0,
-        public int $reviewCount = 0,
-        public array $reviews = []
+        public float $lng = 0
     ) {
         // 1. Evitar errores de nulos en las traducciones (Vital para PHP 8.2+)
         $this->translations['title'] = $this->translations['title'] ?? 'Sans titre';

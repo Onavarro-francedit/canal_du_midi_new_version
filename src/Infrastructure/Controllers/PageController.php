@@ -51,6 +51,7 @@ class PageController {
                 return;
             }
 
+            $service->nearbyPOIs = $repository->getNearbyPOIs($service->lat, $service->lng, $lang);
             require_once __DIR__ . '/../Views/layout/header.php';
             require_once __DIR__ . '/../Views/service_detail.php'; // Crearemos esta vista
             require_once __DIR__ . '/../Views/layout/footer.php';

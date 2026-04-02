@@ -208,23 +208,84 @@
 
             <!-- Localización -->
             <section class="section-card info-block map-section">
-                <div class="section-heading-inline">
-                    <span class="section-kicker">Accès</span>
-                    <h3>Localisation</h3>
+                <div class="location-hero">
+                    <div class="section-heading-inline location-heading">
+                        <span class="section-kicker">Accès</span>
+                        <h3>Localisation</h3>
+                        <p class="location-intro">Repérez l'établissement en un coup d'oeil et identifiez les étapes, haltes et services accessibles à proximité du Canal du Midi.</p>
+                    </div>
+
+                    <a
+                        href="https://www.google.com/maps/dir/?api=1&destination=<?= $service->lat ?? '' ?>,<?= $service->lng ?? '' ?>"
+                        target="_blank"
+                        rel="noreferrer"
+                        class="location-route-link"
+                    >
+                        <i class="bi bi-sign-turn-right-fill"></i>
+                        Ouvrir l'itinéraire
+                    </a>
                 </div>
-                
-                <!-- Contenedor del mapa con coordenadas de la DB -->
-                <div id="map" 
-                    class="map-container" 
-                    data-lat="<?= $service->lat ?>" 
-                    data-lng="<?= $service->lng ?>" 
-                    data-title="<?= htmlspecialchars($service->translations['title']) ?>">
+
+                <div class="location-layout">
+                    <div class="location-map-shell">
+                        <div id="map" 
+                            class="map-container" 
+                            data-lat="<?= $service->lat ?>" 
+                            data-lng="<?= $service->lng ?>" 
+                            data-title="<?= htmlspecialchars($service->translations['title']) ?>">
+                        </div>
+
+                        <div class="location-address-card">
+                            <span class="location-address-label">Adresse de l'établissement</span>
+                            <p class="address-footer">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <?= htmlspecialchars($service->contact['address'] ?? 'Adresse non spécifiée') ?>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="location-nearby-panel">
+                        <div class="location-nearby-header">
+                            <span class="section-kicker">Emplacement</span>
+                            <h4>À proximité du Canal</h4>
+                            <p>Les points d'intérêt accessibles rapidement depuis votre séjour.</p>
+                        </div>
+
+                        <div class="poi-grid">
+                            <?php if (!empty($service->nearbyPOIs)): ?>
+                                <?php foreach ($service->nearbyPOIs as $poi): ?>
+                                    <a href="<?= BASE_URL . $lang ?>/poi/<?= $poi->id ?>" class="poi-link">
+                                        <div class="poi-item poi-hover-trigger" 
+                                            data-lat="<?= $poi->lat ?>" 
+                                            data-lng="<?= $poi->lng ?>" 
+                                            data-name="<?= htmlspecialchars($poi->name) ?>">
+                                            
+                                            <div class="poi-image-container">
+                                                <?php if ($poi->imageUrl): ?>
+                                                    <img src="<?= $poi->imageUrl ?>" alt="<?= $poi->name ?>" class="poi-thumb">
+                                                <?php else: ?>
+                                                    <div class="poi-icon-fallback"><i class="bi <?= $poi->getIcon() ?>"></i></div>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <div class="poi-info">
+                                                <strong><?= htmlspecialchars($poi->name) ?></strong>
+                                                <span><?= ucfirst($poi->type) ?></span>
+                                            </div>
+                                            
+                                            <div class="poi-distance"><?= $poi->getFormattedDistance() ?></div>
+                                        </div>
+                                    </a>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="poi-empty-state">
+                                    <i class="bi bi-bicycle"></i>
+                                    <p>Découvrez les merveilles du Canal du Midi à quelques minutes en vélo ou en bateau.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
-                
-                <p class="address-footer">
-                    <i class="bi bi-geo-alt-fill"></i> 
-                    <?= htmlspecialchars($service->contact['address'] ?? 'Adresse non spécifiée') ?>
-                </p>
             </section>
 
 
