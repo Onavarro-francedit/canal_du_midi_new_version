@@ -166,4 +166,39 @@ class MySQLServiceRepository implements ServiceRepository {
         }
         return $pois;
     }
+
+    public function findPoiById(int $id, string $lang): ?\App\Domain\Models\POI {
+        $sql = "SELECT p.*, t.name, t.description 
+                FROM points_of_interest p
+                JOIN poi_translations t ON p.id = t.poi_id AND t.lang_code = :lang
+                WHERE p.id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id, 'lang' => $lang]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$row) return null;
+
+        $poi = new \App\Domain\Models\POI($row['id'], $row['type'], $row['name'], $row['lat'], $row['lng'], $row['image_url']);
+        $poi->description = $row['description'];  // Asegúrate de declarar public ?string $description en el Modelo POI
+        return $poi;
+    }
+
+    public function getServicesNearPoi(float $lat, float $lng, string $lang, float $radiusKm = 10): array {
+        $sql = "SELECT s.*, c.slug as category_name, t.field_value as title 
+                FROM services s
+                JOIN categories c ON s.category_id = c.id
+                JOIN translations t ON s.id = t.rel_id AND t.field_name = 'title' AND t.lang_code = :lang
+                WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(:lng)) + sin(radians(:lat)) * sin(radians(s.lat)))) < :radius
+                LIMIT 3";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['lat' => $lat, 'lng' => $lng, 'lang' => $lang, 'radius' => $radiusKm]);
+        
+        $results = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $results[] = new \App\Domain\Models\Service($row['id'], $row['category_name'], (float)$row['price'], $row['image_url'], ['title' => $row['title']]);
+        }
+        return $results;
+    }
+
 }

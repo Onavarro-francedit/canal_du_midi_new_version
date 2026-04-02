@@ -3,6 +3,7 @@ namespace App\Domain\Models;
 
 class POI {
     public float $distanceKm;
+    public ?string $description = null;
 
     public function __construct(
         public int $id,
@@ -10,7 +11,7 @@ class POI {
         public string $name,
         public float $lat,
         public float $lng,
-        public ?string $imageUrl = null
+        public ?string $imageUrl = null,
     ) {}
 
     // Calcula la distancia desde el servicio hasta este POI

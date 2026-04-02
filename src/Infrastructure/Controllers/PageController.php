@@ -86,6 +86,25 @@ class PageController {
 
             $this->apiGetMoreReviews();
             return;
+        }elseif ($page === 'poi') {
+            $poiId = (int)$params;
+            $poi = $repository->findPoiById($poiId, $lang);
+
+            if ($poi) {
+                $nearbyServices = $repository->getServicesNearPoi($poi->lat, $poi->lng, $lang);
+                $rawDescription = $poi->description ?? ''; 
+                $seo = [
+                    'title' => $poi->name . " | Canal du Midi",
+                    'description' => mb_substr(strip_tags($rawDescription), 0, 160),
+                    'keywords' => $poi->name . ", patrimoine, Canal du Midi"
+                ];
+                
+                require_once __DIR__ . '/../Views/layout/header.php';
+                require_once __DIR__ . '/../Views/poi_detail.php';
+                require_once __DIR__ . '/../Views/layout/footer.php';
+            } else {
+                // Cargar 404...
+            }
         }else {
 
             // Manejo de error 404

@@ -39,6 +39,11 @@
         <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/errors.css">
     <?php endif; ?>
 
+    <?php if (isset($page) && $page === 'poi'): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/poi_detail.css">
+    <?php endif; ?>
+
+
     <?php if (isset($page) && $page === 'home'): ?>
         <script type="application/ld+json">
             <?= \App\Infrastructure\Views\Helpers\SchemaGenerator::generateHome($lang) ?>
