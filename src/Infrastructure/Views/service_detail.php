@@ -271,18 +271,18 @@
                 </div>
 
                 <form id="booking-form" action="<?= BASE_URL . $lang ?>/reserve" method="POST">
-                    <input type="hidden" name="service_id" value="<?= $service->id ?>">
+
                     
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="bi bi-calendar-check"></i> Arrivée</label>
-                            <input type="date" name="checkin" required>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="bi bi-calendar-x"></i> Départ</label>
-                            <input type="date" name="checkout" required>
-                        </div>
+                    <div class="form-group">
+                        <label><i class="bi bi-calendar-range"></i> Dates du séjour</label>
+                        <button type="button" id="select-dates-trigger" class="button button-ghost button-full">
+                            <i class="bi bi-calendar-range"></i>Sélectionner les dates
+                        </button>
+                        <!-- Inputs ocultos que el calendario llenará -->
+                        <input type="hidden" name="service_id" value="<?= $service->id ?>">
+                        <input type="hidden" name="checkin" required>
+                        <input type="hidden" name="checkout" required>
                     </div>
 
                     <!-- SECCIÓN: PASAJEROS -->
@@ -370,6 +370,8 @@
             </div>
         </aside>
     </div>
+    
+    <?php include __DIR__ . '/modals/calendar_modal.php'; ?>
     <?php include __DIR__ . '/modals/booking_summary_modal.php'; ?>
     <?php include __DIR__ . '/modals/booking_acepted_modal.php'; ?>
 </main>

@@ -62,8 +62,20 @@ class PageController {
             return;
 
         } else if ($page === 'validate-promo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+
             $this->validatePromo();
             exit;
+
+        }else if ($page === 'check-availability' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            $this->apiCheckAvailability();
+            exit;
+
+        }else if ($page === 'get-booked-dates' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+
+            $this->apiGetBookedDates();
+            exit;
+
         }else {
             // Manejo de error 404
             http_response_code(404);
@@ -135,5 +147,63 @@ class PageController {
         } else {
             echo json_encode(['success' => false, 'message' => 'Code non valide o expiré']);
         }
+    }
+
+    private function apiCheckAvailability() {
+        $sid = (int)$_POST['service_id'];
+        $start = $_POST['checkin'];
+        $end = $_POST['checkout'];
+
+        $bookingRepo = new \App\Infrastructure\Persistence\MySQLBookingRepository();
+        $available = $bookingRepo->isAvailable($sid, $start, $end);
+
+        header('Content-Type: application/json');
+        echo json_encode(['available' => $available]);
+    }
+
+    private function apiGetBookedDates() {
+        $sid = (int)($_GET['service_id'] ?? 0);
+        $db = \App\Config\Database::getConnection();
+        
+        // 1. Añadimos IS NOT NULL en el SQL para limpiar desde el origen
+        $stmt = $db->prepare("SELECT checkin_date, checkout_date FROM bookings 
+                            WHERE service_id = :sid 
+                            AND status != 'cancelled' 
+                            AND checkin_date IS NOT NULL 
+                            AND checkout_date IS NOT NULL");
+        $stmt->execute(['sid' => $sid]);
+        $bookings = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $occupiedDates = [];
+        foreach ($bookings as $b) {
+            // 2. Doble verificación en PHP para evitar el Deprecated Warning
+            if (empty($b['checkin_date']) || empty($b['checkout_date'])) {
+                continue; 
+            }
+
+            try {
+                $startDate = new \DateTime($b['checkin_date']);
+                $endDate = new \DateTime($b['checkout_date']);
+
+                // El intervalo es de 1 día (P1D)
+                // Añadimos 1 día al final porque DatePeriod no incluye el último día por defecto
+                $endDate->modify('+1 day'); 
+
+                $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate);
+                
+                foreach ($period as $date) {
+                    $occupiedDates[] = $date->format('Y-m-d');
+                }
+            } catch (\Exception $e) {
+                // Si alguna fecha tiene un formato inválido, la saltamos silenciosamente
+                continue;
+            }
+        }
+
+        // Limpiar el buffer de salida por si hubo algún eco previo que ensucie el JSON
+        if (ob_get_length()) ob_clean();
+
+        header('Content-Type: application/json');
+        echo json_encode(array_values(array_unique($occupiedDates))); // Reindexar evita que JSON salga como objeto
     }
 }

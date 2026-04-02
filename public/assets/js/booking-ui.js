@@ -2,7 +2,7 @@
  * Módulo: booking-ui.js (Actualizado)
  */
 
-const BookingUI = {
+window.BookingUI = {
     openModal(modalId) {
         const modal = document.getElementById(modalId);
         if (!modal) return;
@@ -72,6 +72,7 @@ window.closeSummaryModal = () => {
 window.showPromoInput = () => {
     BookingUI.showPromoInput();
 };
+
 
 // Listener para cerrar modales al hacer clic fuera (opcional pero recomendado)
 window.addEventListener('click', (e) => {

@@ -31,6 +31,7 @@
          <!-- Leaflet CSS -->
          <meta property="og:image" content="<?= htmlspecialchars($service->imageUrl ?? BASE_URL . 'public/assets/images/default_service.jpg') ?>">
          <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/service_detail.css">
+            <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/calendar.css">
          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <?php endif; ?>
 
