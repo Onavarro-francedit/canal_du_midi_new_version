@@ -1,94 +1,108 @@
 /**
- * Módulo: booking.js
- * Funcionalidad: Envío de reservas mediante AJAX y gestión del modal de éxito.
+ * Módulo: booking.js (Actualizado)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     const bookingForm = document.getElementById('booking-form');
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    const showPromoLink = document.getElementById('show-promo-link');
+    const applyPromoBtn = document.getElementById('apply-promo-btn');
 
-    if (bookingForm) {
-        bookingForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evitar que la página se recargue
+    if (!bookingForm) return;
 
-            // 1. Obtener los datos del formulario
-            const formData = new FormData(bookingForm);
-            const submitButton = bookingForm.querySelector('button[type="submit"]');
-            
-            // Bloquear botón para evitar doble clic
-            submitButton.disabled = true;
-            const originalText = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Envoi en cours...';
+    // --- LÓGICA DE CÓDIGO PROMO ---
+    if (showPromoLink) {
+        showPromoLink.addEventListener('click', () => BookingUI.showPromoInput());
+    }
+
+    if (applyPromoBtn) {
+        applyPromoBtn.addEventListener('click', async () => {
+            const promoInput = document.getElementById('promo-code-input');
+            const code = promoInput.value.trim();
+            if (!code) return;
+
+            const finalPriceDisplay = document.querySelector('.price-big');
+            const originalPrice = parseFloat(finalPriceDisplay.innerText.replace(/[^\d]/g, ''));
 
             try {
-                // 2. Enviar petición al controlador de PHP
-                const response = await fetch(bookingForm.action, {
+                const response = await fetch(`${BASE_URL}${lang}/validate-promo`, {
                     method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest' // Avisar a PHP que es una petición AJAX
-                    }
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `code=${code}`
                 });
-
-                if (!response.ok) throw new Error('Error en la respuesta del servidor');
 
                 const result = await response.json();
 
-                // 3. Procesar la respuesta
                 if (result.success) {
-                    showBookingModal();
-                    bookingForm.reset(); // Limpiar campos del formulario
-                } else {
-                    alert("Oups ! Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
-                }
+                    let newPrice = originalPrice;
+                    if (result.type === 'percentage') {
+                        newPrice = originalPrice - (originalPrice * (result.value / 100));
+                    } else {
+                        newPrice = originalPrice - result.value;
+                    }
 
-            } catch (error) {
-                console.error('Error al enviar la reserva:', error);
-                alert("Impossible de contacter le serveur. Vérifiez votre connexion.");
-            } finally {
-                // Restaurar el botón
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+                    BookingUI.updatePriceDisplay(originalPrice, newPrice);
+                    BookingUI.setPromoMessage(result.message, false);
+                    document.getElementById('final-promo-code').value = code;
+                    document.getElementById('promo-input-wrapper').classList.add('is-hidden');
+                } else {
+                    BookingUI.setPromoMessage(result.message, true);
+                }
+            } catch (err) {
+                console.error("Error validando promo:", err);
             }
         });
     }
 
-    // Cerrar modal al hacer clic fuera del contenido
-    const modalOverlay = document.getElementById('booking-modal');
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                closeBookingModal();
+    // --- LÓGICA DE RESUMEN ---
+    bookingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(bookingForm);
+        
+        // Obtenemos el precio que se ve actualmente (por si hay promo aplicada)
+        const currentPriceText = document.querySelector('.price-big').lastChild.textContent;
+        const pricePerNight = parseFloat(currentPriceText.replace(/[^\d]/g, ''));
+
+        const diffDays = Math.ceil(Math.abs(new Date(formData.get('checkout')) - new Date(formData.get('checkin'))) / (1000 * 60 * 60 * 24)) || 1;
+
+        let notes = [];
+        if (formData.get('is_pregnant')) notes.push("Femme enceinte");
+        if (formData.get('has_disabled')) notes.push("Accès PMR");
+
+        BookingUI.updateSummary({
+            checkin: formData.get('checkin'),
+            checkout: formData.get('checkout'),
+            adults: formData.get('adults'),
+            children: formData.get('children'),
+            totalPrice: (pricePerNight * diffDays),
+            specialNotes: notes
+        });
+        BookingUI.openModal('summary-modal');
+    });
+
+    // --- LÓGICA DE ENVÍO FINAL ---
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'Envoi...';
+
+            try {
+                const response = await fetch(bookingForm.action, {
+                    method: 'POST',
+                    body: new FormData(bookingForm),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    BookingUI.closeModal('summary-modal');
+                    BookingUI.openModal('booking-modal');
+                    bookingForm.reset();
+                }
+            } catch (error) { console.error(error); } 
+            finally {
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = "Confirmer la réservation";
             }
         });
     }
 });
-
-/**
- * Función global para mostrar el modal de éxito
- */
-function showBookingModal() {
-    const modal = document.getElementById('booking-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        // Pequeño delay para que la transición CSS de opacidad funcione
-        setTimeout(() => {
-            modal.classList.add('is-active');
-        }, 10);
-        document.body.style.overflow = 'hidden'; // Bloquear scroll de la web
-    }
-}
-
-/**
- * Función global para cerrar el modal (llamada desde el botón del modal)
- */
-function closeBookingModal() {
-    const modal = document.getElementById('booking-modal');
-    if (modal) {
-        modal.classList.remove('is-active');
-        // Esperar a que termine la animación CSS para ocultar el display
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-        document.body.style.overflow = 'auto'; // Restaurar scroll
-    }
-}

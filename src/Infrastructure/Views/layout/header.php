@@ -22,6 +22,11 @@
    
     <link rel="canonical" href="<?= BASE_URL . $lang . '/' . $page . (isset($params) ? '/' . $params : '') ?>">
     
+    <script>
+        // Pasamos las variables de PHP a JS globalmente
+        const BASE_URL = "<?= BASE_URL ?>";
+        const lang = "<?= $lang ?>";
+    </script>
     <?php if (isset($page) && $page === 'service'): ?>
          <!-- Leaflet CSS -->
          <meta property="og:image" content="<?= htmlspecialchars($service->imageUrl ?? BASE_URL . 'public/assets/images/default_service.jpg') ?>">
@@ -69,3 +74,4 @@
                 <a class="button button-small button-ghost" href="#newsletter">S'inscrire</a>
             </div>
         </header>
+        

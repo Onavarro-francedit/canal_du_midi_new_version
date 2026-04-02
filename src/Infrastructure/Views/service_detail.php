@@ -316,10 +316,25 @@
                     </div>
 
                     <!-- SECCIÓN: CÓDIGO PROMO -->
-                    <div class="form-group">
-                        <label><i class="bi bi-tag"></i> Code Promo</label>
-                        <input type="text" name="promo_code" placeholder="Saisissez votre code">
+                    <div class="promo-section">
+                        <!-- Enlace inicial oculto -->
+                        <button type="button" id="show-promo-link" class="link-button">
+                            <i class="bi bi-tag"></i> Vous avez un code promo ?
+                        </button>
+
+                        <!-- Contenedor del input (oculto por CSS inicialmente) -->
+                        <div id="promo-input-wrapper" class="promo-input-group is-hidden">
+                            <input type="text" id="promo-code-input" name="promo_code_temp" placeholder="Entrez votre code">
+                            <button type="button" id="apply-promo-btn" class="button button-small">Appliquer</button>
+                        </div>
+
+                        <!-- Feedback del código (Éxito o Error) -->
+                        <div id="promo-message" class="promo-feedback"></div>
+                        
+                        <!-- Input oculto final para enviar en el formulario de reserva -->
+                        <input type="hidden" name="promo_code" id="final-promo-code" value="">
                     </div>
+                    <br>
 
                     <div class="form-group">
                         <label><i class="bi bi-envelope"></i> Votre Email</label>
@@ -335,7 +350,7 @@
                     </div>
 
                     <button type="submit" class="button button-full">
-                        <i class="bi bi-send-fill"></i> Contacter l'établissement
+                        <i class="bi bi-calendar-check"></i> Réserver mon séjour
                     </button>
                     <p class="booking-disclaimer">En envoyant ce formulaire, vous demandez une prise de contact directe avec l'établissement, sans paiement immédiat.</p>
                 </form>
@@ -355,5 +370,6 @@
             </div>
         </aside>
     </div>
+    <?php include __DIR__ . '/modals/booking_summary_modal.php'; ?>
     <?php include __DIR__ . '/modals/booking_acepted_modal.php'; ?>
 </main>

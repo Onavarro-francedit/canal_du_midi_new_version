@@ -61,7 +61,10 @@ class PageController {
 
             return;
 
-        } else {
+        } else if ($page === 'validate-promo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validatePromo();
+            exit;
+        }else {
             // Manejo de error 404
             http_response_code(404);
             $pageTitle = "404 - Page non trouvée";
@@ -110,6 +113,27 @@ class PageController {
             require_once __DIR__ . '/../Views/layout/header.php';
             require_once __DIR__ . '/../Views/booking_success.php';
             require_once __DIR__ . '/../Views/layout/footer.php';
+        }
+    }
+
+    private function validatePromo() {
+        $code = $_POST['code'] ?? '';
+        $db = \App\Config\Database::getConnection();
+
+        $stmt = $db->prepare("SELECT * FROM promo_codes WHERE code = :code AND is_active = 1 AND (expiry_date IS NULL OR expiry_date >= CURDATE())");
+        $stmt->execute(['code' => $code]);
+        $promo = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        header('Content-Type: application/json');
+        if ($promo) {
+            echo json_encode([
+                'success' => true,
+                'type' => $promo['discount_type'],
+                'value' => (float)$promo['discount_value'],
+                'message' => 'Code promo appliqué !'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Code non valide o expiré']);
         }
     }
 }
