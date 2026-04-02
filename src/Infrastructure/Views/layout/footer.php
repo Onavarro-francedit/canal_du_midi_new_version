@@ -33,6 +33,7 @@
             <!-- Leaflet JS -->
             <script src="<?= BASE_URL ?>public/assets/js/map.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/booking-ui.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/reviews.js"></script>
             <script src="<?=  BASE_URL ?>public/assets/js/calendar.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/lightbox.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/availability.js"></script>

@@ -76,7 +76,17 @@ class PageController {
             $this->apiGetBookedDates();
             exit;
 
+        }else if ($page === 'save-review' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            $this->handleSaveReview($lang);
+            return;
+
+        }else if ($page === 'get-more-reviews') {
+
+            $this->apiGetMoreReviews();
+            return;
         }else {
+
             // Manejo de error 404
             http_response_code(404);
             $pageTitle = "404 - Page non trouvée";
@@ -205,5 +215,59 @@ class PageController {
 
         header('Content-Type: application/json');
         echo json_encode(array_values(array_unique($occupiedDates))); // Reindexar evita que JSON salga como objeto
+    }
+
+    private function handleSaveReview(string $lang) {
+        $repository = new \App\Infrastructure\Persistence\MySQLServiceRepository();
+        
+        $success = $repository->saveReview([
+            'service_id'    => (int)$_POST['service_id'],
+            'booking_id'    => (int)$_POST['booking_id'],
+            'customer_name' => $_POST['customer_name'],
+            'rating'        => (int)$_POST['rating'],
+            'comment'       => $_POST['comment']
+        ]);
+
+        if ($success) {
+            // Redirigir a una página de agradecimiento o a la ficha del hotel
+            header("Location: " . BASE_URL . $lang . "/service/" . $_POST['service_id'] . "?review_success=1");
+        } else {
+            echo "Erreur lors de la publication.";
+        }
+    }
+
+    private function apiGetMoreReviews() {
+        $sid = (int)($_GET['service_id'] ?? 0);
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $limit = 3;
+        $offset = $page * $limit;
+
+        $db = \App\Config\Database::getConnection();
+        $countStmt = $db->prepare("SELECT COUNT(*) FROM service_reviews WHERE service_id = :sid AND is_approved = 1");
+        $countStmt->execute(['sid' => $sid]);
+        $totalReviews = (int)$countStmt->fetchColumn();
+
+        $stmt = $db->prepare("SELECT * FROM service_reviews WHERE service_id = :sid AND is_approved = 1 ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':sid', $sid, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        $reviewsData = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        ob_start();
+
+        foreach ($reviewsData as $r) {
+            $review = new \App\Domain\Models\Review($r['id'], $r['customer_name'], $r['rating'], $r['comment'], $r['created_at']);
+            include __DIR__ . '/../Views/components/review_item.php';
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'html' => ob_get_clean(),
+            'loadedCount' => count($reviewsData),
+            'hasMore' => ($offset + count($reviewsData)) < $totalReviews,
+            'nextPage' => $page + 1,
+            'total' => $totalReviews,
+        ]);
     }
 }

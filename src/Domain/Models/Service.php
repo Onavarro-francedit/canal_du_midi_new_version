@@ -13,7 +13,10 @@ class Service {
         public array $gallery = [],    
         public array $features = [],   
         public float $lat = 0,
-        public float $lng = 0
+        public float $lng = 0,
+        public float $avgRating = 0,
+        public int $reviewCount = 0,
+        public array $reviews = []
     ) {
         // 1. Evitar errores de nulos en las traducciones (Vital para PHP 8.2+)
         $this->translations['title'] = $this->translations['title'] ?? 'Sans titre';

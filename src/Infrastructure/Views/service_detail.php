@@ -3,7 +3,11 @@
  * Vista: service_detail.php (Versión con Bootstrap Icons)
  */
 ?>
-
+<?php if (isset($_GET['review_success'])): ?>
+    <div class="alert alert-success">
+        <i class="bi bi-stars"></i> Merci ! Votre avis a été publié avec succès.
+    </div>
+<?php endif; ?>
 <main class="service-page">
     <!-- 1. HERO & IDENTIDAD -->
     <section class="service-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('<?= htmlspecialchars($service->imageUrl) ?>');">
@@ -183,6 +187,8 @@
                 </div>
             </section>
 
+           
+
             <!-- MOVER ESTO AL FINAL DEL ARCHIVO (antes del </main>) -->
             <div id="lightbox" class="lightbox">
                 <span class="lightbox-close"><i class="bi bi-x-lg"></i></span>
@@ -219,6 +225,78 @@
                     <i class="bi bi-geo-alt-fill"></i> 
                     <?= htmlspecialchars($service->contact['address'] ?? 'Adresse non spécifiée') ?>
                 </p>
+            </section>
+
+
+             <!-- SECCIÓN DE RESEÑAS -->
+            <section class="section-card info-block reviews-container">
+                <?php $initialReviews = array_slice($service->reviews, 0, 3); ?>
+                <div class="reviews-hero">
+                    <div class="section-heading-inline reviews-heading">
+                        <span class="section-kicker">Avis clients</span>
+                        <h3>Ce que disent les voyageurs</h3>
+                        <p class="reviews-intro">Des retours utiles pour se projeter avant de réserver, basés sur des séjours réellement effectués.</p>
+                    </div>
+
+                    <div class="reviews-summary-card reviews-summary-card-wide">
+                        <div class="reviews-summary-score">
+                            <span class="reviews-summary-label">Note moyenne</span>
+                            <div class="avg-number"><?= number_format((float) $service->avgRating, 1) ?></div>
+                        </div>
+                        <div class="reviews-summary-meta">
+                            <div class="avg-stars">
+                                <?php 
+                                for($i=1; $i<=5; $i++) echo ($i <= round($service->avgRating)) ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                                ?>
+                            </div>
+                            <div class="reviews-summary-copy">
+                                <strong><?= (int) $service->reviewCount ?> avis vérifiés</strong>
+                                <span>Expérience globale saluée pour le confort, l'accueil et l'emplacement.</span>
+                            </div>
+                        </div>
+                        <div class="reviews-summary-highlights">
+                            <span class="reviews-highlight-pill"><i class="bi bi-patch-check"></i> Avis publiés après validation</span>
+                            <span class="reviews-highlight-pill"><i class="bi bi-chat-quote"></i> Derniers retours affichés en priorité</span>
+                        </div>
+                    </div>
+                </div>
+
+                <?php if (!empty($service->reviews)): ?>
+                    <div id="reviews-items-wrapper" class="reviews-list">
+                        <?php foreach ($initialReviews as $review): ?>
+                            <?php include __DIR__ . '/components/review_item.php'; ?>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="reviews-footer">
+                        <p class="reviews-progress">
+                            <span id="reviews-loaded-count"><?= count($initialReviews) ?></span>
+                            sur
+                            <span><?= (int) $service->reviewCount ?></span>
+                            avis affichés
+                        </p>
+
+                        <?php if ($service->reviewCount > count($initialReviews)): ?>
+                            <button
+                                id="load-more-reviews"
+                                class="button button-ghost reviews-load-more"
+                                data-page="1"
+                                data-sid="<?= $service->id ?>"
+                                data-total="<?= (int) $service->reviewCount ?>"
+                            >
+                                <i class="bi bi-plus-circle"></i> Voir plus d'avis
+                            </button>
+                        <?php endif; ?>
+
+                        <p id="reviews-feedback" class="reviews-feedback" aria-live="polite"></p>
+                    </div>
+                <?php else: ?>
+                    <div class="reviews-empty-state">
+                        <i class="bi bi-chat-heart"></i>
+                        <strong>Aucun avis publié pour le moment</strong>
+                        <span>Les premiers retours apparaîtront ici dès qu'un voyageur partagera son expérience.</span>
+                    </div>
+                <?php endif; ?>
             </section>
         </div>
 

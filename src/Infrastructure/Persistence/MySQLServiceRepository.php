@@ -50,8 +50,21 @@ class MySQLServiceRepository implements ServiceRepository {
         $stmt_gal->execute(['id' => $id]);
         $gallery = $stmt_gal->fetchAll(PDO::FETCH_COLUMN);
 
+
+        // 4. Obtener valoraciones y reviews
+        $stmt_rev = $this->db->prepare("SELECT * FROM service_reviews WHERE service_id = :id AND is_approved = 1 ORDER BY created_at DESC");
+        $stmt_rev->execute(['id' => $id]);
+        $reviewsData = $stmt_rev->fetchAll(PDO::FETCH_ASSOC);
+        
+        $reviews = [];
+        $totalStars = 0;
+        foreach ($reviewsData as $r) {
+            $reviews[] = new \App\Domain\Models\Review($r['id'], $r['customer_name'], $r['rating'], $r['comment'], $r['created_at']);
+            $totalStars += $r['rating'];
+        }
+        
         // 4. Crear y retornar el objeto Service hidratado
-        return new Service(
+        $service = new Service(
             id: (int)$row['id'],
             type: $row['category_name'],
             price: (float)$row['price'],
@@ -67,8 +80,8 @@ class MySQLServiceRepository implements ServiceRepository {
                 'website' => $row['website'] ?? '',
                 'address' => ($row['address'] ?? '') . ' ' . ($row['city'] ?? '')
             ],
-            amenities: $amenities, // Pasamos el array de iconos
-            gallery: $gallery,     // Pasamos el array de fotos
+            amenities: $amenities,
+            gallery: $gallery,
             features: [
                 'rooms_count' => $row['rooms_count'] ?? 0,
                 'pmr_rooms' => $row['pmr_rooms'] ?? 0,
@@ -77,6 +90,12 @@ class MySQLServiceRepository implements ServiceRepository {
             lat: (float)($row['lat'] ?? 0),
             lng: (float)($row['lng'] ?? 0)
         );
+
+        $service->reviews = $reviews;
+        $service->reviewCount = count($reviews);
+        $service->avgRating = $service->reviewCount > 0 ? round($totalStars / $service->reviewCount, 1) : 0;
+
+        return $service;
     }
 
     // No olvides actualizar también el findAll si quieres mostrar iconos en la Home
@@ -108,5 +127,19 @@ class MySQLServiceRepository implements ServiceRepository {
             );
         }
         return $results;
+    }
+
+    public function saveReview(array $data): bool {
+        $sql = "INSERT INTO service_reviews (service_id, booking_id, customer_name, rating, comment, is_approved) 
+                VALUES (:service_id, :booking_id, :customer_name, :rating, :comment, 1)";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'service_id'    => $data['service_id'],
+            'booking_id'    => $data['booking_id'],
+            'customer_name' => $data['customer_name'],
+            'rating'        => $data['rating'],
+            'comment'       => $data['comment']
+        ]);
     }
 }
