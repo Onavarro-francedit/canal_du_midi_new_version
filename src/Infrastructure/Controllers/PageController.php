@@ -105,6 +105,24 @@ class PageController {
             } else {
                 // Cargar 404...
             }
+        }elseif ($page === 'search') {
+            $query = $_GET['q'] ?? '';
+            $city = $_GET['city'] ?? '';
+            $type = $_GET['type'] ?? '';
+            $page = 'search';
+
+            $results = $repository->search($query, $city, $type, $lang);
+            $categories = $repository->getAllCategories($lang);
+
+            $seo = [
+                'title' => "Résultats pour '$query' | Canal du Midi",
+                'description' => "Découvrez les meilleurs séjours et activités correspondant a votre recherche.",
+                'keywords' => "recherche, voyage, canal du midi"
+            ];
+
+            require_once __DIR__ . '/../Views/layout/header.php';
+            require_once __DIR__ . '/../Views/search_results.php'; // Nueva vista
+            require_once __DIR__ . '/../Views/layout/footer.php';
         }else {
 
             // Manejo de error 404

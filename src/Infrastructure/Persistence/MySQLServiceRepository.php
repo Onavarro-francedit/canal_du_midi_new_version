@@ -201,4 +201,93 @@ class MySQLServiceRepository implements ServiceRepository {
         return $results;
     }
 
+    public function searchServices(string $query, string $lang): array {
+        $sql = "SELECT s.*, c.slug as category_name, t.field_value as title 
+                FROM services s
+                JOIN categories c ON s.category_id = c.id
+                JOIN translations t ON s.id = t.rel_id AND t.field_name = 'title' AND t.lang_code = :lang
+                WHERE (t.field_value LIKE :query OR c.slug LIKE :query)
+                AND s.is_active = 1";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['lang' => $lang, 'query' => "%$query%"]);
+        
+        $results = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $results[] = new \App\Domain\Models\Service($row['id'], $row['category_name'], (float)$row['price'], $row['image_url'], ['title' => $row['title']]);
+        }
+        return $results;
+    }
+
+    public function search(string $query, string $city, string $type, string $lang): array {
+        $sql = "SELECT s.*, c.slug as category_name, 
+                    t_title.field_value as title, 
+                    t_tag.field_value as tag
+                FROM services s
+                JOIN categories c ON s.category_id = c.id
+                LEFT JOIN translations t_title ON s.id = t_title.rel_id 
+                    AND t_title.rel_type = 'service' AND t_title.lang_code = :lang AND t_title.field_name = 'title'
+                LEFT JOIN translations t_tag ON s.id = t_tag.rel_id 
+                    AND t_tag.rel_type = 'service' AND t_tag.lang_code = :lang AND t_tag.field_name = 'tag'
+                LEFT JOIN translations t_desc ON s.id = t_desc.rel_id 
+                    AND t_desc.rel_type = 'service' AND t_desc.lang_code = :lang AND t_desc.field_name = 'description'
+                WHERE s.is_active = 1";
+
+        $params = ['lang' => $lang];
+
+        // Filtro por palabra clave (busca en título, tag o descripción)
+        if (!empty($query)) {
+            $sql .= " AND (t_title.field_value LIKE :q OR t_tag.field_value LIKE :q OR t_desc.field_value LIKE :q)";
+            $params['q'] = "%$query%";
+        }
+
+        // Filtro por ciudad
+        if (!empty($city)) {
+            $sql .= " AND s.city = :city";
+            $params['city'] = $city;
+        }
+
+        // Filtro por tipo de categoría
+        if (!empty($type)) {
+            $sql .= " AND c.slug = :type";
+            $params['type'] = $type;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        
+        $results = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $results[] = new \App\Domain\Models\Service(
+                $row['id'], $row['category_name'], (float)$row['price'], $row['image_url'],
+                ['title' => $row['title'], 'tag' => $row['tag'], 'description' => $row['description'] ?? ''],
+                [
+                    'address' => trim(($row['address'] ?? '') . ' ' . ($row['city'] ?? '')),
+                ],
+                [],
+                [],
+                [
+                    'rooms_count' => $row['rooms_count'] ?? 0,
+                    'is_hybrid' => (bool)($row['is_hybrid'] ?? 0),
+                ],
+                (float)($row['lat'] ?? 0),
+                (float)($row['lng'] ?? 0)
+            );
+        }
+        return $results;
+    }
+
+
+    public function getAllCategories(string $lang): array {
+        $sql = "SELECT c.*, t.field_value as name, COUNT(s.id) as offers_count
+                FROM categories c
+                LEFT JOIN translations t ON c.id = t.rel_id 
+                    AND t.rel_type = 'category' AND t.lang_code = :lang AND t.field_name = 'name'
+                LEFT JOIN services s ON s.category_id = c.id AND s.is_active = 1
+                GROUP BY c.id, t.field_value";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['lang' => $lang]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

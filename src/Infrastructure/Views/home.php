@@ -22,26 +22,28 @@
             </p>
             
             <!-- Buscador (Lógica futura de IA) -->
-            <form class="hero-search" action="#destinations" method="get">
+            <form class="hero-search" action="<?= BASE_URL . $lang ?>/search" method="GET">
                 <label>
                     <span>Mot-clé</span>
-                    <input type="text" name="keyword" placeholder="Croisière, vélo, village...">
+                    <input type="text" name="q" placeholder="Croisière, vélo, hôtel..." required>
                 </label>
                 <label>
                     <span>Destination</span>
-                    <select name="destination">
-                        <option>Canal du Midi</option>
-                        <option>Carcassonne</option>
-                        <option>Toulouse</option>
-                        <option>Sète</option>
+                    <select name="city">
+                        <option value="">Toutes</option>
+                        <option value="Toulouse">Toulouse</option>
+                        <option value="Carcassonne">Carcassonne</option>
+                        <option value="Béziers">Béziers</option>
+                        <option value="Sète">Sète</option>
                     </select>
                 </label>
                 <label>
-                    <span>Durée</span>
-                    <select name="duration">
-                        <option>3 à 5 jours</option>
-                        <option>Une semaine</option>
-                        <option>Long séjour</option>
+                    <span>Type</span>
+                    <select name="type">
+                        <option value="">Tous les types</option>
+                        <option value="hotel">Hôtel</option>
+                        <option value="boat">Bateau / Péniche</option>
+                        <option value="bike">Vélo</option>
                     </select>
                 </label>
                 <button class="button button-round" type="submit">Rechercher</button>
