@@ -63,10 +63,20 @@
     <?php endif; ?>
 </head>
 <body>
+    <?php
+        $currentPage = $page ?? 'home';
+        $currentParams = isset($params) && $params !== null ? '/' . ltrim((string)$params, '/') : '';
+        $currentQueryString = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
+        $languageLinks = [
+            'fr' => BASE_URL . 'fr/' . $currentPage . $currentParams . $currentQueryString,
+            'es' => BASE_URL . 'es/' . $currentPage . $currentParams . $currentQueryString,
+            'en' => BASE_URL . 'en/' . $currentPage . $currentParams . $currentQueryString,
+        ];
+    ?>
     <div class="page-shell">
         <header class="site-header">
             <div class="container header-row">
-                <a class="brand" href="#top">
+                <a class="brand" href="<?= BASE_URL . $lang ?>/home">
                     <span class="brand-mark"></span>
                     <span class="brand-text">Canal du Midi</span>
                 </a>
@@ -81,9 +91,28 @@
                     <a href="<?= BASE_URL . $lang ?>/home#news">Actualités</a>
                 </nav>
                 <div class="lang-selector">
-                    <a href="<?= BASE_URL ?>fr/home">FR</a> | 
-                    <a href="<?= BASE_URL ?>es/home">ES</a> | 
-                    <a href="<?= BASE_URL ?>en/home">EN</a>
+                    <label class="lang-selector-label" for="language-switcher">Choisir la langue</label>
+                    <div class="lang-select-wrap">
+                        <select
+                            id="language-switcher"
+                            class="lang-select"
+                            aria-label="Choisir la langue"
+                            onchange="if (this.value) window.location.href = this.value;"
+                        >
+                            <?php foreach ($languageLinks as $localeCode => $localeUrl): ?>
+                                <option
+                                    value="<?= htmlspecialchars($localeUrl) ?>"
+                                    lang="<?= $localeCode ?>"
+                                    <?= $lang === $localeCode ? 'selected' : '' ?>
+                                >
+                                    <?= strtoupper($localeCode) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <span class="lang-select-caret" aria-hidden="true">
+                            <i class="bi bi-chevron-down"></i>
+                        </span>
+                    </div>
                 </div>
                 <a class="button button-small button-ghost" href="#newsletter">S'inscrire</a>
             </div>

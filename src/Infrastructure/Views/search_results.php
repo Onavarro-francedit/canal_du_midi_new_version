@@ -65,11 +65,18 @@ $activeFilters = array_filter([
                 <div class="category-explorer-list">
                     <?php foreach ($categories as $cat): ?>
                         <?php
-                        $categoryImage = $categoryVisuals[$cat['slug']] ?? 'https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=1200&q=80';
-                        $categoryName = htmlspecialchars($cat['name'] ?? ucfirst($cat['slug']));
-                        $offersCount = (int)($cat['offers_count'] ?? 0);
+                            // Usamos la imagen de la base de datos
+                            $categoryImage = !empty($cat['image_url']) 
+                                ? $cat['image_url'] 
+                                : 'https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=800&q=80';
+                            
+                            $categoryName = htmlspecialchars($cat['name'] ?? ucfirst($cat['slug']));
+                            $offersCount = (int)($cat['offers_count'] ?? 0);
                         ?>
-                        <a href="<?= BASE_URL . $lang ?>/search?type=<?= $cat['slug'] ?>" class="category-item<?= $type === $cat['slug'] ? ' is-active' : '' ?>" style="background-image: linear-gradient(180deg, rgba(11, 18, 32, 0.08), rgba(11, 18, 32, 0.62)), url('<?= htmlspecialchars($categoryImage) ?>');">
+                        <a href="<?= BASE_URL . $lang ?>/search?type=<?= $cat['slug'] ?>" 
+                        class="category-item<?= $type === $cat['slug'] ? ' is-active' : '' ?>" 
+                        style="background-image: linear-gradient(180deg, rgba(11, 18, 32, 0.08), rgba(11, 18, 32, 0.62)), url('<?= htmlspecialchars($categoryImage) ?>');">
+                            
                             <div class="cat-card-top">
                                 <div class="cat-icon-box">
                                     <i class="bi <?= $cat['icon_class'] ?>"></i>

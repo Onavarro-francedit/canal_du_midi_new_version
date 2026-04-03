@@ -327,4 +327,42 @@ class MySQLServiceRepository implements ServiceRepository {
         $stmt_am->execute(['id' => $serviceId]);
         return $stmt_am->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getActiveFeatures(string $lang): array {
+        $sql = "SELECT f.icon_class, t.title, t.content 
+                FROM site_features f
+                JOIN feature_translations t ON f.id = t.feature_id
+                WHERE t.lang_code = :lang AND f.is_active = 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['lang' => $lang]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getLatestArticles(string $lang, int $limit = 3): array {
+        $sql = "SELECT a.*, t.title 
+                FROM articles a
+                JOIN article_translations t ON a.id = t.article_id
+                WHERE t.lang_code = :lang AND a.is_active = 1
+                ORDER BY a.created_at DESC LIMIT :limit";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':lang', $lang);
+        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getCategoriesWithCount(string $lang): array {
+        // Añadimos c.image_url a la consulta
+        $sql = "SELECT c.id, c.slug, c.icon_class, c.image_url, t.field_value as name,
+                (SELECT COUNT(*) FROM services s WHERE s.category_id = c.id AND s.is_active = 1) as offers_count
+                FROM categories c
+                LEFT JOIN translations t ON c.id = t.rel_id 
+                    AND t.rel_type = 'category' 
+                    AND t.lang_code = :lang 
+                    AND t.field_name = 'name'";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['lang' => $lang]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailModal = document.getElementById('listing-detail-modal');
     const detailOpenButtons = document.querySelectorAll('.card-detail-trigger');
     const detailCloseButtons = document.querySelectorAll('[data-close-listing-modal]');
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightId = urlParams.get('highlight');
+
     if (!mapElement || typeof L === 'undefined') return;
 
     const validResults = Array.isArray(searchResults)
@@ -200,6 +203,17 @@ document.addEventListener('DOMContentLoaded', () => {
             closeDetailModal();
         }
     });
+
+
+    if (highlightId && window.highlightMarker) {
+        // Esperar un poco a que el mapa cargue
+        setTimeout(() => {
+            window.highlightMarker(highlightId);
+            // Hacer scroll a la card
+            const card = document.querySelector(`.explore-card[data-id="${highlightId}"]`);
+            if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 1000);
+    }
 });
 
 // Funciones para interactividad desde la lista

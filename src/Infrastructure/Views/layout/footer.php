@@ -50,5 +50,10 @@
             <script src="<?= BASE_URL ?>public/assets/js/ai-search.js"></script>
         <?php endif; ?>
 
+
+        <?php if (isset($page) && $page === 'home'): ?>
+            <script src="<?= BASE_URL ?>public/assets/js/home-ai.js"></script>
+        <?php endif; ?>
+
     </body>
 </html>

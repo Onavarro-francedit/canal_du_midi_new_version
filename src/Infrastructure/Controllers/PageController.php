@@ -25,7 +25,25 @@ class PageController {
 
             // Filtramos los datos para la vista home
             $destinations = array_filter($allServices, fn($s) => $s->type === 'destination');
-            $tours = array_filter($allServices, fn($s) => $s->type === 'tour');
+            $tours = array_filter($allServices, fn($s) => $s->type === 'tour' || $s->type === 'boat');
+            
+            // 1. Obtener todas las categorías con sus contadores reales
+            $allCategories = $repository->getCategoriesWithCount($lang);
+
+            if(!empty($allCategories)){
+                // 2. Mezclar el array aleatoriamente
+                shuffle($allCategories);
+            }
+
+            // 3. Tomar solo los primeros 6 para la Home
+            $randomCategories = array_slice($allCategories, 0, 6);
+
+            if (empty($destinations)) {
+                $destinations = array_slice($allServices, 0, 3);
+            }
+
+            $features = $repository->getActiveFeatures($lang);
+            $articles = $repository->getLatestArticles($lang);
 
             // 3. Renderizado de Vistas (MVC)
             require_once __DIR__ . '/../Views/layout/header.php';
@@ -112,7 +130,7 @@ class PageController {
             $page = 'search';
 
             $results = $repository->search($query, $city, $type, $lang);
-            $categories = $repository->getAllCategories($lang);
+            $categories = $repository->getCategoriesWithCount($lang); 
 
             $seo = [
                 'title' => "Résultats pour '$query' | Canal du Midi",

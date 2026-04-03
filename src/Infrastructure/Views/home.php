@@ -22,32 +22,108 @@
             </p>
             
             <!-- Buscador (Lógica futura de IA) -->
-            <form class="hero-search" action="<?= BASE_URL . $lang ?>/search" method="GET">
-                <label>
-                    <span>Mot-clé</span>
-                    <input type="text" name="q" placeholder="Croisière, vélo, hôtel..." required>
+            <form class="hero-search" id="home-search-form" action="<?= BASE_URL . $lang ?>/search" method="GET">
+                <div class="search-field search-field-primary">
+                    <p class="search-field-head" style="padding:0rem !important; margin:0rem !important;">
+                        <span class="search-field-icon"><i class="bi bi-search"></i></span>
+                        
+                    </p>
+                    <div style="width: 100%; padding-left: 0.5rem;">
+                        <label class="search-field-copy">
+                            <span class="search-field-label">Que cherchez-vous ?</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="q"
+                            id="home-search-input"
+                            class="search-field-input"
+                            list="home-search-suggestions"
+                            placeholder="Ex: Un hôtel romantique, une croisière calme ou 'Je veux faire du vélo'"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <label class="search-field">
+                    <span class="search-field-head">
+                        <span class="search-field-icon"><i class="bi bi-geo-alt"></i></span>
+                        <span class="search-field-copy">
+                            <span class="search-field-label">Destination</span>
+                        </span>
+                    </span>
+                    <span class="search-field-select-wrap">
+                        <select name="city" class="search-field-input">
+                            <option value="">Toutes les étapes</option>
+                            <option value="Toulouse">Toulouse</option>
+                            <option value="Carcassonne">Carcassonne</option>
+                        </select>
+                        <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                    </span>
                 </label>
-                <label>
-                    <span>Destination</span>
-                    <select name="city">
-                        <option value="">Toutes</option>
-                        <option value="Toulouse">Toulouse</option>
-                        <option value="Carcassonne">Carcassonne</option>
-                        <option value="Béziers">Béziers</option>
-                        <option value="Sète">Sète</option>
-                    </select>
+
+                <label class="search-field">
+                    <span class="search-field-head">
+                        <span class="search-field-icon"><i class="bi bi-sliders"></i></span>
+                        <span class="search-field-copy">
+                            <span class="search-field-label">Type</span>
+                            
+                        </span>
+                    </span>
+                    <span class="search-field-select-wrap">
+                        <select name="type" class="search-field-input">
+                            <option value="">Tous les types</option>
+                            <option value="hotel">Hôtel</option>
+                            <option value="boat">Bateau</option>
+                        </select>
+                        <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                    </span>
                 </label>
-                <label>
-                    <span>Type</span>
-                    <select name="type">
-                        <option value="">Tous les types</option>
-                        <option value="hotel">Hôtel</option>
-                        <option value="boat">Bateau / Péniche</option>
-                        <option value="bike">Vélo</option>
-                    </select>
-                </label>
-                <button class="button button-round" type="submit">Rechercher</button>
+
+                <div>
+                    <button class="button button-round hero-search-submit" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <button type="button" id="home-ai-btn" class="button button-round ai-magic-btn" title="Utiliser l'IA">
+                        <i class="bi bi-stars"></i>
+                    </button>
+                </div>
             </form>
+
+            <datalist id="home-search-suggestions">
+                <option value="Un hôtel romantique avec spa"></option>
+                <option value="Une balade à vélo le long du canal"></option>
+                <option value="Une croisière paisible en péniche"></option>
+                <option value="Un séjour en famille près de Carcassonne"></option>
+            </datalist>
+
+            <div id="home-ai-modal" class="hero-ai-modal" aria-hidden="true">
+                <div class="hero-ai-dialog" role="dialog" aria-modal="true" aria-labelledby="home-ai-modal-title">
+                    <button type="button" class="hero-ai-close" data-close-home-ai aria-label="Fermer la fenêtre IA">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <div class="hero-ai-kicker">Assistant IA</div>
+                    <h2 id="home-ai-modal-title">Décrivez votre voyage idéal</h2>
+                    <p>Expliquez librement ce que vous cherchez et l'IA essaiera de trouver le résultat le plus pertinent.</p>
+
+                    <form id="home-ai-modal-form" class="hero-ai-form">
+                        <label class="hero-ai-label" for="home-ai-prompt">Votre demande</label>
+                        <textarea
+                            id="home-ai-prompt"
+                            class="hero-ai-textarea"
+                            rows="6"
+                            placeholder="Ex: Je veux un week-end romantique près de Carcassonne avec spa et vue sur l'eau"
+                        ></textarea>
+                        <p id="home-ai-feedback" class="hero-ai-feedback" aria-live="polite"></p>
+                        <div class="hero-ai-actions">
+                            <button type="button" class="button button-ghost" data-close-home-ai>Annuler</button>
+                            <button type="submit" id="home-ai-submit" class="button">
+                                <i class="bi bi-stars"></i>
+                                <span>Envoyer à l'IA</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <div class="hero-stats">
                 <div>
@@ -72,15 +148,37 @@
             <div class="section-heading center">
                 <div class="eyebrow">Top destinations</div>
                 <h2>Les étapes qui structurent le voyage</h2>
-                <p>Contenu extrait dynamiquement de la base de données MySQL.</p>
+                <p>Découvrez les lieux emblématiques du Canal du Midi, sélectionnés pour leur patrimoine et leur beauté.</p>
             </div>
+            
             <div class="destination-grid">
-                <?php foreach ($destinations as $dest): ?>
-                    <article class="destination-card" style="background-image: linear-gradient(180deg, transparent, rgba(14, 20, 36, 0.88)), url('<?= htmlspecialchars($dest->imageUrl) ?>');">
-                        <span class="pill"><?= htmlspecialchars($dest->translations['tag'] ?? 'Exploration') ?></span>
-                        <h3><?= htmlspecialchars($dest->translations['title'] ?? 'Sans titre') ?></h3>
-                    </article>
+                <?php foreach ($randomCategories as $cat): ?>
+                    <?php 
+                        // La imagen ahora viene directamente de la DB ($cat['image_url'])
+                        // Ponemos un fallback por si alguna categoría no tiene foto
+                        $bgImage = !empty($cat['image_url']) 
+                                ? $cat['image_url'] 
+                                : 'https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=800&q=80';
+                        
+                        $url = BASE_URL . $lang . '/search?type=' . $cat['slug'];
+                        $name = htmlspecialchars($cat['name'] ?? ucfirst($cat['slug']));
+                        $count = (int)$cat['offers_count'];
+                    ?>
+                    <a href="<?= $url ?>" class="destination-card-link">
+                        <article class="destination-card" style="background-image: linear-gradient(180deg, transparent, rgba(14, 20, 36, 0.88)), url('<?= $bgImage ?>');">
+                            <div class="card-icon-top"><i class="bi <?= $cat['icon_class'] ?>"></i></div>
+                            <span class="pill"><?= $count ?> offre<?= $count !== 1 ? 's' : '' ?></span>
+                            <h3><?= $name ?></h3>
+                        </article>
+                    </a>
                 <?php endforeach; ?>
+            </div>
+
+            <!-- Botón Ver Todo -->
+            <div style="width: 100%; display: flex; justify-content: center; margin-top: 2rem;">
+                <a href="<?= BASE_URL . $lang ?>/search" class="button button-ghost" style="background-color: #544dbe !important; color: #fff !important;">
+                    <i class="bi bi-map"></i> Voir tous les établissements sur la carte
+                </a>
             </div>
         </div>
     </section>
