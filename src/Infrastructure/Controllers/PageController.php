@@ -123,6 +123,12 @@ class PageController {
             require_once __DIR__ . '/../Views/layout/header.php';
             require_once __DIR__ . '/../Views/search_results.php'; // Nueva vista
             require_once __DIR__ . '/../Views/layout/footer.php';
+
+        }elseif ($page === 'ai-analyze' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            
+            $this->handleAIRequest($lang);
+            return;
+
         }else {
 
             // Manejo de error 404
@@ -307,5 +313,19 @@ class PageController {
             'nextPage' => $page + 1,
             'total' => $totalReviews,
         ]);
+    }
+
+    private function handleAIRequest(string $lang) {
+        $prompt = $_POST['prompt'] ?? '';
+        $repository = new \App\Infrastructure\Persistence\MySQLServiceRepository();
+        
+        // Es vital obtener todos los detalles de los servicios para que la IA los "conozca"
+        $allServices = $repository->findAll($lang, true); // Pasar true para cargar amenities y features
+
+        $aiService = new \App\Infrastructure\Services\OpenAIService(); // <--- Aquí el cambio
+        $result = $aiService->analyzeRequest($prompt, $allServices);
+
+        header('Content-Type: application/json');
+        echo json_encode($result);
     }
 }

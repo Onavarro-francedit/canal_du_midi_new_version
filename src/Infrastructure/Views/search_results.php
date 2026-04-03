@@ -139,7 +139,6 @@ $activeFilters = array_filter([
                                     <i class="bi bi-cursor-fill"></i>
                                     Mettre en avant dans la liste
                                 </button>
-                                <a href="#" class="ai-open-link" id="ai-open-link">Ouvrir la fiche</a>
                             </div>
                         </div>
                     </div>
@@ -208,10 +207,7 @@ $activeFilters = array_filter([
             <div class="map-panel-shell">
                 <div class="map-panel-header">
                     <span class="section-kicker">Carte</span>
-                    <div class="map-panel-summary">
-                        <strong><?= $resultsCount ?></strong>
-                        <span>adresses visibles sur la carte</span>
-                    </div>
+                    
                 </div>
                 <div id="explore-map"></div>
             </div>

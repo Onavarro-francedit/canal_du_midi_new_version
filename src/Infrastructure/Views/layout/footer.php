@@ -47,6 +47,7 @@
             <script src="<?= BASE_URL ?>public/assets/js/search-map.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-tabs.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-ai.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/ai-search.js"></script>
         <?php endif; ?>
 
     </body>

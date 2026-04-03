@@ -1,0 +1,7 @@
+# Local environment configuration
+src/config/config.php
+src/config/Database.php
+src/config/*.php
+
+# macOS
+.DS_Store
