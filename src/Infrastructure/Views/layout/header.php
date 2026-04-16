@@ -84,6 +84,7 @@
                 </button>
                 <nav id="primary-nav" class="main-nav">
                     <a href="<?= BASE_URL . $lang ?>/home#destinations">Destinations</a>
+                    <a href="<?= BASE_URL . $lang ?>/search">Carte Interactive</a>
                     <a href="<?= BASE_URL . $lang ?>/home#experiences">Expériences</a>
                     <a href="<?= BASE_URL . $lang ?>/home#why-us">Pourquoi nous</a>
                     <a href="<?= BASE_URL . $lang ?>/home#reviews">Avis</a>
