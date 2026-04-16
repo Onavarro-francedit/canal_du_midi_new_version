@@ -11,37 +11,45 @@
 <main id="top">
     <!-- 1. HERO SECTION -->
     <section class="hero-section">
-        <div class="hero-media"></div>
-        <div class="hero-overlay"></div>
-        <div class="container hero-content">
-            <div class="eyebrow">Slow travel en Occitanie</div>
-            <h1>Explorez le Canal du Midi avec une esthétique premium et une structure prête à convertir.</h1>
-            <p>
-                Une landing pensée pour vendre des séjours, des croisières et des week-ends le long du canal,
-                avec des blocs éditoriaux proches de votre référence.
-            </p>
-            
-            <!-- Buscador (Lógica futura de IA) -->
-            <form class="hero-search" id="home-search-form" action="<?= BASE_URL . $lang ?>/search" method="GET">
-                <div class="search-field search-field-primary">
-                    <p class="search-field-head" style="padding:0rem !important; margin:0rem !important;">
-                        <span class="search-field-icon"><i class="bi bi-search"></i></span>
-                        
+        <div class="container">
+            <div class="hero-card" data-reveal="zoom">
+                <img class="hero-card-img" src="https://images.unsplash.com/photo-1732604447830-b4ba3c4ece89?auto=format&fit=crop&w=1800&q=80" alt="Canal du Midi bordé de platanes" loading="eager">
+                <div class="hero-card-overlay"></div>
+                <div class="hero-card-content">
+                    <div class="eyebrow">Slow travel en Occitanie</div>
+                    <h1>Explorez le Canal du Midi<br>et vivez l'art du voyage lent.</h1>
+                    <p style="color:#fff;">
+                        Croisières en péniche, escapades à vélo, villages de charme —
+                        composez votre itinéraire idéal de Toulouse à la Méditerranée.
                     </p>
-                    <div style="width: 100%; padding-left: 0.5rem;">
-                        <label class="search-field-copy">
-                            <span class="search-field-label">Que cherchez-vous ?</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="q"
-                            id="home-search-input"
-                            class="search-field-input"
-                            list="home-search-suggestions"
-                            placeholder="Ex: Un hôtel romantique, une croisière calme ou 'Je veux faire du vélo'"
-                            required
-                        >
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <strong>12K+</strong>
+                            <span>voyageurs inspirés</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>48</strong>
+                            <span>expériences locales</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>4.9</strong>
+                            <span>note moyenne</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <form class="hero-search" data-reveal="up" data-delay="300" id="home-search-form" action="<?= BASE_URL . $lang ?>/search" method="GET">
+                <div class="search-field search-field-primary">
+                    <span class="search-field-head">
+                        <span class="search-field-icon"><i class="bi bi-search"></i></span>
+                        <span class="search-field-copy">
+                            <span class="search-field-label">Que cherchez-vous ?</span>
+                        </span>
+                    </span>
+                    <input type="text" name="q" id="home-search-input" class="search-field-input"
+                        list="home-search-suggestions" autocomplete="off"
+                        placeholder="Hôtel romantique, croisière, vélo…">
                 </div>
 
                 <label class="search-field">
@@ -66,7 +74,6 @@
                         <span class="search-field-icon"><i class="bi bi-sliders"></i></span>
                         <span class="search-field-copy">
                             <span class="search-field-label">Type</span>
-                            
                         </span>
                     </span>
                     <span class="search-field-select-wrap">
@@ -79,12 +86,12 @@
                     </span>
                 </label>
 
-                <div>
-                    <button class="button button-round hero-search-submit" type="submit">
-                        <i class="bi bi-search"></i>
+                <div class="search-buttons-group">
+                    <button class="button hero-search-submit" type="submit">
+                        <i class="bi bi-search"></i> Rechercher
                     </button>
-                    <button type="button" id="home-ai-btn" class="button button-round ai-magic-btn" title="Utiliser l'IA">
-                        <i class="bi bi-stars"></i>
+                    <button type="button" id="home-ai-btn" class="button ai-magic-btn" title="Utiliser l'IA">
+                        <i class="bi bi-stars"></i> Assistant IA
                     </button>
                 </div>
             </form>
@@ -103,16 +110,12 @@
                     </button>
                     <div class="hero-ai-kicker">Assistant IA</div>
                     <h2 id="home-ai-modal-title">Décrivez votre voyage idéal</h2>
-                    <p>Expliquez librement ce que vous cherchez et l'IA essaiera de trouver le résultat le plus pertinent.</p>
+                    <p>Expliquez librement ce que vous cherchez et l'IA trouvera le résultat le plus pertinent.</p>
 
                     <form id="home-ai-modal-form" class="hero-ai-form">
                         <label class="hero-ai-label" for="home-ai-prompt">Votre demande</label>
-                        <textarea
-                            id="home-ai-prompt"
-                            class="hero-ai-textarea"
-                            rows="6"
-                            placeholder="Ex: Je veux un week-end romantique près de Carcassonne avec spa et vue sur l'eau"
-                        ></textarea>
+                        <textarea id="home-ai-prompt" class="hero-ai-textarea" rows="6"
+                            placeholder="Ex: Je veux un week-end romantique près de Carcassonne avec spa et vue sur l'eau"></textarea>
                         <p id="home-ai-feedback" class="hero-ai-feedback" aria-live="polite"></p>
                         <div class="hero-ai-actions">
                             <button type="button" class="button button-ghost" data-close-home-ai>Annuler</button>
@@ -124,34 +127,19 @@
                     </form>
                 </div>
             </div>
-
-            <div class="hero-stats">
-                <div>
-                    <strong>12K+</strong>
-                    <span>visiteurs inspirés</span>
-                </div>
-                <div>
-                    <strong>48</strong>
-                    <span>expériences locales</span>
-                </div>
-                <div>
-                    <strong>4.9</strong>
-                    <span>note moyenne</span>
-                </div>
-            </div>
         </div>
     </section>
 
     <!-- 2. DESTINATIONS SECTION (DINÁMICA) -->
     <section id="destinations" class="section section-tight">
         <div class="container">
-            <div class="section-heading center">
+            <div class="section-heading center" data-reveal="up">
                 <div class="eyebrow">Top destinations</div>
                 <h2>Les étapes qui structurent le voyage</h2>
                 <p>Découvrez les lieux emblématiques du Canal du Midi, sélectionnés pour leur patrimoine et leur beauté.</p>
             </div>
             
-            <div class="destination-grid">
+            <div class="destination-grid" data-reveal-stagger>
                 <?php foreach ($randomCategories as $cat): ?>
                     <?php 
                         // La imagen ahora viene directamente de la DB ($cat['image_url'])
@@ -186,7 +174,7 @@
     <!-- 3. EXPERIENCES SECTION (EDITORIAL) -->
     <section id="experiences" class="section section-alt">
         <div class="container split-layout">
-            <div class="stacked-photos">
+            <div class="stacked-photos" data-reveal="left">
                 <figure class="photo-card photo-large">
                     <img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=1000&q=80" alt="Bateau sur le canal">
                 </figure>
@@ -197,7 +185,7 @@
                     <img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80" alt="Vélo de voyage">
                 </figure>
             </div>
-            <div class="split-copy">
+            <div class="split-copy" data-reveal="right">
                 <div class="eyebrow">A simply perfect place to get lost</div>
                 <h2>Une section éditoriale forte pour raconter la destination.</h2>
                 <p>
@@ -221,12 +209,12 @@
     <!-- 4. POPULAR TOURS (DINÁMICO) -->
     <section class="section">
         <div class="container">
-            <div class="section-heading">
+            <div class="section-heading" data-reveal="up">
                 <div class="eyebrow">Popular tours</div>
                 <h2>Des cartes produits claires et commerciales</h2>
                 <p>Récupéré via ServiceRepository (Capa de Infraestructura).</p>
             </div>
-            <div class="tour-grid">
+            <div class="tour-grid" data-reveal-stagger>
                 <?php foreach ($tours as $tour): ?>
                     <a href="/canal_du_midi/<?= $lang ?>/service/<?= $tour->id ?>">
                         <article class="tour-card">
@@ -247,7 +235,7 @@
 
     <!-- 5. IMMERSIVE BAND -->
     <section class="immersive-band">
-        <div class="container band-inner">
+        <div class="container band-inner" data-reveal="zoom">
             <button class="play-button" type="button" aria-label="Lire la vidéo">▶</button>
             <h2>Where would you like to go?</h2>
             <p>Un bloc immersif pour casser le rythme et pousser vers l’exploration.</p>
@@ -257,12 +245,12 @@
     <!-- 6. WHY CHOOSE US (FEATURES) -->
     <section id="why-us" class="section section-wave-top">
         <div class="container">
-            <div class="section-heading center">
+            <div class="section-heading center" data-reveal="up">
                 <div class="eyebrow">Why choose us?</div>
                 <h2>Les bénéfices sont présentés en cartes compactes</h2>
             </div>
             
-            <div class="feature-grid">
+            <div class="feature-grid" data-reveal-stagger>
                 <!-- Por brevedad, mantenemos estas estáticas o podrías traerlas también de la DB -->
                 <article class="feature-card">
                     <div class="feature-icon"></div>
@@ -281,7 +269,7 @@
                 </article>
             </div>
 
-            <div class="offer-grid">
+            <div class="offer-grid" data-reveal-stagger>
                 <article class="offer-card blue">
                     <div>
                         <span class="offer-kicker">Weekly flash deals</span>
@@ -302,7 +290,7 @@
 
     <!-- 7. NEWSLETTER -->
     <section id="newsletter" class="section newsletter-section">
-        <div class="container newsletter-box">
+        <div class="container newsletter-box" data-reveal="up">
             <div>
                 <div class="eyebrow">Sign up for our newsletter</div>
                 <h2>Inscrivez-vous pour recevoir des mises à jour sur le Canal.</h2>

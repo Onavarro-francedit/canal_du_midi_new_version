@@ -9,7 +9,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/styles.css">
    
     <!-- Open Graph (Para que se vea bien en Facebook/WhatsApp) -->
@@ -73,7 +73,6 @@
             'en' => BASE_URL . 'en/' . $currentPage . $currentParams . $currentQueryString,
         ];
     ?>
-    <div class="page-shell">
         <header class="site-header">
             <div class="container header-row">
                 <a class="brand" href="<?= BASE_URL . $lang ?>/home">
@@ -117,4 +116,5 @@
                 <a class="button button-small button-ghost" href="#newsletter">S'inscrire</a>
             </div>
         </header>
+    <div class="page-shell">
         
