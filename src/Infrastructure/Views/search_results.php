@@ -1,15 +1,7 @@
 <?php
 $resultsCount = count($results);
 $resetUrl = BASE_URL . $lang . '/search';
-$categoryVisuals = [
-    'info' => 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80',
-    'hotel' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
-    'restaurant' => 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=80',
-    'boat' => 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
-    'activity' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
-    'tour' => 'https://images.unsplash.com/photo-1504609813442-a8924e83f76e?auto=format&fit=crop&w=1200&q=80',
-    'destination' => 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1200&q=80',
-];
+$allCities = $cities ?? [];
 $activeFilters = array_filter([
     $query !== '' ? $query : null,
     $city !== '' ? $city : null,
@@ -35,15 +27,23 @@ $activeFilters = array_filter([
 
                     <div class="filter-block">
                         <label for="search-city" class="filter-block-label">Localisation</label>
-                        <input id="search-city" type="text" name="city" value="<?= htmlspecialchars($city) ?>" placeholder="Saisir une ville ou adresse...">
+                        <input id="search-city" type="text" name="city" value="<?= htmlspecialchars($city) ?>" placeholder="Saisir une ville..." list="cities-datalist">
+                        <datalist id="cities-datalist">
+                            <?php foreach ($allCities as $c): ?>
+                                <option value="<?= htmlspecialchars($c) ?>">
+                            <?php endforeach; ?>
+                        </datalist>
                     </div>
 
                     <div class="filter-block">
                         <label for="search-type" class="filter-block-label">Service(s) souhaité(s)</label>
                         <select id="search-type" name="type">
                             <option value="">Tous les types</option>
-                            <option value="hotel" <?= $type === 'hotel' ? 'selected' : '' ?>>Hôtel</option>
-                            <option value="boat" <?= $type === 'boat' ? 'selected' : '' ?>>Bateau</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?= htmlspecialchars($cat['slug']) ?>" <?= $type === $cat['slug'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($cat['name']) ?> (<?= $cat['offers_count'] ?>)
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <br>
@@ -155,26 +155,35 @@ $activeFilters = array_filter([
 
         <section class="search-results-column" id="results-list">
             <header class="search-results-toolbar">
-                <div class="search-toolbar-chip"><i class="bi bi-filter-left"></i> <?= !empty($activeFilters) ? 'Filtres actifs' : 'Aléatoire' ?></div>
-                <div class="search-results-count"><?= $resultsCount ?> résultats</div>
-                
+                <div class="search-toolbar-left">
+                    <h2 class="search-results-count"><?= $resultsCount ?> résultat<?= $resultsCount > 1 ? 's' : '' ?></h2>
+                </div>
+                <?php if (!empty($activeFilters)): ?>
+                    <div class="search-active-filters">
+                        <?php foreach ($activeFilters as $filter): ?>
+                            <span class="active-filter-chip"><i class="bi bi-check2"></i> <?= htmlspecialchars($filter) ?></span>
+                        <?php endforeach; ?>
+                        <a href="<?= $resetUrl ?>" class="clear-filters-link"><i class="bi bi-x-lg"></i> Effacer</a>
+                    </div>
+                <?php endif; ?>
             </header>
 
             <?php if (empty($results)): ?>
                 <div class="no-results-card">
-                    <i class="bi bi-binoculars"></i>
-                    <h2>Aucun résultat pour cette recherche</h2>
+                    <div class="no-results-icon"><i class="bi bi-compass"></i></div>
+                    <h2>Aucun résultat trouvé</h2>
                     <p>Essayez un autre mot-clé, élargissez la ville recherchée ou retirez un filtre pour découvrir davantage d'adresses.</p>
+                    <a href="<?= $resetUrl ?>" class="button button-small">Réinitialiser</a>
                 </div>
             <?php else: ?>
                 <div class="explore-list">
                     <?php foreach ($results as $s): ?>
                         <?php
                         $serviceTitle = htmlspecialchars($s->translations['title'] ?? 'Adresse Canal du Midi');
-                        $serviceTag = htmlspecialchars($s->translations['tag'] ?? 'Une halte bien située pour découvrir le Canal du Midi.');
-                        $serviceDescription = htmlspecialchars($s->translations['description'] ?? 'Une halte sélectionnée pour découvrir le Canal du Midi dans de bonnes conditions.');
-                        $serviceAddress = htmlspecialchars($s->contact['address'] ?? 'Canal du Midi, Occitanie');
-                        $roomsCount = (int)($s->features['rooms_count'] ?? 0);
+                        $serviceDesc = mb_substr(htmlspecialchars($s->translations['description'] ?? ''), 0, 120);
+                        $serviceAddress = htmlspecialchars($s->getFullAddress());
+                        $serviceType = htmlspecialchars($s->type);
+                        $serviceLabel = htmlspecialchars($s->label ?? '');
                         ?>
                         <article class="explore-card"
                             data-id="<?= $s->id ?>"
@@ -183,27 +192,33 @@ $activeFilters = array_filter([
                             onmouseenter="highlightMarker(<?= $s->id ?>)"
                             onmouseleave="resetMarker(<?= $s->id ?>)">
                             <a class="explore-card-link" href="<?= BASE_URL . $lang ?>/service/<?= $s->id ?>">
-                                <div class="card-image">
-                                    <img src="<?= htmlspecialchars($s->imageUrl) ?>" alt="<?= $serviceTitle ?>">
-                                    <span class="card-favorite-badge"><i class="bi bi-lightning-charge"></i></span>
-                                    <div class="card-image-overlay"></div>
-                                    <div class="card-image-caption">
-                                        <h3><?= $serviceTitle ?></h3>
-                                    </div>
+                                <div class="card-image card-image--placeholder">
+                                    <div class="card-image-icon"><i class="bi bi-building"></i></div>
+                                    <span class="card-type-pill"><?= $serviceType ?></span>
+                                    <?php if ($serviceLabel): ?>
+                                        <span class="card-label-pill"><?= $serviceLabel ?></span>
+                                    <?php endif; ?>
                                 </div>
                             </a>
-
-                                <div class="card-footer-row">
-                                    <button
-                                        type="button"
-                                        class="card-detail-trigger"
-                                        aria-label="Afficher les détails de <?= $serviceTitle ?>"
-                                        data-service-id="<?= $s->id ?>"
-                                    >
-                                        <i class="bi bi-info-circle"></i>
-                                        <span>Voir les détails</span>
-                                    </button>
+                            <div class="card-body">
+                                <h3 class="card-title"><?= $serviceTitle ?></h3>
+                                <div class="card-location">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <span><?= $serviceAddress ?></span>
                                 </div>
+                                <?php if ($serviceDesc): ?>
+                                    <p class="card-tagline"><?= $serviceDesc ?>…</p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="card-footer-row">
+                                <?php if (!empty($s->contact['phone'])): ?>
+                                    <span class="card-phone"><i class="bi bi-telephone"></i> <?= htmlspecialchars($s->contact['phone']) ?></span>
+                                <?php endif; ?>
+                                <a href="<?= BASE_URL . $lang ?>/service/<?= $s->id ?>" class="card-detail-trigger">
+                                    <span>Voir la fiche</span>
+                                    <i class="bi bi-arrow-right-short"></i>
+                                </a>
+                            </div>
                         </article>
                     <?php endforeach; ?>
                 </div>
@@ -284,15 +299,11 @@ $activeFilters = array_filter([
         'lat' => $s->lat,
         'lng' => $s->lng,
         'title' => $s->translations['title'],
-        'price' => $s->getFormattedPrice(),
-        'priceValue' => (float)$s->price,
-        'image' => $s->imageUrl,
-        'address' => $s->contact['address'] ?? '',
-        'tag' => $s->translations['tag'] ?? '',
-        'description' => $s->translations['description'] ?? '',
-        'type' => ucfirst($s->type),
-        'hybrid' => $s->isHybrid(),
-        'roomsCount' => (int)($s->features['rooms_count'] ?? 0),
+        'address' => $s->getFullAddress(),
+        'description' => mb_substr($s->translations['description'] ?? '', 0, 200),
+        'type' => $s->type,
+        'label' => $s->label ?? '',
+        'phone' => $s->contact['phone'] ?? '',
         'url' => BASE_URL . $lang . '/service/' . $s->id,
     ], $results)) ?>;
 </script>

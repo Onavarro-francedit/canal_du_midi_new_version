@@ -129,8 +129,9 @@ class PageController {
             $type = $_GET['type'] ?? '';
             $page = 'search';
 
-            $results = $repository->search($query, $city, $type, $lang);
-            $categories = $repository->getCategoriesWithCount($lang); 
+            $results = $repository->searchPimcore($query, $city, $type);
+            $categories = $repository->getPimcoreCategories();
+            $cities = $repository->getPimcoreCities();
 
             $seo = [
                 'title' => "Résultats pour '$query' | Canal du Midi",
@@ -139,7 +140,7 @@ class PageController {
             ];
 
             require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/search_results.php'; // Nueva vista
+            require_once __DIR__ . '/../Views/search_results.php';
             require_once __DIR__ . '/../Views/layout/footer.php';
 
         }elseif ($page === 'ai-analyze' && $_SERVER['REQUEST_METHOD'] === 'POST') {

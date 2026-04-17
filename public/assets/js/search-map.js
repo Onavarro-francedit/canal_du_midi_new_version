@@ -31,28 +31,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-    // 2. Añadir Marcadores de los resultados
-    const markerGroup = L.featureGroup();
+    // 2. Añadir Marcadores con clustering
+    const clusterGroup = L.markerClusterGroup({
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: function(cluster) {
+            const count = cluster.getChildCount();
+            let size = 'small';
+            if (count >= 50) size = 'large';
+            else if (count >= 20) size = 'medium';
+            return L.divIcon({
+                html: `<div class="cluster-marker cluster-${size}"><span>${count}</span></div>`,
+                className: 'search-cluster-icon',
+                iconSize: [44, 44],
+                iconAnchor: [22, 22]
+            });
+        }
+    });
 
     validResults.forEach(item => {
         const customIcon = L.divIcon({
             className: 'search-marker',
-            html: `<div class="price-marker" id="marker-${item.id}">${item.price}</div>`,
-            iconSize: [60, 30],
-            iconAnchor: [30, 15]
+            html: `<div class="map-pin" id="marker-${item.id}"><i class="bi bi-geo-alt-fill"></i></div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 32]
         });
 
         const marker = L.marker([item.lat, item.lng], { icon: customIcon })
-            .bindPopup(`<strong>${item.title}</strong><br><a href="${BASE_URL}${lang}/service/${item.id}">Voir détails</a>`);
+            .bindPopup(`<div class="map-popup"><strong>${item.title}</strong><br><span class="map-popup-type">${item.type}</span><br><a href="${item.url}">Voir la fiche →</a></div>`);
         
-        marker.addTo(map);
-        markerGroup.addLayer(marker);
+        clusterGroup.addLayer(marker);
         markers[item.id] = marker;
     });
 
+    map.addLayer(clusterGroup);
+
     // Ajustar el zoom automáticamente para que se vean todos los marcadores
     if (validResults.length > 0) {
-        map.fitBounds(markerGroup.getBounds(), { padding: [50, 50] });
+        map.fitBounds(clusterGroup.getBounds(), { padding: [50, 50] });
     }
 
     const setMobileView = (view) => {
@@ -119,12 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
             { icon: 'bi-bookmark', label: service.type || 'Adresse' },
         ];
 
-        if (service.hybrid) {
-            tags.push({ icon: 'bi-cup-hot', label: 'Restaurant' });
+        if (service.label) {
+            tags.push({ icon: 'bi-award', label: service.label });
         }
 
-        if (service.roomsCount > 0) {
-            tags.push({ icon: 'bi-door-open', label: `${service.roomsCount} chambres` });
+        if (service.phone) {
+            tags.push({ icon: 'bi-telephone', label: service.phone });
         }
 
         return tags;

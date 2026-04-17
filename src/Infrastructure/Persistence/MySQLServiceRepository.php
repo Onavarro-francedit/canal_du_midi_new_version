@@ -14,7 +14,11 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function findById(int $id, string $lang): ?Service {
-        // 1. Obtener datos principales y traducciones
+        // Try Pimcore table first
+        $pimcore = $this->findByIdFromPimcore($id);
+        if ($pimcore) return $pimcore;
+
+        // Fallback to original services table
         $sql = "SELECT s.*, c.slug as category_name, 
                        t_title.field_value as title, 
                        t_desc.field_value as description,
@@ -364,5 +368,267 @@ class MySQLServiceRepository implements ServiceRepository {
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['lang' => $lang]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function findByIdFromPimcore(int $id): ?Service {
+        $sql = "SELECT * FROM object_query_60 WHERE oo_id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) return null;
+
+        $type = $this->detectPimcoreType($row);
+
+        $categories = [
+            'Hébergement' => (bool)$row['hebergement'],
+            'Résidence de tourisme' => (bool)$row['residence_tourisme'],
+            'Hôtellerie plein air' => (bool)$row['hotellerie_plein_air'],
+            'Chambre d\'hôtes' => (bool)$row['chambre_hote'],
+            'Gîtes ruraux' => (bool)$row['gites_ruraux'],
+            'Location bateaux (gîtes)' => (bool)$row['location_bateaux_gites'],
+            'Hôtel' => (bool)$row['hotel'],
+            'Location saisonnière' => (bool)$row['location_saisonniere'],
+            'Bar / Salon de thé' => (bool)$row['bar_salon'],
+            'Restaurant' => (bool)$row['restaurant'],
+            'Table d\'hôtes' => (bool)$row['table_hote'],
+            'Bateau restaurant' => (bool)$row['bateau_restaurant'],
+            'Snack' => (bool)$row['snack'],
+            'Brasserie' => (bool)$row['brasserie'],
+            'Alimentation' => (bool)$row['alimentation'],
+            'Charcuterie / Traiteur' => (bool)$row['charcuterie_traiteur'],
+            'Boulangerie' => (bool)$row['boulangerie'],
+            'Produits régionaux' => (bool)$row['produits_regions'],
+            'Poissonnerie' => (bool)$row['poissonnerie'],
+            'Épicerie' => (bool)$row['epicerie'],
+            'Vente de vins' => (bool)$row['vente_de_vins'],
+            'Caviste' => (bool)$row['caviste'],
+            'Domaine' => (bool)$row['domaine'],
+            'Loisirs' => (bool)$row['loisirs'],
+            'Croisière avec chambres' => (bool)$row['croisiere_chambres'],
+            'Promenade en bateau' => (bool)$row['promenade_bateau'],
+            'Croisière de luxe' => (bool)$row['croisiere_luxe'],
+            'Location bateaux (semaine)' => (bool)$row['location_bateaux_semaine'],
+            'Location bateaux' => (bool)$row['location_bateaux'],
+            'Location voiture' => (bool)$row['location_voiture'],
+            'Location kayak' => (bool)$row['location_kayak'],
+            'Location vélos' => (bool)$row['location_velos'],
+            'Voyage à vélo' => (bool)$row['voyage_velo'],
+            'Excursions' => (bool)$row['excursions'],
+            'Musée' => (bool)$row['musee'],
+            'Parc de loisirs' => (bool)$row['parcs_loisirs'],
+            'Lieux à voir' => (bool)$row['lieux_voir'],
+            'Artisanat' => (bool)$row['artisanat'],
+            'Commerce' => (bool)$row['commerce'],
+            'Laverie' => (bool)$row['laverie'],
+            'Taxi' => (bool)$row['taxi'],
+            'Transport bagages' => (bool)$row['transport_bagages'],
+            'Lieux d\'information' => (bool)$row['lieux_infos'],
+            'Mairie' => (bool)$row['mairie'],
+            'Office de tourisme' => (bool)$row['otsi'],
+            'Librairie' => (bool)$row['librairie'],
+            'Distributeur billets' => (bool)$row['distr_billet'],
+            'Borne WiFi' => (bool)$row['borne_wifi'],
+            'Réparation vélo' => (bool)$row['repar_velo'],
+            'Garage vélos' => (bool)$row['garage_velos'],
+            'Divers' => (bool)$row['divers'],
+        ];
+
+        $equipments = [
+            'Animaux acceptés' => (bool)$row['animaux'],
+            'Piscine' => (bool)$row['piscine'],
+            'Parking' => (bool)$row['parking'],
+            'Accessible PMR' => (bool)$row['accessible'],
+        ];
+
+        $description = html_entity_decode($row['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $description = strip_tags($description);
+        $actualite = html_entity_decode($row['actualite'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $actualite = strip_tags($actualite);
+
+        $videos = array_filter([
+            $row['Video1'] ?? null,
+            $row['Video2'] ?? null,
+            $row['Video3'] ?? null,
+        ]);
+
+        return new Service(
+            id: (int)$row['oo_id'],
+            type: $type,
+            price: 0,
+            imageUrl: '',
+            translations: [
+                'title' => $row['nom'] ?? 'Sans titre',
+                'description' => trim($description),
+                'tag' => trim($actualite),
+            ],
+            contact: [
+                'phone' => trim($row['telephone'] ?? ''),
+                'phone2' => trim($row['telephone2'] ?? ''),
+                'mobile' => trim($row['mobile'] ?? ''),
+                'fax' => trim($row['fax'] ?? ''),
+                'email' => trim($row['email'] ?? ''),
+                'email2' => trim($row['email2'] ?? ''),
+                'address' => trim($row['adresse'] ?? ''),
+                'cp' => trim($row['cp'] ?? ''),
+                'ville' => trim($row['ville'] ?? ''),
+                'website' => trim($row['web'] ?? ''),
+                'website2' => trim($row['web2'] ?? ''),
+            ],
+            amenities: [],
+            gallery: [],
+            features: [],
+            lat: (float)($row['geopositionnement__latitude'] ?? 0),
+            lng: (float)($row['geopositionnement__longitude'] ?? 0),
+            responsable: trim($row['responsable'] ?? ''),
+            raison: trim($row['raison'] ?? ''),
+            label: trim($row['label'] ?? ''),
+            zone: trim($row['zone'] ?? ''),
+            actualite: trim($actualite),
+            categories: $categories,
+            equipments: $equipments,
+            socials: array_filter([
+                'facebook' => $row['facebook'] ?? '',
+                'instagram' => $row['instagram'] ?? '',
+            ]),
+            videos: $videos,
+        );
+    }
+
+    private function detectPimcoreType(array $row): string {
+        if (!empty($row['hotel'])) return 'Hôtel';
+        if (!empty($row['chambre_hote'])) return 'Chambre d\'hôtes';
+        if (!empty($row['restaurant'])) return 'Restaurant';
+        if (!empty($row['hotellerie_plein_air'])) return 'Camping';
+        if (!empty($row['gites_ruraux'])) return 'Gîte';
+        if (!empty($row['location_bateaux']) || !empty($row['location_bateaux_semaine']) || !empty($row['location_bateaux_gites'])) return 'Location bateaux';
+        if (!empty($row['promenade_bateau']) || !empty($row['croisiere_chambres']) || !empty($row['croisiere_luxe'])) return 'Croisière';
+        if (!empty($row['location_velos']) || !empty($row['voyage_velo'])) return 'Location vélos';
+        if (!empty($row['musee'])) return 'Musée';
+        if (!empty($row['bar_salon'])) return 'Bar';
+        if (!empty($row['epicerie']) || !empty($row['alimentation']) || !empty($row['produits_regions'])) return 'Commerce';
+        if (!empty($row['caviste']) || !empty($row['domaine']) || !empty($row['vente_de_vins'])) return 'Vins';
+        if (!empty($row['taxi'])) return 'Taxi';
+        if (!empty($row['otsi']) || !empty($row['lieux_infos'])) return 'Information';
+        if (!empty($row['hebergement']) || !empty($row['residence_tourisme']) || !empty($row['location_saisonniere'])) return 'Hébergement';
+        if (!empty($row['excursions']) || !empty($row['loisirs']) || !empty($row['parcs_loisirs'])) return 'Loisirs';
+        return 'Établissement';
+    }
+
+    public function searchPimcore(string $query = '', string $city = '', string $type = ''): array {
+        $sql = "SELECT oo_id, nom, ville, adresse, cp, description, telephone, email, web, label, zone,
+                       geopositionnement__latitude, geopositionnement__longitude,
+                       hotel, chambre_hote, restaurant, hotellerie_plein_air, gites_ruraux,
+                       location_bateaux, promenade_bateau, croisiere_chambres, croisiere_luxe,
+                       location_velos, voyage_velo, bar_salon, musee, epicerie, alimentation,
+                       produits_regions, caviste, domaine, vente_de_vins, taxi, otsi, lieux_infos,
+                       hebergement, residence_tourisme, location_saisonniere, excursions, loisirs,
+                       parcs_loisirs, location_bateaux_semaine, location_bateaux_gites, location_kayak,
+                       location_voiture, snack, brasserie, table_hote, bateau_restaurant,
+                       animaux, piscine, parking, `accessible`
+                FROM object_query_60 WHERE 1=1";
+
+        $params = [];
+
+        if (!empty($query)) {
+            $sql .= " AND (nom LIKE :q OR description LIKE :q OR ville LIKE :q OR adresse LIKE :q)";
+            $params['q'] = "%$query%";
+        }
+        if (!empty($city)) {
+            $sql .= " AND ville LIKE :city";
+            $params['city'] = "%$city%";
+        }
+        if (!empty($type)) {
+            $typeMap = [
+                'hotel' => 'hotel = 1',
+                'chambre' => 'chambre_hote = 1',
+                'restaurant' => 'restaurant = 1',
+                'camping' => 'hotellerie_plein_air = 1',
+                'gite' => 'gites_ruraux = 1',
+                'bateau' => '(location_bateaux = 1 OR promenade_bateau = 1 OR croisiere_chambres = 1)',
+                'velo' => '(location_velos = 1 OR voyage_velo = 1)',
+                'loisirs' => '(loisirs = 1 OR excursions = 1 OR parcs_loisirs = 1)',
+                'commerce' => '(alimentation = 1 OR epicerie = 1 OR produits_regions = 1)',
+                'vins' => '(caviste = 1 OR domaine = 1 OR vente_de_vins = 1)',
+                'info' => '(otsi = 1 OR lieux_infos = 1)',
+                'hebergement' => '(hebergement = 1 OR residence_tourisme = 1 OR location_saisonniere = 1)',
+            ];
+            if (isset($typeMap[$type])) {
+                $sql .= " AND " . $typeMap[$type];
+            }
+        }
+
+        $sql .= " ORDER BY nom ASC LIMIT 200";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $results = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $detected = $this->detectPimcoreType($row);
+            $desc = html_entity_decode($row['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $desc = strip_tags($desc);
+
+            $results[] = new Service(
+                id: (int)$row['oo_id'],
+                type: $detected,
+                price: 0,
+                imageUrl: '',
+                translations: [
+                    'title' => $row['nom'] ?? 'Sans titre',
+                    'description' => trim($desc),
+                    'tag' => '',
+                ],
+                contact: [
+                    'phone' => trim($row['telephone'] ?? ''),
+                    'email' => trim($row['email'] ?? ''),
+                    'website' => trim($row['web'] ?? ''),
+                    'address' => trim($row['adresse'] ?? ''),
+                    'cp' => trim($row['cp'] ?? ''),
+                    'ville' => trim($row['ville'] ?? ''),
+                ],
+                lat: (float)($row['geopositionnement__latitude'] ?? 0),
+                lng: (float)($row['geopositionnement__longitude'] ?? 0),
+                label: trim($row['label'] ?? ''),
+                zone: trim($row['zone'] ?? ''),
+            );
+        }
+        return $results;
+    }
+
+    public function getPimcoreCategories(): array {
+        $cats = [
+            ['slug' => 'hotel', 'name' => 'Hôtel', 'icon_class' => 'bi-building', 'sql' => 'hotel = 1'],
+            ['slug' => 'chambre', 'name' => 'Chambre d\'hôtes', 'icon_class' => 'bi-door-open', 'sql' => 'chambre_hote = 1'],
+            ['slug' => 'restaurant', 'name' => 'Restaurant', 'icon_class' => 'bi-egg-fried', 'sql' => 'restaurant = 1'],
+            ['slug' => 'camping', 'name' => 'Camping', 'icon_class' => 'bi-tree', 'sql' => 'hotellerie_plein_air = 1'],
+            ['slug' => 'gite', 'name' => 'Gîte', 'icon_class' => 'bi-house-heart', 'sql' => 'gites_ruraux = 1'],
+            ['slug' => 'bateau', 'name' => 'Bateaux & Croisières', 'icon_class' => 'bi-water', 'sql' => '(location_bateaux = 1 OR promenade_bateau = 1 OR croisiere_chambres = 1 OR croisiere_luxe = 1)'],
+            ['slug' => 'velo', 'name' => 'Vélo', 'icon_class' => 'bi-bicycle', 'sql' => '(location_velos = 1 OR voyage_velo = 1)'],
+            ['slug' => 'loisirs', 'name' => 'Loisirs', 'icon_class' => 'bi-controller', 'sql' => '(loisirs = 1 OR excursions = 1 OR parcs_loisirs = 1 OR musee = 1)'],
+            ['slug' => 'commerce', 'name' => 'Commerce & Alimentation', 'icon_class' => 'bi-basket3', 'sql' => '(alimentation = 1 OR epicerie = 1 OR produits_regions = 1 OR boulangerie = 1)'],
+            ['slug' => 'vins', 'name' => 'Vins & Domaines', 'icon_class' => 'bi-droplet', 'sql' => '(caviste = 1 OR domaine = 1 OR vente_de_vins = 1)'],
+            ['slug' => 'hebergement', 'name' => 'Hébergement', 'icon_class' => 'bi-house-door', 'sql' => '(hebergement = 1 OR residence_tourisme = 1 OR location_saisonniere = 1)'],
+            ['slug' => 'info', 'name' => 'Informations', 'icon_class' => 'bi-info-circle', 'sql' => '(otsi = 1 OR lieux_infos = 1)'],
+        ];
+
+        $results = [];
+        foreach ($cats as $cat) {
+            $stmt = $this->db->query("SELECT COUNT(*) FROM object_query_60 WHERE " . $cat['sql']);
+            $count = (int)$stmt->fetchColumn();
+            $results[] = [
+                'slug' => $cat['slug'],
+                'name' => $cat['name'],
+                'icon_class' => $cat['icon_class'],
+                'offers_count' => $count,
+                'image_url' => '',
+            ];
+        }
+        return $results;
+    }
+
+    public function getPimcoreCities(): array {
+        $sql = "SELECT DISTINCT ville FROM object_query_60 WHERE ville IS NOT NULL AND ville != '' ORDER BY ville ASC";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 }

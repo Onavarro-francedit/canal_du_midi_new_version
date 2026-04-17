@@ -18,4 +18,3 @@ $request = $router->handleRequest();
 $controller = new PageController();
 $controller->render($request['page'], $request['lang'], $request['params']);
 
-// FIN DEL ARCHIVO. No debe haber nada más aquí.

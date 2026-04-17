@@ -44,7 +44,8 @@
         <?php if (isset($page) && $page === 'search'): ?>
             <!-- Leaflet JS -->
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-            <!-- Tu lógica de Mapa Global -->
+            <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+            <!-- Mapa Global -->
             <script src="<?= BASE_URL ?>public/assets/js/search-map.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-tabs.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-ai.js"></script>

@@ -36,9 +36,10 @@
     <?php endif; ?>
 
     <?php if (isset($page) && $page === 'search'): ?>
-        <!-- Leaflet CSS (Reutilizamos la misma librería que en el detalle) -->
+        <!-- Leaflet CSS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-        <!-- Tu nuevo CSS tipo MyListing -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
         <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/search.css">
     <?php endif; ?>
 
