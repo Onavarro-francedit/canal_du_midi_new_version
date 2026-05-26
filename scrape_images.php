@@ -1,7 +1,8 @@
 <?php
 /**
- * Script para scrapear las imágenes de las fichas de plan-canal-du-midi.com
- * y guardarlas en una tabla wp_images para mapearlas con object_query_60
+ * Script para scrapear las imágenes de las fichas de plan-canal-du-midi.com,
+ * guardarlas físicamente en public/clients_images/{pimcore_id} y actualizar
+ * la tabla canal_du_midi_image.
  * 
  * Uso: php scrape_images.php
  */
@@ -9,25 +10,114 @@
 $pdo = new PDO('mysql:host=localhost;dbname=canal_du_midi;charset=utf8mb4', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// 1. Crear la tabla wp_images
-$pdo->exec("DROP TABLE IF EXISTS wp_images");
-$pdo->exec("
-    CREATE TABLE wp_images (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        wp_slug VARCHAR(255) NOT NULL,
-        wp_title VARCHAR(500),
-        pimcore_id INT DEFAULT NULL,
-        image_url VARCHAR(1000),
-        image2_url VARCHAR(1000),
-        image3_url VARCHAR(1000),
-        image4_url VARCHAR(1000),
-        logo_url VARCHAR(1000),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY (wp_slug),
-        KEY (pimcore_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-");
-echo "✓ Table wp_images created\n\n";
+/**
+ * Download a remote image URL and save it to disk.
+ */
+function downloadImageToPath(string $url, string $targetPath): bool {
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 20,
+            'header' => "User-Agent: canal-du-midi-scraper/1.0\r\n",
+        ],
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+        ],
+    ]);
+
+    $binary = @file_get_contents($url, false, $context);
+    if ($binary === false || $binary === '') {
+        return false;
+    }
+
+    return file_put_contents($targetPath, $binary) !== false;
+}
+
+/**
+ * Extract file extension from URL. Defaults to jpg when unknown.
+ */
+function extensionFromUrl(string $url): string {
+    $path = parse_url($url, PHP_URL_PATH) ?: '';
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'];
+    return in_array($ext, $allowed, true) ? $ext : 'jpg';
+}
+
+/**
+ * Normalize listing names before matching WP and Pimcore records.
+ */
+function normalizeNameForMatch(string $name): string {
+    $name = html_entity_decode($name, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $name = str_replace(["\xE2\x80\x99", "\xC2\xB4", '`'], "'", $name); // smart apostrophes
+    $name = mb_strtolower($name, 'UTF-8');
+
+    // Remove branding suffixes and frequent boilerplate from WP titles.
+    $name = preg_replace('/\s*[\-–—|]\s*l\'?officiel\s+du\s+canal\s+du\s+midi\s*$/iu', '', $name);
+    $name = preg_replace('/\bl\'?officiel\s+du\s+canal\s+du\s+midi\b/iu', '', $name);
+
+    // Remove star ratings and punctuation noise.
+    $name = preg_replace('/\*+/', ' ', $name);
+
+    $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name);
+    if ($ascii !== false) {
+        $name = strtolower($ascii);
+    }
+
+    // Keep only alnum and spaces.
+    $name = preg_replace('/[^a-z0-9\s]/', ' ', $name);
+    $name = preg_replace('/\s+/', ' ', trim($name));
+
+    return $name;
+}
+
+/**
+ * Return a normalized token map for overlap scoring.
+ */
+function tokensFromNormalizedName(string $normalized): array {
+    if ($normalized === '') {
+        return [];
+    }
+
+    $tokens = array_filter(explode(' ', $normalized), fn($t) => strlen($t) > 2);
+    $unique = [];
+    foreach ($tokens as $token) {
+        $unique[$token] = true;
+    }
+
+    return $unique;
+}
+
+/**
+ * Compute a robust score combining exact, contains, token overlap and similar_text.
+ */
+function computeMatchScore(string $wpNorm, array $wpTokens, string $piNorm, array $piTokens): float {
+    if ($wpNorm === '' || $piNorm === '') {
+        return 0.0;
+    }
+
+    if ($wpNorm === $piNorm) {
+        return 100.0;
+    }
+
+    $containsScore = 0.0;
+    if (str_contains($piNorm, $wpNorm) || str_contains($wpNorm, $piNorm)) {
+        $containsScore = 92.0;
+    }
+
+    similar_text($wpNorm, $piNorm, $similarPct);
+
+    $tokenScore = 0.0;
+    if (!empty($wpTokens) && !empty($piTokens)) {
+        $intersect = array_intersect_key($wpTokens, $piTokens);
+        $unionCount = count($wpTokens) + count($piTokens) - count($intersect);
+        if ($unionCount > 0) {
+            $jaccard = count($intersect) / $unionCount;
+            $tokenScore = $jaccard * 100.0;
+        }
+    }
+
+    return max($containsScore, $similarPct, $tokenScore);
+}
 
 // 2. Obtener todas las URLs del sitemap
 echo "Fetching sitemap...\n";
@@ -41,22 +131,43 @@ preg_match_all('/<loc>([^<]+)<\/loc>/', $xml, $matches);
 $urls = $matches[1];
 echo "Found " . count($urls) . " fiches\n\n";
 
-// 3. Preparar INSERT
-$stmt = $pdo->prepare("
-    INSERT INTO wp_images (wp_slug, wp_title, image_url, image2_url, image3_url, image4_url, logo_url) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE 
+// Carpeta base para guardar imágenes físicas
+$baseImagesDir = __DIR__ . '/public/clients_images';
+if (!is_dir($baseImagesDir) && !mkdir($baseImagesDir, 0775, true) && !is_dir($baseImagesDir)) {
+    die("Error: Could not create directory {$baseImagesDir}\n");
+}
+
+// Cargar referencias Pimcore para mapear por similitud
+$pimcore = $pdo->query("SELECT oo_id, nom FROM object_query_60")->fetchAll(PDO::FETCH_ASSOC);
+$pimcorePrepared = array_map(function (array $p): array {
+    $norm = normalizeNameForMatch((string)($p['nom'] ?? ''));
+    return [
+        'oo_id' => (int)$p['oo_id'],
+        'nom' => (string)($p['nom'] ?? ''),
+        'norm' => $norm,
+        'tokens' => tokensFromNormalizedName($norm),
+    ];
+}, $pimcore);
+
+// 3. Preparar UPSERT en tabla final
+$upsert = $pdo->prepare("
+    INSERT INTO canal_du_midi_image (pimcore_id, wp_slug, wp_title, logo_url, presentation, images)
+    VALUES (:pimcore_id, :wp_slug, :wp_title, :logo_url, :presentation, :images)
+    ON DUPLICATE KEY UPDATE
         wp_title = VALUES(wp_title),
-        image_url = VALUES(image_url),
-        image2_url = VALUES(image2_url),
-        image3_url = VALUES(image3_url),
-        image4_url = VALUES(image4_url),
-        logo_url = VALUES(logo_url)
+        logo_url = VALUES(logo_url),
+        presentation = VALUES(presentation),
+        images = VALUES(images)
 ");
 
 // 4. Scrapear cada fiche
 $count = 0;
 $errors = 0;
+$mapped = 0;
+$foldersCreated = 0;
+$filesSaved = 0;
+$filesFailed = 0;
+$dbUpdated = 0;
 foreach ($urls as $i => $url) {
     $slug = trim(parse_url($url, PHP_URL_PATH), '/');
     $slug = str_replace('fiche/', '', $slug);
@@ -118,16 +229,93 @@ foreach ($urls as $i => $url) {
             $cleanImages[] = $clean;
         }
     }
-    
-    $stmt->execute([
-        $slug,
-        $title,
-        $cleanImages[0] ?? null,
-        $cleanImages[1] ?? null,
-        $cleanImages[2] ?? null,
-        $cleanImages[3] ?? null,
-        $logo
+
+    // Mapping local con object_query_60 (sin pasar por wp_images)
+    $bestMatch = null;
+    $bestScore = 0.0;
+    $wpNorm = normalizeNameForMatch($title);
+    $wpTokens = tokensFromNormalizedName($wpNorm);
+
+    foreach ($pimcorePrepared as $p) {
+        $score = computeMatchScore($wpNorm, $wpTokens, $p['norm'], $p['tokens']);
+        if ($score > $bestScore) {
+            $bestScore = $score;
+            $bestMatch = $p['oo_id'];
+            if ($bestScore >= 99.9) {
+                break;
+            }
+        }
+    }
+
+    if (!$bestMatch || $bestScore < 72.0) {
+        echo "  ~ [{$i}] {$slug} — {$title} — no Pimcore match\n";
+        $count++;
+        continue;
+    }
+
+    $mapped++;
+    $clientDir = $baseImagesDir . '/' . $bestMatch;
+    if (!is_dir($clientDir)) {
+        if (!mkdir($clientDir, 0775, true) && !is_dir($clientDir)) {
+            echo "  ✗ Could not create folder for #{$bestMatch}\n";
+            $errors++;
+            $count++;
+            continue;
+        }
+        $foldersCreated++;
+    }
+
+    // Limpiar imágenes anteriores para dejar estado consistente.
+    foreach (glob($clientDir . '/img*.*') ?: [] as $oldImg) {
+        @unlink($oldImg);
+    }
+    foreach (glob($clientDir . '/logo.*') ?: [] as $oldLogo) {
+        @unlink($oldLogo);
+    }
+
+    $localImagePaths = [];
+    $imgIndex = 1;
+    foreach ($cleanImages as $imgUrl) {
+        $ext = extensionFromUrl($imgUrl);
+        $fileName = 'img' . $imgIndex . '.' . $ext;
+        $target = $clientDir . '/' . $fileName;
+
+        if (downloadImageToPath($imgUrl, $target)) {
+            $filesSaved++;
+            $localImagePaths[] = '/public/clients_images/' . $bestMatch . '/' . $fileName;
+            $imgIndex++;
+        } else {
+            $filesFailed++;
+            echo "  ✗ Download failed for #{$bestMatch}: {$imgUrl}\n";
+        }
+    }
+
+    $localLogoPath = null;
+    if (!empty($logo)) {
+        $logoExt = extensionFromUrl($logo);
+        $logoName = 'logo.' . $logoExt;
+        $logoTarget = $clientDir . '/' . $logoName;
+        if (downloadImageToPath($logo, $logoTarget)) {
+            $filesSaved++;
+            $localLogoPath = '/public/clients_images/' . $bestMatch . '/' . $logoName;
+        } else {
+            $filesFailed++;
+            echo "  ✗ Logo download failed for #{$bestMatch}: {$logo}\n";
+        }
+    }
+
+    $presentation = $localImagePaths[0] ?? null;
+    $imagesCsv = !empty($localImagePaths) ? implode(',', $localImagePaths) : null;
+
+    $upsert->execute([
+        'pimcore_id' => $bestMatch,
+        'wp_slug' => $slug,
+        'wp_title' => $title,
+        'logo_url' => $localLogoPath,
+        'presentation' => $presentation,
+        'images' => $imagesCsv,
     ]);
+    $dbUpdated++;
     
     $count++;
     $imgCount = count($cleanImages);
@@ -140,68 +328,11 @@ foreach ($urls as $i => $url) {
 echo "\n\n=== Scraping terminé ===\n";
 echo "Fiches traitées: {$count}\n";
 echo "Erreurs: {$errors}\n";
-
-// 5. Mapper avec object_query_60 par similarité de nom
-echo "\nMapping avec Pimcore...\n";
-
-$fiches = $pdo->query("SELECT id, wp_slug, wp_title FROM wp_images WHERE wp_title IS NOT NULL AND wp_title != ''")->fetchAll(PDO::FETCH_ASSOC);
-$pimcore = $pdo->query("SELECT oo_id, nom FROM object_query_60")->fetchAll(PDO::FETCH_ASSOC);
-
-$mapped = 0;
-$updateStmt = $pdo->prepare("UPDATE wp_images SET pimcore_id = ? WHERE id = ?");
-
-foreach ($fiches as $fiche) {
-    $bestMatch = null;
-    $bestScore = 0;
-    
-    $wpName = mb_strtoupper(trim($fiche['wp_title']));
-    
-    foreach ($pimcore as $p) {
-        $pName = mb_strtoupper(trim($p['nom']));
-        
-        // Exact match
-        if ($wpName === $pName) {
-            $bestMatch = $p['oo_id'];
-            $bestScore = 100;
-            break;
-        }
-        
-        // One contains the other
-        if (mb_strlen($wpName) > 3 && mb_strlen($pName) > 3) {
-            if (strpos($pName, $wpName) !== false || strpos($wpName, $pName) !== false) {
-                $score = 90;
-                if ($score > $bestScore) {
-                    $bestScore = $score;
-                    $bestMatch = $p['oo_id'];
-                }
-            }
-        }
-        
-        // Similar text percentage
-        similar_text($wpName, $pName, $pct);
-        if ($pct > 75 && $pct > $bestScore) {
-            $bestScore = $pct;
-            $bestMatch = $p['oo_id'];
-        }
-    }
-    
-    if ($bestMatch && $bestScore >= 75) {
-        $updateStmt->execute([$bestMatch, $fiche['id']]);
-        $mapped++;
-        if ($bestScore < 100) {
-            echo "  ~ [{$bestScore}%] \"{$fiche['wp_title']}\" → Pimcore #{$bestMatch}\n";
-        }
-    }
-}
-
-echo "\nMapped: {$mapped} / " . count($fiches) . " fiches\n";
-
-// Stats
-$total = $pdo->query("SELECT COUNT(*) FROM wp_images")->fetchColumn();
-$withImages = $pdo->query("SELECT COUNT(*) FROM wp_images WHERE image_url IS NOT NULL")->fetchColumn();
-$withMapping = $pdo->query("SELECT COUNT(*) FROM wp_images WHERE pimcore_id IS NOT NULL")->fetchColumn();
-
+echo "Mapped: {$mapped}\n";
+echo "Rows upserted in canal_du_midi_image: {$dbUpdated}\n";
+echo "Saved folders: {$foldersCreated}\n";
+echo "Saved files: {$filesSaved}\n";
+echo "Failed files: {$filesFailed}\n";
 echo "\n=== Résumé ===\n";
-echo "Total fiches WP: {$total}\n";
-echo "Avec images: {$withImages}\n";
-echo "Mappées à Pimcore: {$withMapping}\n";
+echo "Total fiches sitemap: " . count($urls) . "\n";
+echo "Images folder: {$baseImagesDir}\n";

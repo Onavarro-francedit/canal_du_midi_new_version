@@ -35,6 +35,10 @@ $equipmentIcons = [
 <?php endif; ?>
 <main class="service-page">
     <!-- 1. HERO -->
+
+    <?php
+        echo "<script>console.log('Service data:', " . json_encode($service) . ");</script>";
+    ?>
     <section class="service-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.78)), url('<?= htmlspecialchars($service->imageUrl ?: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80') ?>');">
         <div class="container">
             <div class="service-hero-content">

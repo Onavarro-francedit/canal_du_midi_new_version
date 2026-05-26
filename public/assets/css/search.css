@@ -384,6 +384,14 @@
     padding: 10px 16px 14px;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
+.card-footer-row--right-aligned {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 10px 16px 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
 
 .card-price {
     color: #1a1d26;

@@ -452,11 +452,31 @@ class MySQLServiceRepository implements ServiceRepository {
             $row['Video3'] ?? null,
         ]);
 
+        $media = $this->getPimcoreMediaById((int)$row['oo_id']);
+        $gallery = [];
+        if (!empty($media['images'])) {
+            $gallery = array_values(array_filter(array_map('trim', explode(',', (string)$media['images']))));
+            $gallery = array_map(fn($u) => $this->normalizeMediaUrl($u), $gallery);
+        }
+
+        $heroImage = $this->normalizeMediaUrl((string)($media['presentation'] ?? ''));
+
+        // Fallback: if DB media is missing, try loading images from public/clients_images/{pimcore_id}
+        if ($heroImage === '' && empty($gallery)) {
+            $diskMedia = $this->getPimcoreMediaFromDisk((int)$row['oo_id']);
+            $heroImage = $diskMedia['presentation'];
+            $gallery = $diskMedia['gallery'];
+        }
+
+        if ($heroImage === '' && !empty($gallery[0])) {
+            $heroImage = $gallery[0];
+        }
+
         return new Service(
             id: (int)$row['oo_id'],
             type: $type,
             price: 0,
-            imageUrl: '',
+            imageUrl: $heroImage,
             translations: [
                 'title' => $row['nom'] ?? 'Sans titre',
                 'description' => trim($description),
@@ -476,7 +496,7 @@ class MySQLServiceRepository implements ServiceRepository {
                 'website2' => trim($row['web2'] ?? ''),
             ],
             amenities: [],
-            gallery: [],
+            gallery: $gallery,
             features: [],
             lat: (float)($row['geopositionnement__latitude'] ?? 0),
             lng: (float)($row['geopositionnement__longitude'] ?? 0),
@@ -493,6 +513,87 @@ class MySQLServiceRepository implements ServiceRepository {
             ]),
             videos: $videos,
         );
+    }
+
+    private function getPimcoreMediaById(int $pimcoreId): array {
+        $sql = "SELECT presentation, images, logo_url FROM canal_du_midi_image WHERE pimcore_id = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $pimcoreId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return ['presentation' => '', 'images' => '', 'logo_url' => ''];
+        }
+
+        return [
+            'presentation' => (string)($row['presentation'] ?? ''),
+            'images' => (string)($row['images'] ?? ''),
+            'logo_url' => (string)($row['logo_url'] ?? ''),
+        ];
+    }
+
+    private function resolvePimcorePrimaryImage(int $pimcoreId, array $media): string {
+        $presentation = $this->normalizeMediaUrl((string)($media['presentation'] ?? ''));
+        if ($presentation !== '') {
+            return $presentation;
+        }
+
+        $imagesCsv = (string)($media['images'] ?? '');
+        if ($imagesCsv !== '') {
+            $images = array_values(array_filter(array_map('trim', explode(',', $imagesCsv))));
+            if (!empty($images[0])) {
+                return $this->normalizeMediaUrl($images[0]);
+            }
+        }
+
+        $logo = $this->normalizeMediaUrl((string)($media['logo_url'] ?? ''));
+        if ($logo !== '') {
+            return $logo;
+        }
+
+        $diskMedia = $this->getPimcoreMediaFromDisk($pimcoreId);
+        return $diskMedia['presentation'] ?? '';
+    }
+
+    private function normalizeMediaUrl(string $url): string {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+
+        if (defined('BASE_URL')) {
+            return rtrim(BASE_URL, '/') . '/' . ltrim($url, '/');
+        }
+
+        return $url;
+    }
+
+    private function getPimcoreMediaFromDisk(int $pimcoreId): array {
+        $clientDir = dirname(__DIR__, 3) . '/public/clients_images/' . $pimcoreId;
+        if (!is_dir($clientDir)) {
+            return ['presentation' => '', 'gallery' => []];
+        }
+
+        $files = glob($clientDir . '/img*.*') ?: [];
+        if (empty($files)) {
+            return ['presentation' => '', 'gallery' => []];
+        }
+
+        natsort($files);
+        $gallery = [];
+        foreach ($files as $filePath) {
+            $baseName = basename($filePath);
+            $gallery[] = $this->normalizeMediaUrl('/public/clients_images/' . $pimcoreId . '/' . $baseName);
+        }
+
+        return [
+            'presentation' => $gallery[0] ?? '',
+            'gallery' => $gallery,
+        ];
     }
 
     private function detectPimcoreType(array $row): string {
@@ -568,11 +669,14 @@ class MySQLServiceRepository implements ServiceRepository {
             $desc = html_entity_decode($row['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $desc = strip_tags($desc);
 
+            $media = $this->getPimcoreMediaById((int)$row['oo_id']);
+            $heroImage = $this->resolvePimcorePrimaryImage((int)$row['oo_id'], $media);
+
             $results[] = new Service(
                 id: (int)$row['oo_id'],
                 type: $detected,
                 price: 0,
-                imageUrl: '',
+                imageUrl: $heroImage,
                 translations: [
                     'title' => $row['nom'] ?? 'Sans titre',
                     'description' => trim($desc),

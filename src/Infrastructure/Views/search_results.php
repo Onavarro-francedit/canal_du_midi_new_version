@@ -184,6 +184,8 @@ $activeFilters = array_filter([
                         $serviceAddress = htmlspecialchars($s->getFullAddress());
                         $serviceType = htmlspecialchars($s->type);
                         $serviceLabel = htmlspecialchars($s->label ?? '');
+                        $serviceImage = $s->imageUrl ?: '';
+                        $serviceImageEscaped = htmlspecialchars($serviceImage);
                         ?>
                         <article class="explore-card"
                             data-id="<?= $s->id ?>"
@@ -192,8 +194,12 @@ $activeFilters = array_filter([
                             onmouseenter="highlightMarker(<?= $s->id ?>)"
                             onmouseleave="resetMarker(<?= $s->id ?>)">
                             <a class="explore-card-link" href="<?= BASE_URL . $lang ?>/service/<?= $s->id ?>">
-                                <div class="card-image card-image--placeholder">
-                                    <div class="card-image-icon"><i class="bi bi-building"></i></div>
+                                <div class="card-image<?= $serviceImage ? '' : ' card-image--placeholder' ?>">
+                                    <?php if ($serviceImage): ?>
+                                        <img src="<?= $serviceImageEscaped ?>" alt="<?= $serviceTitle ?>" loading="lazy">
+                                    <?php else: ?>
+                                        <div class="card-image-icon"><i class="bi bi-building"></i></div>
+                                    <?php endif; ?>
                                     <span class="card-type-pill"><?= $serviceType ?></span>
                                     <?php if ($serviceLabel): ?>
                                         <span class="card-label-pill"><?= $serviceLabel ?></span>
@@ -210,7 +216,7 @@ $activeFilters = array_filter([
                                     <p class="card-tagline"><?= $serviceDesc ?>…</p>
                                 <?php endif; ?>
                             </div>
-                            <div class="card-footer-row">
+                            <div class="<?= (empty($s->contact['phone'])) ? 'card-footer-row--right-aligned' : 'card-footer-row' ?>">
                                 <?php if (!empty($s->contact['phone'])): ?>
                                     <span class="card-phone"><i class="bi bi-telephone"></i> <?= htmlspecialchars($s->contact['phone']) ?></span>
                                 <?php endif; ?>
@@ -299,6 +305,7 @@ $activeFilters = array_filter([
         'lat' => $s->lat,
         'lng' => $s->lng,
         'title' => $s->translations['title'],
+        'image' => $s->imageUrl,
         'address' => $s->getFullAddress(),
         'description' => mb_substr($s->translations['description'] ?? '', 0, 200),
         'type' => $s->type,
