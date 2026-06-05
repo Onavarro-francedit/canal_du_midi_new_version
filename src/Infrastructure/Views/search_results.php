@@ -2,11 +2,27 @@
 $resultsCount = count($results);
 $resetUrl = BASE_URL . $lang . '/search';
 $allCities = $cities ?? [];
-$activeFilters = array_filter([
-    $query !== '' ? $query : null,
-    $city !== '' ? $city : null,
-    $type !== '' ? ucfirst($type) : null,
-]);
+$selectedTypes = array_values(array_filter(array_map('trim', (array)($type ?? []))));
+$categoryOptionCount = count(array_filter(($categories ?? []), fn($cat) => trim((string)($cat['slug'] ?? '')) !== ''));
+$selectedTypeLabels = [];
+foreach ($selectedTypes as $st) {
+    foreach (($categories ?? []) as $cat) {
+        $slug = trim((string)($cat['slug'] ?? ''));
+        if ($slug !== '' && $slug === $st) {
+            $selectedTypeLabels[$st] = (string)($cat['name'] ?? ucfirst($slug));
+            break;
+        }
+    }
+}
+$selectedTypeDisplayText = count($selectedTypes) === 0
+    ? 'Tous les types'
+    : (count($selectedTypes) === 1
+        ? (reset($selectedTypeLabels) ?: $selectedTypes[0])
+        : count($selectedTypes) . ' type(s) sélectionné(s)');
+$activeFilters = array_filter(array_merge(
+    [$query !== '' ? $query : null, $city !== '' ? $city : null],
+    array_values($selectedTypeLabels)
+));
 ?>
 
 <main class="search-layout-page">
@@ -44,24 +60,91 @@ $activeFilters = array_filter([
 
                     <div class="filter-block">
                         <label for="search-city" class="filter-block-label">Localisation</label>
-                        <input id="search-city" type="text" name="city" value="<?= htmlspecialchars($city) ?>" placeholder="Saisir une ville..." list="cities-datalist">
-                        <datalist id="cities-datalist">
+                        <select id="search-city" name="city">
+                            <option value="">Toutes les villes</option>
                             <?php foreach ($allCities as $c): ?>
-                                <option value="<?= htmlspecialchars($c) ?>">
-                            <?php endforeach; ?>
-                        </datalist>
-                    </div>
-
-                    <div class="filter-block">
-                        <label for="search-type" class="filter-block-label">Service(s) souhaité(s)</label>
-                        <select id="search-type" name="type">
-                            <option value="">Tous les types</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= htmlspecialchars($cat['slug']) ?>" <?= $type === $cat['slug'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($cat['name']) ?> (<?= $cat['offers_count'] ?>)
+                                <option value="<?= htmlspecialchars($c) ?>" <?= $city === $c ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($c) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                    </div>
+
+                    <div class="filter-block filter-block--type-modern">
+                        <label for="search-type-trigger" class="filter-block-label">
+                            Service(s) souhaité(s)
+                            <span class="filter-block-count"><?= $categoryOptionCount ?></span>
+                        </label>
+                        <div id="search-type-hidden-container">
+                            <?php foreach ($selectedTypes as $st): ?>
+                                <input type="hidden" name="type[]" value="<?= htmlspecialchars($st) ?>">
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="modern-type-select" id="search-type-custom" data-selected="<?= htmlspecialchars(json_encode(array_values($selectedTypes))) ?>">
+                            <button
+                                type="button"
+                                class="modern-type-select-trigger"
+                                id="search-type-trigger"
+                                aria-haspopup="listbox"
+                                aria-expanded="false"
+                                aria-controls="search-type-dropdown"
+                            >
+                                <span class="modern-type-select-value" id="search-type-value"><?= htmlspecialchars($selectedTypeDisplayText) ?></span>
+                            </button>
+
+                            <div class="modern-type-select-dropdown" id="search-type-dropdown" hidden>
+                                <input
+                                    type="text"
+                                    class="modern-type-select-search"
+                                    id="search-type-filter"
+                                    placeholder="Rechercher une catégorie..."
+                                    autocomplete="off"
+                                >
+                                <div class="modern-type-options" id="search-type-options" role="listbox" aria-label="Service souhaité" aria-multiselectable="true">
+                                    <button
+                                        type="button"
+                                        class="modern-type-option<?= empty($selectedTypes) ? ' is-selected' : '' ?>"
+                                        data-value=""
+                                        data-label="Tous les types"
+                                        role="option"
+                                        aria-selected="<?= empty($selectedTypes) ? 'true' : 'false' ?>"
+                                    >
+                                        <span class="modern-type-option-check"><i class="bi bi-check2"></i></span>
+                                        <span class="modern-type-option-name">Tous les types</span>
+                                    </button>
+
+                                    <?php $hasCategoryOptions = false; ?>
+                                    <?php foreach (($categories ?? []) as $cat): ?>
+                                        <?php
+                                            $catSlug = trim((string)($cat['slug'] ?? ''));
+                                            if ($catSlug === '') {
+                                                continue;
+                                            }
+                                            $hasCategoryOptions = true;
+                                            $catName = (string)($cat['name'] ?? ucfirst($catSlug));
+                                            $catOffers = (int)($cat['offers_count'] ?? 0);
+                                            $isSelected = in_array($catSlug, $selectedTypes);
+                                        ?>
+                                        <button
+                                            type="button"
+                                            class="modern-type-option<?= $isSelected ? ' is-selected' : '' ?>"
+                                            data-value="<?= htmlspecialchars($catSlug) ?>"
+                                            data-label="<?= htmlspecialchars($catName) ?>"
+                                            role="option"
+                                            aria-selected="<?= $isSelected ? 'true' : 'false' ?>"
+                                        >
+                                            <span class="modern-type-option-check"><i class="bi bi-check2"></i></span>
+                                            <span class="modern-type-option-name"><?= htmlspecialchars($catName) ?></span>
+                                            <span class="modern-type-option-count"><?= $catOffers ?> offre<?= $catOffers > 1 ? 's' : '' ?></span>
+                                        </button>
+                                    <?php endforeach; ?>
+
+                                    <?php if (!$hasCategoryOptions): ?>
+                                        <div class="modern-type-empty">Aucune catégorie disponible</div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <br>
                     <div class="search-sidebar-actions">
@@ -91,7 +174,7 @@ $activeFilters = array_filter([
                             $offersCount = (int)($cat['offers_count'] ?? 0);
                         ?>
                         <a href="<?= BASE_URL . $lang ?>/search?type=<?= $cat['slug'] ?>" 
-                        class="category-item<?= $type === $cat['slug'] ? ' is-active' : '' ?>" 
+                        class="category-item<?= in_array($cat['slug'], $selectedTypes) ? ' is-active' : '' ?>" 
                         style="background-image: linear-gradient(180deg, rgba(11, 18, 32, 0.08), rgba(11, 18, 32, 0.62)), url('<?= htmlspecialchars($categoryImage) ?>');">
                             
                             <div class="cat-card-top">

@@ -14,150 +14,13 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function findById(int $id, string $lang): ?Service {
-        // Try Pimcore table first
-        $pimcore = $this->findByIdFromPimcore($id);
-        if ($pimcore) return $pimcore;
-
-        // Fallback to original services table
-        $sql = "SELECT s.*, c.slug as category_name, 
-                       t_title.field_value as title, 
-                       t_desc.field_value as description,
-                       t_tag.field_value as tag
-                FROM services s
-                JOIN categories c ON s.category_id = c.id
-                LEFT JOIN translations t_title ON s.id = t_title.rel_id 
-                     AND t_title.rel_type = 'service' AND t_title.lang_code = :lang AND t_title.field_name = 'title'
-                LEFT JOIN translations t_desc ON s.id = t_desc.rel_id 
-                     AND t_desc.rel_type = 'service' AND t_desc.lang_code = :lang AND t_desc.field_name = 'description'
-                LEFT JOIN translations t_tag ON s.id = t_tag.rel_id 
-                     AND t_tag.rel_type = 'service' AND t_tag.lang_code = :lang AND t_tag.field_name = 'tag'
-                WHERE s.id = :id";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id, 'lang' => $lang]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$row) return null;
-
-        // 2. Obtener los Amenities (Iconos)
-        $sql_amenities = "SELECT a.icon_name, a.slug 
-                          FROM amenities a
-                          JOIN service_amenities sa ON a.id = sa.amenity_id
-                          WHERE sa.service_id = :id";
-        $stmt_am = $this->db->prepare($sql_amenities);
-        $stmt_am->execute(['id' => $id]);
-        $amenities = $stmt_am->fetchAll(PDO::FETCH_ASSOC);
-
-        // 3. Obtener la Galería de fotos
-        $sql_gallery = "SELECT image_url FROM service_media WHERE service_id = :id ORDER BY is_main DESC";
-        $stmt_gal = $this->db->prepare($sql_gallery);
-        $stmt_gal->execute(['id' => $id]);
-        $gallery = $stmt_gal->fetchAll(PDO::FETCH_COLUMN);
-
-
-        // 4. Obtener valoraciones y reviews
-        $stmt_rev = $this->db->prepare("SELECT * FROM service_reviews WHERE service_id = :id AND is_approved = 1 ORDER BY created_at DESC");
-        $stmt_rev->execute(['id' => $id]);
-        $reviewsData = $stmt_rev->fetchAll(PDO::FETCH_ASSOC);
-        
-        $reviews = [];
-        $totalStars = 0;
-        foreach ($reviewsData as $r) {
-            $reviews[] = new \App\Domain\Models\Review($r['id'], $r['customer_name'], $r['rating'], $r['comment'], $r['created_at']);
-            $totalStars += $r['rating'];
-        }
-        
-        // 4. Crear y retornar el objeto Service hidratado
-        $service = new Service(
-            id: (int)$row['id'],
-            type: $row['category_name'],
-            price: (float)$row['price'],
-            imageUrl: $row['image_url'],
-            translations: [
-                'title' => $row['title'], 
-                'description' => $row['description'], 
-                'tag' => $row['tag']
-            ],
-            contact: [
-                'phone' => $row['phone'] ?? '',
-                'email' => $row['email'] ?? '',
-                'website' => $row['website'] ?? '',
-                'address' => ($row['address'] ?? '') . ' ' . ($row['city'] ?? '')
-            ],
-            amenities: $amenities,
-            gallery: $gallery,
-            features: [
-                'rooms_count' => $row['rooms_count'] ?? 0,
-                'pmr_rooms' => $row['pmr_rooms'] ?? 0,
-                'is_hybrid' => (bool)($row['is_hybrid'] ?? 0)
-            ],
-            lat: (float)($row['lat'] ?? 0),
-            lng: (float)($row['lng'] ?? 0)
-        );
-
-        $service->reviews = $reviews;
-        $service->reviewCount = count($reviews);
-        $service->avgRating = $service->reviewCount > 0 ? round($totalStars / $service->reviewCount, 1) : 0;
-
-        return $service;
+        return $this->findByIdFromPimcore($id);
     }
 
     // No olvides actualizar también el findAll si quieres mostrar iconos en la Home
     public function findAll(string $lang, bool $withDetails = false): array {
         if (empty($lang)) $lang = 'fr';
-        
-        $sql = "SELECT s.*, c.slug as category_name, 
-                   t_title.field_value as title, 
-                   t_tag.field_value as tag,
-                   t_desc.field_value as description,
-                   s.address, s.city, s.phone, s.email, s.website,
-                   s.rooms_count, s.pmr_rooms, s.is_hybrid, s.lat, s.lng
-            FROM services s
-            JOIN categories c ON s.category_id = c.id
-            LEFT JOIN translations t_title ON s.id = t_title.rel_id 
-                 AND t_title.rel_type = 'service' AND t_title.lang_code = :lang AND t_title.field_name = 'title'
-            LEFT JOIN translations t_tag ON s.id = t_tag.rel_id 
-                 AND t_tag.rel_type = 'service' AND t_tag.lang_code = :lang AND t_tag.field_name = 'tag'
-            LEFT JOIN translations t_desc ON s.id = t_desc.rel_id 
-                 AND t_desc.rel_type = 'service' AND t_desc.lang_code = :lang AND t_desc.field_name = 'description'
-            WHERE s.is_active = 1";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['lang' => $lang]);
-        
-        $results = [];
-        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-            $service = new \App\Domain\Models\Service(
-                id: (int)$row['id'],
-                type: $row['category_name'],
-                price: (float)$row['price'],
-                imageUrl: $row['image_url'],
-                translations: [
-                    'title' => $row['title'], 
-                    'description' => $row['description'], 
-                    'tag' => $row['tag']
-                ],
-                contact: [
-                    'phone' => $row['phone'] ?? '', 'email' => $row['email'] ?? '',
-                    'website' => $row['website'] ?? '', 'address' => ($row['address'] ?? '') . ' ' . ($row['city'] ?? '')
-                ],
-                features: [
-                    'rooms_count' => $row['rooms_count'] ?? 0,
-                    'pmr_rooms' => $row['pmr_rooms'] ?? 0,
-                    'is_hybrid' => (bool)($row['is_hybrid'] ?? 0)
-                ],
-                lat: (float)($row['lat'] ?? 0),
-                lng: (float)($row['lng'] ?? 0)
-            );
-
-            // Si pedimos los detalles, cargamos también amenities y galería
-            if ($withDetails) {
-                $service->amenities = $this->getAmenitiesForService($service->id);
-                // $service->gallery = $this->getGalleryForService($service->id); // Opcional: si quieres pasar toda la galería a la IA
-            }
-            $results[] = $service;
-        }
-        return $results;
+        return $this->searchPimcore('', '', []);
     }
 
     public function saveReview(array $data): bool {
@@ -215,111 +78,52 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function getServicesNearPoi(float $lat, float $lng, string $lang, float $radiusKm = 10): array {
-        $sql = "SELECT s.*, c.slug as category_name, t.field_value as title 
-                FROM services s
-                JOIN categories c ON s.category_id = c.id
-                JOIN translations t ON s.id = t.rel_id AND t.field_name = 'title' AND t.lang_code = :lang
-                WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(:lng)) + sin(radians(:lat)) * sin(radians(s.lat)))) < :radius
+        $sql = "SELECT oo_id, nom, geopositionnement__latitude, geopositionnement__longitude,
+                       hotel, chambre_hote, restaurant, hotellerie_plein_air, gites_ruraux,
+                       location_bateaux, promenade_bateau, croisiere_chambres, croisiere_luxe,
+                       location_velos, voyage_velo, bar_salon, musee, epicerie, alimentation,
+                       produits_regions, caviste, domaine, vente_de_vins, taxi, otsi, lieux_infos,
+                       hebergement, residence_tourisme, location_saisonniere, excursions, loisirs,
+                       parcs_loisirs, location_bateaux_semaine, location_bateaux_gites
+                FROM object_query_60
+                WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(geopositionnement__latitude)) * cos(radians(geopositionnement__longitude) - radians(:lng))
+                       + sin(radians(:lat)) * sin(radians(geopositionnement__latitude)))) < :radius
                 LIMIT 3";
-        
+
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['lat' => $lat, 'lng' => $lng, 'lang' => $lang, 'radius' => $radiusKm]);
-        
+        $stmt->execute(['lat' => $lat, 'lng' => $lng, 'radius' => $radiusKm]);
+
         $results = [];
         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-            $results[] = new \App\Domain\Models\Service($row['id'], $row['category_name'], (float)$row['price'], $row['image_url'], ['title' => $row['title']]);
-        }
-        return $results;
-    }
-
-    public function searchServices(string $query, string $lang): array {
-        $sql = "SELECT s.*, c.slug as category_name, t.field_value as title 
-                FROM services s
-                JOIN categories c ON s.category_id = c.id
-                JOIN translations t ON s.id = t.rel_id AND t.field_name = 'title' AND t.lang_code = :lang
-                WHERE (t.field_value LIKE :query OR c.slug LIKE :query)
-                AND s.is_active = 1";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['lang' => $lang, 'query' => "%$query%"]);
-        
-        $results = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-            $results[] = new \App\Domain\Models\Service($row['id'], $row['category_name'], (float)$row['price'], $row['image_url'], ['title' => $row['title']]);
-        }
-        return $results;
-    }
-
-    public function search(string $query, string $city, string $type, string $lang): array {
-        $sql = "SELECT s.*, c.slug as category_name, 
-                    t_title.field_value as title, 
-                    t_tag.field_value as tag
-                FROM services s
-                JOIN categories c ON s.category_id = c.id
-                LEFT JOIN translations t_title ON s.id = t_title.rel_id 
-                    AND t_title.rel_type = 'service' AND t_title.lang_code = :lang AND t_title.field_name = 'title'
-                LEFT JOIN translations t_tag ON s.id = t_tag.rel_id 
-                    AND t_tag.rel_type = 'service' AND t_tag.lang_code = :lang AND t_tag.field_name = 'tag'
-                LEFT JOIN translations t_desc ON s.id = t_desc.rel_id 
-                    AND t_desc.rel_type = 'service' AND t_desc.lang_code = :lang AND t_desc.field_name = 'description'
-                WHERE s.is_active = 1";
-
-        $params = ['lang' => $lang];
-
-        // Filtro por palabra clave (busca en título, tag o descripción)
-        if (!empty($query)) {
-            $sql .= " AND (t_title.field_value LIKE :q OR t_tag.field_value LIKE :q OR t_desc.field_value LIKE :q)";
-            $params['q'] = "%$query%";
-        }
-
-        // Filtro por ciudad
-        if (!empty($city)) {
-            $sql .= " AND s.city = :city";
-            $params['city'] = $city;
-        }
-
-        // Filtro por tipo de categoría
-        if (!empty($type)) {
-            $sql .= " AND c.slug = :type";
-            $params['type'] = $type;
-        }
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        
-        $results = [];
-        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $results[] = new \App\Domain\Models\Service(
-                $row['id'], $row['category_name'], (float)$row['price'], $row['image_url'],
-                ['title' => $row['title'], 'tag' => $row['tag'], 'description' => $row['description'] ?? ''],
-                [
-                    'address' => trim(($row['address'] ?? '') . ' ' . ($row['city'] ?? '')),
-                ],
+                (int)$row['oo_id'],
+                $this->detectPimcoreType($row),
+                0,
+                '',
+                ['title' => $row['nom'] ?? 'Sans titre'],
                 [],
                 [],
-                [
-                    'rooms_count' => $row['rooms_count'] ?? 0,
-                    'is_hybrid' => (bool)($row['is_hybrid'] ?? 0),
-                ],
-                (float)($row['lat'] ?? 0),
-                (float)($row['lng'] ?? 0)
+                [],
+                [],
+                (float)($row['geopositionnement__latitude'] ?? 0),
+                (float)($row['geopositionnement__longitude'] ?? 0)
             );
         }
         return $results;
     }
 
+    public function searchServices(string $query, string $lang): array {
+        return $this->searchPimcore($query, '', []);
+    }
+
+    public function search(string $query, string $city, string $type, string $lang): array {
+        $types = $type !== '' ? [$type] : [];
+        return $this->searchPimcore($query, $city, $types);
+    }
+
 
     public function getAllCategories(string $lang): array {
-        $sql = "SELECT c.*, t.field_value as name, COUNT(s.id) as offers_count
-                FROM categories c
-                LEFT JOIN translations t ON c.id = t.rel_id 
-                    AND t.rel_type = 'category' AND t.lang_code = :lang AND t.field_name = 'name'
-                LEFT JOIN services s ON s.category_id = c.id AND s.is_active = 1
-                GROUP BY c.id, t.field_value";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['lang' => $lang]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getPimcoreCategories();
     }
 
     private function getAmenitiesForService(int $serviceId): array {
@@ -356,18 +160,7 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function getCategoriesWithCount(string $lang): array {
-        // Añadimos c.image_url a la consulta
-        $sql = "SELECT c.id, c.slug, c.icon_class, c.image_url, t.field_value as name,
-                (SELECT COUNT(*) FROM services s WHERE s.category_id = c.id AND s.is_active = 1) as offers_count
-                FROM categories c
-                LEFT JOIN translations t ON c.id = t.rel_id 
-                    AND t.rel_type = 'category' 
-                    AND t.lang_code = :lang 
-                    AND t.field_name = 'name'";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['lang' => $lang]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getPimcoreCategories();
     }
 
     public function findByIdFromPimcore(int $id): ?Service {
@@ -616,7 +409,60 @@ class MySQLServiceRepository implements ServiceRepository {
         return 'Établissement';
     }
 
-    public function searchPimcore(string $query = '', string $city = '', string $type = ''): array {
+    private function getPimcoreTypeConditions(): array {
+        return [
+            'hebergement' => 'hebergement = 1',
+            'residence_tourisme' => 'residence_tourisme = 1',
+            'hotellerie_plein_air' => 'hotellerie_plein_air = 1',
+            'chambre_hote' => 'chambre_hote = 1',
+            'gites_ruraux' => 'gites_ruraux = 1',
+            'location_bateaux_gites' => 'location_bateaux_gites = 1',
+            'hotel' => 'hotel = 1',
+            'location_saisonniere' => 'location_saisonniere = 1',
+            'bar_salon' => 'bar_salon = 1',
+            'restaurant' => 'restaurant = 1',
+            'table_hote' => 'table_hote = 1',
+            'bateau_restaurant' => 'bateau_restaurant = 1',
+            'snack' => 'snack = 1',
+            'brasserie' => 'brasserie = 1',
+            'alimentation' => 'alimentation = 1',
+            'charcuterie_traiteur' => 'charcuterie_traiteur = 1',
+            'boulangerie' => 'boulangerie = 1',
+            'produits_regions' => 'produits_regions = 1',
+            'poissonnerie' => 'poissonnerie = 1',
+            'epicerie' => 'epicerie = 1',
+            'vente_de_vins' => 'vente_de_vins = 1',
+            'caviste' => 'caviste = 1',
+            'domaine' => 'domaine = 1',
+            'loisirs' => 'loisirs = 1',
+            'croisiere_chambres' => 'croisiere_chambres = 1',
+            'promenade_bateau' => 'promenade_bateau = 1',
+            'croisiere_luxe' => 'croisiere_luxe = 1',
+            'location_bateaux_semaine' => 'location_bateaux_semaine = 1',
+            'location_bateaux' => 'location_bateaux = 1',
+            'location_voiture' => 'location_voiture = 1',
+            'location_kayak' => 'location_kayak = 1',
+            'location_velos' => 'location_velos = 1',
+            'voyage_velo' => 'voyage_velo = 1',
+            'excursions' => 'excursions = 1',
+            'musee' => 'musee = 1',
+            'parcs_loisirs' => 'parcs_loisirs = 1',
+            'lieux_voir' => 'lieux_voir = 1',
+            'artisanat' => 'artisanat = 1',
+            'commerce' => 'commerce = 1',
+            'laverie' => 'laverie = 1',
+            'taxi' => 'taxi = 1',
+            'transport_bagages' => 'transport_bagages = 1',
+            'lieux_infos' => 'lieux_infos = 1',
+            'mairie' => 'mairie = 1',
+            'otsi' => 'otsi = 1',
+            'librairie' => 'librairie = 1',
+            'distr_billet' => 'distr_billet = 1',
+            'borne_wifi' => 'borne_wifi = 1',
+        ];
+    }
+
+    public function searchPimcore(string $query = '', string $city = '', array $types = []): array {
         $sql = "SELECT oo_id, nom, ville, adresse, cp, description, telephone, email, web, label, zone,
                        geopositionnement__latitude, geopositionnement__longitude,
                        hotel, chambre_hote, restaurant, hotellerie_plein_air, gites_ruraux,
@@ -639,23 +485,17 @@ class MySQLServiceRepository implements ServiceRepository {
             $sql .= " AND ville LIKE :city";
             $params['city'] = "%$city%";
         }
-        if (!empty($type)) {
-            $typeMap = [
-                'hotel' => 'hotel = 1',
-                'chambre' => 'chambre_hote = 1',
-                'restaurant' => 'restaurant = 1',
-                'camping' => 'hotellerie_plein_air = 1',
-                'gite' => 'gites_ruraux = 1',
-                'bateau' => '(location_bateaux = 1 OR promenade_bateau = 1 OR croisiere_chambres = 1)',
-                'velo' => '(location_velos = 1 OR voyage_velo = 1)',
-                'loisirs' => '(loisirs = 1 OR excursions = 1 OR parcs_loisirs = 1)',
-                'commerce' => '(alimentation = 1 OR epicerie = 1 OR produits_regions = 1)',
-                'vins' => '(caviste = 1 OR domaine = 1 OR vente_de_vins = 1)',
-                'info' => '(otsi = 1 OR lieux_infos = 1)',
-                'hebergement' => '(hebergement = 1 OR residence_tourisme = 1 OR location_saisonniere = 1)',
-            ];
-            if (isset($typeMap[$type])) {
-                $sql .= " AND " . $typeMap[$type];
+        if (!empty($types)) {
+            $typeMap = $this->getPimcoreTypeConditions();
+            $conditions = [];
+            foreach ($types as $t) {
+                $t = trim((string)$t);
+                if ($t !== '' && isset($typeMap[$t])) {
+                    $conditions[] = '(' . $typeMap[$t] . ')';
+                }
+            }
+            if (!empty($conditions)) {
+                $sql .= ' AND (' . implode(' OR ', $conditions) . ')';
             }
         }
 
@@ -700,38 +540,46 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function getPimcoreCategories(): array {
-        $labelMap = [
-            'hotel' => 'Hôtel',
-            'chambre' => 'Chambre d\'hôtes',
-            'restaurant' => 'Restaurant',
-            'camping' => 'Camping',
-            'gite' => 'Gîte',
-            'bateau' => 'Bateaux & Croisières',
-            'velo' => 'Vélo',
-            'loisirs' => 'Loisirs',
-            'commerce' => 'Commerce & Alimentation',
-            'vins' => 'Vins & Domaines',
-            'hebergement' => 'Hébergement',
-            'info' => 'Informations',
-        ];
+        // 1. Load service definitions from service_catalog
+        $catalogStmt = $this->db->query(
+            "SELECT sql_service_name, service_title, service_icon, service_img
+             FROM service_catalog
+             WHERE is_active = 1
+             ORDER BY sort_order ASC"
+        );
+        $catalog = $catalogStmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT c.slug, c.icon_class, c.image_url, COUNT(s.id) AS offers_count
-                FROM categories c
-                LEFT JOIN services s ON s.category_id = c.id AND s.is_active = 1
-                GROUP BY c.id, c.slug, c.icon_class, c.image_url
-                ORDER BY c.id ASC";
+        if (empty($catalog)) {
+            return [];
+        }
 
-        $stmt = $this->db->query($sql);
+        // 2. Build UNION ALL counts — one row per service using the column name directly
+        $countParts = [];
+        foreach ($catalog as $index => $entry) {
+            $col     = preg_replace('/[^a-z0-9_]/', '', (string)$entry['sql_service_name']); // safe identifier
+            $safeSlug = str_replace("'", "''", (string)$entry['sql_service_name']);
+            $countParts[] = "SELECT {$index} AS sort_order, '{$safeSlug}' AS slug,"
+                . " SUM(CASE WHEN `{$col}` = 1 THEN 1 ELSE 0 END) AS offers_count"
+                . " FROM object_query_60";
+        }
+        $countsSql = implode(" UNION ALL ", $countParts);
+
+        $countsStmt = $this->db->query("SELECT slug, offers_count FROM ({$countsSql}) cnt ORDER BY sort_order ASC");
+        $counts = [];
+        while ($row = $countsStmt->fetch(PDO::FETCH_ASSOC)) {
+            $counts[(string)$row['slug']] = (int)$row['offers_count'];
+        }
+
+        // 3. Merge catalog metadata with counts
         $results = [];
-
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $slug = (string)($row['slug'] ?? '');
+        foreach ($catalog as $entry) {
+            $slug = (string)$entry['sql_service_name'];
             $results[] = [
-                'slug' => $slug,
-                'name' => $labelMap[$slug] ?? ucfirst($slug),
-                'icon_class' => (string)($row['icon_class'] ?? 'bi-bookmark'),
-                'offers_count' => (int)($row['offers_count'] ?? 0),
-                'image_url' => (string)($row['image_url'] ?? ''),
+                'slug'         => $slug,
+                'name'         => (string)($entry['service_title'] ?? ucfirst($slug)),
+                'icon_class'   => (string)($entry['service_icon'] ?? 'bi-bookmark'),
+                'offers_count' => $counts[$slug] ?? 0,
+                'image_url'    => (string)($entry['service_img'] ?? ''),
             ];
         }
 

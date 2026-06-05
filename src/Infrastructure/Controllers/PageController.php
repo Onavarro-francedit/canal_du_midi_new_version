@@ -125,10 +125,12 @@ class PageController {
         }elseif ($page === 'search') {
             $query = $_GET['q'] ?? '';
             $city = $_GET['city'] ?? '';
-            $type = $_GET['type'] ?? '';
+            $typeRaw = $_GET['type'] ?? [];
+            $types = array_values(array_filter(array_map('trim', (array)$typeRaw)));
+            $type = $types;
             $page = 'search';
 
-            $results = $repository->searchPimcore($query, $city, $type);
+            $results = $repository->searchPimcore($query, $city, $types);
             $categories = $repository->getPimcoreCategories();
             $cities = $repository->getPimcoreCities();
 
