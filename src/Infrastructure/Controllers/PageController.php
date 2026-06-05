@@ -331,7 +331,6 @@ class PageController {
             'loadedCount' => count($reviewsData),
             'hasMore' => ($offset + count($reviewsData)) < $totalReviews,
             'nextPage' => $page + 1,
-            'total' => $totalReviews,
         ]);
     }
 

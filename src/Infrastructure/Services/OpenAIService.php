@@ -14,6 +14,8 @@ class OpenAIService implements AIServiceInterface {
     }
 
     public function analyzeRequest(string $prompt, array $availableServices): array {
+        $fallbackService = new SmartAIService();
+
         // 1. Preparamos el contexto para la IA
         // Le damos a ChatGPT todos los servicios disponibles para que "conozca" tu catálogo.
         $serviceData = array_map(fn($s) => [
@@ -44,46 +46,52 @@ class OpenAIService implements AIServiceInterface {
         ];
 
         // 3. Llamada a la API de OpenAI
+        if (empty($this->apiKey)) {
+            return $fallbackService->analyzeRequest($prompt, $availableServices);
+        }
+
         $ch = curl_init($this->apiUrl);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->apiKey,
         ]);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
             'model' => $this->model,
             'messages' => $messages,
             'temperature' => 0.7, // Creatividad de la IA
-            'max_tokens' => 200, // Limitar la longitud de la respuesta
-            'response_format' => ["type" => "json_object"] // Le pedimos un JSON
+            'max_tokens' => 200 // Limitar la longitud de la respuesta
         ]));
 
         $response = curl_exec($ch);
+        $curlError = curl_error($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         if ($httpCode !== 200 || !$response) {
-            error_log("OpenAI API Error: " . $response);
-            return [
-                'id' => null, 
-                'title' => 'Erreur AI', 
-                'type' => 'Problème de connexion', 
-                'price' => '', 
-                'text' => "L'assistant n'a pas pu analyser votre demande. Vérifiez votre clé API ou votre connexion."
-            ];
+            error_log('OpenAI API Error: HTTP ' . $httpCode . ' | ' . ($curlError ?: $response));
+            return $fallbackService->analyzeRequest($prompt, $availableServices);
         }
 
         $decodedResponse = json_decode($response, true);
-        $aiContent = json_decode($decodedResponse['choices'][0]['message']['content'], true);
+        $rawContent = $decodedResponse['choices'][0]['message']['content'] ?? '';
+        $aiContent = json_decode($rawContent, true);
+
+        if (!is_array($decodedResponse) || !is_string($rawContent) || !is_array($aiContent)) {
+            error_log('OpenAI API Error: malformed response payload');
+            return $fallbackService->analyzeRequest($prompt, $availableServices);
+        }
 
         // 4. Mapear la respuesta de la IA a nuestro formato
         return [
-            'id' => $aiContent['recommended_id'],
-            'title' => $aiContent['title'],
-            'type' => $aiContent['type'],
-            'price' => $aiContent['price'],
-            'text' => $aiContent['explanation']
+            'id' => $aiContent['recommended_id'] ?? null,
+            'title' => $aiContent['title'] ?? 'Erreur AI',
+            'type' => $aiContent['type'] ?? 'Problème de connexion',
+            'price' => $aiContent['price'] ?? '',
+            'text' => $aiContent['explanation'] ?? "L'assistant n'a pas pu analyser votre demande.",
         ];
     }
 }

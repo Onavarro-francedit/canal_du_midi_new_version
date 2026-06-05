@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiSubmitBtn = document.getElementById('ai-submit-button');
     const aiPrompt = document.getElementById('ai-prompt');
     const responseEmpty = document.getElementById('ai-response-empty');
+    const responseLoading = document.getElementById('ai-response-loading');
     const responseBody = document.getElementById('ai-response-body');
     const strategyBtns = document.querySelectorAll('.ai-prompt-button');
 
@@ -26,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         aiSubmitBtn.disabled = true;
         aiSubmitBtn.innerHTML = '<i class="bi bi-cpu"></i> Analyse en cours...';
+        responseEmpty?.classList.add('is-hidden');
+        responseBody?.classList.add('is-hidden');
+        responseLoading?.classList.remove('is-hidden');
 
         try {
             const response = await fetch(`${BASE_URL}${lang}/ai-analyze`, {
@@ -39,12 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // 3. Mostrar respuesta elegante
             responseEmpty.classList.add('is-hidden');
             responseBody.classList.remove('is-hidden');
+            responseLoading?.classList.add('is-hidden');
 
             document.getElementById('ai-response-label').innerText = data.type;
             document.getElementById('ai-response-title').innerText = data.title;
             document.getElementById('ai-response-text').innerText = data.text;
             document.getElementById('ai-response-meta').innerText = data.price;
-            document.getElementById('ai-open-link').href = `${BASE_URL}${lang}/service/${data.id}`;
+            const openLink = document.getElementById('ai-open-link');
+            if (openLink) {
+                openLink.href = data.id ? `${BASE_URL}${lang}/service/${data.id}` : '#';
+            }
 
             // 4. Efecto Wow: Scroll e iluminación del resultado en la lista
             const targetCard = document.querySelector(`.explore-card[data-id="${data.id}"]`);
@@ -60,6 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("AI Error:", error);
+            responseLoading?.classList.add('is-hidden');
+            responseEmpty?.classList.remove('is-hidden');
+            responseBody?.classList.add('is-hidden');
         } finally {
             aiSubmitBtn.disabled = false;
             aiSubmitBtn.innerText = "Analyser ma demande";

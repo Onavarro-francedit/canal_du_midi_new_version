@@ -236,17 +236,17 @@ $activeFilters = array_filter(array_merge(
                             </div>
                         </div>
 
+                        <div class="ai-response-loading is-hidden" id="ai-response-loading" aria-live="polite" aria-busy="true">
+                            <div class="ai-response-loading-spinner" aria-hidden="true"></div>
+                            <strong>Recherche en cours...</strong>
+                            <p>L'assistant analyse votre demande et sélectionne la meilleure réponse.</p>
+                        </div>
+
                         <div class="ai-response-body is-hidden" id="ai-response-body">
                             <span class="ai-response-label" id="ai-response-label"></span>
                             <h4 id="ai-response-title"></h4>
                             <p id="ai-response-text"></p>
                             <div class="ai-response-meta" id="ai-response-meta"></div>
-                            <div class="ai-response-actions">
-                                <button type="button" class="button button-small ai-highlight-button" id="ai-highlight-button">
-                                    <i class="bi bi-cursor-fill"></i>
-                                    Mettre en avant dans la liste
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -291,8 +291,8 @@ $activeFilters = array_filter(array_merge(
                             data-id="<?= $s->id ?>"
                             data-lat="<?= $s->lat ?>"
                             data-lng="<?= $s->lng ?>"
-                            onmouseenter="highlightMarker(<?= $s->id ?>)"
-                            onmouseleave="resetMarker(<?= $s->id ?>)">
+                            onmouseenter="window.highlightMarker && window.highlightMarker(<?= $s->id ?>)"
+                            onmouseleave="window.resetMarker && window.resetMarker(<?= $s->id ?>)">
                             <a class="explore-card-link" href="<?= BASE_URL . $lang ?>/service/<?= $s->id ?>">
                                 <div class="card-image<?= $serviceImage ? '' : ' card-image--placeholder' ?>">
                                     <?php if ($serviceImage): ?>

@@ -62,25 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     };
 
-    const inferStrategyFromPrompt = (prompt) => {
-        const normalized = String(prompt || '').trim().toLowerCase();
-        if (!normalized) return null;
-
-        if (/(restaurant|restauration|manger|repas|déjeuner|diner|dîner|food)/.test(normalized)) {
-            return 'hybrid';
-        }
-
-        if (/(spacieux|grande|grand|capacit|chambre|chambres|famille|groupe)/.test(normalized)) {
-            return 'spacious';
-        }
-
-        if (/(prix|budget|abordable|moins cher|qualit|qualité|rapport)/.test(normalized)) {
-            return 'best-value';
-        }
-
-        return 'best-value';
-    };
-
     const setFocusedCard = (serviceId) => {
         document.querySelectorAll('.explore-card').forEach((card) => {
             card.classList.toggle('is-ai-focus', card.dataset.id === String(serviceId));
@@ -148,23 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
             promptInput.setSelectionRange(promptInput.value.length, promptInput.value.length);
         });
     });
-
-    if (submitButton) {
-        submitButton.addEventListener('click', () => {
-            const strategyKey = inferStrategyFromPrompt(promptInput ? promptInput.value : '');
-            if (!strategyKey) return;
-            renderSuggestion(strategyKey);
-        });
-    }
-
-    if (promptInput) {
-        promptInput.addEventListener('keydown', (event) => {
-            if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                event.preventDefault();
-                submitButton?.click();
-            }
-        });
-    }
 
     if (highlightButton) {
         highlightButton.addEventListener('click', () => {
