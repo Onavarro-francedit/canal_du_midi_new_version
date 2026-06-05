@@ -10,7 +10,6 @@ class PageController {
         // 1. Configuración de datos comunes
         $repository = new MySQLServiceRepository();
 
-
         // 1. VALORES POR DEFECTO (Para la Home o páginas genéricas)
         $seo = [
             'title' => "Canal du Midi | Voyages et Escapades Premium",

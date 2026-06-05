@@ -3,5 +3,7 @@ src/config/config.php
 src/config/Database.php
 src/config/*.php
 public/clients_images
+
+
 # macOS
 .DS_Store

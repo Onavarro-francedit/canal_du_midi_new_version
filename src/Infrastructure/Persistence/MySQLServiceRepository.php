@@ -700,33 +700,41 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     public function getPimcoreCategories(): array {
-        $cats = [
-            ['slug' => 'hotel', 'name' => 'Hôtel', 'icon_class' => 'bi-building', 'sql' => 'hotel = 1'],
-            ['slug' => 'chambre', 'name' => 'Chambre d\'hôtes', 'icon_class' => 'bi-door-open', 'sql' => 'chambre_hote = 1'],
-            ['slug' => 'restaurant', 'name' => 'Restaurant', 'icon_class' => 'bi-egg-fried', 'sql' => 'restaurant = 1'],
-            ['slug' => 'camping', 'name' => 'Camping', 'icon_class' => 'bi-tree', 'sql' => 'hotellerie_plein_air = 1'],
-            ['slug' => 'gite', 'name' => 'Gîte', 'icon_class' => 'bi-house-heart', 'sql' => 'gites_ruraux = 1'],
-            ['slug' => 'bateau', 'name' => 'Bateaux & Croisières', 'icon_class' => 'bi-water', 'sql' => '(location_bateaux = 1 OR promenade_bateau = 1 OR croisiere_chambres = 1 OR croisiere_luxe = 1)'],
-            ['slug' => 'velo', 'name' => 'Vélo', 'icon_class' => 'bi-bicycle', 'sql' => '(location_velos = 1 OR voyage_velo = 1)'],
-            ['slug' => 'loisirs', 'name' => 'Loisirs', 'icon_class' => 'bi-controller', 'sql' => '(loisirs = 1 OR excursions = 1 OR parcs_loisirs = 1 OR musee = 1)'],
-            ['slug' => 'commerce', 'name' => 'Commerce & Alimentation', 'icon_class' => 'bi-basket3', 'sql' => '(alimentation = 1 OR epicerie = 1 OR produits_regions = 1 OR boulangerie = 1)'],
-            ['slug' => 'vins', 'name' => 'Vins & Domaines', 'icon_class' => 'bi-droplet', 'sql' => '(caviste = 1 OR domaine = 1 OR vente_de_vins = 1)'],
-            ['slug' => 'hebergement', 'name' => 'Hébergement', 'icon_class' => 'bi-house-door', 'sql' => '(hebergement = 1 OR residence_tourisme = 1 OR location_saisonniere = 1)'],
-            ['slug' => 'info', 'name' => 'Informations', 'icon_class' => 'bi-info-circle', 'sql' => '(otsi = 1 OR lieux_infos = 1)'],
+        $labelMap = [
+            'hotel' => 'Hôtel',
+            'chambre' => 'Chambre d\'hôtes',
+            'restaurant' => 'Restaurant',
+            'camping' => 'Camping',
+            'gite' => 'Gîte',
+            'bateau' => 'Bateaux & Croisières',
+            'velo' => 'Vélo',
+            'loisirs' => 'Loisirs',
+            'commerce' => 'Commerce & Alimentation',
+            'vins' => 'Vins & Domaines',
+            'hebergement' => 'Hébergement',
+            'info' => 'Informations',
         ];
 
+        $sql = "SELECT c.slug, c.icon_class, c.image_url, COUNT(s.id) AS offers_count
+                FROM categories c
+                LEFT JOIN services s ON s.category_id = c.id AND s.is_active = 1
+                GROUP BY c.id, c.slug, c.icon_class, c.image_url
+                ORDER BY c.id ASC";
+
+        $stmt = $this->db->query($sql);
         $results = [];
-        foreach ($cats as $cat) {
-            $stmt = $this->db->query("SELECT COUNT(*) FROM object_query_60 WHERE " . $cat['sql']);
-            $count = (int)$stmt->fetchColumn();
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $slug = (string)($row['slug'] ?? '');
             $results[] = [
-                'slug' => $cat['slug'],
-                'name' => $cat['name'],
-                'icon_class' => $cat['icon_class'],
-                'offers_count' => $count,
-                'image_url' => '',
+                'slug' => $slug,
+                'name' => $labelMap[$slug] ?? ucfirst($slug),
+                'icon_class' => (string)($row['icon_class'] ?? 'bi-bookmark'),
+                'offers_count' => (int)($row['offers_count'] ?? 0),
+                'image_url' => (string)($row['image_url'] ?? ''),
             ];
         }
+
         return $results;
     }
 

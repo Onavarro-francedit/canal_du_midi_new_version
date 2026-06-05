@@ -21,7 +21,24 @@ $activeFilters = array_filter([
             <div id="filters-content" class="search-sidebar-content is-active">
                 <form action="<?= BASE_URL . $lang ?>/search" method="GET" class="search-sidebar-form">
                     <div class="filter-block">
-                        <label for="search-keywords" class="filter-block-label">Recherche par mot clé</label>
+                        <label for="search-keywords" class="filter-block-label">
+                            Recherche par mot clé
+                            <span class="filter-help" id="keywords-help">
+                                <button
+                                    type="button"
+                                    class="filter-help-badge"
+                                    id="keywords-help-badge"
+                                    aria-label="Voir des exemples de mots clé"
+                                    aria-expanded="false"
+                                    aria-controls="keywords-help-tooltip"
+                                >
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                                <span class="filter-help-tooltip" id="keywords-help-tooltip" role="tooltip">
+                                    Exemples: hôtel romantique, croisière en péniche, location de vélo, restaurant au bord du canal.
+                                </span>
+                            </span>
+                        </label>
                         <input id="search-keywords" type="text" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Que cherchez-vous ?">
                     </div>
 

@@ -118,5 +118,6 @@
                 <a class="button button-small button-ghost" href="#newsletter">S'inscrire</a>
             </div>
         </header>
+    <button type="button" class="nav-backdrop" aria-label="Fermer le menu" tabindex="-1"></button>
     <div class="page-shell">
         

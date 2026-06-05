@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!mapElement || typeof L === 'undefined') return;
 
+    const compactMedia = window.matchMedia('(max-width: 1180px)');
+
     const validResults = Array.isArray(searchResults)
         ? searchResults.filter((item) => Number(item.lat) !== 0 && Number(item.lng) !== 0)
         : [];
@@ -76,15 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const setMobileView = (view) => {
         if (!pageShell) return;
 
-        pageShell.dataset.mobileView = view;
+        const currentView = pageShell.dataset.mobileView || 'list';
+        const keepMapVisible = compactMedia.matches && view === 'filters' && currentView === 'map';
+
+        pageShell.dataset.mobileView = keepMapVisible ? 'map' : view;
+        pageShell.dataset.filtersOpen = view === 'filters' ? 'true' : 'false';
+
+        const activeTarget = pageShell.dataset.filtersOpen === 'true' ? 'filters' : pageShell.dataset.mobileView;
         mobileTriggers.forEach((button) => {
-            const isActive = button.dataset.mobileTarget === view;
+            const isActive = button.dataset.mobileTarget === activeTarget;
             button.classList.toggle('is-active', isActive);
         });
 
-        document.body.style.overflow = view === 'filters' ? 'hidden' : '';
+        document.body.style.overflow = pageShell.dataset.filtersOpen === 'true' ? 'hidden' : '';
 
-        if (view === 'map') {
+        if (pageShell.dataset.mobileView === 'map') {
             window.setTimeout(() => {
                 map.invalidateSize();
             }, 180);
@@ -99,15 +107,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (backdrop) {
-        backdrop.addEventListener('click', () => setMobileView('list'));
+        backdrop.addEventListener('click', () => {
+            if (!pageShell) return;
+
+            if (pageShell.dataset.filtersOpen === 'true') {
+                pageShell.dataset.filtersOpen = 'false';
+                setMobileView(pageShell.dataset.mobileView || 'list');
+                return;
+            }
+
+            setMobileView('list');
+        });
     }
 
-    const desktopMedia = window.matchMedia('(min-width: 901px)');
+    const desktopMedia = window.matchMedia('(min-width: 1181px)');
     const syncLayoutMode = (event) => {
         if (event.matches) {
             document.body.style.overflow = '';
             if (pageShell) {
                 pageShell.dataset.mobileView = 'list';
+                pageShell.dataset.filtersOpen = 'false';
             }
             mobileTriggers.forEach((button) => {
                 button.classList.toggle('is-active', button.dataset.mobileTarget === 'list');
