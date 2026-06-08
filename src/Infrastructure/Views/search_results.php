@@ -1,12 +1,19 @@
 <?php
+$results = $results ?? [];
+$categories = $categories ?? [];
+$cities = $cities ?? [];
+$lang = $lang ?? 'fr';
+$query = (string)($query ?? '');
+$city = (string)($city ?? '');
+
 $resultsCount = count($results);
 $resetUrl = BASE_URL . $lang . '/search';
-$allCities = $cities ?? [];
+$allCities = $cities;
 $selectedTypes = array_values(array_filter(array_map('trim', (array)($type ?? []))));
-$categoryOptionCount = count(array_filter(($categories ?? []), fn($cat) => trim((string)($cat['slug'] ?? '')) !== ''));
+$categoryOptionCount = count(array_filter($categories, fn($cat) => trim((string)($cat['slug'] ?? '')) !== ''));
 $selectedTypeLabels = [];
 foreach ($selectedTypes as $st) {
-    foreach (($categories ?? []) as $cat) {
+    foreach ($categories as $cat) {
         $slug = trim((string)($cat['slug'] ?? ''));
         if ($slug !== '' && $slug === $st) {
             $selectedTypeLabels[$st] = (string)($cat['name'] ?? ucfirst($slug));
@@ -35,7 +42,7 @@ $activeFilters = array_filter(array_merge(
             </div>
 
             <div id="filters-content" class="search-sidebar-content is-active">
-                <form action="<?= BASE_URL . $lang ?>/search" method="GET" class="search-sidebar-form">
+                <form action="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" method="GET" class="search-sidebar-form">
                     <div class="filter-block">
                         <label for="search-keywords" class="filter-block-label">
                             Recherche par mot clé
@@ -51,25 +58,14 @@ $activeFilters = array_filter(array_merge(
                                     <i class="bi bi-info-circle"></i>
                                 </button>
                                 <span class="filter-help-tooltip" id="keywords-help-tooltip" role="tooltip">
-                                    Exemples: hôtel romantique, croisière en péniche, location de vélo, restaurant au bord du canal.
+                                    Vous pouvez rechercher par nom d'établissement, type de service, ville, ou même des équipements spécifiques (ex : "hôtel avec piscine à Toulouse"). Essayez différents mots-clés pour affiner vos résultats !
                                 </span>
                             </span>
                         </label>
                         <input id="search-keywords" type="text" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Que cherchez-vous ?">
                     </div>
 
-                    <div class="filter-block">
-                        <label for="search-city" class="filter-block-label">Localisation</label>
-                        <select id="search-city" name="city">
-                            <option value="">Toutes les villes</option>
-                            <?php foreach ($allCities as $c): ?>
-                                <option value="<?= htmlspecialchars($c) ?>" <?= $city === $c ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($c) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
+                    
                     <div class="filter-block filter-block--type-modern">
                         <label for="search-type-trigger" class="filter-block-label">
                             Service(s) souhaité(s)
@@ -153,7 +149,7 @@ $activeFilters = array_filter(array_merge(
                             Rechercher
                         </button>
                         <br>
-                        <a href="<?= $resetUrl ?>" class="search-reset-link">
+                        <a href="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" class="search-reset-link">
                             <i class="bi bi-arrow-counterclockwise"></i>
                             Réinitialiser les filtres
                         </a>
@@ -166,20 +162,22 @@ $activeFilters = array_filter(array_merge(
                     <?php foreach ($categories as $cat): ?>
                         <?php
                             // Usamos la imagen de la base de datos
-                            $categoryImage = !empty($cat['image_url']) 
-                                ? $cat['image_url'] 
+                            $categoryImage = !empty($cat['image_url'])
+                                ? $cat['image_url']
                                 : 'https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=800&q=80';
                             
                             $categoryName = htmlspecialchars($cat['name'] ?? ucfirst($cat['slug']));
                             $offersCount = (int)($cat['offers_count'] ?? 0);
+                            $categorySlug = rawurlencode((string)($cat['slug'] ?? ''));
+                            $categoryIcon = preg_replace('/[^a-zA-Z0-9\- ]/', '', (string)($cat['icon_class'] ?? 'bi-grid'));
                         ?>
-                        <a href="<?= BASE_URL . $lang ?>/search?type=<?= $cat['slug'] ?>" 
-                        class="category-item<?= in_array($cat['slug'], $selectedTypes) ? ' is-active' : '' ?>" 
-                        style="background-image: linear-gradient(180deg, rgba(11, 18, 32, 0.08), rgba(11, 18, 32, 0.62)), url('<?= htmlspecialchars($categoryImage) ?>');">
+                        <a href="<?= htmlspecialchars(BASE_URL . $lang . '/search?type=' . $categorySlug, ENT_QUOTES, 'UTF-8') ?>"
+                        class="category-item<?= in_array((string)($cat['slug'] ?? ''), $selectedTypes, true) ? ' is-active' : '' ?>"
+                        style="background-image: linear-gradient(180deg, rgba(11, 18, 32, 0.08), rgba(11, 18, 32, 0.62)), url('<?= htmlspecialchars($categoryImage, ENT_QUOTES, 'UTF-8') ?>');">
                             
                             <div class="cat-card-top">
                                 <div class="cat-icon-box">
-                                    <i class="bi <?= $cat['icon_class'] ?>"></i>
+                                    <i class="bi <?= htmlspecialchars($categoryIcon, ENT_QUOTES, 'UTF-8') ?>"></i>
                                 </div>
                             </div>
                             <div class="cat-card-bottom">
@@ -263,7 +261,7 @@ $activeFilters = array_filter(array_merge(
                         <?php foreach ($activeFilters as $filter): ?>
                             <span class="active-filter-chip"><i class="bi bi-check2"></i> <?= htmlspecialchars($filter) ?></span>
                         <?php endforeach; ?>
-                        <a href="<?= $resetUrl ?>" class="clear-filters-link"><i class="bi bi-x-lg"></i> Effacer</a>
+                        <a href="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" class="clear-filters-link"><i class="bi bi-x-lg"></i> Effacer</a>
                     </div>
                 <?php endif; ?>
             </header>
@@ -273,37 +271,35 @@ $activeFilters = array_filter(array_merge(
                     <div class="no-results-icon"><i class="bi bi-compass"></i></div>
                     <h2>Aucun résultat trouvé</h2>
                     <p>Essayez un autre mot-clé, élargissez la ville recherchée ou retirez un filtre pour découvrir davantage d'adresses.</p>
-                    <a href="<?= $resetUrl ?>" class="button button-small">Réinitialiser</a>
+                    <a href="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" class="button button-small">Réinitialiser</a>
                 </div>
             <?php else: ?>
                 <div class="explore-list">
                     <?php foreach ($results as $s): ?>
+                        <script>
+                            console.log('result', <?= json_encode($s) ?>);
+                        </script>
                         <?php
                         $serviceTitle = htmlspecialchars($s->translations['title'] ?? 'Adresse Canal du Midi');
                         $serviceDesc = mb_substr(htmlspecialchars($s->translations['description'] ?? ''), 0, 120);
                         $serviceAddress = htmlspecialchars($s->getFullAddress());
-                        $serviceType = htmlspecialchars($s->type);
-                        $serviceLabel = htmlspecialchars($s->label ?? '');
                         $serviceImage = $s->imageUrl ?: '';
                         $serviceImageEscaped = htmlspecialchars($serviceImage);
                         ?>
                         <article class="explore-card"
-                            data-id="<?= $s->id ?>"
-                            data-lat="<?= $s->lat ?>"
-                            data-lng="<?= $s->lng ?>"
+                            data-id="<?= (int)$s->id ?>"
+                            data-lat="<?= htmlspecialchars((string)$s->lat, ENT_QUOTES, 'UTF-8') ?>"
+                            data-lng="<?= htmlspecialchars((string)$s->lng, ENT_QUOTES, 'UTF-8') ?>"
                             onmouseenter="window.highlightMarker && window.highlightMarker(<?= $s->id ?>)"
                             onmouseleave="window.resetMarker && window.resetMarker(<?= $s->id ?>)">
-                            <a class="explore-card-link" href="<?= BASE_URL . $lang ?>/service/<?= $s->id ?>">
+                            <a class="explore-card-link" href="<?= htmlspecialchars(BASE_URL . 'fiche/' . rawurlencode((string)$s->slug), ENT_QUOTES, 'UTF-8') ?>">
                                 <div class="card-image<?= $serviceImage ? '' : ' card-image--placeholder' ?>">
                                     <?php if ($serviceImage): ?>
                                         <img src="<?= $serviceImageEscaped ?>" alt="<?= $serviceTitle ?>" loading="lazy">
                                     <?php else: ?>
                                         <div class="card-image-icon"><i class="bi bi-building"></i></div>
                                     <?php endif; ?>
-                                    <span class="card-type-pill"><?= $serviceType ?></span>
-                                    <?php if ($serviceLabel): ?>
-                                        <span class="card-label-pill"><?= $serviceLabel ?></span>
-                                    <?php endif; ?>
+                                   
                                 </div>
                             </a>
                             <div class="card-body">
@@ -320,7 +316,7 @@ $activeFilters = array_filter(array_merge(
                                 <?php if (!empty($s->contact['phone'])): ?>
                                     <span class="card-phone"><i class="bi bi-telephone"></i> <?= htmlspecialchars($s->contact['phone']) ?></span>
                                 <?php endif; ?>
-                                <a href="<?= BASE_URL . $lang ?>/service/<?= $s->id ?>" class="card-detail-trigger">
+                                <a href="<?= htmlspecialchars(BASE_URL . 'fiche/' . rawurlencode((string)$s->slug), ENT_QUOTES, 'UTF-8') ?>" class="card-detail-trigger">
                                     <span>Voir la fiche</span>
                                     <i class="bi bi-arrow-right-short"></i>
                                 </a>
@@ -406,11 +402,13 @@ $activeFilters = array_filter(array_merge(
         'lng' => $s->lng,
         'title' => $s->translations['title'],
         'image' => $s->imageUrl,
+        'gallery' => array_values(array_filter(array_map('trim', (array)($s->gallery ?? [])))),
         'address' => $s->getFullAddress(),
         'description' => mb_substr($s->translations['description'] ?? '', 0, 200),
         'type' => $s->type,
         'label' => $s->label ?? '',
         'phone' => $s->contact['phone'] ?? '',
-        'url' => BASE_URL . $lang . '/service/' . $s->id,
-    ], $results)) ?>;
+        'email' => $s->contact['email'] ?? '',
+        'url' => BASE_URL . 'fiche/' . $s->slug,
+    ], $results), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 </script>

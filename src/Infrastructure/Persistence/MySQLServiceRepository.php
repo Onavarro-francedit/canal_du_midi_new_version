@@ -17,28 +17,29 @@ class MySQLServiceRepository implements ServiceRepository {
         return $this->findByIdFromPimcore($id);
     }
 
-    // No olvides actualizar también el findAll si quieres mostrar iconos en la Home
     public function findAll(string $lang, bool $withDetails = false): array {
-        if (empty($lang)) $lang = 'fr';
+        if (empty($lang)) {
+            $lang = 'fr';
+        }
+
         return $this->searchPimcore('', '', []);
     }
 
     public function saveReview(array $data): bool {
         $sql = "INSERT INTO service_reviews (service_id, booking_id, customer_name, rating, comment, is_approved) 
                 VALUES (:service_id, :booking_id, :customer_name, :rating, :comment, 1)";
-        
+
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
-            'service_id'    => $data['service_id'],
-            'booking_id'    => $data['booking_id'],
+            'service_id' => $data['service_id'],
+            'booking_id' => $data['booking_id'],
             'customer_name' => $data['customer_name'],
-            'rating'        => $data['rating'],
-            'comment'       => $data['comment']
+            'rating' => $data['rating'],
+            'comment' => $data['comment']
         ]);
     }
 
     public function getNearbyPOIs(float $lat, float $lng, string $lang, float $radiusKm = 10): array {
-        // Consulta SQL que usa una aproximación de distancia para no sobrecargar
         $sql = "SELECT p.*, t.name, p.image_url
                 FROM points_of_interest p
                 JOIN poi_translations t ON p.id = t.poi_id AND t.lang_code = :lang
@@ -48,16 +49,21 @@ class MySQLServiceRepository implements ServiceRepository {
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            'lat' => $lat, 'lng' => $lng, 'lang' => $lang, 
-            'radius' => $radiusKm, 'lat2' => $lat, 'lng2' => $lng
+            'lat' => $lat,
+            'lng' => $lng,
+            'lang' => $lang,
+            'radius' => $radiusKm,
+            'lat2' => $lat,
+            'lng2' => $lng,
         ]);
 
         $pois = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $poi = new \App\Domain\Models\POI($row['id'], $row['type'], $row['name'], $row['lat'], $row['lng'], $row['image_url']);
             $poi->calculateDistanceFrom($lat, $lng);
             $pois[] = $poi;
         }
+
         return $pois;
     }
 
@@ -68,12 +74,14 @@ class MySQLServiceRepository implements ServiceRepository {
                 WHERE p.id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id, 'lang' => $lang]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) return null;
+        if (!$row) {
+            return null;
+        }
 
         $poi = new \App\Domain\Models\POI($row['id'], $row['type'], $row['name'], $row['lat'], $row['lng'], $row['image_url']);
-        $poi->description = $row['description'];  // Asegúrate de declarar public ?string $description en el Modelo POI
+        $poi->description = $row['description'];
         return $poi;
     }
 
@@ -94,7 +102,7 @@ class MySQLServiceRepository implements ServiceRepository {
         $stmt->execute(['lat' => $lat, 'lng' => $lng, 'radius' => $radiusKm]);
 
         $results = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $results[] = new \App\Domain\Models\Service(
                 (int)$row['oo_id'],
                 $this->detectPimcoreType($row),
@@ -109,6 +117,7 @@ class MySQLServiceRepository implements ServiceRepository {
                 (float)($row['geopositionnement__longitude'] ?? 0)
             );
         }
+
         return $results;
     }
 
@@ -121,19 +130,18 @@ class MySQLServiceRepository implements ServiceRepository {
         return $this->searchPimcore($query, $city, $types);
     }
 
-
     public function getAllCategories(string $lang): array {
         return $this->getPimcoreCategories();
     }
 
     private function getAmenitiesForService(int $serviceId): array {
-        $sql_amenities = "SELECT a.icon_name, a.slug 
+        $sqlAmenities = "SELECT a.icon_name, a.slug 
                         FROM amenities a
                         JOIN service_amenities sa ON a.id = sa.amenity_id
                         WHERE sa.service_id = :id";
-        $stmt_am = $this->db->prepare($sql_amenities);
-        $stmt_am->execute(['id' => $serviceId]);
-        return $stmt_am->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare($sqlAmenities);
+        $stmt->execute(['id' => $serviceId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getActiveFeatures(string $lang): array {
@@ -143,7 +151,7 @@ class MySQLServiceRepository implements ServiceRepository {
                 WHERE t.lang_code = :lang AND f.is_active = 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['lang' => $lang]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getLatestArticles(string $lang, int $limit = 3): array {
@@ -154,9 +162,9 @@ class MySQLServiceRepository implements ServiceRepository {
                 ORDER BY a.created_at DESC LIMIT :limit";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':lang', $lang);
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getCategoriesWithCount(string $lang): array {
@@ -169,7 +177,9 @@ class MySQLServiceRepository implements ServiceRepository {
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) return null;
+        if (!$row) {
+            return null;
+        }
 
         $type = $this->detectPimcoreType($row);
 
@@ -254,7 +264,6 @@ class MySQLServiceRepository implements ServiceRepository {
 
         $heroImage = $this->normalizeMediaUrl((string)($media['presentation'] ?? ''));
 
-        // Fallback: if DB media is missing, try loading images from public/clients_images/{pimcore_id}
         if ($heroImage === '' && empty($gallery)) {
             $diskMedia = $this->getPimcoreMediaFromDisk((int)$row['oo_id']);
             $heroImage = $diskMedia['presentation'];
@@ -325,23 +334,18 @@ class MySQLServiceRepository implements ServiceRepository {
         ];
     }
 
-    private function resolvePimcorePrimaryImage(int $pimcoreId, array $media): string {
-        $presentation = $this->normalizeMediaUrl((string)($media['presentation'] ?? ''));
-        if ($presentation !== '') {
-            return $presentation;
+    private function resolvePimcorePrimaryImage(string $cover, string $imagesCsv, int $pimcoreId): string {
+        $coverImage = $this->normalizeMediaUrl($this->normalizeMetaImage($cover));
+        if ($coverImage !== '') {
+            return $coverImage;
         }
 
-        $imagesCsv = (string)($media['images'] ?? '');
-        if ($imagesCsv !== '') {
-            $images = array_values(array_filter(array_map('trim', explode(',', $imagesCsv))));
-            if (!empty($images[0])) {
-                return $this->normalizeMediaUrl($images[0]);
+        $images = $this->normalizeMetaImageList($imagesCsv);
+        if ($images !== '') {
+            $imageList = array_values(array_filter(array_map('trim', explode(',', $images))));
+            if (!empty($imageList[0])) {
+                return $this->normalizeMediaUrl($imageList[0]);
             }
-        }
-
-        $logo = $this->normalizeMediaUrl((string)($media['logo_url'] ?? ''));
-        if ($logo !== '') {
-            return $logo;
         }
 
         $diskMedia = $this->getPimcoreMediaFromDisk($pimcoreId);
@@ -390,157 +394,552 @@ class MySQLServiceRepository implements ServiceRepository {
     }
 
     private function detectPimcoreType(array $row): string {
-        if (!empty($row['hotel'])) return 'Hôtel';
-        if (!empty($row['chambre_hote'])) return 'Chambre d\'hôtes';
-        if (!empty($row['restaurant'])) return 'Restaurant';
-        if (!empty($row['hotellerie_plein_air'])) return 'Camping';
-        if (!empty($row['gites_ruraux'])) return 'Gîte';
-        if (!empty($row['location_bateaux']) || !empty($row['location_bateaux_semaine']) || !empty($row['location_bateaux_gites'])) return 'Location bateaux';
-        if (!empty($row['promenade_bateau']) || !empty($row['croisiere_chambres']) || !empty($row['croisiere_luxe'])) return 'Croisière';
-        if (!empty($row['location_velos']) || !empty($row['voyage_velo'])) return 'Location vélos';
-        if (!empty($row['musee'])) return 'Musée';
-        if (!empty($row['bar_salon'])) return 'Bar';
-        if (!empty($row['epicerie']) || !empty($row['alimentation']) || !empty($row['produits_regions'])) return 'Commerce';
-        if (!empty($row['caviste']) || !empty($row['domaine']) || !empty($row['vente_de_vins'])) return 'Vins';
-        if (!empty($row['taxi'])) return 'Taxi';
-        if (!empty($row['otsi']) || !empty($row['lieux_infos'])) return 'Information';
-        if (!empty($row['hebergement']) || !empty($row['residence_tourisme']) || !empty($row['location_saisonniere'])) return 'Hébergement';
-        if (!empty($row['excursions']) || !empty($row['loisirs']) || !empty($row['parcs_loisirs'])) return 'Loisirs';
+        if (!empty($row['hotel'])) {
+            return 'Hôtel';
+        }
+        if (!empty($row['chambre_hote'])) {
+            return 'Chambre d\'hôtes';
+        }
+        if (!empty($row['restaurant'])) {
+            return 'Restaurant';
+        }
+        if (!empty($row['hotellerie_plein_air'])) {
+            return 'Camping';
+        }
+        if (!empty($row['gites_ruraux'])) {
+            return 'Gîte';
+        }
+        if (!empty($row['location_bateaux']) || !empty($row['location_bateaux_semaine']) || !empty($row['location_bateaux_gites'])) {
+            return 'Location bateaux';
+        }
+        if (!empty($row['promenade_bateau']) || !empty($row['croisiere_chambres']) || !empty($row['croisiere_luxe'])) {
+            return 'Croisière';
+        }
+        if (!empty($row['location_velos']) || !empty($row['voyage_velo'])) {
+            return 'Location vélos';
+        }
+        if (!empty($row['musee'])) {
+            return 'Musée';
+        }
+        if (!empty($row['bar_salon'])) {
+            return 'Bar';
+        }
+        if (!empty($row['epicerie']) || !empty($row['alimentation']) || !empty($row['produits_regions'])) {
+            return 'Commerce';
+        }
+        if (!empty($row['caviste']) || !empty($row['domaine']) || !empty($row['vente_de_vins'])) {
+            return 'Vins';
+        }
+        if (!empty($row['taxi'])) {
+            return 'Taxi';
+        }
+        if (!empty($row['otsi']) || !empty($row['lieux_infos'])) {
+            return 'Information';
+        }
+        if (!empty($row['hebergement']) || !empty($row['residence_tourisme']) || !empty($row['location_saisonniere'])) {
+            return 'Hébergement';
+        }
+        if (!empty($row['excursions']) || !empty($row['loisirs']) || !empty($row['parcs_loisirs'])) {
+            return 'Loisirs';
+        }
+
         return 'Établissement';
     }
 
-    private function getPimcoreTypeConditions(): array {
+    private function getPimcoreTypeConditions(string $tableAlias = ''): array {
+        $prefix = $tableAlias !== '' ? $tableAlias . '.' : '';
+
         return [
-            'hebergement' => 'hebergement = 1',
-            'residence_tourisme' => 'residence_tourisme = 1',
-            'hotellerie_plein_air' => 'hotellerie_plein_air = 1',
-            'chambre_hote' => 'chambre_hote = 1',
-            'gites_ruraux' => 'gites_ruraux = 1',
-            'location_bateaux_gites' => 'location_bateaux_gites = 1',
-            'hotel' => 'hotel = 1',
-            'location_saisonniere' => 'location_saisonniere = 1',
-            'bar_salon' => 'bar_salon = 1',
-            'restaurant' => 'restaurant = 1',
-            'table_hote' => 'table_hote = 1',
-            'bateau_restaurant' => 'bateau_restaurant = 1',
-            'snack' => 'snack = 1',
-            'brasserie' => 'brasserie = 1',
-            'alimentation' => 'alimentation = 1',
-            'charcuterie_traiteur' => 'charcuterie_traiteur = 1',
-            'boulangerie' => 'boulangerie = 1',
-            'produits_regions' => 'produits_regions = 1',
-            'poissonnerie' => 'poissonnerie = 1',
-            'epicerie' => 'epicerie = 1',
-            'vente_de_vins' => 'vente_de_vins = 1',
-            'caviste' => 'caviste = 1',
-            'domaine' => 'domaine = 1',
-            'loisirs' => 'loisirs = 1',
-            'croisiere_chambres' => 'croisiere_chambres = 1',
-            'promenade_bateau' => 'promenade_bateau = 1',
-            'croisiere_luxe' => 'croisiere_luxe = 1',
-            'location_bateaux_semaine' => 'location_bateaux_semaine = 1',
-            'location_bateaux' => 'location_bateaux = 1',
-            'location_voiture' => 'location_voiture = 1',
-            'location_kayak' => 'location_kayak = 1',
-            'location_velos' => 'location_velos = 1',
-            'voyage_velo' => 'voyage_velo = 1',
-            'excursions' => 'excursions = 1',
-            'musee' => 'musee = 1',
-            'parcs_loisirs' => 'parcs_loisirs = 1',
-            'lieux_voir' => 'lieux_voir = 1',
-            'artisanat' => 'artisanat = 1',
-            'commerce' => 'commerce = 1',
-            'laverie' => 'laverie = 1',
-            'taxi' => 'taxi = 1',
-            'transport_bagages' => 'transport_bagages = 1',
-            'lieux_infos' => 'lieux_infos = 1',
-            'mairie' => 'mairie = 1',
-            'otsi' => 'otsi = 1',
-            'librairie' => 'librairie = 1',
-            'distr_billet' => 'distr_billet = 1',
-            'borne_wifi' => 'borne_wifi = 1',
+            'hebergement' => $prefix . 'hebergement = 1',
+            'residence_tourisme' => $prefix . 'residence_tourisme = 1',
+            'hotellerie_plein_air' => $prefix . 'hotellerie_plein_air = 1',
+            'chambre_hote' => $prefix . 'chambre_hote = 1',
+            'gites_ruraux' => $prefix . 'gites_ruraux = 1',
+            'location_bateaux_gites' => $prefix . 'location_bateaux_gites = 1',
+            'hotel' => $prefix . 'hotel = 1',
+            'location_saisonniere' => $prefix . 'location_saisonniere = 1',
+            'bar_salon' => $prefix . 'bar_salon = 1',
+            'restaurant' => $prefix . 'restaurant = 1',
+            'table_hote' => $prefix . 'table_hote = 1',
+            'bateau_restaurant' => $prefix . 'bateau_restaurant = 1',
+            'snack' => $prefix . 'snack = 1',
+            'brasserie' => $prefix . 'brasserie = 1',
+            'alimentation' => $prefix . 'alimentation = 1',
+            'charcuterie_traiteur' => $prefix . 'charcuterie_traiteur = 1',
+            'boulangerie' => $prefix . 'boulangerie = 1',
+            'produits_regions' => $prefix . 'produits_regions = 1',
+            'poissonnerie' => $prefix . 'poissonnerie = 1',
+            'epicerie' => $prefix . 'epicerie = 1',
+            'vente_de_vins' => $prefix . 'vente_de_vins = 1',
+            'caviste' => $prefix . 'caviste = 1',
+            'domaine' => $prefix . 'domaine = 1',
+            'loisirs' => $prefix . 'loisirs = 1',
+            'croisiere_chambres' => $prefix . 'croisiere_chambres = 1',
+            'promenade_bateau' => $prefix . 'promenade_bateau = 1',
+            'croisiere_luxe' => $prefix . 'croisiere_luxe = 1',
+            'location_bateaux_semaine' => $prefix . 'location_bateaux_semaine = 1',
+            'location_bateaux' => $prefix . 'location_bateaux = 1',
+            'location_voiture' => $prefix . 'location_voiture = 1',
+            'location_kayak' => $prefix . 'location_kayak = 1',
+            'location_velos' => $prefix . 'location_velos = 1',
+            'voyage_velo' => $prefix . 'voyage_velo = 1',
+            'excursions' => $prefix . 'excursions = 1',
+            'musee' => $prefix . 'musee = 1',
+            'parcs_loisirs' => $prefix . 'parcs_loisirs = 1',
+            'lieux_voir' => $prefix . 'lieux_voir = 1',
+            'artisanat' => $prefix . 'artisanat = 1',
+            'commerce' => $prefix . 'commerce = 1',
+            'laverie' => $prefix . 'laverie = 1',
+            'taxi' => $prefix . 'taxi = 1',
+            'transport_bagages' => $prefix . 'transport_bagages = 1',
+            'lieux_infos' => $prefix . 'lieux_infos = 1',
+            'mairie' => $prefix . 'mairie = 1',
+            'otsi' => $prefix . 'otsi = 1',
+            'librairie' => $prefix . 'librairie = 1',
+            'distr_billet' => $prefix . 'distr_billet = 1',
+            'borne_wifi' => $prefix . 'borne_wifi = 1',
         ];
     }
 
-    public function searchPimcore(string $query = '', string $city = '', array $types = []): array {
-        $sql = "SELECT oo_id, nom, ville, adresse, cp, description, telephone, email, web, label, zone,
-                       geopositionnement__latitude, geopositionnement__longitude,
-                       hotel, chambre_hote, restaurant, hotellerie_plein_air, gites_ruraux,
-                       location_bateaux, promenade_bateau, croisiere_chambres, croisiere_luxe,
-                       location_velos, voyage_velo, bar_salon, musee, epicerie, alimentation,
-                       produits_regions, caviste, domaine, vente_de_vins, taxi, otsi, lieux_infos,
-                       hebergement, residence_tourisme, location_saisonniere, excursions, loisirs,
-                       parcs_loisirs, location_bateaux_semaine, location_bateaux_gites, location_kayak,
-                       location_voiture, snack, brasserie, table_hote, bateau_restaurant,
-                       animaux, piscine, parking, `accessible`
-                FROM object_query_60 WHERE 1=1";
+   
 
-        $params = [];
+    public function searchPimcore(string $query = '', string $city = '', array $types = []): array
+    {
+        $sql = "SELECT
+                    p.ID AS oo_id,
+                    MAX(CASE WHEN pm.meta_key IN ('_job_title', '_nom_oi') THEN pm.meta_value END) AS nom,
+                    MAX(CASE WHEN pm.meta_key = '_job_description' THEN pm.meta_value END) AS description,
+                    MAX(CASE WHEN pm.meta_key IN ('_ligne-adresse-1-papier', '_job_location') THEN pm.meta_value END) AS adresse,
+                    MAX(CASE WHEN pm.meta_key = '_ligne-adresse-2-papier' THEN pm.meta_value END) AS adresse2,
+                    MAX(CASE WHEN pm.meta_key = '_code-postal' THEN pm.meta_value END) AS cp,
+                    MAX(CASE WHEN pm.meta_key = '_job_phone' THEN pm.meta_value END) AS telephone,
+                    MAX(CASE WHEN pm.meta_key = '_telephone-portable' THEN pm.meta_value END) AS mobile,
+                    MAX(CASE WHEN pm.meta_key = '_job_email' THEN pm.meta_value END) AS email,
+                    MAX(CASE WHEN pm.meta_key = '_job_website' THEN pm.meta_value END) AS web,
+                    MAX(CASE WHEN pm.meta_key = '_facebook' THEN pm.meta_value END) AS facebook,
+                    MAX(CASE WHEN pm.meta_key = '_job_cover' THEN pm.meta_value END) AS cover,
+                    MAX(CASE WHEN pm.meta_key = '_job_gallery' THEN pm.meta_value END) AS images,
+                    MAX(CASE WHEN pm.meta_key = '_case27_listing_type' THEN pm.meta_value END) AS listing_type,
+                    MAX(CASE WHEN pm.meta_key = '_featured' THEN pm.meta_value END) AS featured,
+                    MAX(CASE WHEN pm.meta_key = '_claimed' THEN pm.meta_value END) AS claimed,
+                    MAX(CASE WHEN pm.meta_key = '_case27_review_count' THEN pm.meta_value END) AS review_count,
+                    MAX(CASE WHEN pm.meta_key = '_job_expires' THEN pm.meta_value END) AS job_expires,
+                    MAX(CASE WHEN pm.meta_key = '_job_video_url' THEN pm.meta_value END) AS job_video_url,
+                    MAX(CASE WHEN pm.meta_key = '_video-facebook' THEN pm.meta_value END) AS video_facebook,
+                    MAX(CASE WHEN pm.meta_key = '_lien-video-tiktok' THEN pm.meta_value END) AS lien_video_tiktok,
+                    MAX(CASE WHEN pm.meta_key = '_format-papier' THEN pm.meta_value END) AS format_papier,
+                    MAX(CASE WHEN pm.meta_key = '_texte_version_papier' THEN pm.meta_value END) AS texte_version_papier,
+                    MAX(CASE WHEN pm.meta_key = '_photo-presentation-papier' THEN pm.meta_value END) AS photo_presentation_papier,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2023' THEN pm.meta_value END) AS noi_2023,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2024' THEN pm.meta_value END) AS noi_2024,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2025' THEN pm.meta_value END) AS noi_2025,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2026' THEN pm.meta_value END) AS noi_2026,
+                    MAX(CASE WHEN pm.meta_key = 'geolocation_lat' THEN pm.meta_value END) AS geopositionnement__latitude,
+                    MAX(CASE WHEN pm.meta_key = 'geolocation_long' THEN pm.meta_value END) AS geopositionnement__longitude,
+                    MAX(CASE WHEN pm.meta_key = 'post_content' THEN pm.meta_value END) AS post_content_meta,
+                    p.post_title  AS post_title,
+                    p.post_content AS post_content,
+                    p.post_excerpt AS post_excerpt,
+                    p.post_name   AS slug
+                FROM wp_posts p
+                JOIN wp_postmeta pm ON p.ID = pm.post_id
+                WHERE p.post_type   = 'job_listing'
+                AND p.post_status = 'publish'
+                GROUP BY p.ID";
 
-        if (!empty($query)) {
-            $sql .= " AND (nom LIKE :q OR description LIKE :q OR ville LIKE :q OR adresse LIKE :q)";
-            $params['q'] = "%$query%";
-        }
-        if (!empty($city)) {
-            $sql .= " AND ville LIKE :city";
-            $params['city'] = "%$city%";
-        }
+        $params  = [];
+        $filters = [];
+
         if (!empty($types)) {
-            $typeMap = $this->getPimcoreTypeConditions();
-            $conditions = [];
-            foreach ($types as $t) {
-                $t = trim((string)$t);
-                if ($t !== '' && isset($typeMap[$t])) {
-                    $conditions[] = '(' . $typeMap[$t] . ')';
+            $typeConditions = [];
+            foreach ($types as $type) {
+                $type = trim((string) $type);
+                if ($type !== '') {
+                    $key                = 'type_' . count($params);
+                    $typeConditions[]   = "listing_type LIKE :$key";
+                    $params[$key]       = '%' . $this->escapeLike($type) . '%';
                 }
             }
-            if (!empty($conditions)) {
-                $sql .= ' AND (' . implode(' OR ', $conditions) . ')';
+            if (!empty($typeConditions)) {
+                $filters[] = '(' . implode(' OR ', $typeConditions) . ')';
             }
         }
 
-        $sql .= " ORDER BY nom ASC LIMIT 200";
+        if (!empty($query)) {
+            $filters[]    = '(nom LIKE :q OR description LIKE :q OR adresse LIKE :q OR cp LIKE :q
+                            OR telephone LIKE :q OR mobile LIKE :q OR email LIKE :q OR web LIKE :q
+                            OR facebook LIKE :q OR post_title LIKE :q OR post_content LIKE :q
+                            OR post_excerpt LIKE :q)';
+            $params['q']  = '%' . $this->escapeLike($query) . '%';
+        }
+
+        if (!empty($city)) {
+            $filters[]       = '(adresse LIKE :city OR post_title LIKE :city OR post_content LIKE :city)';
+            $params['city']  = '%' . $this->escapeLike($city) . '%';
+        }
+
+        if (!empty($filters)) {
+            $sql .= ' HAVING ' . implode(' AND ', $filters);
+        }
+
+        $sql .= ' ORDER BY nom ASC LIMIT 200';
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        if (empty($rows)) {
+            return [];
+        }
+
+        // ── Categorías en una sola query (evita el problema N+1) ─────────────
+        // Recogemos todos los IDs de los posts encontrados y hacemos UNA sola
+        // consulta que trae los términos de todos ellos de golpe.
+        $postIds     = array_column($rows, 'oo_id');
+        $placeholders = implode(',', array_fill(0, count($postIds), '?'));
+
+        $catSql = "SELECT
+                    tr.object_id AS post_id,
+                    t.term_id    AS id,
+                    t.name       AS name,
+                    t.slug       AS slug,
+                    tt.taxonomy  AS taxonomy
+                FROM wp_term_relationships  tr
+                JOIN wp_term_taxonomy       tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+                JOIN wp_terms               t  ON tt.term_id          = t.term_id
+                WHERE tr.object_id IN ($placeholders)
+                ORDER BY tr.object_id, tt.taxonomy, t.name";
+
+        $catStmt = $this->db->prepare($catSql);
+        $catStmt->execute($postIds);
+
+        // Indexamos los términos por post_id para recuperarlos en O(1) al
+        // iterar los resultados: ['post_id' => ['taxonomy' => [términos…]]]
+        $termsByPost = [];
+        foreach ($catStmt->fetchAll(PDO::FETCH_ASSOC) as $term) {
+            $pid = (int) $term['post_id'];
+            $tax = $term['taxonomy'];
+            $termsByPost[$pid][$tax][] = [
+                'id'   => (int) $term['id'],
+                'name' => $term['name'],
+                'slug' => $term['slug'],
+            ];
+        }
+
+        // ── Mapeo de filas a objetos Service ─────────────────────────────────
         $results = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $detected = $this->detectPimcoreType($row);
-            $desc = html_entity_decode($row['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $desc = strip_tags($desc);
 
-            $media = $this->getPimcoreMediaById((int)$row['oo_id']);
-            $heroImage = $this->resolvePimcorePrimaryImage((int)$row['oo_id'], $media);
+        foreach ($rows as $row) {
+            $postId = (int) $row['oo_id'];
+
+            // Categorías del post actual (taxonomía principal de MyListing).
+            // Ajusta 'job_listing_category' al slug real de tu instalación.
+            $allTerms   = $termsByPost[$postId] ?? [];
+            $categories = $allTerms['job_listing_category'] ?? [];
+
+            $detected        = $this->detectJobListingType($row['listing_type'] ?? '');
+            $descriptionSource = $row['description'] ?? $row['post_content'] ?? $row['post_excerpt'] ?? '';
+            $desc            = html_entity_decode((string) $descriptionSource, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $desc            = strip_tags($desc);
+
+            $gallery       = [];
+            $gallerySource = $this->normalizeMetaImageList((string) ($row['images'] ?? ''));
+            if ($gallerySource !== '') {
+                $gallery = array_values(array_filter(array_map('trim', explode(',', $gallerySource))));
+                $gallery = array_map(fn($url) => $this->normalizeMediaUrl($url), $gallery);
+            }
+
+            $heroImage = $this->resolvePimcorePrimaryImage(
+                (string) ($row['cover']  ?? ''),
+                (string) ($row['images'] ?? ''),
+                $postId
+            );
+
+            $cityValue    = trim((string) ($row['post_title'] ?? ''));
+            $addressValue = trim((string) ($row['adresse']   ?? ''));
+            $addressLine2 = trim((string) ($row['adresse2']  ?? ''));
+            if ($addressLine2 !== '') {
+                $addressValue = trim($addressValue . ' ' . $addressLine2);
+            }
 
             $results[] = new Service(
-                id: (int)$row['oo_id'],
-                type: $detected,
-                price: 0,
+                id:       $postId,
+                type:     $detected,
+                price:    0,
                 imageUrl: $heroImage,
                 translations: [
-                    'title' => $row['nom'] ?? 'Sans titre',
+                    'title'       => $row['nom'] ?? $row['post_title'] ?? 'Sans titre',
                     'description' => trim($desc),
-                    'tag' => '',
+                    'tag'         => trim((string) ($row['listing_type'] ?? '')),
                 ],
                 contact: [
-                    'phone' => trim($row['telephone'] ?? ''),
-                    'email' => trim($row['email'] ?? ''),
-                    'website' => trim($row['web'] ?? ''),
-                    'address' => trim($row['adresse'] ?? ''),
-                    'cp' => trim($row['cp'] ?? ''),
-                    'ville' => trim($row['ville'] ?? ''),
+                    'phone'    => trim($row['telephone'] ?? ''),
+                    'mobile'   => trim($row['mobile']    ?? ''),
+                    'email'    => trim($row['email']     ?? ''),
+                    'website'  => trim($row['web']       ?? ''),
+                    'facebook' => trim($row['facebook']  ?? ''),
+                    'address'  => $addressValue,
+                    'cp'       => trim($row['cp']        ?? ''),
+                    'ville'    => $cityValue,
                 ],
-                lat: (float)($row['geopositionnement__latitude'] ?? 0),
-                lng: (float)($row['geopositionnement__longitude'] ?? 0),
-                label: trim($row['label'] ?? ''),
-                zone: trim($row['zone'] ?? ''),
+                gallery:    $gallery,
+                lat: (float) ($row['geopositionnement__latitude']  ?? 0),
+                lng: (float) ($row['geopositionnement__longitude'] ?? 0),
+                label: trim((string) ($row['label']        ?? $row['format_papier'] ?? '')),
+                zone:  trim((string) ($row['listing_type'] ?? $row['noi_2026']     ?? $row['noi_2025'] ?? '')),
+                slug:  trim((string) ($row['slug']         ?? '')),
+
+                // ── Categorías obtenidas de wp_terms ─────────────────────────
+                // $categories  → lista plana de la taxonomía principal
+                // $allTerms    → todas las taxonomías del post si necesitas más
+                categories: $categories,
             );
         }
+
         return $results;
     }
 
+    
+
+    public function findBySlug(string $slug): ?Service
+    {
+        $normalizedSlug = trim(rawurldecode($slug));
+
+        if ($normalizedSlug === '') {
+            return null;
+        }
+
+        // ── Query principal: post + postmeta ──────────────────────────────────
+        $sql = "SELECT
+                    p.ID AS oo_id,
+                    MAX(CASE WHEN pm.meta_key IN ('_job_title', '_nom_oi') THEN pm.meta_value END) AS nom,
+                    MAX(CASE WHEN pm.meta_key = '_job_description' THEN pm.meta_value END) AS description,
+                    MAX(CASE WHEN pm.meta_key IN ('_ligne-adresse-1-papier', '_job_location') THEN pm.meta_value END) AS adresse,
+                    MAX(CASE WHEN pm.meta_key = '_ligne-adresse-2-papier' THEN pm.meta_value END) AS adresse2,
+                    MAX(CASE WHEN pm.meta_key = '_code-postal' THEN pm.meta_value END) AS cp,
+                    MAX(CASE WHEN pm.meta_key = '_job_phone' THEN pm.meta_value END) AS telephone,
+                    MAX(CASE WHEN pm.meta_key = '_telephone-portable' THEN pm.meta_value END) AS mobile,
+                    MAX(CASE WHEN pm.meta_key = '_job_email' THEN pm.meta_value END) AS email,
+                    MAX(CASE WHEN pm.meta_key = '_job_website' THEN pm.meta_value END) AS web,
+                    MAX(CASE WHEN pm.meta_key = '_facebook' THEN pm.meta_value END) AS facebook,
+                    MAX(CASE WHEN pm.meta_key = '_job_cover' THEN pm.meta_value END) AS cover,
+                    MAX(CASE WHEN pm.meta_key = '_job_gallery' THEN pm.meta_value END) AS images,
+                    MAX(CASE WHEN pm.meta_key = '_case27_listing_type' THEN pm.meta_value END) AS listing_type,
+                    MAX(CASE WHEN pm.meta_key = '_featured' THEN pm.meta_value END) AS featured,
+                    MAX(CASE WHEN pm.meta_key = '_claimed' THEN pm.meta_value END) AS claimed,
+                    MAX(CASE WHEN pm.meta_key = '_case27_review_count' THEN pm.meta_value END) AS review_count,
+                    MAX(CASE WHEN pm.meta_key = '_job_expires' THEN pm.meta_value END) AS job_expires,
+                    MAX(CASE WHEN pm.meta_key = '_job_video_url' THEN pm.meta_value END) AS job_video_url,
+                    MAX(CASE WHEN pm.meta_key = '_video-facebook' THEN pm.meta_value END) AS video_facebook,
+                    MAX(CASE WHEN pm.meta_key = '_lien-video-tiktok' THEN pm.meta_value END) AS lien_video_tiktok,
+                    MAX(CASE WHEN pm.meta_key = '_format-papier' THEN pm.meta_value END) AS format_papier,
+                    MAX(CASE WHEN pm.meta_key = '_texte_version_papier' THEN pm.meta_value END) AS texte_version_papier,
+                    MAX(CASE WHEN pm.meta_key = '_photo-presentation-papier' THEN pm.meta_value END) AS photo_presentation_papier,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2023' THEN pm.meta_value END) AS noi_2023,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2024' THEN pm.meta_value END) AS noi_2024,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2025' THEN pm.meta_value END) AS noi_2025,
+                    MAX(CASE WHEN pm.meta_key = '_noi_2026' THEN pm.meta_value END) AS noi_2026,
+                    MAX(CASE WHEN pm.meta_key = 'geolocation_lat' THEN pm.meta_value END) AS geopositionnement__latitude,
+                    MAX(CASE WHEN pm.meta_key = 'geolocation_long' THEN pm.meta_value END) AS geopositionnement__longitude,
+                    p.post_title AS post_title,
+                    p.post_content AS post_content,
+                    p.post_excerpt AS post_excerpt,
+                    p.post_name AS slug
+                FROM wp_posts p
+                JOIN wp_postmeta pm ON p.ID = pm.post_id
+                WHERE p.post_type   = 'job_listing'
+                AND p.post_status = 'publish'
+                AND p.post_name   = :slug
+                GROUP BY p.ID
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['slug' => $normalizedSlug]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        // ── Query de categorías: une las 5 tablas del grafo ───────────────────
+        // Trae todos los términos asociados al post, agrupados por taxonomía.
+        // Ajusta los nombres de taxonomía ('job_listing_category', 'region', …)
+        // a los slugs reales que uses en tu instalación de MyListing.
+        $catSql = "SELECT
+                    t.term_id   AS id,
+                    t.name      AS name,
+                    t.slug      AS slug,
+                    tt.taxonomy AS taxonomy
+                FROM wp_term_relationships  tr
+                JOIN wp_term_taxonomy       tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+                JOIN wp_terms               t  ON tt.term_id          = t.term_id
+                WHERE tr.object_id = :post_id
+                ORDER BY tt.taxonomy, t.name";
+
+        $catStmt = $this->db->prepare($catSql);
+        $catStmt->execute(['post_id' => (int) $row['oo_id']]);
+        $termRows = $catStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Agrupa los términos por taxonomía para uso flexible en la aplicación.
+        // Resultado: ['job_listing_category' => [['id'=>1,'name'=>'Hébergement','slug'=>'hebergement'], …], …]
+        $termsByTaxonomy = [];
+        foreach ($termRows as $term) {
+            $tax = $term['taxonomy'];
+            $termsByTaxonomy[$tax][] = [
+                'id'   => (int) $term['id'],
+                'name' => $term['name'],
+                'slug' => $term['slug'],
+            ];
+        }
+
+        // Lista plana de categorías principales (compatible con el campo `categories`
+        // que ya espera el constructor de Service).
+        // Cambia 'job_listing_category' por el slug de taxonomía que uses.
+        $categories = $termsByTaxonomy['job_listing_category'] ?? [];
+
+        // ── Resto del mapeo (sin cambios) ─────────────────────────────────────
+        $detected        = $this->detectJobListingType((string) ($row['listing_type'] ?? ''));
+        $descriptionSource = $row['description'] ?? $row['post_content'] ?? $row['post_excerpt'] ?? '';
+        $desc            = html_entity_decode((string) $descriptionSource, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $desc            = strip_tags($desc);
+
+        $gallery       = [];
+        $gallerySource = $this->normalizeMetaImageList((string) ($row['images'] ?? ''));
+        if ($gallerySource !== '') {
+            $gallery = array_values(array_filter(array_map('trim', explode(',', $gallerySource))));
+            $gallery = array_map(fn($url) => $this->normalizeMediaUrl($url), $gallery);
+        }
+
+        $heroImage = $this->resolvePimcorePrimaryImage(
+            (string) ($row['cover']  ?? ''),
+            (string) ($row['images'] ?? ''),
+            (int) $row['oo_id']
+        );
+
+        $addressValue = trim((string) ($row['adresse']  ?? ''));
+        $addressLine2 = trim((string) ($row['adresse2'] ?? ''));
+        if ($addressLine2 !== '') {
+            $addressValue = trim($addressValue . ' ' . $addressLine2);
+        }
+
+        return new Service(
+            id: (int) $row['oo_id'],
+            type: $detected,
+            price: 0,
+            imageUrl: $heroImage,
+            translations: [
+                'title'       => $row['nom'] ?? $row['post_title'] ?? 'Sans titre',
+                'description' => trim($desc),
+                'tag'         => trim((string) ($row['listing_type'] ?? '')),
+            ],
+            contact: [
+                'phone'    => trim($row['telephone'] ?? ''),
+                'mobile'   => trim($row['mobile']    ?? ''),
+                'email'    => trim($row['email']     ?? ''),
+                'website'  => trim($row['web']       ?? ''),
+                'facebook' => trim($row['facebook']  ?? ''),
+                'address'  => $addressValue,
+                'cp'       => trim($row['cp']        ?? ''),
+                'ville'    => trim((string) ($row['post_title'] ?? '')),
+            ],
+            amenities:  [],
+            gallery:    $gallery,
+            features:   [],
+            lat: (float) ($row['geopositionnement__latitude']  ?? 0),
+            lng: (float) ($row['geopositionnement__longitude'] ?? 0),
+            responsable: '',
+            raison:      '',
+            label:  trim((string) ($row['label']        ?? $row['format_papier'] ?? '')),
+            zone:   trim((string) ($row['listing_type'] ?? $row['noi_2026']     ?? $row['noi_2025'] ?? '')),
+            actualite: trim((string) ($row['texte_version_papier'] ?? '')),
+
+            // ── Categorías obtenidas de wp_terms ──────────────────────────────
+            // $categories  → lista plana de la taxonomía principal
+            // $termsByTaxonomy → todas las taxonomías, por si necesitas más granularidad
+            categories:  $categories,
+
+            equipments:  [],
+            socials: array_filter([
+                'facebook' => $row['facebook'] ?? '',
+            ]),
+            videos: array_filter([
+                $row['job_video_url']       ?? null,
+                $row['video_facebook']      ?? null,
+                $row['lien_video_tiktok']   ?? null,
+            ]),
+            slug: trim((string) ($row['slug'] ?? $normalizedSlug)),
+        );
+    }
+
+    private function escapeLike(string $value): string {
+        return addcslashes($value, '\\%_');
+    }
+
+    private function normalizeMetaImage(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        $decoded = @unserialize($value, ['allowed_classes' => false]);
+        if ($decoded !== false && $decoded !== null) {
+            if (is_array($decoded)) {
+                $firstValue = $decoded[0] ?? reset($decoded);
+                return is_string($firstValue) ? trim($firstValue) : '';
+            }
+
+            if (is_string($decoded)) {
+                return trim($decoded);
+            }
+        }
+
+        return $value;
+    }
+
+    private function normalizeMetaImageList(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        $decoded = @unserialize($value, ['allowed_classes' => false]);
+        if (is_array($decoded)) {
+            $images = array_values(array_filter(array_map(function ($item) {
+                return is_string($item) ? trim($item) : '';
+            }, $decoded)));
+
+            if (!empty($images)) {
+                return implode(',', $images);
+            }
+        }
+
+        return $value;
+    }
+
+    private function detectJobListingType(string $listingType): string {
+        $normalized = strtolower(trim($listingType));
+
+        switch (true) {
+            case str_contains($normalized, 'prestataire'):
+                return 'Prestataire';
+            case str_contains($normalized, 'hebergement'):
+                return 'Hébergement';
+            case str_contains($normalized, 'restaurant'):
+                return 'Restaurant';
+            case str_contains($normalized, 'croisiere'):
+                return 'Croisière';
+            case str_contains($normalized, 'tour'):
+                return 'Tour';
+            case str_contains($normalized, 'location'):
+                return 'Location';
+            case $normalized !== '':
+                return ucfirst($normalized);
+            default:
+                return 'Établissement';
+        }
+    }
+
     public function getPimcoreCategories(): array {
-        // 1. Load service definitions from service_catalog
         $catalogStmt = $this->db->query(
             "SELECT sql_service_name, service_title, service_icon, service_img
              FROM service_catalog
@@ -553,10 +952,9 @@ class MySQLServiceRepository implements ServiceRepository {
             return [];
         }
 
-        // 2. Build UNION ALL counts — one row per service using the column name directly
         $countParts = [];
         foreach ($catalog as $index => $entry) {
-            $col     = preg_replace('/[^a-z0-9_]/', '', (string)$entry['sql_service_name']); // safe identifier
+            $col = preg_replace('/[^a-z0-9_]/', '', (string)$entry['sql_service_name']);
             $safeSlug = str_replace("'", "''", (string)$entry['sql_service_name']);
             $countParts[] = "SELECT {$index} AS sort_order, '{$safeSlug}' AS slug,"
                 . " SUM(CASE WHEN `{$col}` = 1 THEN 1 ELSE 0 END) AS offers_count"
@@ -570,16 +968,15 @@ class MySQLServiceRepository implements ServiceRepository {
             $counts[(string)$row['slug']] = (int)$row['offers_count'];
         }
 
-        // 3. Merge catalog metadata with counts
         $results = [];
         foreach ($catalog as $entry) {
             $slug = (string)$entry['sql_service_name'];
             $results[] = [
-                'slug'         => $slug,
-                'name'         => (string)($entry['service_title'] ?? ucfirst($slug)),
-                'icon_class'   => (string)($entry['service_icon'] ?? 'bi-bookmark'),
+                'slug' => $slug,
+                'name' => (string)($entry['service_title'] ?? ucfirst($slug)),
+                'icon_class' => (string)($entry['service_icon'] ?? 'bi-bookmark'),
                 'offers_count' => $counts[$slug] ?? 0,
-                'image_url'    => (string)($entry['service_img'] ?? ''),
+                'image_url' => (string)($entry['service_img'] ?? ''),
             ];
         }
 

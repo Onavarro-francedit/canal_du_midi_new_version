@@ -7,176 +7,229 @@ class PageController {
 
 
     public function render(string $page, string $lang = 'fr', ?string $params = null) {
-        // 1. Configuración de datos comunes
         $repository = new MySQLServiceRepository();
+        $lang = $this->normalizeLanguage($lang);
+        $page = $this->normalizePage($page);
 
-        // 1. VALORES POR DEFECTO (Para la Home o páginas genéricas)
         $seo = [
             'title' => "Canal du Midi | Voyages et Escapades Premium",
             'description' => "Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.",
             'keywords' => "Canal du Midi, voyage, tourisme, Occitanie, péniche, vélo, hôtel"
         ];
 
-        // 2. Lógica según la página solicitada
-        if ($page === 'home') {
-            // Obtenemos todos los servicios desde la DB usando el idioma detectado
-            $allServices = $repository->findAll($lang);
+        switch ($page) {
+            case 'home':
+                $allServices = $repository->findAll($lang);
+                $destinations = array_filter($allServices, fn($service) => $service->type === 'destination');
+                $tours = array_filter($allServices, fn($service) => $service->type === 'tour' || $service->type === 'boat');
+                $allCategories = $repository->getCategoriesWithCount($lang);
 
-            // Filtramos los datos para la vista home
-            $destinations = array_filter($allServices, fn($s) => $s->type === 'destination');
-            $tours = array_filter($allServices, fn($s) => $s->type === 'tour' || $s->type === 'boat');
-            
-            // 1. Obtener todas las categorías con sus contadores reales
-            $allCategories = $repository->getCategoriesWithCount($lang);
+                if (!empty($allCategories)) {
+                    shuffle($allCategories);
+                }
 
-            if(!empty($allCategories)){
-                // 2. Mezclar el array aleatoriamente
-                shuffle($allCategories);
-            }
+                $randomCategories = array_slice($allCategories, 0, 6);
 
-            // 3. Tomar solo los primeros 6 para la Home
-            $randomCategories = array_slice($allCategories, 0, 6);
+                if (empty($destinations)) {
+                    $destinations = array_slice($allServices, 0, 3);
+                }
 
-            if (empty($destinations)) {
-                $destinations = array_slice($allServices, 0, 3);
-            }
+                $features = $repository->getActiveFeatures($lang);
+                $articles = $repository->getLatestArticles($lang);
 
-            $features = $repository->getActiveFeatures($lang);
-            $articles = $repository->getLatestArticles($lang);
-
-            // 3. Renderizado de Vistas (MVC)
-            require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/home.php';
-            require_once __DIR__ . '/../Views/layout/footer.php';
-            
-        } else if ($page === 'service') {
-            $id = (int)$params;
-            $service = $repository->findById($id, $lang);
-            // 2. SEO DINÁMICO PARA LA FICHA DEL CLIENTE
-            $seo['title'] = $service->translations['title'] . " | Canal du Midi";
-            $rawDesc = strip_tags($service->translations['description']);
-            $seo['description'] = mb_substr($rawDesc, 0, 155) . "...";
-
-            
-
-
-            if (!$service) {
-                $pageTitle = "Service introuvable | Canal du Midi";
                 require_once __DIR__ . '/../Views/layout/header.php';
-                require_once __DIR__ . '/../Views/errors/service_not_found.php'; // <---
+                require_once __DIR__ . '/../Views/home.php';
                 require_once __DIR__ . '/../Views/layout/footer.php';
                 return;
-            }
 
-            $service->nearbyPOIs = $repository->getNearbyPOIs($service->lat, $service->lng, $lang);
-            require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/service_detail.php'; // Crearemos esta vista
-            require_once __DIR__ . '/../Views/layout/footer.php';
+            case 'fiche':
+                $serviceSlug = $params ?? '';
+                $service = $repository->findBySlug($serviceSlug);
 
-        } else if ($page === 'reserve' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+                if (!$service) {
+                    http_response_code(404);
+                    $pageTitle = 'Service introuvable | Canal du Midi';
+                    require_once __DIR__ . '/../Views/layout/header.php';
+                    require_once __DIR__ . '/../Views/errors/service_not_found.php';
+                    require_once __DIR__ . '/../Views/layout/footer.php';
+                    return;
+                } else {
+                    $serviceTitle = $this->sanitizeText($service->translations['title'] ?? 'Service');
+                    $serviceDescription = $this->buildMetaDescription($service->translations['description'] ?? '', 155);
+                    $seo = [
+                        'title' => $serviceTitle . ' | Canal du Midi',
+                        'description' => $serviceDescription,
+                        'keywords' => $serviceTitle . ', Canal du Midi'
+                    ];
 
-            $this->handleBooking($lang);
+                    $service->nearbyPOIs = $repository->getNearbyPOIs($service->lat, $service->lng, $lang);
+                    require_once __DIR__ . '/../Views/layout/header.php';
+                    require_once __DIR__ . '/../Views/service_detail.php';
+                    require_once __DIR__ . '/../Views/layout/footer.php';
+                    return;
+                }
 
-            return;
+            case 'reserve':
+                switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
+                    case 'POST':
+                        $this->handleBooking($lang);
+                        return;
 
-        } else if ($page === 'validate-promo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+                    default:
+                        break;
+                }
+                break;
 
-            $this->validatePromo();
-            exit;
+            case 'validate-promo':
+                switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
+                    case 'POST':
+                        $this->validatePromo();
+                        return;
 
-        }else if ($page === 'check-availability' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+                    default:
+                        break;
+                }
+                break;
 
-            $this->apiCheckAvailability();
-            exit;
+            case 'check-availability':
+                switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
+                    case 'POST':
+                        $this->apiCheckAvailability();
+                        return;
 
-        }else if ($page === 'get-booked-dates' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+                    default:
+                        break;
+                }
+                break;
 
-            $this->apiGetBookedDates();
-            exit;
+            case 'get-booked-dates':
+                switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
+                    case 'GET':
+                        $this->apiGetBookedDates();
+                        return;
 
-        }else if ($page === 'save-review' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+                    default:
+                        break;
+                }
+                break;
 
-            $this->handleSaveReview($lang);
-            return;
+            case 'save-review':
+                switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
+                    case 'POST':
+                        $this->handleSaveReview($lang);
+                        return;
 
-        }else if ($page === 'get-more-reviews') {
+                    default:
+                        break;
+                }
+                break;
 
-            $this->apiGetMoreReviews();
-            return;
-        }elseif ($page === 'poi') {
-            $poiId = (int)$params;
-            $poi = $repository->findPoiById($poiId, $lang);
+            case 'get-more-reviews':
+                $this->apiGetMoreReviews();
+                return;
 
-            if ($poi) {
-                $nearbyServices = $repository->getServicesNearPoi($poi->lat, $poi->lng, $lang);
-                $rawDescription = $poi->description ?? ''; 
+            case 'poi':
+                $poiId = (int)($params ?? 0);
+                $poi = $repository->findPoiById($poiId, $lang);
+
+                switch (true) {
+                    case !$poi:
+                        http_response_code(404);
+                        $pageTitle = 'Point d’intérêt introuvable | Canal du Midi';
+                        require_once __DIR__ . '/../Views/layout/header.php';
+                        require_once __DIR__ . '/../Views/errors/404.php';
+                        require_once __DIR__ . '/../Views/layout/footer.php';
+                        return;
+
+                    default:
+                        $nearbyServices = $repository->getServicesNearPoi($poi->lat, $poi->lng, $lang);
+                        $rawDescription = $poi->description ?? '';
+                        $poiName = $this->sanitizeText($poi->name ?? 'Point d’intérêt');
+                        $seo = [
+                            'title' => $poiName . ' | Canal du Midi',
+                            'description' => $this->buildMetaDescription($rawDescription, 160),
+                            'keywords' => $poiName . ', patrimoine, Canal du Midi'
+                        ];
+
+                        require_once __DIR__ . '/../Views/layout/header.php';
+                        require_once __DIR__ . '/../Views/poi_detail.php';
+                        require_once __DIR__ . '/../Views/layout/footer.php';
+                        return;
+                }
+
+            case 'search':
+                $query = $this->sanitizeText($_GET['q'] ?? '');
+                $city = $this->sanitizeText($_GET['city'] ?? '');
+                $typeRaw = $_GET['type'] ?? [];
+                $types = array_values(array_filter(array_map(fn($type) => $this->sanitizeText((string)$type), (array)$typeRaw)));
+
+                $results = $repository->searchPimcore($query, $city, $types);
+                $categories = $repository->getPimcoreCategories();
+                $cities = $repository->getPimcoreCities();
+
+
                 $seo = [
-                    'title' => $poi->name . " | Canal du Midi",
-                    'description' => mb_substr(strip_tags($rawDescription), 0, 160),
-                    'keywords' => $poi->name . ", patrimoine, Canal du Midi"
+                    'title' => "Résultats pour '" . $query . "' | Canal du Midi",
+                    'description' => 'Découvrez les meilleurs séjours et activités correspondant a votre recherche.',
+                    'keywords' => 'recherche, voyage, canal du midi'
                 ];
-                
+
                 require_once __DIR__ . '/../Views/layout/header.php';
-                require_once __DIR__ . '/../Views/poi_detail.php';
+                require_once __DIR__ . '/../Views/search_results.php';
                 require_once __DIR__ . '/../Views/layout/footer.php';
-            } else {
-                // Cargar 404...
-            }
-        }elseif ($page === 'search') {
-            $query = $_GET['q'] ?? '';
-            $city = $_GET['city'] ?? '';
-            $typeRaw = $_GET['type'] ?? [];
-            $types = array_values(array_filter(array_map('trim', (array)$typeRaw)));
-            $type = $types;
-            $page = 'search';
+                return;
 
-            $results = $repository->searchPimcore($query, $city, $types);
-            $categories = $repository->getPimcoreCategories();
-            $cities = $repository->getPimcoreCities();
+            case 'ai-analyze':
+                switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
+                    case 'POST':
+                        $this->handleAIRequest($lang);
+                        return;
 
-            $seo = [
-                'title' => "Résultats pour '$query' | Canal du Midi",
-                'description' => "Découvrez les meilleurs séjours et activités correspondant a votre recherche.",
-                'keywords' => "recherche, voyage, canal du midi"
-            ];
+                    default:
+                        break;
+                }
+                break;
 
-            require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/search_results.php';
-            require_once __DIR__ . '/../Views/layout/footer.php';
-
-        }elseif ($page === 'ai-analyze' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            $this->handleAIRequest($lang);
-            return;
-
-        }else {
-
-            // Manejo de error 404
-            http_response_code(404);
-            $pageTitle = "404 - Page non trouvée";
-            require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/errors/404.php'; // <---
-            require_once __DIR__ . '/../Views/layout/footer.php';
+            default:
+                http_response_code(404);
+                $pageTitle = '404 - Page non trouvée';
+                require_once __DIR__ . '/../Views/layout/header.php';
+                require_once __DIR__ . '/../Views/errors/404.php';
+                require_once __DIR__ . '/../Views/layout/footer.php';
+                return;
         }
     }
 
 
     private function handleBooking(string $lang) {
-        // 1. Definir variables para el Header (Evita el Warning)
         $page = 'reserve';
         $seo = ['title' => 'Confirmation', 'description' => '', 'keywords' => ''];
 
-        // Recoger todos los campos nuevos
+        $serviceId = (int)($_POST['service_id'] ?? 0);
+        $email = $this->sanitizeText($_POST['customer_email'] ?? '');
+        $checkin = $this->sanitizeText($_POST['checkin'] ?? '');
+        $checkout = $this->sanitizeText($_POST['checkout'] ?? '');
+        $adults = max(1, (int)($_POST['adults'] ?? 1));
+        $children = max(0, (int)($_POST['children'] ?? 0));
+        $promo = $this->sanitizeText($_POST['promo_code'] ?? '');
+
+        if ($serviceId <= 0 || $email === '' || $checkin === '' || $checkout === '') {
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Données de réservation invalides.']);
+            return;
+        }
+
         $data = [
-            'sid'      => (int)$_POST['service_id'],
-            'email'    => $_POST['customer_email'] ?? '',
-            'checkin'  => $_POST['checkin'] ?? null,
-            'checkout' => $_POST['checkout'] ?? null,
-            'adults'   => (int)($_POST['adults'] ?? 1),
-            'children' => (int)($_POST['children'] ?? 0),
+            'sid'      => $serviceId,
+            'email'    => $email,
+            'checkin'  => $checkin,
+            'checkout' => $checkout,
+            'adults'   => $adults,
+            'children' => $children,
             'disabled' => isset($_POST['has_disabled']) ? 1 : 0,
             'pregnant' => isset($_POST['is_pregnant']) ? 1 : 0,
-            'promo'    => $_POST['promo_code'] ?? null
+            'promo'    => $promo !== '' ? $promo : null
         ];
 
         $db = \App\Config\Database::getConnection();
@@ -187,23 +240,21 @@ class PageController {
         $stmt = $db->prepare($sql);
         $success = $stmt->execute($data);
 
-        // 4. RESPUESTA PARA AJAX (Importante)
-        // Si la petición viene por JS, devolvemos JSON en lugar de cargar el header/footer
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            // Es AJAX: Solo devolvemos JSON
-            header('Content-Type: application/json');
-            echo json_encode(['success' => $success]);
-            exit;
-        } else {
-            // No es AJAX (Fallback): Cargamos la página completa de éxito
-            require_once __DIR__ . '/../Views/layout/header.php';
-            require_once __DIR__ . '/../Views/booking_success.php';
-            require_once __DIR__ . '/../Views/layout/footer.php';
+        switch (true) {
+            case $this->isAjaxRequest():
+                header('Content-Type: application/json');
+                echo json_encode(['success' => $success]);
+                return;
+
+            default:
+                require_once __DIR__ . '/../Views/layout/header.php';
+                require_once __DIR__ . '/../Views/booking_success.php';
+                require_once __DIR__ . '/../Views/layout/footer.php';
         }
     }
 
     private function validatePromo() {
-        $code = $_POST['code'] ?? '';
+        $code = $this->sanitizeText($_POST['code'] ?? '');
         $db = \App\Config\Database::getConnection();
 
         $stmt = $db->prepare("SELECT * FROM promo_codes WHERE code = :code AND is_active = 1 AND (expiry_date IS NULL OR expiry_date >= CURDATE())");
@@ -211,22 +262,26 @@ class PageController {
         $promo = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         header('Content-Type: application/json');
-        if ($promo) {
-            echo json_encode([
-                'success' => true,
-                'type' => $promo['discount_type'],
-                'value' => (float)$promo['discount_value'],
-                'message' => 'Code promo appliqué !'
-            ]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Code non valide o expiré']);
+        switch (true) {
+            case (bool)$promo:
+                echo json_encode([
+                    'success' => true,
+                    'type' => $promo['discount_type'],
+                    'value' => (float)$promo['discount_value'],
+                    'message' => 'Code promo appliqué !'
+                ]);
+                return;
+
+            default:
+                echo json_encode(['success' => false, 'message' => 'Code non valide o expiré']);
+                return;
         }
     }
 
     private function apiCheckAvailability() {
-        $sid = (int)$_POST['service_id'];
-        $start = $_POST['checkin'];
-        $end = $_POST['checkout'];
+        $sid = (int)($_POST['service_id'] ?? 0);
+        $start = $this->sanitizeText($_POST['checkin'] ?? '');
+        $end = $this->sanitizeText($_POST['checkout'] ?? '');
 
         $bookingRepo = new \App\Infrastructure\Persistence\MySQLBookingRepository();
         $available = $bookingRepo->isAvailable($sid, $start, $end);
@@ -238,8 +293,7 @@ class PageController {
     private function apiGetBookedDates() {
         $sid = (int)($_GET['service_id'] ?? 0);
         $db = \App\Config\Database::getConnection();
-        
-        // 1. Añadimos IS NOT NULL en el SQL para limpiar desde el origen
+
         $stmt = $db->prepare("SELECT checkin_date, checkout_date FROM bookings 
                             WHERE service_id = :sid 
                             AND status != 'cancelled' 
@@ -250,7 +304,6 @@ class PageController {
 
         $occupiedDates = [];
         foreach ($bookings as $b) {
-            // 2. Doble verificación en PHP para evitar el Deprecated Warning
             if (empty($b['checkin_date']) || empty($b['checkout_date'])) {
                 continue; 
             }
@@ -259,8 +312,6 @@ class PageController {
                 $startDate = new \DateTime($b['checkin_date']);
                 $endDate = new \DateTime($b['checkout_date']);
 
-                // El intervalo es de 1 día (P1D)
-                // Añadimos 1 día al final porque DatePeriod no incluye el último día por defecto
                 $endDate->modify('+1 day'); 
 
                 $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate);
@@ -274,29 +325,45 @@ class PageController {
             }
         }
 
-        // Limpiar el buffer de salida por si hubo algún eco previo que ensucie el JSON
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length()) {
+            ob_clean();
+        }
 
         header('Content-Type: application/json');
-        echo json_encode(array_values(array_unique($occupiedDates))); // Reindexar evita que JSON salga como objeto
+        echo json_encode(array_values(array_unique($occupiedDates)));
     }
 
     private function handleSaveReview(string $lang) {
         $repository = new \App\Infrastructure\Persistence\MySQLServiceRepository();
+
+        $serviceId = (int)($_POST['service_id'] ?? 0);
+        $bookingId = (int)($_POST['booking_id'] ?? 0);
+        $customerName = $this->sanitizeText($_POST['customer_name'] ?? '');
+        $rating = max(1, min(5, (int)($_POST['rating'] ?? 0)));
+        $comment = $this->sanitizeText($_POST['comment'] ?? '');
+
+        if ($serviceId <= 0 || $bookingId <= 0 || $customerName === '') {
+            http_response_code(400);
+            echo 'Données de commentaire invalides.';
+            return;
+        }
         
         $success = $repository->saveReview([
-            'service_id'    => (int)$_POST['service_id'],
-            'booking_id'    => (int)$_POST['booking_id'],
-            'customer_name' => $_POST['customer_name'],
-            'rating'        => (int)$_POST['rating'],
-            'comment'       => $_POST['comment']
+            'service_id'    => $serviceId,
+            'booking_id'    => $bookingId,
+            'customer_name' => $customerName,
+            'rating'        => $rating,
+            'comment'       => $comment
         ]);
 
-        if ($success) {
-            // Redirigir a una página de agradecimiento o a la ficha del hotel
-            header("Location: " . BASE_URL . $lang . "/service/" . $_POST['service_id'] . "?review_success=1");
-        } else {
-            echo "Erreur lors de la publication.";
+        switch (true) {
+            case $success:
+                header('Location: ' . BASE_URL . $this->normalizeLanguage($lang) . '/service/' . $serviceId . '?review_success=1');
+                return;
+
+            default:
+                echo 'Erreur lors de la publication.';
+                return;
         }
     }
 
@@ -304,7 +371,7 @@ class PageController {
         $sid = (int)($_GET['service_id'] ?? 0);
         $page = max(1, (int)($_GET['page'] ?? 1));
         $limit = 3;
-        $offset = $page * $limit;
+        $offset = ($page - 1) * $limit;
 
         $db = \App\Config\Database::getConnection();
         $countStmt = $db->prepare("SELECT COUNT(*) FROM service_reviews WHERE service_id = :sid AND is_approved = 1");
@@ -335,16 +402,58 @@ class PageController {
     }
 
     private function handleAIRequest(string $lang) {
-        $prompt = $_POST['prompt'] ?? '';
+        $prompt = $this->sanitizeText($_POST['prompt'] ?? '');
         $repository = new \App\Infrastructure\Persistence\MySQLServiceRepository();
         
-        // Es vital obtener todos los detalles de los servicios para que la IA los "conozca"
-        $allServices = $repository->findAll($lang, true); // Pasar true para cargar amenities y features
+        $allServices = $repository->findAll($this->normalizeLanguage($lang), true);
 
-        $aiService = new \App\Infrastructure\Services\OpenAIService(); // <--- Aquí el cambio
+        $aiService = new \App\Infrastructure\Services\OpenAIService();
         $result = $aiService->analyzeRequest($prompt, $allServices);
 
         header('Content-Type: application/json');
         echo json_encode($result);
+    }
+
+    private function normalizeLanguage(string $lang): string {
+        $normalized = strtolower(trim($lang));
+
+        if (!preg_match('/^[a-z]{2}$/', $normalized)) {
+            return 'fr';
+        }
+
+        return $normalized;
+    }
+
+    private function normalizePage(string $page): string {
+        $normalized = trim(strtolower($page));
+        $normalized = preg_replace('/[^a-z0-9\-]/', '', $normalized);
+
+        return $normalized ?: 'home';
+    }
+
+    private function sanitizeText(?string $value): string {
+        $cleanValue = trim((string)$value);
+        $cleanValue = strip_tags($cleanValue);
+        $cleanValue = preg_replace('/[\x00-\x1F\x7F]+/u', '', $cleanValue);
+
+        return $cleanValue ?? '';
+    }
+
+    private function buildMetaDescription(?string $text, int $length = 155): string {
+        $cleanText = $this->sanitizeText($text);
+
+        if ($cleanText === '') {
+            return '';
+        }
+
+        if (mb_strlen($cleanText) <= $length) {
+            return $cleanText;
+        }
+
+        return mb_substr($cleanText, 0, $length) . '...';
+    }
+
+    private function isAjaxRequest(): bool {
+        return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
     }
 }

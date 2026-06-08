@@ -29,7 +29,7 @@
         <script src="<?= BASE_URL ?>public/assets/js/main.js"></script>
         <script src="<?= BASE_URL ?>public/assets/js/scroll-reveal.js"></script>
          <!-- CARGA CONDICIONAL DE SCRIPTS -->
-        <?php if (isset($page) && $page === 'service'): ?>
+        <?php if (isset($page) && ($page === 'service' || $page === 'fiche')): ?>
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
             <!-- Leaflet JS -->
             <script src="<?= BASE_URL ?>public/assets/js/map.js"></script>

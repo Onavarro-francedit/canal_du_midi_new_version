@@ -27,7 +27,7 @@
         const BASE_URL = "<?= BASE_URL ?>";
         const lang = "<?= $lang ?>";
     </script>
-    <?php if (isset($page) && $page === 'service'): ?>
+     <?php if (isset($page) && ($page === 'service' || $page === 'fiche')): ?>
          <!-- Leaflet CSS -->
          <meta property="og:image" content="<?= htmlspecialchars($service->imageUrl ?? BASE_URL . 'public/assets/images/default_service.jpg') ?>">
          <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/service_detail.css">

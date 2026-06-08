@@ -2,6 +2,13 @@
 /**
  * Vista: service_detail.php — Compatible Pimcore object_query_60 + Services originales
  */
+$service = $service ?? null;
+$lang = $lang ?? 'fr';
+
+if (!$service instanceof \App\Domain\Models\Service) {
+    return;
+}
+
 $isPimcore = !empty($service->categories);
 $activeCategories = $isPimcore ? $service->getActiveCategories() : [];
 $activeEquipments = $isPimcore ? $service->getActiveEquipments() : [];
@@ -35,21 +42,10 @@ $equipmentIcons = [
 <?php endif; ?>
 <main class="service-page">
     <!-- 1. HERO -->
-
-    <?php
-        echo "<script>console.log('Service data:', " . json_encode($service) . ");</script>";
-    ?>
     <section class="service-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.78)), url('<?= htmlspecialchars($service->imageUrl ?: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80') ?>');">
         <div class="container">
             <div class="service-hero-content">
-                <div class="taxonomy-tags">
-                    <span class="pill"><i class="bi bi-tag-fill"></i> <?= htmlspecialchars($service->type) ?></span>
-                    <?php if (!empty($service->label)): ?>
-                        <span class="pill pill-alt"><i class="bi bi-award-fill"></i> <?= htmlspecialchars($service->label) ?></span>
-                    <?php elseif ($service->isHybrid()): ?>
-                        <span class="pill pill-alt"><i class="bi bi-cup-hot-fill"></i> Restaurant</span>
-                    <?php endif; ?>
-                </div>
+               
                 <h1><?= htmlspecialchars($service->translations['title'] ?? 'Établissement Canal du Midi') ?></h1>
                 <?php if (!empty($service->raison) && $service->raison !== $service->translations['title']): ?>
                     <p class="service-raison"><?= htmlspecialchars($service->raison) ?></p>
@@ -239,13 +235,12 @@ $equipmentIcons = [
                 <div class="videos-grid">
                     <?php foreach ($service->videos as $video): ?>
                         <div class="video-embed">
-                            <?= $video ?>
+                            <?= strip_tags((string)$video, '<iframe>') ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </section>
             <?php endif; ?>
-            </section>
 
             <!-- 8. GALERIE -->
             <?php if (!empty($service->gallery)): ?>
@@ -342,7 +337,7 @@ $equipmentIcons = [
                                             
                                             <div class="poi-image-container">
                                                 <?php if ($poi->imageUrl): ?>
-                                                    <img src="<?= $poi->imageUrl ?>" alt="<?= $poi->name ?>" class="poi-thumb">
+                                                    <img src="<?= htmlspecialchars($poi->imageUrl) ?>" alt="<?= htmlspecialchars($poi->name) ?>" class="poi-thumb">
                                                 <?php else: ?>
                                                     <div class="poi-icon-fallback"><i class="bi <?= $poi->getIcon() ?>"></i></div>
                                                 <?php endif; ?>
