@@ -50,6 +50,7 @@
             <script src="<?= BASE_URL ?>public/assets/js/search-tabs.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-ai.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/ai-search.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/skeleton-controler.js"></script>
         <?php endif; ?>
 
 

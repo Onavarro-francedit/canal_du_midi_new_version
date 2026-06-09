@@ -9,10 +9,71 @@ if (!$service instanceof \App\Domain\Models\Service) {
     return;
 }
 
-$isPimcore = !empty($service->categories);
-$activeCategories = $isPimcore ? $service->getActiveCategories() : [];
-$activeEquipments = $isPimcore ? $service->getActiveEquipments() : [];
-$fullAddress = $isPimcore ? $service->getFullAddress() : ($service->contact['address'] ?? 'Occitanie, France');
+$isStructuredService = !empty($service->categories)
+    || !empty($service->equipments)
+    || !empty($service->socials)
+    || !empty($service->videos)
+    || !empty($service->actualite)
+    || !empty($service->label)
+    || !empty($service->responsable)
+    || !empty($service->raison);
+
+$activeCategories = [];
+foreach ($service->getActiveCategories() as $category) {
+    if (is_array($category)) {
+        $categoryName = trim((string)($category['name'] ?? ''));
+        $categorySlug = trim((string)($category['slug'] ?? ''));
+        if ($categoryName !== '') {
+            $activeCategories[] = [
+                'name' => $categoryName,
+                'slug' => $categorySlug,
+            ];
+        }
+        continue;
+    }
+
+    $categoryName = trim((string)$category);
+    if ($categoryName !== '') {
+        $activeCategories[] = [
+            'name' => $categoryName,
+            'slug' => strtolower(str_replace(' ', '-', $categoryName)),
+        ];
+    }
+}
+
+$activeEquipments = [];
+foreach ($service->getActiveEquipments() as $equipment) {
+    if (is_array($equipment)) {
+        $equipmentName = trim((string)($equipment['name'] ?? $equipment['slug'] ?? ''));
+        if ($equipmentName !== '') {
+            $activeEquipments[] = $equipmentName;
+        }
+        continue;
+    }
+
+    $equipmentName = trim((string)$equipment);
+    if ($equipmentName !== '') {
+        $activeEquipments[] = $equipmentName;
+    }
+}
+
+$fullAddress = trim((string)$service->getFullAddress());
+if ($fullAddress === '') {
+    $fullAddress = trim((string)($service->contact['address'] ?? '')) ?: 'Occitanie, France';
+}
+
+$heroImage = $service->imageUrl ?: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80';
+$priceLabel = $service->getFormattedPrice();
+$roomsCount = (int)($service->features['rooms_count'] ?? 0);
+$socialLinks = [];
+foreach (['facebook', 'instagram'] as $network) {
+    $link = trim((string)($service->socials[$network] ?? ''));
+    if ($link !== '') {
+        $socialLinks[$network] = $link;
+    }
+}
+$galleryItems = array_values(array_filter(array_map('trim', (array)($service->gallery ?? []))));
+$videoItems = array_values(array_filter(array_map('trim', (array)($service->videos ?? []))));
 
 // Icons mapping for categories
 $categoryIcons = [
@@ -42,7 +103,7 @@ $equipmentIcons = [
 <?php endif; ?>
 <main class="service-page">
     <!-- 1. HERO -->
-    <section class="service-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.78)), url('<?= htmlspecialchars($service->imageUrl ?: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80') ?>');">
+    <section class="service-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.78)), url('<?= htmlspecialchars($heroImage, ENT_QUOTES, 'UTF-8') ?>');">
         <div class="container">
             <div class="service-hero-content">
                
@@ -61,12 +122,12 @@ $equipmentIcons = [
                         </div>
                     <?php endif; ?>
                 </div>
-                <?php if ($isPimcore && !empty($activeCategories)): ?>
+                <?php if ($isStructuredService && !empty($activeCategories)): ?>
                     <div class="hero-facts">
-                        <?php $shown = 0; foreach ($activeCategories as $catName => $v): if ($shown >= 3) break; ?>
+                        <?php $shown = 0; foreach ($activeCategories as $category): if ($shown >= 3) break; ?>
                             <div class="hero-fact">
-                                <i class="bi <?= $categoryIcons[$catName] ?? 'bi-check2' ?>"></i>
-                                <strong><?= htmlspecialchars($catName) ?></strong>
+                                <i class="bi <?= htmlspecialchars($categoryIcons[$category['name']] ?? 'bi-check2', ENT_QUOTES, 'UTF-8') ?>"></i>
+                                <strong><?= htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') ?></strong>
                             </div>
                         <?php $shown++; endforeach; ?>
                     </div>
@@ -74,11 +135,11 @@ $equipmentIcons = [
                     <div class="hero-facts">
                         <div class="hero-fact">
                             <span class="hero-fact-label">À partir de</span>
-                            <strong><?= $service->getFormattedPrice() ?></strong>
+                            <strong><?= htmlspecialchars($priceLabel, ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                         <div class="hero-fact">
                             <span class="hero-fact-label">Capacité</span>
-                            <strong><?= $service->features['rooms_count'] ?? '—' ?> chambres</strong>
+                            <strong><?= $roomsCount > 0 ? $roomsCount . ' chambres' : '—' ?></strong>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -110,13 +171,13 @@ $equipmentIcons = [
                         <i class="bi bi-globe"></i> <span>Site Web</span>
                     </a>
                 <?php endif; ?>
-                <?php if (!empty($service->socials['facebook'])): ?>
-                    <a href="<?= htmlspecialchars($service->socials['facebook']) ?>" target="_blank" rel="noopener" class="action-link">
+                <?php if (!empty($socialLinks['facebook'])): ?>
+                    <a href="<?= htmlspecialchars($socialLinks['facebook'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="action-link">
                         <i class="bi bi-facebook"></i> <span>Facebook</span>
                     </a>
                 <?php endif; ?>
-                <?php if (!empty($service->socials['instagram'])): ?>
-                    <a href="<?= htmlspecialchars($service->socials['instagram']) ?>" target="_blank" rel="noopener" class="action-link">
+                <?php if (!empty($socialLinks['instagram'])): ?>
+                    <a href="<?= htmlspecialchars($socialLinks['instagram'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="action-link">
                         <i class="bi bi-instagram"></i> <span>Instagram</span>
                     </a>
                 <?php endif; ?>
@@ -169,10 +230,10 @@ $equipmentIcons = [
                     <h3>Catégories & Services</h3>
                 </div>
                 <div class="categories-grid">
-                    <?php foreach ($activeCategories as $catName => $v): ?>
+                    <?php foreach ($activeCategories as $category): ?>
                         <div class="category-tag">
-                            <i class="bi <?= $categoryIcons[$catName] ?? 'bi-check2' ?>"></i>
-                            <?= htmlspecialchars($catName) ?>
+                            <i class="bi <?= htmlspecialchars($categoryIcons[$category['name']] ?? 'bi-check2', ENT_QUOTES, 'UTF-8') ?>"></i>
+                            <?= htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -187,15 +248,15 @@ $equipmentIcons = [
                     <h3>Équipements</h3>
                 </div>
                 <div class="amenities-grid-pro">
-                    <?php foreach ($activeEquipments as $eqName => $v): ?>
+                    <?php foreach ($activeEquipments as $equipmentName): ?>
                         <div class="amenity-pro">
-                            <i class="bi <?= $equipmentIcons[$eqName] ?? 'bi-check-circle' ?>"></i>
-                            <?= htmlspecialchars($eqName) ?>
+                            <i class="bi <?= htmlspecialchars($equipmentIcons[$equipmentName] ?? 'bi-check-circle', ENT_QUOTES, 'UTF-8') ?>"></i>
+                            <?= htmlspecialchars($equipmentName, ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </section>
-            <?php elseif (!$isPimcore && !empty($service->amenities)): ?>
+            <?php elseif (!$isStructuredService && !empty($service->amenities)): ?>
             <section class="section-card info-block">
                 <div class="section-heading-inline">
                     <span class="section-kicker">Confort</span>
@@ -204,8 +265,8 @@ $equipmentIcons = [
                 <div class="amenities-grid-pro">
                     <?php foreach ($service->amenities as $amenity): ?>
                         <div class="amenity-pro">
-                            <i class="bi <?= htmlspecialchars($amenity['icon_name']) ?>"></i> 
-                            <?= ucfirst(htmlspecialchars($amenity['slug'])) ?>
+                            <i class="bi <?= htmlspecialchars($amenity['icon_name'] ?? 'bi-check-circle', ENT_QUOTES, 'UTF-8') ?>"></i>
+                            <?= htmlspecialchars(ucfirst((string)($amenity['slug'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -226,14 +287,14 @@ $equipmentIcons = [
             <?php endif; ?>
 
             <!-- 7. VIDÉOS -->
-            <?php if (!empty($service->videos)): ?>
+            <?php if (!empty($videoItems)): ?>
             <section class="section-card info-block">
                 <div class="section-heading-inline">
                     <span class="section-kicker">Vidéo</span>
                     <h3>Découvrir en images</h3>
                 </div>
                 <div class="videos-grid">
-                    <?php foreach ($service->videos as $video): ?>
+                    <?php foreach ($videoItems as $video): ?>
                         <div class="video-embed">
                             <?= strip_tags((string)$video, '<iframe>') ?>
                         </div>
@@ -243,17 +304,17 @@ $equipmentIcons = [
             <?php endif; ?>
 
             <!-- 8. GALERIE -->
-            <?php if (!empty($service->gallery)): ?>
+            <?php if (!empty($galleryItems)): ?>
             <section class="section-card info-block">
                 <div class="section-heading-inline">
                     <span class="section-kicker">Ambiance</span>
                     <h3>Galerie Photos</h3>
                 </div>
                 <div class="masonry-gallery">
-                    <?php foreach ($service->gallery as $index => $photoUrl): ?>
+                    <?php foreach ($galleryItems as $index => $photoUrl): ?>
                         <div class="gallery-item">
-                            <img src="<?= htmlspecialchars($photoUrl) ?>" 
-                                alt="Photo <?= $index + 1 ?>" 
+                            <img src="<?= htmlspecialchars($photoUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                alt="Photo <?= $index + 1 ?>"
                                 class="lightbox-trigger" 
                                 data-index="<?= $index ?>">
                         </div>
@@ -537,15 +598,15 @@ $equipmentIcons = [
                     </li>
                     <?php endif; ?>
                 </ul>
-                <?php if (!empty($service->socials['facebook']) || !empty($service->socials['instagram'])): ?>
+                <?php if (!empty($socialLinks['facebook']) || !empty($socialLinks['instagram'])): ?>
                 <div class="social-links">
-                    <?php if (!empty($service->socials['facebook'])): ?>
-                    <a href="<?= htmlspecialchars($service->socials['facebook']) ?>" target="_blank" rel="noopener" class="social-link">
+                    <?php if (!empty($socialLinks['facebook'])): ?>
+                    <a href="<?= htmlspecialchars($socialLinks['facebook'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="social-link">
                         <i class="bi bi-facebook"></i>
                     </a>
                     <?php endif; ?>
-                    <?php if (!empty($service->socials['instagram'])): ?>
-                    <a href="<?= htmlspecialchars($service->socials['instagram']) ?>" target="_blank" rel="noopener" class="social-link">
+                    <?php if (!empty($socialLinks['instagram'])): ?>
+                    <a href="<?= htmlspecialchars($socialLinks['instagram'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="social-link">
                         <i class="bi bi-instagram"></i>
                     </a>
                     <?php endif; ?>
@@ -556,7 +617,7 @@ $equipmentIcons = [
                 <div class="booking-header">
                     <span class="booking-kicker">Réserver un séjour</span>
                     <h3 class="booking-title">Composez votre demande en moins d'une minute</h3>
-                    <span class="price-big"><?= $service->getFormattedPrice() ?></span>
+                    <span class="price-big"><?= htmlspecialchars($priceLabel, ENT_QUOTES, 'UTF-8') ?></span>
                     <span class="price-label">prix moyen / nuit</span>
                 </div>
 

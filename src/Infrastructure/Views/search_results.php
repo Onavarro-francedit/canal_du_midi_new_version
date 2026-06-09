@@ -9,7 +9,8 @@ $city = (string)($city ?? '');
 $resultsCount = count($results);
 $resetUrl = BASE_URL . $lang . '/search';
 $allCities = $cities;
-$selectedTypes = array_values(array_filter(array_map('trim', (array)($type ?? []))));
+$selectedTypesSource = $types ?? ($type ?? []);
+$selectedTypes = array_values(array_filter(array_map('trim', (array)$selectedTypesSource)));
 $categoryOptionCount = count(array_filter($categories, fn($cat) => trim((string)($cat['slug'] ?? '')) !== ''));
 $selectedTypeLabels = [];
 foreach ($selectedTypes as $st) {
@@ -30,6 +31,21 @@ $activeFilters = array_filter(array_merge(
     [$query !== '' ? $query : null, $city !== '' ? $city : null],
     array_values($selectedTypeLabels)
 ));
+
+$rootCategories = [];
+$childCategoriesByParent = [];
+foreach ($categories as $cat) {
+    $categoryId = (int)($cat['id'] ?? 0);
+    $parentId = isset($cat['parent_id']) && $cat['parent_id'] !== null ? (int)$cat['parent_id'] : 0;
+
+    if ($parentId > 0) {
+        $childCategoriesByParent[$parentId][] = $cat;
+        continue;
+    }
+
+    $rootCategories[] = $cat;
+}
+
 ?>
 
 <main class="search-layout-page">
@@ -159,33 +175,87 @@ $activeFilters = array_filter(array_merge(
 
             <div id="categories-content" class="search-sidebar-content">
                 <div class="category-explorer-list">
-                    <?php foreach ($categories as $cat): ?>
-                        <?php
-                            // Usamos la imagen de la base de datos
-                            $categoryImage = !empty($cat['image_url'])
-                                ? $cat['image_url']
-                                : 'https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=800&q=80';
-                            
-                            $categoryName = htmlspecialchars($cat['name'] ?? ucfirst($cat['slug']));
+                    <?php
+                        $renderCategoryCard = function (array $cat, bool $isChild = false) use ($lang, $selectedTypes) {
+                            $categorySlugRaw = trim((string)($cat['slug'] ?? ''));
+                            $categoryNameRaw = trim((string)($cat['name'] ?? ''));
+                            $categoryName = htmlspecialchars($categoryNameRaw !== '' ? $categoryNameRaw : ucfirst($categorySlugRaw));
                             $offersCount = (int)($cat['offers_count'] ?? 0);
-                            $categorySlug = rawurlencode((string)($cat['slug'] ?? ''));
-                            $categoryIcon = preg_replace('/[^a-zA-Z0-9\- ]/', '', (string)($cat['icon_class'] ?? 'bi-grid'));
-                        ?>
-                        <a href="<?= htmlspecialchars(BASE_URL . $lang . '/search?type=' . $categorySlug, ENT_QUOTES, 'UTF-8') ?>"
-                        class="category-item<?= in_array((string)($cat['slug'] ?? ''), $selectedTypes, true) ? ' is-active' : '' ?>"
-                        style="background-image: linear-gradient(180deg, rgba(11, 18, 32, 0.08), rgba(11, 18, 32, 0.62)), url('<?= htmlspecialchars($categoryImage, ENT_QUOTES, 'UTF-8') ?>');">
-                            
-                            <div class="cat-card-top">
-                                <div class="cat-icon-box">
-                                    <i class="bi <?= htmlspecialchars($categoryIcon, ENT_QUOTES, 'UTF-8') ?>"></i>
-                                </div>
+                            $categorySlug = rawurlencode($categorySlugRaw);
+
+                            $categoryIconMap = [
+                                'restaurant' => 'bi-cup-hot',
+                                'hebergement' => 'bi-house-door',
+                                'hotel' => 'bi-house-door',
+                                'camping' => 'bi-tree',
+                                'gite' => 'bi-house-heart',
+                                'location' => 'bi-key',
+                                'activite' => 'bi-compass',
+                                'activités' => 'bi-compass',
+                                'loisirs' => 'bi-stars',
+                                'service' => 'bi-gear',
+                                'transport' => 'bi-bus-front',
+                                'velo' => 'bi-bicycle',
+                                'vélo' => 'bi-bicycle',
+                                'bateau' => 'bi-water',
+                                'peniche' => 'bi-water',
+                                'péniche' => 'bi-water',
+                            ];
+
+                            $categoryIcon = 'bi-grid';
+                            foreach ($categoryIconMap as $needle => $iconClass) {
+                                if ($categorySlugRaw !== '' && str_contains($categorySlugRaw, $needle)) {
+                                    $categoryIcon = $iconClass;
+                                    break;
+                                }
+                                if ($categoryNameRaw !== '' && str_contains(mb_strtolower($categoryNameRaw), $needle)) {
+                                    $categoryIcon = $iconClass;
+                                    break;
+                                }
+                            }
+
+                            $categoryBackgrounds = [
+                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #dcecff 0%, #bfdaf8 100%)',
+                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #e7f4ee 0%, #c9e9da 100%)',
+                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #f8eadf 0%, #f0c9b1 100%)',
+                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #efe5ff 0%, #d8c7ff 100%)',
+                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #eef0f8 0%, #d8deef 100%)',
+                            ];
+                            $categoryBackground = $categoryBackgrounds[abs(crc32($categorySlugRaw)) % count($categoryBackgrounds)];
+                            $categoryClasses = 'category-item' . ((string)($cat['slug'] ?? '') !== '' && in_array((string)($cat['slug'] ?? ''), $selectedTypes, true) ? ' is-active' : '');
+                            if ($isChild) {
+                                $categoryClasses .= ' category-item--child';
+                            }
+
+                            return '<a href="' . htmlspecialchars(BASE_URL . $lang . '/search?type=' . $categorySlug, ENT_QUOTES, 'UTF-8') . '"'
+                                . ' class="' . htmlspecialchars($categoryClasses, ENT_QUOTES, 'UTF-8') . '"'
+                                . ' style="background-image: ' . htmlspecialchars($categoryBackground, ENT_QUOTES, 'UTF-8') . ';">'
+                                . '<div class="cat-card-top"><div class="cat-icon-box"><i class="bi ' . htmlspecialchars($categoryIcon, ENT_QUOTES, 'UTF-8') . '"></i></div></div>'
+                                . '<div class="cat-card-bottom"><span class="cat-name">' . $categoryName . '</span><span class="cat-hint">' . $offersCount . ' offre' . ($offersCount > 1 ? 's' : '') . '</span></div>'
+                                . '</a>';
+                        };
+                    ?>
+
+                    <?php if (!empty($rootCategories)): ?>
+                        <?php foreach ($rootCategories as $parentCat): ?>
+                            <div class="category-group">
+                                <?= $renderCategoryCard($parentCat, false) ?>
+
+                                <?php $parentId = (int)($parentCat['id'] ?? 0); ?>
+                                <?php if (!empty($childCategoriesByParent[$parentId])): ?>
+                                    <div class="category-group-children">
+                                        <?php foreach ($childCategoriesByParent[$parentId] as $childCat): ?>
+                                            <?= $renderCategoryCard($childCat, true) ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="cat-card-bottom">
-                                <span class="cat-name"><?= $categoryName ?></span>
-                                <span class="cat-hint"><?= $offersCount ?> offre<?= $offersCount > 1 ? 's' : '' ?></span>
-                            </div>
-                        </a>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($categories as $cat): ?>
+                            <?= $renderCategoryCard($cat, false) ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -254,18 +324,25 @@ $activeFilters = array_filter(array_merge(
         <section class="search-results-column" id="results-list">
             <header class="search-results-toolbar">
                 <div class="search-toolbar-left">
-                    <h2 class="search-results-count"><?= $resultsCount ?> résultat<?= $resultsCount > 1 ? 's' : '' ?></h2>
+                    <h2 class="search-results-count">
+                        <?= $resultsCount ?> résultat<?= $resultsCount > 1 ? 's' : '' ?>
+                    </h2>
                 </div>
                 <?php if (!empty($activeFilters)): ?>
                     <div class="search-active-filters">
                         <?php foreach ($activeFilters as $filter): ?>
-                            <span class="active-filter-chip"><i class="bi bi-check2"></i> <?= htmlspecialchars($filter) ?></span>
+                            <span class="active-filter-chip">
+                                <i class="bi bi-check2"></i>
+                                <?= htmlspecialchars($filter) ?>
+                            </span>
                         <?php endforeach; ?>
-                        <a href="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" class="clear-filters-link"><i class="bi bi-x-lg"></i> Effacer</a>
+                        <a href="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" class="clear-filters-link">
+                            <i class="bi bi-x-lg"></i> Effacer
+                        </a>
                     </div>
                 <?php endif; ?>
             </header>
-
+        
             <?php if (empty($results)): ?>
                 <div class="no-results-card">
                     <div class="no-results-icon"><i class="bi bi-compass"></i></div>
@@ -276,32 +353,44 @@ $activeFilters = array_filter(array_merge(
             <?php else: ?>
                 <div class="explore-list">
                     <?php foreach ($results as $s): ?>
-                        <script>
-                            console.log('result', <?= json_encode($s) ?>);
-                        </script>
                         <?php
-                        $serviceTitle = htmlspecialchars($s->translations['title'] ?? 'Adresse Canal du Midi');
-                        $serviceDesc = mb_substr(htmlspecialchars($s->translations['description'] ?? ''), 0, 120);
-                        $serviceAddress = htmlspecialchars($s->getFullAddress());
-                        $serviceImage = $s->imageUrl ?: '';
-                        $serviceImageEscaped = htmlspecialchars($serviceImage);
+                        $serviceTitle        = htmlspecialchars($s->translations['title'] ?? 'Adresse Canal du Midi');
+                        $serviceDesc         = mb_substr(htmlspecialchars($s->translations['description'] ?? ''), 0, 120);
+                        $serviceAddress      = htmlspecialchars($s->getFullAddress());
+                        $serviceImage        = $s->imageUrl ?: '';
+                        $serviceImageEscaped = htmlspecialchars($serviceImage, ENT_QUOTES, 'UTF-8');
+                        $ficheUrl            = htmlspecialchars(BASE_URL . 'fiche/' . rawurlencode((string)$s->slug), ENT_QUOTES, 'UTF-8');
                         ?>
-                        <article class="explore-card"
+                        <article
+                            class="explore-card"
                             data-id="<?= (int)$s->id ?>"
                             data-lat="<?= htmlspecialchars((string)$s->lat, ENT_QUOTES, 'UTF-8') ?>"
                             data-lng="<?= htmlspecialchars((string)$s->lng, ENT_QUOTES, 'UTF-8') ?>"
-                            onmouseenter="window.highlightMarker && window.highlightMarker(<?= $s->id ?>)"
-                            onmouseleave="window.resetMarker && window.resetMarker(<?= $s->id ?>)">
-                            <a class="explore-card-link" href="<?= htmlspecialchars(BASE_URL . 'fiche/' . rawurlencode((string)$s->slug), ENT_QUOTES, 'UTF-8') ?>">
+                            onmouseenter="window.highlightMarker && window.highlightMarker(<?= (int)$s->id ?>)"
+                            onmouseleave="window.resetMarker && window.resetMarker(<?= (int)$s->id ?>)"
+                        >
+                            <a class="explore-card-link" href="<?= $ficheUrl ?>">
                                 <div class="card-image<?= $serviceImage ? '' : ' card-image--placeholder' ?>">
                                     <?php if ($serviceImage): ?>
-                                        <img src="<?= $serviceImageEscaped ?>" alt="<?= $serviceTitle ?>" loading="lazy">
+                                        <!--
+                                            No usamos loading="lazy" aquí porque queremos controlar
+                                            nosotros mismos la transición visual.
+                                            data-src en lugar de src: la imagen no se descarga
+                                            hasta que el IntersectionObserver la activa.
+                                        -->
+                                        <img
+                                            data-src="<?= $serviceImageEscaped ?>"
+                                            alt="<?= $serviceTitle ?>"
+                                            width="400"
+                                            height="260"
+                                            decoding="async"
+                                        >
                                     <?php else: ?>
                                         <div class="card-image-icon"><i class="bi bi-building"></i></div>
                                     <?php endif; ?>
-                                   
                                 </div>
                             </a>
+        
                             <div class="card-body">
                                 <h3 class="card-title"><?= $serviceTitle ?></h3>
                                 <div class="card-location">
@@ -312,11 +401,15 @@ $activeFilters = array_filter(array_merge(
                                     <p class="card-tagline"><?= $serviceDesc ?>…</p>
                                 <?php endif; ?>
                             </div>
-                            <div class="<?= (empty($s->contact['phone'])) ? 'card-footer-row--right-aligned' : 'card-footer-row' ?>">
+        
+                            <div class="<?= empty($s->contact['phone']) ? 'card-footer-row--right-aligned' : 'card-footer-row' ?>">
                                 <?php if (!empty($s->contact['phone'])): ?>
-                                    <span class="card-phone"><i class="bi bi-telephone"></i> <?= htmlspecialchars($s->contact['phone']) ?></span>
+                                    <span class="card-phone">
+                                        <i class="bi bi-telephone"></i>
+                                        <?= htmlspecialchars($s->contact['phone']) ?>
+                                    </span>
                                 <?php endif; ?>
-                                <a href="<?= htmlspecialchars(BASE_URL . 'fiche/' . rawurlencode((string)$s->slug), ENT_QUOTES, 'UTF-8') ?>" class="card-detail-trigger">
+                                <a href="<?= $ficheUrl ?>" class="card-detail-trigger">
                                     <span>Voir la fiche</span>
                                     <i class="bi bi-arrow-right-short"></i>
                                 </a>

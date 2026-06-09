@@ -162,10 +162,12 @@ class PageController {
                 $city = $this->sanitizeText($_GET['city'] ?? '');
                 $typeRaw = $_GET['type'] ?? [];
                 $types = array_values(array_filter(array_map(fn($type) => $this->sanitizeText((string)$type), (array)$typeRaw)));
+                $type = $types;
 
-                $results = $repository->searchPimcore($query, $city, $types);
-                $categories = $repository->getPimcoreCategories();
-                $cities = $repository->getPimcoreCities();
+                $categories = $repository->getCategories();
+                $categoryIds = $this->resolveCategoryIdsForSearch($types, $categories);
+                $results = $repository->searchListings($query, $city, [], $categoryIds);
+                $cities = $repository->getCities();
 
 
                 $seo = [
@@ -451,6 +453,61 @@ class PageController {
         }
 
         return mb_substr($cleanText, 0, $length) . '...';
+    }
+
+    private function resolveCategoryIdsForSearch(array $selectedTypes, array $categories): array {
+        $selectedSlugs = [];
+        foreach ($selectedTypes as $selectedType) {
+            $slug = strtolower(trim((string)$selectedType));
+            if ($slug !== '') {
+                $selectedSlugs[$slug] = true;
+            }
+        }
+
+        if (empty($selectedSlugs)) {
+            return [];
+        }
+
+        $categoryBySlug = [];
+        $childrenByParent = [];
+        foreach ($categories as $category) {
+            $slug = strtolower(trim((string)($category['slug'] ?? '')));
+            $categoryId = (int)($category['id'] ?? 0);
+            $parentId = isset($category['parent_id']) && $category['parent_id'] !== null ? (int)$category['parent_id'] : 0;
+
+            if ($slug !== '' && $categoryId > 0) {
+                $categoryBySlug[$slug] = $categoryId;
+            }
+
+            if ($categoryId > 0 && $parentId > 0) {
+                $childrenByParent[$parentId][] = $categoryId;
+            }
+        }
+
+        $selectedIds = [];
+        foreach (array_keys($selectedSlugs) as $selectedSlug) {
+            if (isset($categoryBySlug[$selectedSlug])) {
+                $selectedIds[] = $categoryBySlug[$selectedSlug];
+            }
+        }
+
+        $selectedIds = array_values(array_unique(array_filter($selectedIds)));
+        $expandedIds = $selectedIds;
+        $stack = $selectedIds;
+
+        while (!empty($stack)) {
+            $currentId = array_pop($stack);
+            foreach ($childrenByParent[$currentId] ?? [] as $childId) {
+                if (in_array($childId, $expandedIds, true)) {
+                    continue;
+                }
+
+                $expandedIds[] = $childId;
+                $stack[] = $childId;
+            }
+        }
+
+        return array_values(array_unique($expandedIds));
     }
 
     private function isAjaxRequest(): bool {
