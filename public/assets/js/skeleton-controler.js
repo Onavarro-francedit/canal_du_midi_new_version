@@ -1,43 +1,49 @@
 (function () {
-    // IntersectionObserver: carga la imagen solo cuando la card
-    // entra en el viewport (lazy load manual con control del fade).
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
- 
-            const img = entry.target;
-            const src = img.dataset.src;
-            if (!src) return;
- 
-            img.src = src;
- 
-            img.addEventListener('load', () => {
-                img.closest('.card-image')?.classList.add('is-loaded');
-            }, { once: true });
- 
-            // Si la imagen falla (404, CORS, etc.) quitamos el shimmer
-            // y mostramos el placeholder en su lugar.
-            img.addEventListener('error', () => {
-                const wrapper = img.closest('.card-image');
-                if (!wrapper) return;
+    const signalImagesReady = () => {
+        window.dispatchEvent(new CustomEvent('search:images-ready'));
+    };
+
+    const images = Array.from(document.querySelectorAll('.search-layout-page .card-image img[data-src]'));
+
+    if (images.length === 0) {
+        signalImagesReady();
+        return;
+    }
+
+    let settledImages = 0;
+    const markSettled = () => {
+        settledImages += 1;
+        if (settledImages >= images.length) {
+            signalImagesReady();
+        }
+    };
+
+    images.forEach((img) => {
+        const src = img.dataset.src;
+        if (!src) {
+            markSettled();
+            return;
+        }
+
+        const wrapper = img.closest('.card-image');
+
+        img.addEventListener('load', () => {
+            wrapper?.classList.add('is-loaded');
+            markSettled();
+        }, { once: true });
+
+        img.addEventListener('error', () => {
+            if (wrapper) {
                 wrapper.classList.add('is-loaded', 'card-image--placeholder');
                 img.remove();
                 const icon = document.createElement('div');
                 icon.className = 'card-image-icon';
                 icon.innerHTML = '<i class="bi bi-building"></i>';
                 wrapper.appendChild(icon);
-            }, { once: true });
- 
-            observer.unobserve(img);
-        });
-    }, {
-        // Empieza a cargar 200px antes de que la card sea visible
-        rootMargin: '200px 0px',
-        threshold: 0,
-    });
- 
-    // Observar todas las imágenes con data-src
-    document.querySelectorAll('.card-image img[data-src]').forEach((img) => {
-        observer.observe(img);
+            }
+            markSettled();
+        }, { once: true });
+
+        img.src = src;
     });
 })();

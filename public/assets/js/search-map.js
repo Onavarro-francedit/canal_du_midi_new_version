@@ -217,7 +217,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams          = new URLSearchParams(window.location.search);
     const highlightId        = urlParams.get('highlight');
 
-    if (!mapElement || typeof L === 'undefined') return;
+    const signalMapReady = () => {
+        window.dispatchEvent(new CustomEvent('search:map-ready'));
+    };
+
+    if (!mapElement || typeof L === 'undefined') {
+        signalMapReady();
+        return;
+    }
 
     const compactMedia = window.matchMedia('(max-width: 1180px)');
 
@@ -228,12 +235,34 @@ document.addEventListener('DOMContentLoaded', () => {
         : [];
 
     // 1. Inicializar Mapa centrado en el Canal du Midi
+    let mapTilesReady = false;
+    let markersReady = false;
+    let mapReadyEmitted = false;
+
+    const maybeSignalMapReady = () => {
+        if (mapReadyEmitted || !mapTilesReady || !markersReady) return;
+        mapReadyEmitted = true;
+        window.requestAnimationFrame(signalMapReady);
+    };
+
     map = L.map('explore-map', { zoomControl: false }).setView([43.6, 1.44], 10);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap contributors © CARTO',
-    }).addTo(map);
+    });
+
+    tileLayer.once('load', () => {
+        mapTilesReady = true;
+        maybeSignalMapReady();
+    });
+
+    tileLayer.once('tileerror', () => {
+        mapTilesReady = true;
+        maybeSignalMapReady();
+    });
+
+    tileLayer.addTo(map);
 
     // 2. Añadir Marcadores con clustering
     const clusterGroup = L.markerClusterGroup({
@@ -348,10 +377,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     map.addLayer(clusterGroup);
+    markersReady = true;
 
     if (validResults.length > 0) {
         map.fitBounds(clusterGroup.getBounds(), { padding: [50, 50] });
     }
+
+    maybeSignalMapReady();
 
     /* ── Vista móvil ── */
 

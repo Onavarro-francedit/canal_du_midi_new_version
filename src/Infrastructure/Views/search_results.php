@@ -48,7 +48,54 @@ foreach ($categories as $cat) {
 
 ?>
 
-<main class="search-layout-page">
+<main class="search-layout-page is-loading" id="search-page" data-results-count="<?= (int)$resultsCount ?>">
+    <div class="search-page-skeleton" aria-hidden="true">
+        <div class="search-page-skeleton__sidebar">
+            <div class="search-page-skeleton__block search-page-skeleton__block--title"></div>
+            <div class="search-page-skeleton__stack">
+                <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
+                <span class="search-page-skeleton__line"></span>
+                <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
+            </div>
+            <div class="search-page-skeleton__chip-row">
+                <span class="search-page-skeleton__chip"></span>
+                <span class="search-page-skeleton__chip"></span>
+                <span class="search-page-skeleton__chip"></span>
+            </div>
+            <div class="search-page-skeleton__panel">
+                <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
+                <span class="search-page-skeleton__line"></span>
+                <span class="search-page-skeleton__line"></span>
+                <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
+            </div>
+        </div>
+
+        <div class="search-page-skeleton__results">
+            <?php for ($i = 0; $i < 4; $i++): ?>
+                <article class="search-page-skeleton__card">
+                    <div class="search-page-skeleton__media"></div>
+                    <div class="search-page-skeleton__body">
+                        <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
+                        <span class="search-page-skeleton__line"></span>
+                        <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
+                    </div>
+                </article>
+            <?php endfor; ?>
+        </div>
+
+        <div class="search-page-skeleton__map">
+            <div class="search-page-skeleton__map-header">
+                <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
+                <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
+            </div>
+            <div class="search-page-skeleton__map-canvas"></div>
+            <div class="search-page-skeleton__map-footer">
+                <span class="search-page-skeleton__chip search-page-skeleton__chip--wide"></span>
+                <span class="search-page-skeleton__chip search-page-skeleton__chip--wide"></span>
+            </div>
+        </div>
+    </div>
+
     <div class="search-workspace">
         <aside class="search-sidebar" id="search-sidebar-panel">
             <div class="search-sidebar-tabs">
@@ -504,4 +551,37 @@ foreach ($categories as $cat) {
         'email' => $s->contact['email'] ?? '',
         'url' => BASE_URL . 'fiche/' . $s->slug,
     ], $results), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+</script>
+<script>
+    (function () {
+        const page = document.getElementById('search-page');
+        if (!page) return;
+
+        document.body.classList.add('search-page-loading');
+
+        const state = {
+            mapReady: false,
+            imagesReady: <?= $resultsCount === 0 ? 'true' : 'false' ?>,
+        };
+
+        const revealIfReady = () => {
+            if (!state.mapReady || !state.imagesReady) {
+                return;
+            }
+
+            page.classList.remove('is-loading');
+            page.classList.add('is-ready');
+            document.body.classList.remove('search-page-loading');
+        };
+
+        window.addEventListener('search:map-ready', () => {
+            state.mapReady = true;
+            revealIfReady();
+        }, { once: true });
+
+        window.addEventListener('search:images-ready', () => {
+            state.imagesReady = true;
+            revealIfReady();
+        }, { once: true });
+    })();
 </script>
