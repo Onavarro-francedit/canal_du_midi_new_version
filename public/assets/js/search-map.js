@@ -229,7 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const compactMedia = window.matchMedia('(max-width: 1180px)');
 
     // Mantiene compatibilidad: acepta tanto searchResults global como window.searchResults
-    const rawResults = typeof searchResults !== 'undefined' ? searchResults : [];
+    const rawResults = Array.isArray(window.searchResults)
+        ? window.searchResults
+        : (typeof searchResults !== 'undefined' ? searchResults : []);
     const validResults = Array.isArray(rawResults)
         ? rawResults.filter((item) => item && Number(item.lat) !== 0 && Number(item.lng) !== 0)
         : [];
@@ -242,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const maybeSignalMapReady = () => {
         if (mapReadyEmitted || !mapTilesReady || !markersReady) return;
         mapReadyEmitted = true;
-        window.requestAnimationFrame(signalMapReady);
+        window.dispatchEvent(new CustomEvent('search:map-ready'));
     };
 
     map = L.map('explore-map', { zoomControl: false }).setView([43.6, 1.44], 10);
@@ -265,7 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tileLayer.addTo(map);
 
     // 2. Añadir Marcadores con clustering
-    const clusterGroup = L.markerClusterGroup({
+    let clusterGroup = null;
+    let carouselDestroyFns = {};
+
+    const createClusterGroup = () => L.markerClusterGroup({
         maxClusterRadius: 50,
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: false,
@@ -282,106 +287,132 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     });
 
-    // Registro de destructores de carrusel por id de item
-    const carouselDestroyFns = {};
+    const buildMarkers = (items) => {
+        carouselDestroyFns = {};
+        markers = {};
 
-    validResults.forEach((item) => {
-        const customIcon = L.divIcon({
-            className: 'search-marker',
-            html: '<div class="map-pin" id="marker-' + escapeText(item.id) + '"><i class="bi bi-geo-alt-fill"></i></div>',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-        });
+        const nextClusterGroup = createClusterGroup();
 
-        const galleryImages = Array.isArray(item.gallery) && item.gallery.length > 0
-            ? item.gallery
-            : (item.image ? [item.image] : []);
+        items.forEach((item) => {
+            const customIcon = L.divIcon({
+                className: 'search-marker',
+                html: '<div class="map-pin" id="marker-' + escapeText(item.id) + '"><i class="bi bi-geo-alt-fill"></i></div>',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+            });
 
-        const { element: carouselEl, destroy: destroyCarousel } = createPopupCarousel(galleryImages, item.title);
-        carouselDestroyFns[item.id] = destroyCarousel;
+            const galleryImages = Array.isArray(item.gallery) && item.gallery.length > 0
+                ? item.gallery
+                : (item.image ? [item.image] : []);
 
-        const popupContent = document.createElement('div');
-        popupContent.className = 'map-popup-shell';
-        popupContent.appendChild(carouselEl);
+            const { element: carouselEl, destroy: destroyCarousel } = createPopupCarousel(galleryImages, item.title);
+            carouselDestroyFns[item.id] = destroyCarousel;
 
-        const popupAdresse = document.createElement('span');
-        popupAdresse.className = 'map-popup-type';
-        popupAdresse.textContent = item.address
-            ? item.address.trim().replace(', ' + escapeText(item.title), '')
-            : 'Adresse';
-        popupContent.appendChild(popupAdresse);
+            const popupContent = document.createElement('div');
+            popupContent.className = 'map-popup-shell';
+            popupContent.appendChild(carouselEl);
 
-        const actions = document.createElement('div');
-        actions.className = 'map-popup__actions';
+            const popupAdresse = document.createElement('span');
+            popupAdresse.className = 'map-popup-type';
+            popupAdresse.textContent = item.address
+                ? item.address.trim().replace(', ' + escapeText(item.title), '')
+                : 'Adresse';
+            popupContent.appendChild(popupAdresse);
 
-        const phone = String(item.phone ?? '').trim();
-        if (phone !== '') {
-            const callLink = document.createElement('a');
-            callLink.className = 'map-popup__action map-popup__action--call';
-            callLink.href = 'tel:' + phone.replace(/\s+/g, '');
-            callLink.setAttribute('aria-label', 'Appeler');
-            callLink.appendChild(createIcon('bi bi-telephone-fill'));
-            const callText = document.createElement('span');
-            callText.textContent = 'Appeler';
-            callLink.appendChild(callText);
-            actions.appendChild(callLink);
-        }
+            const actions = document.createElement('div');
+            actions.className = 'map-popup__actions';
 
-        const email = String(item.email ?? '').trim();
-        if (email !== '') {
-            const emailLink = document.createElement('a');
-            emailLink.className = 'map-popup__action map-popup__action--email';
-            emailLink.href = 'mailto:' + encodeURIComponent(email);
-            emailLink.setAttribute('aria-label', 'Envoyer un email');
-            emailLink.appendChild(createIcon('bi bi-envelope-fill'));
-            const emailText = document.createElement('span');
-            emailText.textContent = 'Email';
-            emailLink.appendChild(emailText);
-            actions.appendChild(emailLink);
-        }
-
-        const itineraryLink = document.createElement('a');
-        itineraryLink.className = 'map-popup__action map-popup__action--route';
-        itineraryLink.href = buildMapsDirectionsUrl(item.lat, item.lng, item.title, item.address);
-        itineraryLink.target = '_blank';
-        itineraryLink.rel = 'noopener noreferrer';
-        itineraryLink.setAttribute('aria-label', 'Obtenir l\'itinéraire');
-        itineraryLink.appendChild(createIcon('bi bi-sign-turn-right-fill'));
-        const routeText = document.createElement('span');
-        routeText.textContent = 'Itinéraire';
-        itineraryLink.appendChild(routeText);
-        actions.appendChild(itineraryLink);
-
-        popupContent.appendChild(actions);
-
-        const popupLink = document.createElement('a');
-        popupLink.href = isSafeHttpUrl(item.url) ? item.url : '#';
-        popupLink.className = 'map-popup-link';
-        popupLink.textContent = 'Voir la fiche →';
-        popupLink.target = '_blank';
-        popupLink.rel = 'noopener noreferrer';
-        popupContent.appendChild(popupLink);
-
-        const marker = L.marker([item.lat, item.lng], { icon: customIcon })
-            .bindPopup(popupContent);
-
-        // Limpiar timer del carrusel al cerrar el popup
-        marker.on('popupclose', () => {
-            if (typeof carouselDestroyFns[item.id] === 'function') {
-                carouselDestroyFns[item.id]();
+            const phone = String(item.phone ?? '').trim();
+            if (phone !== '') {
+                const callLink = document.createElement('a');
+                callLink.className = 'map-popup__action map-popup__action--call';
+                callLink.href = 'tel:' + phone.replace(/\s+/g, '');
+                callLink.setAttribute('aria-label', 'Appeler');
+                callLink.appendChild(createIcon('bi bi-telephone-fill'));
+                const callText = document.createElement('span');
+                callText.textContent = 'Appeler';
+                callLink.appendChild(callText);
+                actions.appendChild(callLink);
             }
+
+            const email = String(item.email ?? '').trim();
+            if (email !== '') {
+                const emailLink = document.createElement('a');
+                emailLink.className = 'map-popup__action map-popup__action--email';
+                emailLink.href = 'mailto:' + encodeURIComponent(email);
+                emailLink.setAttribute('aria-label', 'Envoyer un email');
+                emailLink.appendChild(createIcon('bi bi-envelope-fill'));
+                const emailText = document.createElement('span');
+                emailText.textContent = 'Email';
+                emailLink.appendChild(emailText);
+                actions.appendChild(emailLink);
+            }
+
+            const itineraryLink = document.createElement('a');
+            itineraryLink.className = 'map-popup__action map-popup__action--route';
+            itineraryLink.href = buildMapsDirectionsUrl(item.lat, item.lng, item.title, item.address);
+            itineraryLink.target = '_blank';
+            itineraryLink.rel = 'noopener noreferrer';
+            itineraryLink.setAttribute('aria-label', 'Obtenir l\'itinéraire');
+            itineraryLink.appendChild(createIcon('bi bi-sign-turn-right-fill'));
+            const routeText = document.createElement('span');
+            routeText.textContent = 'Itinéraire';
+            itineraryLink.appendChild(routeText);
+            actions.appendChild(itineraryLink);
+
+            popupContent.appendChild(actions);
+
+            const popupLink = document.createElement('a');
+            popupLink.href = isSafeHttpUrl(item.url) ? item.url : '#';
+            popupLink.className = 'map-popup-link';
+            popupLink.textContent = 'Voir la fiche →';
+            popupLink.target = '_blank';
+            popupLink.rel = 'noopener noreferrer';
+            popupContent.appendChild(popupLink);
+
+            const marker = L.marker([item.lat, item.lng], { icon: customIcon })
+                .bindPopup(popupContent);
+
+            marker.on('popupclose', () => {
+                if (typeof carouselDestroyFns[item.id] === 'function') {
+                    carouselDestroyFns[item.id]();
+                }
+            });
+
+            nextClusterGroup.addLayer(marker);
+            markers[item.id] = marker;
         });
 
-        clusterGroup.addLayer(marker);
-        markers[item.id] = marker;
-    });
+        return nextClusterGroup;
+    };
 
-    map.addLayer(clusterGroup);
-    markersReady = true;
+    const renderMapResults = (items) => {
+        const normalizedItems = Array.isArray(items)
+            ? items.filter((item) => item && Number(item.lat) !== 0 && Number(item.lng) !== 0)
+            : [];
 
-    if (validResults.length > 0) {
-        map.fitBounds(clusterGroup.getBounds(), { padding: [50, 50] });
-    }
+        if (clusterGroup) {
+            map.removeLayer(clusterGroup);
+        }
+
+        clusterGroup = buildMarkers(normalizedItems);
+        map.addLayer(clusterGroup);
+
+        if (normalizedItems.length > 0) {
+            map.fitBounds(clusterGroup.getBounds(), { padding: [50, 50] });
+        } else {
+            map.setView([43.6, 1.44], 10);
+        }
+
+        markersReady = true;
+        maybeSignalMapReady();
+
+        return normalizedItems;
+    };
+
+    window.setSearchMapResults = renderMapResults;
+
+    renderMapResults(validResults);
 
     maybeSignalMapReady();
 
