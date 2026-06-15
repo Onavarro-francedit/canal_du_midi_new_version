@@ -118,7 +118,6 @@ class OpenAIService implements AIServiceInterface {
                 'amenities' => array_map(fn($a) => $a['slug'], $service->amenities),
                 'categories' => $serviceCategories,
                 'equipments' => $serviceEquipments,
-                'description' => $service->translations['description'],
                 'keywords' => $serviceKeywords,
             ];
         }
@@ -157,7 +156,7 @@ class OpenAIService implements AIServiceInterface {
             'model' => $this->model,
             'messages' => $messages,
             'temperature' => 0.7, // Creatividad de la IA
-            'max_tokens' => 500 // Permitir varias recomendaciones y explicaciones
+            'max_tokens' => 1500
         ]));
 
         $response = curl_exec($ch);

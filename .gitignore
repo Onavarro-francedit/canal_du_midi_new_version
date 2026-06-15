@@ -4,6 +4,12 @@ src/config/Database.php
 src/config/*.php
 public/clients_images
 
+# Environment variables (never commit secrets)
+.env
+
+# Composer dependencies
+vendor/
+composer.lock
 
 # macOS
 .DS_Store

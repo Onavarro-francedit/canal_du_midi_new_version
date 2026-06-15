@@ -62,6 +62,9 @@
             <?= \App\Infrastructure\Views\Helpers\SchemaGenerator::generate($service, $lang) ?>
         </script>
     <?php endif; ?>
+    <?php if (isset($page) && $page === 'vacation-planner'): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/vacation-planner.css">
+    <?php endif; ?>
 </head>
 <body>
     <?php
@@ -90,6 +93,9 @@
                     <a href="<?= BASE_URL . $lang ?>/home#why-us">Pourquoi nous</a>
                     <a href="<?= BASE_URL . $lang ?>/home#reviews">Avis</a>
                     <a href="<?= BASE_URL . $lang ?>/home#news">Actualités</a>
+                    <a href="<?= BASE_URL . $lang ?>/vacation-planner" class="nav-planner-link<?= ($page ?? '') === 'vacation-planner' ? ' active' : '' ?>">
+                        <i class="bi bi-magic"></i> Planifier mon voyage
+                    </a>
                 </nav>
                 <div class="lang-selector">
                     <label class="lang-selector-label" for="language-switcher">Choisir la langue</label>

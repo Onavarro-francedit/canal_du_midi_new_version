@@ -65,48 +65,102 @@ select {
     position: sticky;
     top: 0;
     z-index: 3000;
-    backdrop-filter: blur(18px);
-    background: rgba(252, 248, 255, 0.78);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(252, 248, 255, 0.85);
     border-bottom: 1px solid rgba(106, 99, 217, 0.08);
 }
 
 .header-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    min-height: 82px;
+    gap: 12px;
+    min-height: 70px;
 }
 
+/* ── Brand ── */
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     font-family: 'Sora', sans-serif;
     font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    color: var(--text);
 }
 
 .brand-mark {
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
     background: linear-gradient(135deg, var(--teal), var(--primary));
-    box-shadow: 0 8px 20px rgba(106, 99, 217, 0.28);
+    box-shadow: 0 6px 16px rgba(106, 99, 217, 0.32);
+    flex-shrink: 0;
 }
 
+.brand-text {
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+/* ── Nav links ── */
 .main-nav {
     display: flex;
-    gap: 24px;
-    font-size: 0.95rem;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+.main-nav a {
     color: var(--muted);
+    white-space: nowrap;
+    padding: 6px 11px;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s;
 }
 
 .main-nav a:hover {
     color: var(--text);
+    background: rgba(106, 99, 217, 0.07);
 }
 
+/* ── Planner CTA pill ── */
+.nav-planner-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #6a63d9, #8a7ee8);
+    color: #fff !important;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    margin-left: 6px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 4px 16px rgba(106, 99, 217, 0.38);
+}
+.nav-planner-link:hover {
+    color: #fff !important;
+    background: linear-gradient(135deg, #7b75e0, #9a8ef0) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(106, 99, 217, 0.48);
+}
+.nav-planner-link.active {
+    box-shadow: 0 0 0 3px rgba(106, 99, 217, 0.28), 0 4px 16px rgba(106, 99, 217, 0.38);
+}
+
+/* ── Right controls (lang + S'inscrire) ── */
 .lang-selector {
     flex: 0 0 auto;
+}
+
+.header-row > .button {
+    flex-shrink: 0;
 }
 
 .lang-selector-label {
@@ -1264,6 +1318,18 @@ h2 {
         color: var(--text);
         background: rgba(106, 99, 217, 0.12);
         transform: translateX(4px);
+    }
+
+    .main-nav .nav-planner-link {
+        margin-top: 6px;
+        justify-content: center;
+        padding: 11px 16px;
+        border-radius: 14px;
+        font-size: 0.95rem;
+    }
+    .main-nav .nav-planner-link:hover {
+        transform: translateX(4px);
+        background: linear-gradient(135deg, #6a63d9, #8a7ee8);
     }
 
     .main-nav a:focus-visible {

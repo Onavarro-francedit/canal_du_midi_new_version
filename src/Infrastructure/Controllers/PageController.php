@@ -192,6 +192,35 @@ class PageController {
                 }
                 break;
 
+            case 'vacation-planner':
+                $seo = [
+                    'title'       => 'Planificateur de voyage IA | Canal du Midi',
+                    'description' => 'Créez votre itinéraire personnalisé sur le Canal du Midi grâce à notre assistant IA. Plan jour par jour, prestataires sélectionnés, emails automatiques.',
+                    'keywords'    => 'planificateur voyage, Canal du Midi, itinéraire personnalisé, IA, séjour',
+                ];
+                require_once __DIR__ . '/../Views/layout/header.php';
+                require_once __DIR__ . '/../Views/vacation_planner.php';
+                require_once __DIR__ . '/../Views/layout/footer.php';
+                return;
+
+            case 'ai-plan-generate':
+                if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                    $this->handleAIPlanGenerate($lang);
+                    return;
+                }
+                break;
+
+            case 'ai-plan-submit':
+                if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                    $this->handleAIPlanSubmit();
+                    return;
+                }
+                break;
+
+            case 'vacation-pdf':
+                $this->renderVacationPDF($params ?? '', $lang);
+                return;
+
             default:
                 http_response_code(404);
                 $pageTitle = '404 - Page non trouvée';
@@ -1087,5 +1116,173 @@ class PageController {
 
     private function isAjaxRequest(): bool {
         return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+    }
+
+    // ── Vacation Planner ──────────────────────────────────────────────────
+
+    private function mailer(): \App\Infrastructure\Services\MailService {
+        static $instance = null;
+        if ($instance === null) {
+            $instance = new \App\Infrastructure\Services\MailService();
+        }
+        return $instance;
+    }
+
+    private function handleAIPlanGenerate(string $lang): void {
+        header('Content-Type: application/json');
+        $prompt = $this->sanitizeText($_POST['prompt'] ?? '');
+        if (empty($prompt)) {
+            echo json_encode(['error' => 'Prompt requis']);
+            return;
+        }
+        $repository = new MySQLServiceRepository();
+        $services   = $repository->findAll($this->normalizeLanguage($lang));
+        $planner    = new \App\Infrastructure\Services\VacationPlannerService();
+        echo json_encode($planner->generatePlan($prompt, $services));
+    }
+
+    private function handleAIPlanSubmit(): void {
+        header('Content-Type: application/json');
+
+        $name     = $this->sanitizeText($_POST['name']     ?? '');
+        $email    = $this->sanitizeText($_POST['email']    ?? '');
+        $phone    = $this->sanitizeText($_POST['phone']    ?? '');
+        $adults   = max(1, (int)($_POST['adults']   ?? 1));
+        $children = max(0, (int)($_POST['children'] ?? 0));
+        $checkin  = $this->sanitizeText($_POST['checkin']  ?? '');
+        $checkout = $this->sanitizeText($_POST['checkout'] ?? '');
+        $planJson = $_POST['plan'] ?? '';
+
+        if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$planJson) {
+            echo json_encode(['success' => false, 'error' => 'Données invalides']);
+            return;
+        }
+
+        $plan = json_decode($planJson, true);
+        if (!is_array($plan) || empty($plan['days'])) {
+            echo json_encode(['success' => false, 'error' => 'Plan invalide']);
+            return;
+        }
+
+        $reference = 'CDM-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(4)));
+
+        $db = \App\Config\Database::getConnection();
+        $db->exec("CREATE TABLE IF NOT EXISTS vacation_plans (
+            id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            reference        VARCHAR(30)  NOT NULL UNIQUE,
+            customer_name    VARCHAR(150),
+            customer_email   VARCHAR(150),
+            customer_phone   VARCHAR(50),
+            checkin_date     DATE,
+            checkout_date    DATE,
+            adults           TINYINT UNSIGNED DEFAULT 1,
+            children         TINYINT UNSIGNED DEFAULT 0,
+            plan_data        LONGTEXT,
+            created_at       DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $stmt = $db->prepare("INSERT INTO vacation_plans
+            (reference, customer_name, customer_email, customer_phone, checkin_date, checkout_date, adults, children, plan_data)
+            VALUES (:ref, :name, :email, :phone, :ci, :co, :adults, :children, :plan)");
+        $stmt->execute([
+            'ref'      => $reference,
+            'name'     => $name,
+            'email'    => $email,
+            'phone'    => $phone,
+            'ci'       => $checkin  ?: null,
+            'co'       => $checkout ?: null,
+            'adults'   => $adults,
+            'children' => $children,
+            'plan'     => $planJson,
+        ]);
+
+        $this->sendVacationActorEmails($plan, $name, $email, $phone, $checkin, $checkout, $adults, $children);
+        $this->sendVacationUserEmail($plan, $name, $email, $checkin, $checkout, $adults, $children, $reference);
+
+        echo json_encode(['success' => true, 'reference' => $reference]);
+    }
+
+    private function sendVacationActorEmails(array $plan, string $cName, string $cEmail, string $cPhone, string $checkin, string $checkout, int $adults, int $children): void {
+        $actorSlots = [];
+        foreach ($plan['days'] as $day) {
+            foreach ($day['activities'] as $act) {
+                $ae = trim($act['email'] ?? '');
+                if (!$ae || !filter_var($ae, FILTER_VALIDATE_EMAIL)) continue;
+                // Store structured data so the template can compute the exact date
+                $actorSlots[$ae][] = [
+                    'day'   => (int)$day['day'],
+                    'slot'  => $act['slot']  ?? '',
+                    'title' => $act['title'] ?? '',
+                ];
+            }
+        }
+
+        $groupText = $adults . ' adulte' . ($adults > 1 ? 's' : '')
+            . ($children > 0 ? ' et ' . $children . ' enfant' . ($children > 1 ? 's' : '') : '');
+
+        foreach ($actorSlots as $ae => $slots) {
+            $body = \App\Infrastructure\Views\Emails\EmailTemplates::actorNotification(
+                $cName, $cEmail, $cPhone, $checkin, $checkout, $groupText, $slots
+            );
+            $this->mailer()->send($ae, 'Demande d\'intérêt — ' . $cName . ' — Canal du Midi', $body);
+        }
+    }
+
+    private function sendVacationUserEmail(array $plan, string $name, string $email, string $checkin, string $checkout, int $adults, int $children, string $reference): void {
+        $datesText = $checkin
+            ? 'du ' . $this->formatDate($checkin) . ($checkout ? ' au ' . $this->formatDate($checkout) : '')
+            : 'dates à préciser';
+        $groupText = $adults . ' adulte' . ($adults > 1 ? 's' : '')
+            . ($children > 0 ? ' et ' . $children . ' enfant' . ($children > 1 ? 's' : '') : '');
+
+        $body = \App\Infrastructure\Views\Emails\EmailTemplates::userConfirmation(
+            $name, $reference, $datesText, $groupText,
+            \App\Infrastructure\Views\Emails\EmailTemplates::buildDaysHtml($plan['days']),
+            BASE_URL . 'vacation-pdf/' . $reference
+        );
+        $this->mailer()->send($email, 'Votre plan Canal du Midi — ' . $reference, $body);
+    }
+
+    private function renderVacationPDF(string $reference, string $lang): void {
+        if (empty($reference)) {
+            http_response_code(404);
+            echo '<!DOCTYPE html><html><body style="font-family:Arial;padding:40px;">Plan introuvable.</body></html>';
+            return;
+        }
+
+        $db = \App\Config\Database::getConnection();
+        try {
+            $stmt = $db->prepare("SELECT * FROM vacation_plans WHERE reference = :ref LIMIT 1");
+            $stmt->execute(['ref' => $reference]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            http_response_code(404);
+            echo '<!DOCTYPE html><html><body style="font-family:Arial;padding:40px;">Plan introuvable.</body></html>';
+            return;
+        }
+
+        if (!$row) {
+            http_response_code(404);
+            echo '<!DOCTYPE html><html><body style="font-family:Arial;padding:40px;">Plan introuvable.</body></html>';
+            return;
+        }
+
+        $plan         = json_decode($row['plan_data'], true);
+        $customerName = htmlspecialchars($row['customer_name'] ?? '');
+        $checkin      = $row['checkin_date']  ?? '';
+        $checkout     = $row['checkout_date'] ?? '';
+        $adults       = (int)($row['adults']   ?? 1);
+        $children     = (int)($row['children'] ?? 0);
+
+        require_once __DIR__ . '/../Views/vacation_pdf.php';
+    }
+
+    private function formatDate(string $date): string {
+        if (empty($date)) return '';
+        try {
+            return (new \DateTime($date))->format('d/m/Y');
+        } catch (\Throwable $e) {
+            return $date;
+        }
     }
 }
