@@ -88,13 +88,18 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 
 ## 📌 Estado actual del proyecto
 
-- **Último completado:** Incremento 2 — TASK-013 (micro-interacciones de
-  cards/botones) ✅. La "ligne d'eau" (TASK-011) llegó a implementarse y verificarse,
-  pero el usuario la **eliminó** (2026-06-23, "se ve muy feo y sin utilidad"); las 4
-  instancias SVG y su CSS se quitaron de `home.php`/`styles.css`. Ver 🚫 en TASKS.md.
-- **Siguiente:** Incremento 3 — TASK-012 "Les étapes du canal" (tira secuenciada
-  Toulouse → … → Étang de Thau), o saldar deuda de i18n/contenido
-  (TASK-004/005/006/007). Ver `docs/TASKS.md`.
-- Recordatorio: el motion/render se verifica SIEMPRE en navegador con captura o
-  muestreo de píxeles (PRD-002/PRD-003); el computed style no basta. Nada de
+- **Último completado:** Cluster "Buscador del hero" (BUG-007/TASK-015 +
+  BUG-008/TASK-016 + BUG-009 + TASK-017), pipeline completo + product ⚠️ verificado
+  en navegador. `<select>` Type (12 tipos reales, sin "boat" fantasma) y Destination
+  (9 etapas) poblados desde BD; título SEO condicional sin comillas vacías; feedback
+  de carga en "Rechercher"; SEC-006 (ENT_QUOTES) cerrada. Ver 🟢 en TASKS.md.
+- **Seguimientos abiertos (🟡):** PRD-004/BUG-010 (el título de search imprime el
+  slug crudo del tipo, p.ej. "location-de-velo", en vez del nombre legible) y
+  PRD-005/BUG-011 (Type="Le Canal en Bateau"/`nautique` devuelve 136/253, mayoría
+  écluses+ports, no barcos). Ambos en `docs/TASKS.md`.
+- **Siguiente candidato:** corregir PRD-004 + PRD-005, o Incremento 3 visual —
+  TASK-012 "Les étapes du canal" (Toulouse → … → Étang de Thau).
+- Recordatorio: el motion/render Y los filtros/resultados se verifican SIEMPRE en
+  navegador con captura, muestreo de píxeles o conteo+muestra real
+  (PRD-002/PRD-003/PRD-005); el computed style/“filtra algo” no basta. Nada de
   pins/scroll-jacking (TASK-008 revertida).

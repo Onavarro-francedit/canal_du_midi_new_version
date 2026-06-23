@@ -65,10 +65,19 @@
                                 </span>
                             </span>
                             <span class="search-field-select-wrap">
+                                <?php
+                                // BUG-007 / TASK-015: etapas reales del Canal du Midi definidas en
+                                // config.php (CANAL_STAGES), verificadas contra la BD (listings.address).
+                                // NO se usa getCities() porque devuelve nombres de negocios, no etapas
+                                // geográficas. El filtro SQL ya usa LIKE '%city%' sobre address.
+                                ?>
                                 <select name="city" class="search-field-input">
                                     <option value="">Toutes les étapes</option>
-                                    <option value="Toulouse">Toulouse</option>
-                                    <option value="Carcassonne">Carcassonne</option>
+                                    <?php foreach ($heroStages as $stage): ?>
+                                        <option value="<?= htmlspecialchars($stage, ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars($stage, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                                 <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
                             </span>
@@ -82,10 +91,19 @@
                                 </span>
                             </span>
                             <span class="search-field-select-wrap">
+                                <?php
+                                // BUG-008 / TASK-016: categorías reales de BD (slug + name) filtradas
+                                // por whitelist turística definida en PageController (case home).
+                                // name="type" (escalar) es correcto: el controller hace (array)$typeRaw.
+                                // NO se usa name="type[]" — no cambiar.
+                                ?>
                                 <select name="type" class="search-field-input">
                                     <option value="">Tous les types</option>
-                                    <option value="hotel">Hôtel</option>
-                                    <option value="boat">Bateau</option>
+                                    <?php foreach ($heroTypes as $heroType): ?>
+                                        <option value="<?= htmlspecialchars($heroType['slug'], ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars($heroType['name'], ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                                 <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
                             </span>

@@ -208,7 +208,9 @@ class MySQLServiceRepository implements ServiceRepository
                 LEFT JOIN category_counts_cache cc ON c.id = cc.category_id
                 ORDER BY c.parent_id ASC, c.name ASC";
 
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getCities(): array

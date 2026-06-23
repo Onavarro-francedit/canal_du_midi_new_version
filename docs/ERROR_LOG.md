@@ -60,6 +60,12 @@ Formato de entrada:
 - Cómo prevenirlo (→ LESSONS.md PRD-001): la decoración dependiente de CDN debe
   ser visible por defecto; ocultar-para-animar es responsabilidad del JS.
 
+### [SEC-006] htmlspecialchars() sin ENT_QUOTES en atributos HTML — 2026-06-23 (cluster buscador hero)
+- Síntoma: `header.php` llamaba a `htmlspecialchars($seo['title'])` etc. sin pasar `ENT_QUOTES, 'UTF-8'`. PHP usa por defecto `ENT_COMPAT` (solo escapa `"`, no `'`). En el elemento `<title>` es inocuo, pero en los atributos `content=` de los meta (`og:title`, `og:description`, `description`, `keywords`) una comilla simple en el valor — posible cuando `$query` contiene `'` y el patrón BUG-009 genera `"Résultats pour 'valor'"` — puede romper el atributo o dar pie a inyección en parsers que acepten comillas simples como delimitadores.
+- Causa raíz: omisión de los flags `ENT_QUOTES, 'UTF-8'` en los cinco `htmlspecialchars()` del header. `sanitizeText()` (upstream) elimina tags y control chars pero NO escapa entidades, por lo que el escape queda únicamente en el output — y sin ENT_QUOTES deja pasar `'`.
+- Corrección aplicada: añadidos `ENT_QUOTES, 'UTF-8'` a los cinco `htmlspecialchars()` de `header.php` (L6 `<title>`, L7 `meta description`, L8 `meta keywords`, L16 `og:title`, L17 `og:description`).
+- Cómo prevenirlo (→ LESSONS.md SEC-006): toda llamada a `htmlspecialchars()` en este proyecto debe incluir `ENT_QUOTES, 'UTF-8'` explícitamente. Nunca confiar en los flags por defecto de PHP.
+
 ### [PRD-003] Gradiente SVG en objectBoundingBox sobre un trazo horizontal = stroke invisible — 2026-06-23 (TASK-011)
 - Síntoma: los 3 divisores "ligne d'eau" entre secciones (y también la ligne del
   hero) renderizan SOLO los 4 puntos-écluse; la hairline de degradado que los
@@ -89,3 +95,55 @@ Formato de entrada:
   usar `gradientUnits="userSpaceOnUse"`. Y un `stroke: url(#id)` con computed
   style correcto NO prueba que se pinte: verificar el color REAL del píxel en
   navegador (PRD-002).
+
+### [PRD-004] Título SEO imprime el slug crudo del tipo en vez del nombre legible — 2026-06-23 (cluster buscador hero)
+- Síntoma: al filtrar por tipo sin texto ni ciudad, el `<title>` y `<h1>` de la
+  página de resultados usan `$types[0]` literal — el SLUG de BD. Verificado en
+  navegador: `…/search?type=location-de-velo` → `<title>Séjours et activités —
+  location-de-velo | Canal du Midi</title>`; `…/search?type=nautique` →
+  `…— nautique`. El usuario seleccionó "Location de vélo" / "Le Canal en Bateau"
+  en el select, pero el título le devuelve "location-de-velo" / "nautique":
+  jerga interna con guiones, no francés legible. Visible además en navegador
+  (no solo en el HTML): es el título de la pestaña y el encabezado de la página.
+- Causa raíz: `PageController.php:227` hace `$seoTitle = "Séjours et activités — "
+  . $types[0] . " | Canal du Midi"`. `$types` viene de `$_GET['type']` saneado:
+  son slugs, no nombres. El controlador YA carga `$categories =
+  $repository->getCategories()` (L213) y resuelve `$categoryIds`, así que tiene a
+  mano el mapa slug→name para traducir, pero no lo usa en el título.
+- Corrección aplicada: NINGUNA todavía — vuelve a architect/coder. Dirección de
+  fix: construir un índice `slug => name` desde `$categories` (igual que home hace
+  con `$catsBySlug`) y usar el `name` del primer tipo seleccionado en el título;
+  fallback al slug solo si no hay match. Re-verificar en navegador los 4 ramos del
+  título. (Bonus de coherencia: si hay >1 tipo, el título solo nombra el primero;
+  considerar "{name} et autres" o un texto genérico.)
+- Cómo prevenirlo (→ LESSONS.md PRD-004): nunca imprimir un slug/clave técnica en
+  texto de cara al usuario; mapear siempre a la etiqueta traducida (`name`) que ya
+  se muestra en el `<select>`. El select y el título deben hablar el mismo idioma.
+
+### [PRD-005] Filtro "Le Canal en Bateau" (nautique) devuelve mayoría écluses/ports, no barcos — 2026-06-23 (cluster buscador hero)
+- Síntoma: seleccionar Type="Le Canal en Bateau" (slug `nautique`) en el hero y
+  buscar devuelve 136 de 253 listings (54% del catálogo). Verificado en navegador:
+  la lista está dominada por "Écluse Bayard", "Écluse d'Argelliers", "Écluse
+  d'Argens"… El turista que quiere un paseo/croisière en barco recibe sobre todo
+  esclusas y puertos. Conteo real por categoría hija de `nautique` (id 10):
+  ecluses=72, ports=21, croisiere-bateau=5, location-bateau=10,
+  location-canoe-kayak=1. Es decir 93/136 (68%) son infraestructura NO reservable.
+- Causa raíz: `resolveCategoryIdsForSearch()` expande la categoría padre `nautique`
+  a TODAS sus hijas vía el recorrido `childrenByParent` (PageController L1157-1170).
+  Entre las hijas están `ecluses` y `ports`, que en este dataset son POIs de
+  patrimonio/infraestructura del canal, no servicios turísticos de barco. La
+  expansión jerárquica es correcta en abstracto, pero el contenido de esas dos
+  ramas no casa con la expectativa del label "Le Canal en Bateau".
+- Corrección aplicada: NINGUNA todavía — decisión de producto. Direcciones: (a)
+  excluir `ecluses` y `ports` de la expansión cuando el tipo elegido es el genérico
+  `nautique` desde el hero (lista de slugs no-reservables a excluir); (b) o apuntar
+  el value del option "Le Canal en Bateau" a las hijas reservables (croisiere-bateau
+  + location-bateau + location-de-canoe-kayak) en vez del padre `nautique`; (c) o
+  separar écluses/ports a su propia entrada del select ("Écluses & patrimoine") para
+  que sea una elección consciente del usuario. Re-verificar conteo y muestra en
+  navegador.
+- Cómo prevenirlo (→ LESSONS.md PRD-005): la expansión padre→hijos de categorías es
+  correcta a nivel de datos pero NO garantiza coherencia de UX: una categoría padre
+  puede mezclar servicios reservables con POIs de infraestructura. Antes de exponer
+  un filtro al usuario, contar y MIRAR la muestra real de resultados en navegador
+  (PRD-002) y juzgar si responde a lo que el label promete, no solo si "filtra algo".

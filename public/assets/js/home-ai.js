@@ -51,6 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // TASK-017: feedback de carga en el submit clásico del formulario del hero.
+    // Deshabilita el botón "Rechercher" y muestra estado de carga mientras el
+    // navegador navega a la página de resultados. El envío GET nativo se mantiene.
+    const searchSubmitBtn = searchForm.querySelector('button[type="submit"]');
+    if (searchSubmitBtn) {
+        searchForm.addEventListener('submit', () => {
+            searchSubmitBtn.disabled = true;
+            searchSubmitBtn.innerHTML = '<i class="bi bi-arrow-repeat ai-loading"></i> Recherche…';
+        });
+    }
+
     aiModalForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -67,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiSubmitBtn.disabled = true;
         const originalContent = aiSubmitBtn.innerHTML;
         aiSubmitBtn.innerHTML = '<i class="bi bi-arrow-repeat ai-loading"></i><span>Analyse en cours</span>';
-        aiFeedback.textContent = "L'IA analyse votre demande...";
+        aiFeedback.textContent = "L'IA analyse votre demande…";
         aiFeedback.classList.add('is-info');
 
         try {
@@ -77,6 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: `prompt=${encodeURIComponent(prompt)}`
             });
 
+            // TASK-017: verificar HTTP status antes de parsear JSON
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+
             const data = await response.json();
 
             if (data.id) {
@@ -84,11 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            aiFeedback.textContent = "Pas de correspondance précise. Lancement d'une recherche classique...";
+            // Sin resultado preciso de IA → búsqueda clásica con el texto introducido
+            aiFeedback.textContent = "Aucune correspondance précise trouvée. Lancement d'une recherche classique…";
             searchForm.submit();
         } catch (error) {
-            console.error('AI Error:', error);
-            aiFeedback.textContent = "Impossible de joindre l'IA. Lancement d'une recherche classique...";
+            // TASK-017: mensaje de fallback más claro para el usuario
+            aiFeedback.textContent = "Le service IA est momentanément indisponible. Lancement d'une recherche classique…";
             searchForm.submit();
         } finally {
             aiSubmitBtn.disabled = false;

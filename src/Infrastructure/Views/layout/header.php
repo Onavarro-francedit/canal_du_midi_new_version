@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($seo['title'] ?? 'Canal du Midi | Voyages et escapades') ?></title>
-    <meta name="description" content="<?= htmlspecialchars($seo['description'] ?? 'Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.') ?>">
-    <meta name="keywords" content="<?= htmlspecialchars($seo['keywords'] ?? 'Canal du Midi, voyage, tourisme, Occitanie, péniche, vélo, hôtel') ?>">
+    <title><?= htmlspecialchars($seo['title'] ?? 'Canal du Midi | Voyages et escapades', ENT_QUOTES, 'UTF-8') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($seo['description'] ?? 'Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.', ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="keywords" content="<?= htmlspecialchars($seo['keywords'] ?? 'Canal du Midi, voyage, tourisme, Occitanie, péniche, vélo, hôtel', ENT_QUOTES, 'UTF-8') ?>">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/styles.css">
    
     <!-- Open Graph (Para que se vea bien en Facebook/WhatsApp) -->
-    <meta property="og:title" content="<?= htmlspecialchars($seo['title'] ?? 'Canal du Midi | Voyages et escapades') ?>">
-    <meta property="og:description" content="<?= htmlspecialchars($seo['description'] ?? 'Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.') ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($seo['title'] ?? 'Canal du Midi | Voyages et escapades', ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($seo['description'] ?? 'Découvrez le Canal du Midi : croisières en péniche, circuits à vélo et hôtels de charme. Planifiez votre voyage sur mesure.', ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:type" content="website">
 
     <!-- Bootstrap Icons CDN -->

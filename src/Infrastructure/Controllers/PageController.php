@@ -38,6 +38,51 @@ class PageController {
                 $features = $repository->getActiveFeatures($lang);
                 $articles = $repository->getLatestArticles($lang);
 
+                // ── Hero buscador: tipos curados (BUG-008 / TASK-016) ─────────
+                // Whitelist de slugs top-level en orden de relevancia turística.
+                // Se obtienen los datos reales de BD (slug + name) en lugar de
+                // hardcodear etiquetas. getCategoriesWithCount devuelve todas las
+                // categorías incluyendo top-level; usamos getCategories() que da
+                // slug + name + parent_id sin necesidad del count para el hero.
+                $heroTypeWhitelist = [
+                    'hotel',
+                    'chambre-a-louer',
+                    'appartement-maison-a-louer',
+                    'camping',
+                    'restaurant',
+                    'nautique',
+                    'peniche',
+                    'location-de-velo',
+                    'excursions',
+                    'chateaux',
+                    'musees',
+                    'oenotourisme',
+                ];
+                // Indexamos todas las categorías por slug para lookup O(1)
+                $allCatsRaw = $repository->getCategories();
+                $catsBySlug = [];
+                foreach ($allCatsRaw as $cat) {
+                    $slug = strtolower(trim((string)($cat['slug'] ?? '')));
+                    if ($slug !== '') {
+                        $catsBySlug[$slug] = $cat;
+                    }
+                }
+                // Preservamos el orden de la whitelist; solo incluimos slugs que existan en BD
+                $heroTypes = [];
+                foreach ($heroTypeWhitelist as $wSlug) {
+                    if (isset($catsBySlug[$wSlug])) {
+                        $heroTypes[] = [
+                            'slug' => $catsBySlug[$wSlug]['slug'],
+                            'name' => $catsBySlug[$wSlug]['name'],
+                        ];
+                    }
+                }
+
+                // ── Hero buscador: etapas del canal (BUG-007 / TASK-015) ──────
+                // CANAL_STAGES está definido en config.php y verificado contra BD.
+                // No usamos getCities() porque devuelve nombres de negocios, no etapas.
+                $heroStages = CANAL_STAGES;
+
                 require_once __DIR__ . '/../Views/layout/header.php';
                 require_once __DIR__ . '/../Views/home.php';
                 require_once __DIR__ . '/../Views/layout/footer.php';
@@ -171,10 +216,22 @@ class PageController {
                 $cities = $repository->getCities();
 
 
+                // ── Título condicional SEO (BUG-009) ─────────────────────────
+                // Tres casos: búsqueda textual / filtro por city o type / sin filtros.
+                if ($query !== '') {
+                    $seoTitle = "Résultats pour '" . $query . "' | Canal du Midi";
+                } elseif ($city !== '') {
+                    $seoTitle = "Séjours et activités à " . $city . " | Canal du Midi";
+                } elseif (!empty($types)) {
+                    // Usa el primer tipo seleccionado como label del título
+                    $seoTitle = "Séjours et activités — " . $types[0] . " | Canal du Midi";
+                } else {
+                    $seoTitle = "Tous nos séjours et activités | Canal du Midi";
+                }
                 $seo = [
-                    'title' => "Résultats pour '" . $query . "' | Canal du Midi",
-                    'description' => 'Découvrez les meilleurs séjours et activités correspondant a votre recherche.',
-                    'keywords' => 'recherche, voyage, canal du midi'
+                    'title'       => $seoTitle,
+                    'description' => 'Découvrez les meilleurs séjours et activités correspondant à votre recherche.',
+                    'keywords'    => 'recherche, voyage, canal du midi'
                 ];
 
                 require_once __DIR__ . '/../Views/layout/header.php';

@@ -39,6 +39,9 @@ _(sin lecciones todavía)_
   corregido en `footer.php`. Deuda relacionada aún abierta: los `<script>` de
   Leaflet/markercluster (unpkg) en service/search siguen sin SRI.
 
+- **SEC-006: htmlspecialchars() SIEMPRE con ENT_QUOTES, 'UTF-8' — nunca confiar en los flags por defecto.**
+  PHP usa `ENT_COMPAT` por defecto: escapa `"` pero NO `'`. En atributos HTML delimitados por comillas simples (o en parsers tolerantes), un valor que contenga `'` sin escapar puede romper el atributo o permitir inyección. Además, omitir `'UTF-8'` puede generar comportamientos inesperados con caracteres multibyte. Regla fija del proyecto: `htmlspecialchars($valor, ENT_QUOTES, 'UTF-8')` en cada punto de salida, sin excepción. Detectado en `header.php` (5 llamadas) donde `$seo['title']` podía contener comillas simples vía el patrón "Résultats pour '{query}'" (BUG-009). Corregido en cluster buscador hero (2026-06-23).
+
 ## Producto / UX (PRD-NNN)
 
 - **PRD-001: Decoración anti-FOUC debe ser visible por defecto, no opacity:0.**
@@ -69,6 +72,32 @@ _(sin lecciones todavía)_
   hero izquierda rgb(43,181,196)=teal exacto → derecha rgb(84,77,190)=violeta exacto,
   los 4 divisores pintan el degradado, los 16 puntos-écluse visibles, igual en
   reduced-motion. La regla queda como referencia permanente.
+
+- **PRD-004: Nunca imprimir un slug/clave técnica en texto de cara al usuario.**
+  Si un valor llega como slug de BD desde un `<select>`/query-string
+  (`location-de-velo`, `nautique`), NO echarlo crudo en `<title>`, `<h1>` ni copy:
+  mapearlo a la etiqueta traducida (`name`) que el propio `<select>` ya muestra al
+  usuario. El select y el título deben hablar el mismo idioma humano. Detectado en
+  el título SEO condicional del buscador hero (`PageController.php:227`,
+  `$seoTitle = "… — " . $types[0]`): `?type=location-de-velo` renderizaba
+  `<title>Séjours et activités — location-de-velo</title>` en vez de "Location de
+  vélo". El controlador ya tenía `$categories` cargado (mapa slug→name disponible).
+  Verificación: inspeccionar el `<title>` REAL en navegador para cada rama del
+  título, no asumir. **Pendiente de corregir** (vuelve a architect/coder).
+
+- **PRD-005: Expandir una categoría padre a todos sus hijos puede romper la UX aunque sea correcto en datos.**
+  La expansión jerárquica padre→hijos en un filtro es válida a nivel de modelo,
+  pero una categoría padre puede mezclar servicios reservables con POIs de
+  infraestructura/patrimonio. Resultado: un filtro que el usuario entiende como
+  "X reservable" devuelve mayormente "no-X". Detectado en el buscador hero:
+  Type="Le Canal en Bateau" (slug `nautique`, padre) devuelve 136/253, de los
+  cuales 93 (68%) son `ecluses`(72)+`ports`(21) — esclusas y puertos, no barcos.
+  El turista que busca una croisière ve una lista de esclusas. Regla: antes de
+  exponer un filtro, CONTAR y MIRAR la muestra real de resultados en navegador
+  (refuerza PRD-002) y juzgar si responde a lo que el label promete; "filtra algo
+  y es < total" NO basta. Opciones de fix: excluir hijos no-reservables, apuntar el
+  option a las hijas correctas, o dar a écluses/ports su propia entrada de filtro.
+  **Pendiente de corregir** (decisión de producto + architect/coder).
 
 - **PRD-002: El motion/scroll se verifica en NAVEGADOR, no a nivel de código.**
   El pipeline aprobó TASK-008 (✅/⚠️) revisando código y métricas (overflow,

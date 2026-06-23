@@ -4,12 +4,34 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(nada en curso — Incremento 2: TASK-013 ✅ se mantiene; TASK-011 (ligne d'eau)
-**eliminada** por decisión del usuario (2026-06-23, ver 🚫). Siguiente candidato:
-Incremento 3 → TASK-012 "Les étapes du canal", o la deuda de i18n/contenido
-TASK-004/005/006/007. Ver 🟡 Pendiente.)_
+_(ninguna — pendiente revisión security del cluster buscador del hero)_
 
 ## 🟡 Pendiente
+
+- **PRD-004 / BUG-010** (copy, severidad media) — El título SEO de búsqueda imprime
+  el SLUG crudo del tipo, no el nombre legible. `PageController.php:227`:
+  `$seoTitle = "Séjours et activités — " . $types[0]`. Verificado en navegador:
+  `?type=location-de-velo` → `<title>… — location-de-velo</title>`; `?type=nautique`
+  → `… — nautique`. Debe mostrar "Location de vélo" / "Le Canal en Bateau". El
+  controlador ya carga `$categories` (mapa slug→name). Fix: índice slug→name +
+  fallback al slug. Re-verificar las 4 ramas del título en navegador. Lección PRD-004.
+
+- **PRD-005 / BUG-011** (coherencia de filtro, severidad media-alta) — Type="Le Canal
+  en Bateau" (`nautique`) devuelve 136/253, de los cuales 93 (68%) son écluses(72) +
+  ports(21) — infraestructura no reservable, no barcos. `resolveCategoryIdsForSearch`
+  expande el padre `nautique` a TODAS sus hijas (incluidas `ecluses` y `ports`). El
+  turista que busca una croisière ve una lista de esclusas. Decisión de producto +
+  fix: excluir hijos no-reservables del genérico náutico, o apuntar el option a las
+  hijas reservables (croisiere-bateau/location-bateau/location-de-canoe-kayak), o
+  separar écluses/ports a su propia entrada. Re-verificar conteo+muestra en navegador.
+  Lección PRD-005.
+
+- **TASK-016b** (datos, largo plazo) — Backfill de una columna `commune` limpia en
+  `listings`, extraída de `address`/`postal_code` (la columna `city` actual contiene
+  el nombre del establecimiento, no la localidad). Permite un dropdown de
+  "Destination" exacto y joins por comuna sin depender de `LIKE` sobre `address`.
+  Sustituye la lista curada de TASK-016 (a) cuando esté lista. FUERA del cluster del
+  buscador del hero.
 
 - **SEC-001** — Unificar credenciales de BD: `src/config/Database.php` hardcodea
   `root`/password vacío; debe leer `DB_HOST/DB_NAME/DB_USER/DB_PASS` del `.env`.
@@ -57,6 +79,47 @@ TASK-004/005/006/007. Ver 🟡 Pendiente.)_
 - **TASK-007** — Sustituir imágenes Unsplash externas hardcodeadas del hero y la
   sección editorial (`home.php:16,180-186`) por imágenes gestionables/locales.
 
+### Buscador del hero — análisis Product Owner (2026-06-23, con evidencia de BD)
+
+Diagnóstico funcional del componente `.hero-search` (`home.php:47-102` →
+`PageController::render` case `search` → `MySQLServiceRepository::searchListings`).
+Datos verificados en BD local (253 listings publicados, 26 categorías top-level).
+
+- **BUG-007** — Filtro "Type" parcialmente roto. La opción `boat` del `<select
+  name="type">` (`home.php:88`) **no corresponde a ningún slug de categoría**; las
+  reales son `nautique` ("Le Canal en Bateau"), `bateau-restaurant`, `peniche`.
+  `resolveCategoryIdsForSearch()` no encuentra match → devuelve `[]` → la búsqueda
+  ignora el filtro y **retorna TODOS los listings sin filtrar**. El usuario cree que
+  filtró por barco y ve todo. (Severidad: alta.)
+- **TASK-015** — Poblar "Type" dinámicamente desde las categorías reales. Solo se
+  exponen 2 tipos (`hotel`, `boat`) de **26 categorías top-level** existentes
+  (hôtel, camping, restaurant, location-de-velo, peniche, nautique, musees,
+  chateaux, oenotourisme, bar, brasserie-snack, table-dhote, excursions…). Usar
+  `getCategories()` filtrando `parent_id IS NULL/0`, con `slug` real como `value` y
+  `name` (traducido) como etiqueta. Absorbe y cierra BUG-007. (Supersede la parte
+  "tipos" de TASK-006.) (Severidad: alta — desbloquea el valor real del buscador.)
+- **BUG-008 / TASK-016** — Filtro "Destination" no fiable por datos sucios. La
+  columna `listings.city` **NO contiene la ciudad**, contiene el NOMBRE del
+  establecimiento (ej. city="LE GRAND BASSIN" para "SAS C. CASTEL"). La localidad
+  real está embebida en `address` ("11400 Castelnaudary, France") y `postal_code`.
+  Por eso `getCities()` devuelve 250 nombres de negocio (inservible) y el dropdown
+  está hardcodeado a Toulouse/Carcassonne, que solo aciertan "de rebote" por el
+  `address LIKE :city`. Opciones: (a) **corto plazo** — lista curada de etapas
+  reales del canal (Toulouse, Castelnaudary, Carcassonne, Homps, Le Somail, Béziers,
+  Agde, Sète…) que casan con el contenido de `address`; (b) **largo plazo** —
+  backfill de una columna `commune` limpia extrayéndola de `address`/`postal_code`.
+  Decisión de producto pendiente: empezar por (a), dejar (b) como tarea de datos
+  aparte. (Severidad: alta.)
+- **BUG-009** — Búsqueda vacía sin guía. Enviar el form sin `q`/`city`/`type`
+  devuelve el catálogo completo y el `<title>` queda `Résultats pour '' | Canal du
+  Midi` (comillas vacías, `PageController.php:175`). Mostrar un título sensato cuando
+  no hay query y/o un estado "Affinez votre recherche". (Severidad: media.)
+- **TASK-017** — Robustez/feedback del buscador. `home-ai.js` no comprueba
+  `response.ok` antes de `response.json()` (una respuesta 500/HTML lanza y cae al
+  fallback silenciosamente, ver `home-ai.js:80`); sin estado de carga en el botón
+  "Rechercher" del flujo clásico. Añadir chequeo de `response.ok`, mensajes de error
+  más claros y feedback de carga en submit clásico. (Severidad: media.)
+
 ### Motion / animaciones
 
 _(TASK-008 revertida — ver 🚫 Descartadas / en pausa)_
@@ -89,6 +152,16 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **Cluster "Buscador del hero" — BUG-007/TASK-015 + BUG-008/TASK-016 + BUG-009 + TASK-017 ✅ pipeline completo + product ⚠️ verificado en navegador (2026-06-23)**
+  - **Veredicto product:** ⚠️ listo con mejoras menores. Verificado en Chrome headless (CDP) sobre http://localhost/canal_du_midi/. Capturas en scratchpad: `VS-1-home-selects.png`, `VS-2-empty.png`, `VS-3-boat.png`, `VS-4-carcassonne.png`. Criterios principales del cluster CUMPLIDOS; quedan 2 seguimientos abiertos (PRD-004/BUG-010 título con slug crudo, PRD-005/BUG-011 filtro náutico contaminado por écluses/ports) movidos a 🟡 Pendiente, no bloquean el cierre del cluster.
+  - **Conteos reales observados:** sin filtros/vacío → `Tous nos séjours et activités`, 253. type=hotel → 18 (solo hoteles ✅). type=nautique → 136 (⚠️ 93 son écluses+ports, ver PRD-005). city=Carcassonne → 10 (todos con Carcassonne en address ✅). combo Carcassonne+hotel → 0 ("Aucun" ✅). q=l'hotel → 6, `<title>` y meta íntegros (SEC-006 ✅). Botón "Rechercher" pasa a `disabled` + spinner "Recherche…" al submit (✅, verificado disparando el evento).
+  - Selects: Type lista 12 tipos reales (Hôtel…Oenotourisme, sin "boat" fantasma ✅); Destination lista 9 etapas (✅).
+  - BUG-007 / TASK-015: `<select name="type">` del hero poblado desde `getCategories()` filtrado por whitelist de 12 slugs turísticos top-level. Valor = slug real de BD, etiqueta = name de BD. Elimina la opción fantasma `boat`.
+  - BUG-008 / TASK-016: `<select name="city">` del hero con `CANAL_STAGES` (constante en `config.php`, 9 etapas verificadas contra `listings.address`; "Le Somail" excluido por 0 coincidencias).
+  - BUG-009: título SEO de búsqueda condicional — q no vacío → "Résultats pour…"; city → "Séjours et activités à {city}"; type → "Séjours et activités — {type}"; sin filtros → "Tous nos séjours et activités".
+  - TASK-017: `home-ai.js` — `response.ok` check antes de `json()`, mensajes de fallback claros, feedback de carga en submit clásico (deshabilita botón + spinner).
+  Archivos: `src/Config/config.php`, `src/Infrastructure/Controllers/PageController.php`, `src/Infrastructure/Views/home.php`, `public/assets/js/home-ai.js`. `php -l` OK en los 3 PHP. HTTP 200 en home y todos los casos de título de search verificados.
 
 - **BUG-006 ✅ (verificado en navegador a 390px, 2026-06-23)** — Hero roto en vista
   móvil. **Causa raíz:** `.hero-card` es `display:flex` (fila) con dos hijos:

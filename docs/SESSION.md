@@ -5,63 +5,52 @@ sesión.
 
 ---
 
-## Hero móvil arreglado (BUG-006) + Ligne d'eau eliminada — 2026-06-23
+## Cluster "Buscador del hero" — CERRADO por product ⚠️ — 2026-06-23
 
-**Agente activo al cerrar:** main / edición directa + verificación en navegador.
+**Agente activo al cerrar:** product (pipeline completo architect → coder → security → product).
 **Handoff pendiente:** ninguno.
 
-**Último cambio (BUG-006):** el hero se veía roto en móvil (contenido y buscador
-aplastados lado a lado). Causa: `.hero-card` es flex-row y el `.hero-search`, al
-pasar a `position:relative` en ≤820px, se ponía como hermano flex al lado del
-contenido. Fix en `styles.css` `@media (max-width:820px)`: `.hero-card` →
-`flex-direction:column; align-items:stretch; justify-content:flex-start`.
-Verificado a 390px con Chrome headless (CDP): contenido y buscador apilados a ancho
-completo, stats 2×2, 0 overflow, 0 errores. Las 7 secciones + footer ya eran
-responsive y se revisaron OK. Scripts/capturas en scratchpad: `mobile.mjs`,
-`sections.mjs`, `footer.mjs`, `m-after-hero.png`, `sec-0X-*.png`, `m-footer.png`.
-Pendiente no-bloqueante: i18n del texto en inglés visible en móvil (TASK-004).
+**Veredicto:** ⚠️ listo con mejoras menores. El cluster (BUG-007/TASK-015 +
+BUG-008/TASK-016 + BUG-009 + TASK-017) cumple sus criterios de éxito principales,
+verificado EN NAVEGADOR (Chrome headless/CDP, PRD-002). Quedan 2 mejoras de UX
+abiertas como tareas de seguimiento (no bloquean el cierre):
 
----
+- **PRD-004 / BUG-010 (media):** el título SEO de search imprime el SLUG crudo del
+  tipo (`location-de-velo`, `nautique`) en vez del nombre legible ("Location de
+  vélo", "Le Canal en Bateau"). `PageController.php:227` usa `$types[0]`. El
+  controlador ya tiene `$categories` cargado (mapa slug→name). → 🟡 Pendiente.
+- **PRD-005 / BUG-011 (media-alta):** Type="Le Canal en Bateau" (`nautique`)
+  devuelve 136/253, de los cuales 93 (68%) son écluses(72)+ports(21), no barcos.
+  `resolveCategoryIdsForSearch` expande el padre `nautique` a hijos no reservables.
+  → 🟡 Pendiente (decisión de producto + fix).
 
-## Ligne d'eau ELIMINADA + Incremento 2 (TASK-013) vigente — 2026-06-23
+**Criterios verificados en navegador (conteos reales):**
+- Selects home: Type=12 tipos reales (sin "boat" fantasma ✅); Destination=9 etapas ✅.
+- Sin filtros/vacío → `<title>Tous nos séjours et activités | Canal du Midi`, 253 ✅
+  (sin comillas vacías, BUG-009 resuelto).
+- type=hotel → 18, solo hoteles ✅. city=Carcassonne → 10, todos con Carcassonne ✅.
+- combo Carcassonne+hotel → 0, estado "Aucun" ✅.
+- type=nautique → 136 ⚠️ (filtra, pero dominado por écluses → PRD-005).
+- q=l'hotel → 6; `<title>` y `<meta>` íntegros con el apóstrofe (SEC-006 ✅).
+- Botón "Rechercher" → `disabled` + spinner "Recherche…" al submit ✅ (TASK-017).
 
-**Handoff pendiente:** ninguno.
+**Archivos del cluster (sin cambios nuevos de product; solo verificación + docs):**
+- `src/Config/config.php` — CANAL_STAGES (9 etapas).
+- `src/Infrastructure/Controllers/PageController.php` — case home ($heroTypes/$heroStages);
+  case search ($seoTitle condicional). ← aquí viven PRD-004 (L227) y PRD-005 (L1157+).
+- `src/Infrastructure/Views/home.php` — ambos `<select>` poblados dinámicamente.
+- `public/assets/js/home-ai.js` — response.ok + fallbacks + feedback de carga.
+- `src/Infrastructure/Views/layout/header.php` — ENT_QUOTES (SEC-006).
+- `src/Infrastructure/Persistence/MySQLServiceRepository.php` — getCategories() prepared.
 
-**Dónde quedamos:** se eliminó por completo el elemento "ligne d'eau" (hairline SVG
-del hero + 3 divisores entre secciones) por decisión del usuario ("se ve muy feo y
-no tiene ninguna utilidad"). Se conservan las micro-interacciones premium de TASK-013
-y todo el resto del hero (entrada escalonada, Ken Burns, parallax, stats).
+**Docs actualizados por product:** ERROR_LOG.md (PRD-004, PRD-005), LESSONS.md
+(PRD-004, PRD-005), TASKS.md (cluster a 🟢; PRD-004/005 a 🟡), CLAUDE.md (Estado actual).
 
-**Cómo se llegó aquí (sesión completa):**
-1. Incremento 2 (TASK-011 ligne d'eau divisora + TASK-013 micro-interacciones) pasó
-   el pipeline architect → coder → security → product.
-2. Product destapó BUG-005 en navegador (degradado SVG invisible por
-   `objectBoundingBox` sobre trazo horizontal → lección PRD-003). Se corrigió con
-   `gradientUnits="userSpaceOnUse"` y se verificó por muestreo de píxeles.
-3. El usuario revisó el resultado y pidió **eliminar todas las líneas de agua**
-   (divisores + hero). Hecho.
+**Capturas de verificación (scratchpad):** `VS-1-home-selects.png`, `VS-2-empty.png`,
+`VS-3-boat.png`, `VS-4-carcassonne.png`. Drivers: `verify-search.mjs`, `verify-loadingbtn.mjs`.
 
-**Cambios de esta eliminación:**
-- `src/Infrastructure/Views/home.php` — borradas las 4 instancias SVG `.ligne-eau`
-  (hero con su `<defs>`/gradiente + 3 divisores tras destinations/experiences/tours).
-- `public/assets/css/styles.css` — borrado el bloque completo `.ligne-eau`,
-  `.ligne-eau-trace`, `.ligne-eau-mark`, `.hero-ready .ligne-eau-trace`,
-  `@keyframes ligne-eau-draw`, `.ligne-eau--divider` y la regla reduced-motion de la
-  ligne. Intacto el bloque reduced-motion de micro-interacciones de TASK-013.
-- `public/assets/js/home-hero.js` — actualizados 2 comentarios que mencionaban la
-  ligne d'eau (sin cambio funcional; el dibujo era 100% CSS).
-
-**Verificación:** `curl` http://localhost/canal_du_midi/ → HTTP 200, 0 ocurrencias de
-`ligne-eau` en el HTML servido, 0 errores PHP, `php -l home.php` OK. `grep -rn ligne-eau`
-en `public/`+`src/` → sin coincidencias.
-
-**Estado de tareas tras esto:**
-- TASK-013 ✅ (se mantiene, verificada en navegador en la iteración previa).
-- TASK-011 + BUG-005 → 🚫 Descartadas (eliminadas por el usuario).
-- TASK-010 ✅ sigue completada pero su nota aclara que la ligne d'eau del hero se quitó.
-
-**Próxima acción candidata (Incremento 3):**
+**Próxima acción candidata:**
 ```
-/agent architect Inc.3 — TASK-012 "Les étapes du canal" (tira secuenciada Toulouse → Castelnaudary → Carcassonne → Béziers → Étang de Thau como punto de entrada a destinos/búsqueda)
+/agent architect Corregir PRD-004 (título search con slug crudo → nombre legible) + PRD-005 (filtro "Le Canal en Bateau" excluye écluses/ports no reservables)
 ```
-O bien atacar la deuda de contenido/i18n: TASK-004/005/006/007, BUG-001..004.
+O retomar la iniciativa visual home: Incremento 3 (TASK-012 "Les étapes du canal").
