@@ -5,55 +5,63 @@ sesión.
 
 ---
 
-## Incremento 1 del rediseño de home — COMPLETADO ✅ (verificado en navegador)
+## Hero móvil arreglado (BUG-006) + Ligne d'eau eliminada — 2026-06-23
 
-**Fecha:** 2026-06-23
-**Agente activo al cerrar:** product / verificación
+**Agente activo al cerrar:** main / edición directa + verificación en navegador.
 **Handoff pendiente:** ninguno.
 
-**Dónde quedamos:** TASK-009 (tokens de arte) + TASK-010 (hero WOW orquestado)
-pasaron todo el pipeline (architect → coder → security ✅) y **se verificaron en
-navegador** (PRD-002, la lección de TASK-008). El hero rediseñado funciona y se
-ve bien; movido a 🟢 Completadas.
+**Último cambio (BUG-006):** el hero se veía roto en móvil (contenido y buscador
+aplastados lado a lado). Causa: `.hero-card` es flex-row y el `.hero-search`, al
+pasar a `position:relative` en ≤820px, se ponía como hermano flex al lado del
+contenido. Fix en `styles.css` `@media (max-width:820px)`: `.hero-card` →
+`flex-direction:column; align-items:stretch; justify-content:flex-start`.
+Verificado a 390px con Chrome headless (CDP): contenido y buscador apilados a ancho
+completo, stats 2×2, 0 overflow, 0 errores. Las 7 secciones + footer ya eran
+responsive y se revisaron OK. Scripts/capturas en scratchpad: `mobile.mjs`,
+`sections.mjs`, `footer.mjs`, `m-after-hero.png`, `sec-0X-*.png`, `m-footer.png`.
+Pendiente no-bloqueante: i18n del texto en inglés visible en móvil (TASK-004).
 
-**Verificación en navegador (Playwright + Chrome):**
-- `html.hero-ready` aplicado; entrada escalonada visible; Ken Burns lento activo.
-- Parallax real solo de `.hero-card-img` (translate −5px→22.8px al hacer scroll).
-- h1 en Playfair Display con `<em>lent.</em>` en itálica; 4 stats reales
-  (`240 km · 63 écluses · Toulouse → Méditerranée · UNESCO`).
-- Ligne d'eau dibujada (`stroke-dashoffset≈0`). 0 overflow, 0 errores de consola.
-- `prefers-reduced-motion`: h1/stats/ligne visibles y estáticos, sin animación.
-- Capturas en scratchpad: `H1-hero-loaded.png`, `H2-hero-reduced.png`.
+---
 
-**Archivos del Incremento 1:** `styles.css` (tokens + orquestación hero +
-reduced-motion), `header.php` (Playfair recto), `home.php` (h1 `<em>`, stats
-reales, SVG ligne d'eau), `home-hero.js` (NUEVO, vanilla), `footer.php` (carga
-condicional), `docs/ARCHITECTURE.md` (decisión de arte).
+## Ligne d'eau ELIMINADA + Incremento 2 (TASK-013) vigente — 2026-06-23
 
-**Pulido posterior (2026-06-23, verificado en navegador):** dos fallos que vio el
-usuario, corregidos en `styles.css`/`home.php`:
-- Ken Burns desbordaba la overlay → `overflow:hidden` en `.hero-card` (la imagen
-  escalada se recorta; sin franja clara en bordes).
-- Stats se partían y eran poco atractivas → tira translúcida con 4 métricas en una
-  línea + separadores + versalitas; se reemplazó "Toulouse → Méditerranée" por
-  `1681` (año de creación) para homogeneizar. Móvil 2×2.
-- Acento terracota aplicado al eyebrow del hero (`#C16B43`).
-Verificado: card `overflow:hidden`, stats en 1 fila (desktop) / 2×2 (móvil),
-eyebrow rgb(193,107,67), 0 overflow, 0 errores. Captura `F1-hero-fixed.png`.
-Watch menor: el eyebrow terracota queda algo sutil sobre el follaje claro (lleva
-text-shadow; legible pero discreto).
+**Handoff pendiente:** ninguno.
 
-**Pulido 2 (2026-06-23, verificado en navegador):**
-- Eyebrow → terracota luminosa `#F2A86E` + peso 800 + sombra fuerte (legible
-  sobre el follaje).
-- Buscador movido al flujo DENTRO del hero (era `position:absolute; bottom:-82px`),
-  ahora tarjeta blanca flotante a ~30px bajo las stats (sombra fuerte sobre la
-  imagen). Se le quitó `data-reveal` (lo anima solo `hero-ready`). `.hero-card-content`
-  ensanchado a 980px para que el grid del buscador no se parta.
-- Verificado: search dentro de la card (gap 30px), única instancia, 0 overflow,
-  móvil ok. Captura `G1-search-moved.png`.
+**Dónde quedamos:** se eliminó por completo el elemento "ligne d'eau" (hairline SVG
+del hero + 3 divisores entre secciones) por decisión del usuario ("se ve muy feo y
+no tiene ninguna utilidad"). Se conservan las micro-interacciones premium de TASK-013
+y todo el resto del hero (entrada escalonada, Ken Burns, parallax, stats).
 
-**Próxima acción exacta (Incremento 2):**
+**Cómo se llegó aquí (sesión completa):**
+1. Incremento 2 (TASK-011 ligne d'eau divisora + TASK-013 micro-interacciones) pasó
+   el pipeline architect → coder → security → product.
+2. Product destapó BUG-005 en navegador (degradado SVG invisible por
+   `objectBoundingBox` sobre trazo horizontal → lección PRD-003). Se corrigió con
+   `gradientUnits="userSpaceOnUse"` y se verificó por muestreo de píxeles.
+3. El usuario revisó el resultado y pidió **eliminar todas las líneas de agua**
+   (divisores + hero). Hecho.
+
+**Cambios de esta eliminación:**
+- `src/Infrastructure/Views/home.php` — borradas las 4 instancias SVG `.ligne-eau`
+  (hero con su `<defs>`/gradiente + 3 divisores tras destinations/experiences/tours).
+- `public/assets/css/styles.css` — borrado el bloque completo `.ligne-eau`,
+  `.ligne-eau-trace`, `.ligne-eau-mark`, `.hero-ready .ligne-eau-trace`,
+  `@keyframes ligne-eau-draw`, `.ligne-eau--divider` y la regla reduced-motion de la
+  ligne. Intacto el bloque reduced-motion de micro-interacciones de TASK-013.
+- `public/assets/js/home-hero.js` — actualizados 2 comentarios que mencionaban la
+  ligne d'eau (sin cambio funcional; el dibujo era 100% CSS).
+
+**Verificación:** `curl` http://localhost/canal_du_midi/ → HTTP 200, 0 ocurrencias de
+`ligne-eau` en el HTML servido, 0 errores PHP, `php -l home.php` OK. `grep -rn ligne-eau`
+en `public/`+`src/` → sin coincidencias.
+
+**Estado de tareas tras esto:**
+- TASK-013 ✅ (se mantiene, verificada en navegador en la iteración previa).
+- TASK-011 + BUG-005 → 🚫 Descartadas (eliminadas por el usuario).
+- TASK-010 ✅ sigue completada pero su nota aclara que la ligne d'eau del hero se quitó.
+
+**Próxima acción candidata (Incremento 3):**
 ```
-/agent architect Inc.2 — TASK-011 (ligne d'eau como divisor entre secciones, reutiliza el SVG del hero) + TASK-013 (micro-interacciones hover de destination-card/tour-card/botones)
+/agent architect Inc.3 — TASK-012 "Les étapes du canal" (tira secuenciada Toulouse → Castelnaudary → Carcassonne → Béziers → Étang de Thau como punto de entrada a destinos/búsqueda)
 ```
+O bien atacar la deuda de contenido/i18n: TASK-004/005/006/007, BUG-001..004.

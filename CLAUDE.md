@@ -88,9 +88,13 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 
 ## 📌 Estado actual del proyecto
 
-- **Último completado:** Incremento 1 del rediseño de la home (TASK-009 tokens de
-  arte + TASK-010 hero WOW), pipeline completo + verificado en navegador (✅).
-- **Siguiente:** Incremento 2 — TASK-011 (ligne d'eau como divisor entre
-  secciones) + TASK-013 (micro-interacciones de cards/botones). Ver `docs/TASKS.md`.
-- Recordatorio: el motion se verifica SIEMPRE en navegador (PRD-002); nada de
+- **Último completado:** Incremento 2 — TASK-013 (micro-interacciones de
+  cards/botones) ✅. La "ligne d'eau" (TASK-011) llegó a implementarse y verificarse,
+  pero el usuario la **eliminó** (2026-06-23, "se ve muy feo y sin utilidad"); las 4
+  instancias SVG y su CSS se quitaron de `home.php`/`styles.css`. Ver 🚫 en TASKS.md.
+- **Siguiente:** Incremento 3 — TASK-012 "Les étapes du canal" (tira secuenciada
+  Toulouse → … → Étang de Thau), o saldar deuda de i18n/contenido
+  (TASK-004/005/006/007). Ver `docs/TASKS.md`.
+- Recordatorio: el motion/render se verifica SIEMPRE en navegador con captura o
+  muestreo de píxeles (PRD-002/PRD-003); el computed style no basta. Nada de
   pins/scroll-jacking (TASK-008 revertida).

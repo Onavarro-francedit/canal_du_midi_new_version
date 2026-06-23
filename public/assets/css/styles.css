@@ -269,6 +269,16 @@ select {
     transform: translateY(-1px);
 }
 
+/* Nudge lateral del icono al hover (TASK-013).
+   No altera el translateY(-1px) del button; el icono solo se desplaza en X. */
+.button i {
+    transition: transform 180ms ease;
+}
+
+.button:hover i {
+    transform: translateX(2px);
+}
+
 .button-small {
     padding: 12px 18px;
     font-size: 0.92rem;
@@ -511,43 +521,6 @@ select {
     to   { scale: 1.06; }
 }
 
-/* ----- Ligne d'eau : hairline SVG degradado teal -> violeta -----
-   Reutilizable (Inc.2 la reaprovecha). Se "dibuja" izq->der UNA vez
-   vía stroke-dashoffset (no opacidad). Fallback (sin JS / reduced-motion)
-   = línea dibujada completa porque el estado base es dashoffset:0. */
-.ligne-eau {
-    display: block;
-    width: 100%;
-    height: 24px;
-    margin: 36px auto 0;
-    overflow: visible;
-}
-
-.ligne-eau .ligne-eau-trace {
-    fill: none;
-    stroke: url(#ligneEauGradient);
-    stroke-width: 2;
-    stroke-linecap: round;
-    /* La longitud total se fija en el SVG (pathLength="1000"). */
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 0; /* estado base: dibujada (fallback visible, PRD-001) */
-}
-
-.ligne-eau .ligne-eau-mark {
-    fill: var(--water);
-    opacity: 0.9;
-}
-
-/* Solo con JS listo: la escondemos y la redibujamos. */
-.hero-ready .ligne-eau .ligne-eau-trace {
-    stroke-dashoffset: 1000;
-    animation: ligne-eau-draw 1.2s ease-out 1.4s forwards;
-}
-
-@keyframes ligne-eau-draw {
-    to { stroke-dashoffset: 0; }
-}
-
 .search-field {
     display: flex;
     flex-direction: column;
@@ -747,15 +720,62 @@ h2 {
 .destination-card,
 .article-card {
     min-height: 220px;
-    padding: 22px;
     border-radius: var(--radius-lg);
-    background-size: cover;
-    background-position: center;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     color: #fff;
     box-shadow: var(--shadow);
+    /* Refactor Inc.2: posición relativa para capa .destination-card-media */
+    position: relative;
+    overflow: hidden;
+    /* Micro-interacción lift (TASK-013) */
+    transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.destination-card:hover,
+.destination-card:focus-within {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 48px rgba(14, 20, 36, 0.22);
+}
+
+/* Capa de imagen independiente dentro de .destination-card (TASK-013).
+   Permite zoom de background sin escalar el contenido de texto. */
+.destination-card-media {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+    transition: transform 200ms ease;
+}
+
+.destination-card:hover .destination-card-media,
+.destination-card:focus-within .destination-card-media {
+    transform: scale(1.06);
+}
+
+/* Texto y pill por encima de la capa de imagen */
+.destination-card .pill,
+.destination-card h3 {
+    position: relative;
+    z-index: 1;
+}
+
+/* Padding del contenido ahora en el card (antes en destination-card directamente) */
+.destination-card > .pill,
+.destination-card > h3 {
+    padding-left: 22px;
+    padding-right: 22px;
+}
+
+.destination-card > h3 {
+    padding-bottom: 22px;
+}
+
+.destination-card > .pill {
+    margin-top: auto;
+    margin-bottom: 10px;
 }
 
 .destination-card h3,
@@ -877,12 +897,25 @@ h2 {
     min-height: 420px;
     overflow: hidden;
     border-radius: var(--radius-lg);
+    /* Micro-interacción lift (TASK-013) */
+    transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.tour-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 48px rgba(14, 20, 36, 0.18);
 }
 
 .tour-card img {
     height: 260px;
     object-fit: cover;
     flex-shrink: 0;
+    /* Zoom suave al hover del card (TASK-013); el overflow:hidden del card recorta */
+    transition: transform 200ms ease;
+}
+
+.tour-card:hover img {
+    transform: scale(1.06);
 }
 
 .tour-body {
@@ -1394,10 +1427,14 @@ h2 {
         animation: none !important;
     }
 
-    /* Ligne d'eau: dibujada completa de inmediato. */
-    .ligne-eau .ligne-eau-trace,
-    .hero-ready .ligne-eau .ligne-eau-trace {
-        stroke-dashoffset: 0 !important;
+    /* Inc.2 (TASK-013): anular micro-interacciones hover. */
+    .destination-card,
+    .tour-card,
+    .destination-card-media,
+    .tour-card img,
+    .button i {
+        transition: none !important;
+        transform: none !important;
         animation: none !important;
     }
 }
@@ -1546,10 +1583,17 @@ h2 {
         padding: 100px 0 48px;
     }
 
+    /* En móvil el buscador deja de flotar (position:relative) y vuelve al flujo
+       como hermano flex de .hero-card-content. Apilamos en columna para que NO
+       compitan en la misma fila (causa del layout roto: contenido y buscador
+       aplastados lado a lado). */
     .hero-card {
         min-height: 460px;
         border-radius: 22px;
         margin-bottom: 0;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
     }
 
     .hero-card-img,

@@ -4,7 +4,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(vacío — Incremento 1 completado; siguiente: Incremento 2, TASK-011 + TASK-013)_
+_(nada en curso — Incremento 2: TASK-013 ✅ se mantiene; TASK-011 (ligne d'eau)
+**eliminada** por decisión del usuario (2026-06-23, ver 🚫). Siguiente candidato:
+Incremento 3 → TASK-012 "Les étapes du canal", o la deuda de i18n/contenido
+TASK-004/005/006/007. Ver 🟡 Pendiente.)_
 
 ## 🟡 Pendiente
 
@@ -18,6 +21,12 @@ _(vacío — Incremento 1 completado; siguiente: Incremento 2, TASK-011 + TASK-0
   `<script>` de Leaflet 1.9.4 y leaflet.markercluster 1.5.3 (unpkg) cargados en
   `footer.php` para las páginas service/search. Misma deuda que SEC-003 (GSAP),
   ya resuelta en home. Lección aplicable: SEC-003.
+
+- **SEC-004 (corregido in-situ, 2026-06-23)** — `home.php:175`: slug de BD en query-string
+  sin `rawurlencode()`. Corregido en la revisión security de TASK-011/013. Ver LESSONS.md.
+- **SEC-005 (corregido in-situ, 2026-06-23)** — `home.php:263`: URL hardcodeada con
+  `/canal_du_midi/` y `$tour->id` sin cast `(int)`. Corregidos en la revisión security.
+  Ver LESSONS.md.
 
 ### Home page (de la revisión de `home.php` + `PageController::render`)
 
@@ -63,18 +72,16 @@ reveals + micro-interacciones**, NUNCA scroll-jacking ni pins de sección
 
 _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
-- **TASK-011** — Elemento firma "la ligne d'eau": hairline horizontal
-  (degradado teal→violeta) bajo el hero y como **divisor entre secciones**, con
-  marcas-écluse como hitos. SVG/border estático, se dibuja una vez al cargar
-  (robusto, NO ligado a scroll).
+- **TASK-011** — _(ELIMINADA 2026-06-23 por decisión del usuario — ver 🚫
+  Descartadas)_ Elemento firma "la ligne d'eau".
 - **TASK-012** — "Les étapes du canal": tira secuenciada real
   Toulouse → Castelnaudary → Carcassonne → Béziers → Étang de Thau (secuencia
   geográfica real → marcadores numerados/écluse justificados). Punto de entrada
   a destinos/búsqueda.
-- **TASK-013** — Micro-interacciones premium (150–250 ms, solo `transform`/
-  `opacity`): cards de destinos y tours con *lift* + sombra suave + zoom de la
-  imagen dentro del marco (`overflow:hidden` + `scale(1.06)`); nudge del icono
-  en botones al hover.
+- **TASK-013** — _(movida a 🔴 En curso — Incremento 2)_ Micro-interacciones
+  premium (150–250 ms, solo `transform`/`opacity`): cards de destinos y tours con
+  *lift* + sombra suave + zoom de la imagen dentro del marco (`overflow:hidden`
+  + `scale(1.06)`); nudge del icono en botones al hover.
 - **TASK-014** — Limpieza de contenido off-brand de la home (parte del pase de
   pulido visual): quitar eyebrows en inglés → ver **TASK-004**; reemplazar fotos
   off-topic (montaña/mochilera) por imágenes de canal → ver **TASK-007**;
@@ -82,6 +89,34 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **BUG-006 ✅ (verificado en navegador a 390px, 2026-06-23)** — Hero roto en vista
+  móvil. **Causa raíz:** `.hero-card` es `display:flex` (fila) con dos hijos:
+  `.hero-card-content` y el `<form class="hero-search">`. En escritorio el buscador
+  es `position:absolute` (fuera del flujo); en móvil (≤820px) vuelve a
+  `position:relative`, así que se convertía en **columna flex al lado** del contenido
+  → contenido aplastado a la izquierda (desbordaba a x=-15, w=239) y buscador
+  comprimido a la derecha (w=181), tal como en la captura del usuario. **Fix
+  (1 línea efectiva):** en el `@media (max-width:820px)`, `.hero-card` →
+  `flex-direction:column; align-items:stretch; justify-content:flex-start`, para que
+  contenido y buscador se apilen. Verificado a 390px: contenido a ancho completo
+  (w=358), stats en 2×2, buscador apilado debajo a ancho completo (w=358), eyebrow
+  centrado y completo, 0 overflow horizontal, 0 errores de consola. Revisadas además
+  las 7 secciones + footer en móvil: todas se adaptan a 1 columna correctamente (ya
+  eran responsive vía los breakpoints existentes; no requirieron cambios). NOTA: el
+  texto en inglés que aún aparece en móvil (Why choose us?, Weekly flash deals, etc.)
+  es deuda de i18n (TASK-004), no de layout.
+
+- **TASK-013 ✅ (pipeline completo + verificación navegador ✅, 2026-06-23)** —
+  Micro-interacciones premium verificadas en navegador (PRD-002): `.destination-card`
+  (vía hover del `<a>` envolvente) y `.tour-card` hacen lift `translateY(-5px)` +
+  sombra profunda; la imagen escala `scale(1.06)` dentro del marco con
+  `overflow:hidden` (0 desbordamiento); el icono de `.button` hace nudge
+  `translateX(2px)` al hover sin romper el lift del botón. Transiciones 180–200 ms,
+  solo transform/box-shadow. `prefers-reduced-motion` anula todo (transition 0s,
+  sin transform al hover). 0 overflow, 0 errores de consola. Archivos: `home.php`
+  (refactor capa `.destination-card-media`), `styles.css`.
+  Capturas: scratchpad (`P2`, `Q1`, datos de hover).
 
 - **TASK-009 ✅ (architect→coder→security ✅→verif. navegador ✅, 2026-06-23)** — Tokens de arte en `:root`
   (`styles.css`): `--terracotta`, `--sand-warm`, `--ink`, `--violet` (solo CTAs),
@@ -100,10 +135,27 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   UNESCO`. *Ligne d'eau* SVG (degradado teal→violeta + marcas-écluse) dibujada por
   `stroke-dashoffset` (fallback visible). `prefers-reduced-motion` anula todo. Sin
   pins ni scroll-jacking (PRD-002). Estado base visible (PRD-001). Sin CDN nuevo
-  (SEC-003). NOTA: la *ligne d'eau* reutilizable adelanta parte de TASK-011.
+  (SEC-003). NOTA (2026-06-23): la *ligne d'eau* del hero fue **eliminada** después
+  por decisión del usuario (ver TASK-011 en 🚫); el resto del hero (entrada
+  escalonada, Ken Burns, parallax, stats) se mantiene.
 - **TASK-000** — Inicialización del pipeline de agentes y estructura `docs/`.
 
 ## 🚫 Descartadas / en pausa
+
+- **TASK-011 + BUG-005** — Elemento firma "la ligne d'eau" (hairline SVG degradado
+  teal→violeta del hero + 3 divisores entre secciones con marcas-écluse).
+  **ELIMINADA (2026-06-23)** por decisión del usuario: "se ve muy feo y no tiene
+  ninguna utilidad". Aunque pasó todo el pipeline y se verificó en navegador
+  (degradado pintado correctamente tras BUG-005), el resultado visual no convenció.
+  Eliminadas las 4 instancias SVG (hero + 3 divisores) de `home.php`, todo el bloque
+  CSS `.ligne-eau*` / `.ligne-eau--divider` / `@keyframes ligne-eau-draw` y la regla
+  reduced-motion asociada de `styles.css`, y los comentarios obsoletos de
+  `home-hero.js`. Verificado: home render limpio (HTTP 200), 0 referencias `ligne-eau`
+  en HTML servido, 0 errores PHP, `php -l` OK. El hero (entrada escalonada, Ken Burns,
+  parallax, stats) y las micro-interacciones de TASK-013 quedan intactos.
+  **Nota de dirección de arte:** la tesis "el canal es una línea de agua horizontal"
+  se conserva como concepto, pero el hairline literal queda descartado; si se retoma
+  la idea, buscar otra expresión visual (no la hairline + écluse).
 
 - **TASK-008** — Capa de motion narrativo (GSAP + ScrollTrigger) en la home.
   **REVERTIDA (2026-06-23)** por decisión del usuario tras verificación visual.

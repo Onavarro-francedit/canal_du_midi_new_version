@@ -3,9 +3,9 @@
  *
  * - Patrón IIFE 'use strict', sin librerías (SEC-003: ningún CDN).
  * - Early-return si el usuario pide reduced-motion: el CSS ya deja todo
- *   visible y la ligne d'eau dibujada; no tocamos nada.
+ *   visible; no tocamos nada.
  * - Tras window.load añade html.hero-ready, que dispara en CSS la entrada
- *   escalonada + Ken Burns + dibujo de la ligne d'eau.
+ *   escalonada + Ken Burns.
  * - Parallax sutil: traslada SOLO .hero-card-img con translate3d en scroll
  *   (máx ~7% del alto del hero). No toca otras secciones. Sin scroll-jacking.
  * - Puramente decorativo: solo clases y transform, nunca innerHTML.

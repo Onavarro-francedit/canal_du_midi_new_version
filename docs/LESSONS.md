@@ -22,6 +22,15 @@ _(sin lecciones todavía)_
 
 ## Seguridad (SEC-NNN)
 
+- **SEC-004: rawurlencode() y htmlspecialchars() son capas distintas en URLs dinámicas.**
+  Al construir un `href` con valores de BD en el query-string, aplicar DOS capas independientes:
+  (1) `rawurlencode()` sobre cada valor de segmento/parámetro (codifica `+`, `&`, `#`, espacios, etc.),
+  (2) `htmlspecialchars($url, ENT_QUOTES, 'UTF-8')` sobre el atributo HTML completo.
+  Saltarse rawurlencode permite inyectar parámetros adicionales (`slug=hotel&admin=1`) o romper la semántica de la URL. Detectado en `home.php:175` con `$cat['slug']`. Corregido en TASK-011/013.
+
+- **SEC-005: BASE_URL obligatorio en hrefs; IDs numéricos de BD con cast (int) en output.**
+  No hardcodear el subpath de instalación (`/canal_du_midi/`) en ningún `href` — usar siempre `BASE_URL`. Los IDs que el modelo declara `?int` (nullable) deben castearse con `(int)` antes del echo: convierte NULL a 0 (ruta inexistente, inocuo) y elimina toda superficie de inyección. Detectado en `home.php:263` tour card. Corregido en TASK-011/013.
+
 - **SEC-003: CDN de terceros sin SRI.** Todo `<script>`/`<link>` que cargue un
   recurso de un CDN externo (jsDelivr, unpkg, etc.) debe llevar **versión fija**
   (nunca `@latest`) + `integrity="sha384-…"` (SRI) + `crossorigin="anonymous"`.
@@ -43,6 +52,23 @@ _(sin lecciones todavía)_
   corregido a `opacity:1` por defecto. Criterio del architect: "si el CDN de
   GSAP falla, nada queda en opacity:0 permanente".
   (Nota: el código de TASK-008 fue revertido; la lección sigue siendo válida.)
+
+- **PRD-003: Gradiente SVG `objectBoundingBox` sobre línea recta = stroke invisible.**
+  Un `<linearGradient>` sin `gradientUnits` usa por defecto `objectBoundingBox`.
+  Si el elemento pintado es un path de **altura o anchura cero** (una línea recta
+  horizontal/vertical, como la hairline "ligne d'eau" `M0 12 H1000`), su bounding
+  box es degenerado y el gradiente colapsa: el `stroke: url(#grad)` se pinta como
+  **transparente/nada**. Solución: declarar `gradientUnits="userSpaceOnUse"` con
+  `x1/x2/y1/y2` en coordenadas del viewBox. Corolario de verificación: que el
+  computed style del `stroke` sea `url("#grad")` y el `<defs>` exista NO prueba que
+  la línea se pinte — hay que **muestrear el color real del píxel en navegador**
+  (refuerza PRD-002). Detectado en TASK-011 (3 divisores + ligne del hero: solo se
+  veían los 4 puntos-écluse, sin línea que los una). **CORREGIDO en BUG-005
+  (2026-06-23):** `gradientUnits="userSpaceOnUse"` con `x1/x2/y1/y2` del viewBox en
+  `home.php` L110-114. Verificado con muestreo de píxeles real (no computed style):
+  hero izquierda rgb(43,181,196)=teal exacto → derecha rgb(84,77,190)=violeta exacto,
+  los 4 divisores pintan el degradado, los 16 puntos-écluse visibles, igual en
+  reduced-motion. La regla queda como referencia permanente.
 
 - **PRD-002: El motion/scroll se verifica en NAVEGADOR, no a nivel de código.**
   El pipeline aprobó TASK-008 (✅/⚠️) revisando código y métricas (overflow,

@@ -102,23 +102,6 @@
                     </form>
             </div>
 
-            <!-- Ligne d'eau : hairline décoratif (TASK-010). Réutilisable (Inc.2).
-                 Se dessine gauche->droite via stroke-dashoffset sous html.hero-ready.
-                 Fallback (sans JS / reduced-motion) = ligne dessinée complète. -->
-            <svg class="ligne-eau" viewBox="0 0 1000 24" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-                <defs>
-                    <linearGradient id="ligneEauGradient" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#2BB6C4" />
-                        <stop offset="100%" stop-color="#544DBE" />
-                    </linearGradient>
-                </defs>
-                <path class="ligne-eau-trace" pathLength="1000" d="M0 12 H1000" />
-                <circle class="ligne-eau-mark" cx="170" cy="12" r="3" />
-                <circle class="ligne-eau-mark" cx="420" cy="12" r="3" />
-                <circle class="ligne-eau-mark" cx="640" cy="12" r="3" />
-                <circle class="ligne-eau-mark" cx="850" cy="12" r="3" />
-            </svg>
-
             <datalist id="home-search-suggestions">
                 <option value="Un hôtel romantique avec spa"></option>
                 <option value="Une balade à vélo le long du canal"></option>
@@ -172,13 +155,14 @@
                                 ? $cat['image_url'] 
                                 : 'https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=800&q=80';
                         
-                        $url = BASE_URL . $lang . '/search?type=' . $cat['slug'];
-                        $name = htmlspecialchars($cat['name'] ?? ucfirst($cat['slug']));
+                        $url = BASE_URL . $lang . '/search?type=' . rawurlencode((string)($cat['slug'] ?? ''));
+                        $name = htmlspecialchars($cat['name'] ?? ucfirst((string)($cat['slug'] ?? '')), ENT_QUOTES, 'UTF-8');
                         $count = (int)$cat['offers_count'];
                     ?>
-                    <a href="<?= $url ?>" class="destination-card-link">
-                        <article class="destination-card" style="background-image: linear-gradient(180deg, transparent, rgba(14, 20, 36, 0.88)), url('<?= $bgImage ?>');">
-                            
+                    <a href="<?= htmlspecialchars($url, ENT_QUOTES, 'UTF-8') ?>" class="destination-card-link">
+                        <article class="destination-card">
+                            <!-- Capa de imagen independiente: escala sin arrastrar el texto (TASK-013) -->
+                            <span class="destination-card-media" style="background-image: linear-gradient(180deg, transparent 40%, rgba(14, 20, 36, 0.88)), url('<?= htmlspecialchars($bgImage, ENT_QUOTES, 'UTF-8') ?>');"></span>
                             <span class="pill"><?= $count ?> offre<?= $count !== 1 ? 's' : '' ?></span>
                             <h3><?= $name ?></h3>
                         </article>
@@ -239,7 +223,7 @@
             </div>
             <div class="tour-grid">
                 <?php foreach ($tours as $tour): ?>
-                    <a href="/canal_du_midi/<?= $lang ?>/service/<?= $tour->id ?>">
+                    <a href="<?= BASE_URL . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') ?>/service/<?= (int)$tour->id ?>">
                         <article class="tour-card">
                             <img src="<?= htmlspecialchars($tour->imageUrl) ?>" alt="<?= htmlspecialchars($tour->translations['title'] ?? 'Tour') ?>">
                             <div class="tour-body">
