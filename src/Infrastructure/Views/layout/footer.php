@@ -56,6 +56,7 @@
 
         <?php if (isset($page) && $page === 'home'): ?>
             <script src="<?= BASE_URL ?>public/assets/js/home-ai.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/home-hero.js"></script>
         <?php endif; ?>
         <?php if (isset($page) && $page === 'vacation-planner'): ?>
             <script src="<?= BASE_URL ?>public/assets/js/vacation-planner.js"></script>

@@ -13,88 +13,111 @@
     <section class="hero-section">
         <div class="container">
             <div class="hero-card" data-reveal="zoom">
-                <img class="hero-card-img" src="https://images.unsplash.com/photo-1732604447830-b4ba3c4ece89?auto=format&fit=crop&w=1800&q=80" alt="Canal du Midi bordé de platanes" loading="eager">
-                <div class="hero-card-overlay"></div>
+                <div class="hero-card-media">
+                    <img class="hero-card-img" src="https://images.unsplash.com/photo-1732604447830-b4ba3c4ece89?auto=format&fit=crop&w=1800&q=80" alt="Canal du Midi bordé de platanes" loading="eager">
+                    <div class="hero-card-overlay"></div>
+                </div>
                 <div class="hero-card-content">
                     <div class="eyebrow">Slow travel en Occitanie</div>
-                    <h1>Explorez le Canal du Midi<br>et vivez l'art du voyage lent.</h1>
+                    <h1>Explorez le Canal du Midi<br>et vivez l'art du voyage <em>lent.</em></h1>
                     <p style="color:#fff;">
                         Croisières en péniche, escapades à vélo, villages de charme —
                         composez votre itinéraire idéal de Toulouse à la Méditerranée.
                     </p>
                     <div class="hero-stats">
                         <div class="hero-stat">
-                            <strong>12K+</strong>
-                            <span>voyageurs inspirés</span>
+                            <strong>240 km</strong>
+                            <span>de voie navigable</span>
                         </div>
                         <div class="hero-stat">
-                            <strong>48</strong>
-                            <span>expériences locales</span>
+                            <strong>63 écluses</strong>
+                            <span>de génie hydraulique</span>
                         </div>
                         <div class="hero-stat">
-                            <strong>4.9</strong>
-                            <span>note moyenne</span>
+                            <strong>1681</strong>
+                            <span>année de création</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>UNESCO</strong>
+                            <span>patrimoine mondial</span>
                         </div>
                     </div>
                 </div>
+
+                <form class="hero-search" id="home-search-form" action="<?= BASE_URL . $lang ?>/search" method="GET">
+                        <div class="search-field search-field-primary">
+                            <span class="search-field-head">
+                                <span class="search-field-icon"><i class="bi bi-search"></i></span>
+                                <span class="search-field-copy">
+                                    <span class="search-field-label">Que cherchez-vous ?</span>
+                                </span>
+                            </span>
+                            <input type="text" name="q" id="home-search-input" class="search-field-input"
+                                list="home-search-suggestions" autocomplete="off"
+                                placeholder="Hôtel romantique, croisière, vélo…">
+                        </div>
+
+                        <label class="search-field">
+                            <span class="search-field-head">
+                                <span class="search-field-icon"><i class="bi bi-geo-alt"></i></span>
+                                <span class="search-field-copy">
+                                    <span class="search-field-label">Destination</span>
+                                </span>
+                            </span>
+                            <span class="search-field-select-wrap">
+                                <select name="city" class="search-field-input">
+                                    <option value="">Toutes les étapes</option>
+                                    <option value="Toulouse">Toulouse</option>
+                                    <option value="Carcassonne">Carcassonne</option>
+                                </select>
+                                <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                            </span>
+                        </label>
+
+                        <label class="search-field">
+                            <span class="search-field-head">
+                                <span class="search-field-icon"><i class="bi bi-sliders"></i></span>
+                                <span class="search-field-copy">
+                                    <span class="search-field-label">Type</span>
+                                </span>
+                            </span>
+                            <span class="search-field-select-wrap">
+                                <select name="type" class="search-field-input">
+                                    <option value="">Tous les types</option>
+                                    <option value="hotel">Hôtel</option>
+                                    <option value="boat">Bateau</option>
+                                </select>
+                                <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                            </span>
+                        </label>
+
+                        <div class="search-buttons-group">
+                            <button class="button hero-search-submit" type="submit">
+                                <i class="bi bi-search"></i> Rechercher
+                            </button>
+                            <button type="button" id="home-ai-btn" class="button ai-magic-btn" title="Utiliser l'IA">
+                                <i class="bi bi-stars"></i> Assistant IA
+                            </button>
+                        </div>
+                    </form>
             </div>
 
-            <form class="hero-search" data-reveal="up" data-delay="300" id="home-search-form" action="<?= BASE_URL . $lang ?>/search" method="GET">
-                <div class="search-field search-field-primary">
-                    <span class="search-field-head">
-                        <span class="search-field-icon"><i class="bi bi-search"></i></span>
-                        <span class="search-field-copy">
-                            <span class="search-field-label">Que cherchez-vous ?</span>
-                        </span>
-                    </span>
-                    <input type="text" name="q" id="home-search-input" class="search-field-input"
-                        list="home-search-suggestions" autocomplete="off"
-                        placeholder="Hôtel romantique, croisière, vélo…">
-                </div>
-
-                <label class="search-field">
-                    <span class="search-field-head">
-                        <span class="search-field-icon"><i class="bi bi-geo-alt"></i></span>
-                        <span class="search-field-copy">
-                            <span class="search-field-label">Destination</span>
-                        </span>
-                    </span>
-                    <span class="search-field-select-wrap">
-                        <select name="city" class="search-field-input">
-                            <option value="">Toutes les étapes</option>
-                            <option value="Toulouse">Toulouse</option>
-                            <option value="Carcassonne">Carcassonne</option>
-                        </select>
-                        <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
-                    </span>
-                </label>
-
-                <label class="search-field">
-                    <span class="search-field-head">
-                        <span class="search-field-icon"><i class="bi bi-sliders"></i></span>
-                        <span class="search-field-copy">
-                            <span class="search-field-label">Type</span>
-                        </span>
-                    </span>
-                    <span class="search-field-select-wrap">
-                        <select name="type" class="search-field-input">
-                            <option value="">Tous les types</option>
-                            <option value="hotel">Hôtel</option>
-                            <option value="boat">Bateau</option>
-                        </select>
-                        <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
-                    </span>
-                </label>
-
-                <div class="search-buttons-group">
-                    <button class="button hero-search-submit" type="submit">
-                        <i class="bi bi-search"></i> Rechercher
-                    </button>
-                    <button type="button" id="home-ai-btn" class="button ai-magic-btn" title="Utiliser l'IA">
-                        <i class="bi bi-stars"></i> Assistant IA
-                    </button>
-                </div>
-            </form>
+            <!-- Ligne d'eau : hairline décoratif (TASK-010). Réutilisable (Inc.2).
+                 Se dessine gauche->droite via stroke-dashoffset sous html.hero-ready.
+                 Fallback (sans JS / reduced-motion) = ligne dessinée complète. -->
+            <svg class="ligne-eau" viewBox="0 0 1000 24" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <defs>
+                    <linearGradient id="ligneEauGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#2BB6C4" />
+                        <stop offset="100%" stop-color="#544DBE" />
+                    </linearGradient>
+                </defs>
+                <path class="ligne-eau-trace" pathLength="1000" d="M0 12 H1000" />
+                <circle class="ligne-eau-mark" cx="170" cy="12" r="3" />
+                <circle class="ligne-eau-mark" cx="420" cy="12" r="3" />
+                <circle class="ligne-eau-mark" cx="640" cy="12" r="3" />
+                <circle class="ligne-eau-mark" cx="850" cy="12" r="3" />
+            </svg>
 
             <datalist id="home-search-suggestions">
                 <option value="Un hôtel romantique avec spa"></option>
@@ -140,6 +163,7 @@
             </div>
             
             <div class="destination-grid" data-reveal-stagger>
+
                 <?php foreach ($randomCategories as $cat): ?>
                     <?php 
                         // La imagen ahora viene directamente de la DB ($cat['image_url'])
@@ -154,7 +178,7 @@
                     ?>
                     <a href="<?= $url ?>" class="destination-card-link">
                         <article class="destination-card" style="background-image: linear-gradient(180deg, transparent, rgba(14, 20, 36, 0.88)), url('<?= $bgImage ?>');">
-                            <div class="card-icon-top"><i class="bi <?= $cat['icon_class'] ?>"></i></div>
+                            
                             <span class="pill"><?= $count ?> offre<?= $count !== 1 ? 's' : '' ?></span>
                             <h3><?= $name ?></h3>
                         </article>
@@ -186,21 +210,21 @@
                 </figure>
             </div>
             <div class="split-copy" data-reveal="right">
-                <div class="eyebrow">A simply perfect place to get lost</div>
-                <h2>Une section éditoriale forte pour raconter la destination.</h2>
+                <div class="eyebrow">Votre guide local</div>
+                <h2>Le meilleur du Canal du Midi, sélectionné pour un séjour qui se vend bien.</h2>
                 <p>
-                    Cette partie reprend le principe visuel de la maquette: photos superposées,
-                    texte dense, liste d’arguments, puis deux actions rapides.
+                    Croisières en péniche, balades à vélo, haltes gourmandes et villages de caractère :
+                    nous réunissons les expériences essentielles pour construire un voyage fluide, inspirant et mémorable.
                 </p>
                 <ul class="check-list">
-                    <li>Parcours fluvial, vélo et patrimoine réunis</li>
-                    <li>Contenu prêt à remplacer par vos vraies offres</li>
-                    <li>Design responsive sans framework imposé (Pure CSS)</li>
-                    <li>Architecture Hexagonale prête pour la croissance</li>
+                    <li>Séjours pensés pour couples, familles et petits groupes</li>
+                    <li>Activités, hébergements et étapes choisis pour leur qualité</li>
+                    <li>Itinéraire clair, réservation simple et gain de temps</li>
+                    <li>Conseils locaux pour voyager au bon rythme</li>
                 </ul>
                 <div class="contact-strip">
-                    <a class="button button-soft" href="tel:+33500000000">+33 5 00 00 00 00</a>
-                    <a class="button button-soft muted" href="mailto:bonjour@canaldumidi.local">bonjour@canaldumidi.local</a>
+                    <a class="button button-soft" href="tel:+33500000000">Appeler un conseiller</a>
+                    <a class="button button-soft muted" href="mailto:bonjour@canaldumidi.local">Demander un devis</a>
                 </div>
             </div>
         </div>
@@ -212,9 +236,8 @@
             <div class="section-heading" data-reveal="up">
                 <div class="eyebrow">Popular tours</div>
                 <h2>Des cartes produits claires et commerciales</h2>
-                <p>Récupéré via ServiceRepository (Capa de Infraestructura).</p>
             </div>
-            <div class="tour-grid" data-reveal-stagger>
+            <div class="tour-grid">
                 <?php foreach ($tours as $tour): ?>
                     <a href="/canal_du_midi/<?= $lang ?>/service/<?= $tour->id ?>">
                         <article class="tour-card">

@@ -21,7 +21,8 @@ class PageController {
             case 'home':
                 $allServices = $repository->findAll($lang);
                 $destinations = array_filter($allServices, fn($service) => $service->type === 'destination');
-                $tours = array_filter($allServices, fn($service) => $service->type === 'tour' || $service->type === 'boat');
+                /* $tours = array_filter($allServices, fn($service) => $service->type === 'tour' || $service->type === 'boat'); */
+                $tours = array_slice($allServices, 0, 4); // Tomamos los primeros 4 servicios como tours
                 $allCategories = $repository->getCategoriesWithCount($lang);
 
                 if (!empty($allCategories)) {

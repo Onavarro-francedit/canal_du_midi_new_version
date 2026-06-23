@@ -202,6 +202,7 @@ class MySQLServiceRepository implements ServiceRepository
                     c.slug,
                     c.taxonomy,
                     c.parent_id,
+                    c.image_url,
                     COALESCE(cc.offers_count, 0) AS offers_count
                 FROM categories c
                 LEFT JOIN category_counts_cache cc ON c.id = cc.category_id
