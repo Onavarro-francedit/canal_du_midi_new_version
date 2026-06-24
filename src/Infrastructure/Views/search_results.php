@@ -125,7 +125,7 @@ foreach ($categories as $cat) {
                                 </span>
                             </span>
                         </label>
-                        <input id="search-keywords" type="text" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Que cherchez-vous ?">
+                        <input id="search-keywords" type="text" name="q" value="<?= htmlspecialchars($query, ENT_QUOTES, 'UTF-8') ?>" placeholder="Que cherchez-vous ?">
                     </div>
 
                     
@@ -136,10 +136,10 @@ foreach ($categories as $cat) {
                         </label>
                         <div id="search-type-hidden-container">
                             <?php foreach ($selectedTypes as $st): ?>
-                                <input type="hidden" name="type[]" value="<?= htmlspecialchars($st) ?>">
+                                <input type="hidden" name="type[]" value="<?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?>">
                             <?php endforeach; ?>
                         </div>
-                        <div class="modern-type-select" id="search-type-custom" data-selected="<?= htmlspecialchars(json_encode(array_values($selectedTypes))) ?>">
+                        <div class="modern-type-select" id="search-type-custom" data-selected="<?= htmlspecialchars(json_encode(array_values($selectedTypes)), ENT_QUOTES, 'UTF-8') ?>">
                             <button
                                 type="button"
                                 class="modern-type-select-trigger"
@@ -148,7 +148,7 @@ foreach ($categories as $cat) {
                                 aria-expanded="false"
                                 aria-controls="search-type-dropdown"
                             >
-                                <span class="modern-type-select-value" id="search-type-value"><?= htmlspecialchars($selectedTypeDisplayText) ?></span>
+                                <span class="modern-type-select-value" id="search-type-value"><?= htmlspecialchars($selectedTypeDisplayText, ENT_QUOTES, 'UTF-8') ?></span>
                             </button>
 
                             <div class="modern-type-select-dropdown" id="search-type-dropdown" hidden>
@@ -187,13 +187,13 @@ foreach ($categories as $cat) {
                                         <button
                                             type="button"
                                             class="modern-type-option<?= $isSelected ? ' is-selected' : '' ?>"
-                                            data-value="<?= htmlspecialchars($catSlug) ?>"
-                                            data-label="<?= htmlspecialchars($catName) ?>"
+                                            data-value="<?= htmlspecialchars($catSlug, ENT_QUOTES, 'UTF-8') ?>"
+                                            data-label="<?= htmlspecialchars($catName, ENT_QUOTES, 'UTF-8') ?>"
                                             role="option"
                                             aria-selected="<?= $isSelected ? 'true' : 'false' ?>"
                                         >
                                             <span class="modern-type-option-check"><i class="bi bi-check2"></i></span>
-                                            <span class="modern-type-option-name"><?= htmlspecialchars($catName) ?></span>
+                                            <span class="modern-type-option-name"><?= htmlspecialchars($catName, ENT_QUOTES, 'UTF-8') ?></span>
                                             <span class="modern-type-option-count"><?= $catOffers ?> offre<?= $catOffers > 1 ? 's' : '' ?></span>
                                         </button>
                                     <?php endforeach; ?>
@@ -226,7 +226,7 @@ foreach ($categories as $cat) {
                         $renderCategoryCard = function (array $cat, bool $isChild = false) use ($lang, $selectedTypes) {
                             $categorySlugRaw = trim((string)($cat['slug'] ?? ''));
                             $categoryNameRaw = trim((string)($cat['name'] ?? ''));
-                            $categoryName = htmlspecialchars($categoryNameRaw !== '' ? $categoryNameRaw : ucfirst($categorySlugRaw));
+                            $categoryName = htmlspecialchars($categoryNameRaw !== '' ? $categoryNameRaw : ucfirst($categorySlugRaw), ENT_QUOTES, 'UTF-8');
                             $offersCount = (int)($cat['offers_count'] ?? 0);
                             $categorySlug = rawurlencode($categorySlugRaw);
 
@@ -380,7 +380,7 @@ foreach ($categories as $cat) {
                         <?php foreach ($activeFilters as $filter): ?>
                             <span class="active-filter-chip">
                                 <i class="bi bi-check2"></i>
-                                <?= htmlspecialchars($filter) ?>
+                                <?= htmlspecialchars($filter, ENT_QUOTES, 'UTF-8') ?>
                             </span>
                         <?php endforeach; ?>
                         <a href="<?= htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') ?>" class="clear-filters-link">
@@ -401,9 +401,9 @@ foreach ($categories as $cat) {
                 <div class="explore-list">
                     <?php foreach ($results as $s): ?>
                         <?php
-                        $serviceTitle        = htmlspecialchars($s->translations['title'] ?? 'Adresse Canal du Midi');
-                        $serviceDesc         = mb_substr(htmlspecialchars($s->translations['description'] ?? ''), 0, 120);
-                        $serviceAddress      = htmlspecialchars($s->getFullAddress());
+                        $serviceTitle        = htmlspecialchars($s->translations['title'] ?? 'Adresse Canal du Midi', ENT_QUOTES, 'UTF-8');
+                        $serviceDesc         = mb_substr(htmlspecialchars($s->translations['description'] ?? '', ENT_QUOTES, 'UTF-8'), 0, 120);
+                        $serviceAddress      = htmlspecialchars($s->getFullAddress(), ENT_QUOTES, 'UTF-8');
                         $serviceImage        = $s->imageUrl ?: '';
                         $serviceImageEscaped = htmlspecialchars($serviceImage, ENT_QUOTES, 'UTF-8');
                         $ficheUrl            = htmlspecialchars(BASE_URL . 'fiche/' . rawurlencode((string)$s->slug), ENT_QUOTES, 'UTF-8');
@@ -453,7 +453,7 @@ foreach ($categories as $cat) {
                                 <?php if (!empty($s->contact['phone'])): ?>
                                     <span class="card-phone">
                                         <i class="bi bi-telephone"></i>
-                                        <?= htmlspecialchars($s->contact['phone']) ?>
+                                        <?= htmlspecialchars($s->contact['phone'], ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 <?php endif; ?>
                                 <a href="<?= $ficheUrl ?>" class="card-detail-trigger">

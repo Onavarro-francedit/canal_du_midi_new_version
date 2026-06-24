@@ -88,18 +88,30 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 
 ## 📌 Estado actual del proyecto
 
-- **Último completado:** Cluster "Buscador del hero" (BUG-007/TASK-015 +
-  BUG-008/TASK-016 + BUG-009 + TASK-017), pipeline completo + product ⚠️ verificado
-  en navegador. `<select>` Type (12 tipos reales, sin "boat" fantasma) y Destination
-  (9 etapas) poblados desde BD; título SEO condicional sin comillas vacías; feedback
-  de carga en "Rechercher"; SEC-006 (ENT_QUOTES) cerrada. Ver 🟢 en TASKS.md.
-- **Seguimientos abiertos (🟡):** PRD-004/BUG-010 (el título de search imprime el
-  slug crudo del tipo, p.ej. "location-de-velo", en vez del nombre legible) y
-  PRD-005/BUG-011 (Type="Le Canal en Bateau"/`nautique` devuelve 136/253, mayoría
-  écluses+ports, no barcos). Ambos en `docs/TASKS.md`.
-- **Siguiente candidato:** corregir PRD-004 + PRD-005, o Incremento 3 visual —
-  TASK-012 "Les étapes du canal" (Toulouse → … → Étang de Thau).
+- **Último completado:** TASK-001 (escape de salida `ENT_QUOTES,'UTF-8'` en 6 vistas:
+  service_detail, poi_detail, vacation_pdf, review_item, header, booking_summary_modal)
+  + TASK-002 (hardening de prompts OpenAI: `sanitizeUserPrompt`, delimitadores,
+  cláusula anti-override). Pipeline completo + product ⚠️ verificado en navegador
+  (Playwright, PRD-002). Incluye SEC-010 (iframe de vídeo de BD con allowlist
+  youtube/vimeo + sandbox) y SEC-011 (`$service->id` casteado a `(int)` en `data-sid` y
+  `service_id`). Ficha de servicio renderiza con mapa Leaflet (1 marcador OK pese al
+  cast float), acentos franceses intactos, 0 errores de consola; vacation-pdf con ref
+  inválida → 404 "introuvable". Auditoría: `grep htmlspecialchars | grep -v ENT_QUOTES`
+  → 0 en los 6 archivos. Ver 🟢 en TASKS.md.
+- **Antes (resumen):** clusters home BUG-001/002/003 (tour-cards reales + sección plan
+  Calaméo + form e-mail) y "buscador del hero" (selects reales, PRD-004/PRD-005
+  resueltos: título legible + filtro náutico 136→17). SEC-007/008 y la tanda de
+  backlog (PRD-006, TASK-003/004, BUG-004, SEC-004/009/002) cerradas. Detalle en
+  `docs/TASKS.md` 🟢.
+- **Seguimientos abiertos (🟡):** PRD-007/BUG-014 (el mapa de la ficha de POI nunca
+  renderiza — `footer.php` no carga Leaflet para `$page==='poi'`; bug PRE-EXISTENTE,
+  no regresión de TASK-001); deuda de fondo — SEC-001 (credenciales BD en
+  `Database.php`), TASK-005/007 (stats/contacto/imágenes reales), TASK-016b (backfill
+  `commune`), BUG-004 ("Lire la vidéo" aplazado, ya eliminado el botón). En
+  `docs/TASKS.md`.
+- **Siguiente candidato:** corregir PRD-007/BUG-014 (Leaflet en ficha de POI), o
+  Incremento 3 visual — TASK-012 "Les étapes du canal" (Toulouse → … → Étang de Thau).
 - Recordatorio: el motion/render Y los filtros/resultados se verifican SIEMPRE en
   navegador con captura, muestreo de píxeles o conteo+muestra real
-  (PRD-002/PRD-003/PRD-005); el computed style/“filtra algo” no basta. Nada de
-  pins/scroll-jacking (TASK-008 revertida).
+  (PRD-002/PRD-003/PRD-005/PRD-007); el computed style/“filtra algo”/“el div existe”
+  no basta. Nada de pins/scroll-jacking (TASK-008 revertida).

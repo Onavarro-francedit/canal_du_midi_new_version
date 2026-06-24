@@ -1,9 +1,12 @@
 <?php
 /**
  * Vista: home.php
- * Recibe: 
- * - $destinations (Array de objetos Service de tipo destination)
+ * Recibe:
+ * - $randomCategories (Array de categorías para el grid de destinos)
  * - $tours (Array de objetos Service de tipo tour)
+ * - $tourMetaLabels (Array id→etiqueta legible de categoría, PRD-006)
+ * - $heroTypes, $heroStages (datos del buscador del hero)
+ * - $planFeedback (flag ok|invalid|error de la sección #plan)
  * - $lang (String del idioma actual)
  */
 ?>
@@ -158,7 +161,7 @@
     <section id="destinations" class="section section-tight">
         <div class="container">
             <div class="section-heading center" data-reveal="up">
-                <div class="eyebrow">Top destinations</div>
+                <div class="eyebrow">Destinations phares</div>
                 <h2>Les étapes qui structurent le voyage</h2>
                 <p>Découvrez les lieux emblématiques du Canal du Midi, sélectionnés pour leur patrimoine et leur beauté.</p>
             </div>
@@ -236,18 +239,25 @@
     <section class="section">
         <div class="container">
             <div class="section-heading" data-reveal="up">
-                <div class="eyebrow">Popular tours</div>
+                <div class="eyebrow">Séjours populaires</div>
                 <h2>Des cartes produits claires et commerciales</h2>
             </div>
             <div class="tour-grid">
                 <?php foreach ($tours as $tour): ?>
                     <a href="<?= BASE_URL . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') ?>/service/<?= (int)$tour->id ?>">
                         <article class="tour-card">
-                            <img src="<?= htmlspecialchars($tour->imageUrl) ?>" alt="<?= htmlspecialchars($tour->translations['title'] ?? 'Tour') ?>">
+                            <img src="<?= htmlspecialchars($tour->imageUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($tour->translations['title'] ?? 'Tour', ENT_QUOTES, 'UTF-8') ?>">
                             <div class="tour-body">
-                                <h3><?= htmlspecialchars($tour->translations['title'] ?? 'Titre non disponible') ?></h3>
+                                <h3><?= htmlspecialchars($tour->translations['title'] ?? 'Titre non disponible', ENT_QUOTES, 'UTF-8') ?></h3>
                                 <div class="tour-meta">
-                                    <span><?= htmlspecialchars($tour->translations['tag'] ?? 'Durée flexible') ?></span>
+                                    <?php
+                                        // PRD-006/BUG-012: etiqueta legible calculada en PageController.
+                                        // $tourMetaLabels[(int)$tour->id] nunca contiene slug crudo (SEC-006).
+                                        $tourMeta = $tourMetaLabels[(int)$tour->id] ?? '';
+                                    ?>
+                                    <?php if ($tourMeta !== ''): ?>
+                                    <span><?= htmlspecialchars($tourMeta, ENT_QUOTES, 'UTF-8') ?></span>
+                                    <?php endif; ?>
                                     <span><?= $tour->getFormattedPrice() ?></span>
                                 </div>
                             </div>
@@ -261,8 +271,7 @@
     <!-- 5. IMMERSIVE BAND -->
     <section class="immersive-band">
         <div class="container band-inner" data-reveal="zoom">
-            <button class="play-button" type="button" aria-label="Lire la vidéo">▶</button>
-            <h2>Where would you like to go?</h2>
+            <h2>Où souhaitez-vous aller ?</h2>
             <p>Un bloc immersif pour casser le rythme et pousser vers l’exploration.</p>
         </div>
     </section>
@@ -271,7 +280,7 @@
     <section id="why-us" class="section section-wave-top">
         <div class="container">
             <div class="section-heading center" data-reveal="up">
-                <div class="eyebrow">Why choose us?</div>
+                <div class="eyebrow">Pourquoi nous choisir ?</div>
                 <h2>Les bénéfices sont présentés en cartes compactes</h2>
             </div>
             
@@ -297,14 +306,14 @@
             <div class="offer-grid" data-reveal-stagger>
                 <article class="offer-card blue">
                     <div>
-                        <span class="offer-kicker">Weekly flash deals</span>
+                        <span class="offer-kicker">Offres flash de la semaine</span>
                         <h3>Jusqu’à -35% sur certaines dates</h3>
                     </div>
-                    <a class="button button-small button-white" href="#newsletter">Voir les offres</a>
+                    <a class="button button-small button-white" href="#plan">Voir les offres</a>
                 </article>
                 <article class="offer-card sand">
                     <div>
-                        <span class="offer-kicker">Summer escapes</span>
+                        <span class="offer-kicker">Escapades d'été</span>
                         <h3>Des séjours prêts pour juillet et août</h3>
                     </div>
                     <a class="button button-small button-white" href="#news">Voir plus</a>
@@ -313,17 +322,68 @@
         </div>
     </section>
 
-    <!-- 7. NEWSLETTER -->
-    <section id="newsletter" class="section newsletter-section">
+    <!-- 7. PLAN DU CANAL DU MIDI -->
+    <section id="plan" class="section newsletter-section">
         <div class="container newsletter-box" data-reveal="up">
-            <div>
-                <div class="eyebrow">Sign up for our newsletter</div>
-                <h2>Inscrivez-vous pour recevoir des mises à jour sur le Canal.</h2>
+
+            <!-- Visor Calaméo (preview "mini" propre, sans pub) -->
+            <div class="plan-viewer" style="flex:0 0 480px;max-width:100%;">
+                <iframe
+                    src="https://v.calameo.com/?bkcode=003331405edc35288442a&amp;mode=mini"
+                    width="480" height="400"
+                    allowfullscreen
+                    referrerpolicy="no-referrer"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                    scrolling="no"
+                    style="display:block;width:100%;max-width:480px;height:400px;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto;"
+                    title="Plan du Canal du Midi 2026 — Calaméo"
+                    loading="lazy">
+                </iframe>
             </div>
-            <form class="newsletter-form">
-                <input type="email" placeholder="Votre adresse email">
-                <button class="button button-small" type="submit">Submit</button>
-            </form>
+
+            <!-- Texte et formulaire -->
+            <div>
+                <div class="eyebrow">Guide officiel</div>
+                <h2>Recevez le plan du Canal du Midi 2026</h2>
+                <p style="color:var(--c-muted,#6b7280);margin-bottom:1.5rem;">
+                    Toutes les étapes, écluses et points d'intérêt de Toulouse à la Méditerranée —
+                    directement dans votre boîte mail.
+                </p>
+
+                <?php if ($planFeedback === 'ok'): ?>
+                    <p role="alert" style="padding:.75rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;color:#166534;font-size:.95rem;margin-bottom:1rem;">
+                        <?= htmlspecialchars('Vérifiez votre boîte mail — votre plan est en route !', ENT_QUOTES, 'UTF-8') ?>
+                    </p>
+                <?php elseif ($planFeedback === 'invalid'): ?>
+                    <p role="alert" style="padding:.75rem 1rem;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:.95rem;margin-bottom:1rem;">
+                        <?= htmlspecialchars('Adresse e-mail invalide. Veuillez vérifier et réessayer.', ENT_QUOTES, 'UTF-8') ?>
+                    </p>
+                <?php elseif ($planFeedback === 'error'): ?>
+                    <p role="alert" style="padding:.75rem 1rem;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;color:#92400e;font-size:.95rem;margin-bottom:1rem;">
+                        <?= htmlspecialchars('Une erreur est survenue. Veuillez réessayer dans quelques instants.', ENT_QUOTES, 'UTF-8') ?>
+                    </p>
+                <?php endif; ?>
+
+                <form class="newsletter-form"
+                      method="POST"
+                      action="<?= BASE_URL . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') ?>/plan-request">
+                    <input type="email" name="email" required
+                           placeholder="Votre adresse e-mail"
+                           autocomplete="email">
+                    <button class="button button-small" type="submit">
+                        Recevoir le plan par e-mail
+                    </button>
+                </form>
+
+                <div style="margin-top:1.25rem;display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;">
+                    <span style="font-size:.85rem;color:var(--c-muted,#6b7280);">ou</span>
+                    <a href="<?= BASE_URL ?>public/Plan-Canal-du-Midi-2026.pdf" download class="btn-pdf">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Télécharger le PDF
+                        <span class="btn-pdf__size">32 Mo</span>
+                    </a>
+                </div>
+            </div>
+
         </div>
     </section>
 </main>

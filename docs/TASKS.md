@@ -4,27 +4,18 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(ninguna — pendiente revisión security del cluster buscador del hero)_
+_(ninguna tarea activa)_
 
 ## 🟡 Pendiente
 
-- **PRD-004 / BUG-010** (copy, severidad media) — El título SEO de búsqueda imprime
-  el SLUG crudo del tipo, no el nombre legible. `PageController.php:227`:
-  `$seoTitle = "Séjours et activités — " . $types[0]`. Verificado en navegador:
-  `?type=location-de-velo` → `<title>… — location-de-velo</title>`; `?type=nautique`
-  → `… — nautique`. Debe mostrar "Location de vélo" / "Le Canal en Bateau". El
-  controlador ya carga `$categories` (mapa slug→name). Fix: índice slug→name +
-  fallback al slug. Re-verificar las 4 ramas del título en navegador. Lección PRD-004.
+- **PRD-006 / BUG-012** — _(✅ CORREGIDO 2026-06-24 — ver 🟢 Completadas)_
 
-- **PRD-005 / BUG-011** (coherencia de filtro, severidad media-alta) — Type="Le Canal
-  en Bateau" (`nautique`) devuelve 136/253, de los cuales 93 (68%) son écluses(72) +
-  ports(21) — infraestructura no reservable, no barcos. `resolveCategoryIdsForSearch`
-  expande el padre `nautique` a TODAS sus hijas (incluidas `ecluses` y `ports`). El
-  turista que busca una croisière ve una lista de esclusas. Decisión de producto +
-  fix: excluir hijos no-reservables del genérico náutico, o apuntar el option a las
-  hijas reservables (croisiere-bateau/location-bateau/location-de-canoe-kayak), o
-  separar écluses/ports a su propia entrada. Re-verificar conteo+muestra en navegador.
-  Lección PRD-005.
+- **BUG-004 (APLAZADO 2026-06-24)** — Botón "Lire la vidéo" del bloque inmersivo
+  (`home.php:264`) sin lógica asociada. Sacado del cluster "Bugs funcionales de la
+  home" por decisión de producto. `lightbox.js` es **solo imágenes** (no soporta
+  vídeo), y la banda no está ligada a ningún vídeo concreto. Decisión futura:
+  quitar el botón (menor riesgo) o cablear a un vídeo real (extender lightbox a
+  iframe/video + URL real).
 
 - **TASK-016b** (datos, largo plazo) — Backfill de una columna `commune` limpia en
   `listings`, extraída de `address`/`postal_code` (la columna `city` actual contiene
@@ -35,14 +26,16 @@ _(ninguna — pendiente revisión security del cluster buscador del hero)_
 
 - **SEC-001** — Unificar credenciales de BD: `src/config/Database.php` hardcodea
   `root`/password vacío; debe leer `DB_HOST/DB_NAME/DB_USER/DB_PASS` del `.env`.
-- **TASK-001** — Revisar escape de salida (`htmlspecialchars`) en las vistas que
-  imprimen contenido de servicios/POIs y resultados de IA.
-- **TASK-002** — Endurecer entradas de usuario que alimentan prompts de OpenAI
-  (`SmartAIService`, `VacationPlannerService`) frente a prompt injection.
+- **TASK-001** — _(✅ → ver 🟢)_
+- **TASK-002** — _(✅ → ver 🟢)_
 - **SEC-004** — Añadir SRI (`integrity` + `crossorigin="anonymous"`) a los
   `<script>` de Leaflet 1.9.4 y leaflet.markercluster 1.5.3 (unpkg) cargados en
   `footer.php` para las páginas service/search. Misma deuda que SEC-003 (GSAP),
   ya resuelta en home. Lección aplicable: SEC-003.
+
+- **SEC-008** — _(✅ CORREGIDA 2026-06-24 — ver 🟢 Completadas)_
+
+- **SEC-009** — _(✅ ya implementado/reconciliado 2026-06-24 — ver 🟢 tanda backlog)_
 
 - **SEC-004 (corregido in-situ, 2026-06-23)** — `home.php:175`: slug de BD en query-string
   sin `rawurlencode()`. Corregido en la revisión security de TASK-011/013. Ver LESSONS.md.
@@ -152,6 +145,62 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **PRD-007 / BUG-014 — Cargar Leaflet en la ficha de POI + fix ancla #newsletter ✅ implementado (2026-06-24, pendiente verificación en navegador por security)**
+  - Causa raíz: `footer.php` no tenía rama `$page === 'poi'` → `window.L` undefined → hueco gris silencioso.
+  - Fix (3 archivos, sin BD): (1) `header.php` — añadido `<link>` Leaflet CSS 1.9.4 al bloque `$page === 'poi'` (L52-53), reusando el tag literal de service/search. (2) `footer.php` — añadido bloque `$page === 'poi'` entre el bloque `search` y el bloque `home`: Leaflet JS 1.9.4 con SRI idéntico al ya auditado + `map.js`. Orden garantizado: Leaflet antes de `map.js`. Sin markercluster (1 marcador, no clúster). (3) `home.php:312` + `header.php:124` — anclas `href="#newsletter"` (ancla muerta) → `href="#plan"` (home.php, relativa) y `href="BASE_URL.$lang/home#plan"` (header.php, absoluta para funcionar desde cualquier página). `grep -rn 'href="#newsletter"' src/` → 0 restantes. `php -l` OK en los 3 archivos.
+  - Pendiente: verificación en navegador por security (`.leaflet-container` + 1 marcador en `/fr/poi/3`, 0 errores integrity/consola).
+
+- **TASK-001 + TASK-002 — Hardening escape de salida + prompts OpenAI ✅ pipeline COMPLETO + product ⚠️ verificado en navegador (2026-06-24)**
+  - **Veredicto product:** ⚠️ listo con mejoras menores. Verificado en navegador (Playwright headless, render real + muestra, PRD-002). Capturas en scratchpad: `PROD-service.png`, `PROD-poi.png`, `PROD-vacplanner.png`.
+  - **Criterios de éxito CUMPLIDOS:** (1) Ficha `/fr/fiche/a-labordage-moussaillon` → HTTP 200, título/h1 `À L'ABORDAGE MOUSSAILLON !` (acento `À` + apóstrofe correctos, **0 mojibake, 0 doble-escape**), mapa Leaflet con **1 marcador + 12 tiles** (el cast `(float)` de lat/lng NO rompió el marcador), galería, reviews, formulario de reserva con modal de doble confirmación (summary-card), **0 errores de consola**. (4) `name="service_id" value="246"` entero correcto. (3) `data-sid` usa `(int)$service->id` (confirmado estático); el botón "Voir plus d'avis" es condicional a `reviewCount > mostrados` y NINGÚN servicio del catálogo lo dispara, así que no se observó en vivo (sin servicio cualificable). (2) **SEC-010 vídeo:** lógica de allowlist correcta, pero **0/253 servicios tienen vídeo** poblado → ningún iframe se renderiza (realidad de datos, no bug). (5) **POI** `/fr/poi/3` → HTTP 200, título/h1 `Écluse de Bayard (Gare)` + alts (`HÔTEL DE BORDEAUX`, `LA CHARTREUSE Hôtel`) con acentos intactos, **0 mojibake/doble-escape** (escape de poi_detail.php correcto). (6) **Vacation planner** `/fr/vacation-planner` → HTTP 200, asistente de 4 pasos renderiza, 0 errores de consola. (7) **Vacation PDF:** referencia inválida → **404 + "introuvable"** (manejo elegante, sin fuga de error PHP); no se pudo probar un PDF real (sin referencia de prueba y lectura de BD bloqueada por la restricción "no tocar BD"); escape de la vista confirmado estático (16 `htmlspecialchars`, todas con ENT_QUOTES).
+  - **Auditoría de escape final:** `grep htmlspecialchars | grep -v ENT_QUOTES` → **0** en los 6 archivos de TASK-001. Sin regresiones de render (mapa con marcador OK, sin doble-escape visible, sin atributos rotos).
+  - **Seguimiento NUEVO abierto (🟡, no bloqueante):** PRD-007/BUG-014 — el mapa de la ficha de POI nunca renderiza porque `footer.php` no carga Leaflet para `$page==='poi'`. Bug PRE-EXISTENTE de gating, NO regresión de TASK-001. Registrado en LESSONS.md (PRD-007) y ERROR_LOG.md.
+
+- **TASK-001 + TASK-002 — (entrada security) Hardening escape de salida + prompts OpenAI ✅ pipeline security ⚠️ (2026-06-24)**
+  - **TASK-001 (escape de salida):** pase de flag `ENT_QUOTES, 'UTF-8'` en los 6 archivos de vistas: `service_detail.php`, `poi_detail.php`, `vacation_pdf.php`, `review_item.php`, `header.php`, `booking_summary_modal.php`. Verificado: `grep htmlspecialchars | grep -v ENT_QUOTES` → 0 en los 6 archivos; `php -l` OK en todos. Security corrigió adicionalmente: (1) SEC-010 — `strip_tags('<iframe>')` reemplazado por extractor seguro con allowlist de hosts (youtube/vimeo) + reconstrucción del iframe con `htmlspecialchars` + `sandbox`; (2) SEC-011 — `$service->id` sin cast `(int)` en `data-sid` (L481) y `value=service_id` (L634) corregidos.
+  - **TASK-002 (hardening prompts OpenAI):** `sanitizeUserPrompt()` en `OpenAIService.php` y `VacationPlannerService.php`. Input delimitado + cláusula anti-override en system. Sistema (no contiene input de usuario), IDs de BD validados como `(int)` en `buildResultsFromIds`. `php -l` OK en ambos.
+  - **Aviso vacation_pdf.php (evaluado por security):** `$plan` en `renderVacationPDF` se lee de BD (`vacation_plans.plan_data`) por referencia (`reference` en URL), NO de `$_POST['plan']` directamente. El controlador busca la fila por `reference` (PDO preparado). La vista `vacation_pdf.php` escapa todos los campos con `ENT_QUOTES`. Riesgo de data disclosure entre usuarios: inexistente — cada visitante solo puede acceder a su propio plan si conoce la referencia (token opaco `CDM-YYYY-XXXXXXXX`). Veredicto: no hay vulnerabilidad de ownership explotable.
+  - **Nuevas lecciones registradas:** SEC-010 (iframe de BD sin validar host), SEC-011 (IDs sin cast en vistas).
+
+- **Tanda autónoma de backlog (`/loop` 30 min) — PRD-006, TASK-003, TASK-004, BUG-004, SEC-004, SEC-009, SEC-002 ✅ (2026-06-24)**
+  - **PRD-006/BUG-012** ✅ (pipeline architect→coder, verdict PASS en navegador): meta de las 4 tour-cards muestra categoría legible ("Location de bateau", "Location de vélo", "Croisière en bateau"), 0 slugs crudos. `PageController` `$tourMetaLabels` + helper `resolveTourMetaLabel`; `home.php` imprime escapado (SEC-006). 2 archivos, sin BD.
+  - **TASK-003** ✅: eliminadas queries/cálculos muertos del case home (`$destinations`, `$features=getActiveFeatures`, `$articles=getLatestArticles`); −2 queries/carga. `php -l` OK, home 200 sin warnings.
+  - **TASK-004** ✅: 6 cadenas EN→FR en `home.php` (Destinations phares, Séjours populaires, Où souhaitez-vous aller ?, Pourquoi nous choisir ?, Offres flash de la semaine, Escapades d'été). Verificado: 0 inglés en la home. (Las cadenas "Sign up for our newsletter"/"Submit" ya no existían.)
+  - **BUG-004** ✅: eliminado el `<button class="play-button">` "Lire la vidéo" muerto (sin handler; default autónomo = quitar). Banda inmersiva intacta.
+  - **SEC-004** ✅ (COMPLETA): SRI sha384 + `crossorigin="anonymous"` en Leaflet 1.9.4 y leaflet.markercluster 1.5.3 (`footer.php`) Y bootstrap-icons 1.11.1 CSS (`header.php`). Verificado en navegador: Leaflet 1.9.4 carga en /search (0 errores integrity, mapa renderiza) y la fuente bootstrap-icons carga en la home (0 errores integrity, iconos renderizan). Ya no queda ningún CDN externo sin SRI.
+  - **SEC-006 tour-card** ✅: corregidas 3 llamadas `htmlspecialchars()` preexistentes sin `ENT_QUOTES,'UTF-8'` en la tour-card de `home.php` (img src, alt, h3 title), detectadas por security al revisar el bloque PRD-006. `grep` → 0 restantes en home.php.
+  - **SEC-009** ✅ (ya estaba en código; docs reconciliados): iframe Calaméo con `sandbox` mínimo.
+  - **SEC-002** ✅ (ya estaba en código; docs reconciliados): grid de destinos escapa `$url`/`$bgImage` con `ENT_QUOTES,'UTF-8'`.
+  - Restricción respetada: ninguna acción tocó la BD. Verificación Playwright (PRD-002). Plan: `~/.claude/plans/optimized-toasting-pearl.md`.
+
+- **SEC-008 — `htmlspecialchars()` sin `ENT_QUOTES, 'UTF-8'` en `EmailTemplates.php` ✅ corregido (2026-06-24)**
+  - Pase de limpieza (1 archivo) de las 21 instancias sin el flag (texto de nodo + varias en `href="mailto:"`/`href="tel:"`). Aplicado con `perl` + lookahead (no doble-escapa las correctas). Verificado: `grep` → 0 restantes, `php -l` OK, hrefs intactos. No explotable en PHP 8.2 pero cumple SEC-006. Lección: SEC-007/SEC-008.
+
+- **BUG-013 — Embed Calaméo de la sección `#plan` se veía mal ✅ corregido (2026-06-24)**
+  - Reportado por el usuario con captura. Causa raíz: se usaba la página de lectura completa (`www.calameo.com/read/...`) en un contenedor 16:9, en vez del visor embebible oficial. El sitio live (plan-canal-du-midi.com) usa el embed mini `//v.calameo.com/?bkcode=...&mode=mini` (480×400).
+  - Fix in-situ (1 archivo, `home.php` sección `#plan`, supersede la descripción del iframe en BUG-003): `src` → `https://v.calameo.com/?bkcode=003331405edc35288442a&mode=mini`; tamaño nativo 480×400 como columna izquierda fija (`flex:0 0 480px;max-width:100%`); eliminado el hack `padding-bottom:56.25%`. `sandbox` (SEC-009) intacto, re-verificado con el host `v.calameo.com`.
+  - Verificado en navegador (Playwright, PRD-002): desktop 1280 renderiza la portada "L'Officiel du Canal du Midi 2026" + 2 columnas como la referencia; móvil 390 apila centrado con form full-width; frame `v.calameo.com` cargado en ambos, **0 errores de consola**. Capturas `PLAN-FIX-desktop.png`, `PLAN-FIX-mobile.png`. `php -l` OK.
+
+- **Cluster "Bugs funcionales de la home" — BUG-001, BUG-002, BUG-003 — ✅ pipeline completo + product ⚠️ verificado en navegador (2026-06-24)**
+  - **Veredicto product:** ⚠️ listo con mejoras menores. Verificado en navegador (curl + Chrome headless, conteo Y muestra real, PRD-002). Capturas en scratchpad: `DESK3-plan.png`, `DESK3-form.png`, `DESK3-fb.png`, `PROD-mfull-b.png`. Los 8 criterios de éxito del handoff CUMPLIDOS. Único seguimiento abierto: PRD-006/BUG-012 (meta de tour-card con slug crudo), no bloqueante, movido a 🟡.
+  - **Verificación en navegador (evidencia real):** Home HTTP 200, log PHP limpio (sin fatal/warning de canal_du_midi durante las pruebas). **BUG-001:** las 4 tour-cards son experiencias reales — `service/246` À L'ABORDAGE MOUSSAILLON (location-bateau), `service/232` CAMPING DE MONTOLIEU (camping + location-de-velo → entra por velo), `service/200` CRIS'BOAT (location-bateau), `service/244` CROISIERES DU MIDI HOMPS (croisiere-bateau). Categorías confirmadas en BD vía `listing_categories`. **0 écluses, 0 ports** (PRD-005 respetado). NO es el fallback genérico. **BUG-002:** href = `http://localhost/canal_du_midi/fr/service/NNN` (BASE_URL correcto, no hardcodeado). **BUG-003 iframe:** Calaméo `003331405edc35288442a`, contenedor responsive 16:9 (`padding-bottom:56.25%`), `title` descriptivo, `loading=lazy`, no desborda en móvil. **BUG-003 form:** `method=POST`, `action=.../fr/plan-request`, `name=email`, `required`. Email válido → 302 → `?plan=ok#plan` + banner verde "Vérifiez votre boîte mail — votre plan est en route !" (SMTP envió, desviado a MAIL_TEST_ADDRESS). Email inválido y vacío → `?plan=invalid#plan` + "Adresse e-mail invalide…", sin fatal. GET a plan-request → redirige limpio a `/home#plan`. `?plan=error` → "Une erreur est survenue…". Flag fuera de whitelist (`?plan=zzz`) → 0 alertas (whitelist OK). Feedback anclado a `#plan`, `role="alert"`, colores semánticos (verde/rojo/ámbar), copy FR correcto. Regresión: hero, buscador, destinos, why-us intactos.
+  - **BUG-001** — `$tours` filtrado por categorías experienciales (`excursions`, `location-de-velo`, `peniche`, `nautique`) vía `resolveCategoryIdsForSearch()` + `searchListings()`. Fallback a `array_slice($allServices,0,4)` si vacío. `$allCatsRaw` movido antes del cálculo de `$tours`. Archivos: `PageController.php` case `home`.
+  - **BUG-002** — YA estaba corregido (`home.php:244` usa `BASE_URL + (int)$tour->id`). Sin cambio de código; solo verificación.
+  - **BUG-003** — Sección `id="plan"` en `home.php` reemplaza la newsletter genérica: iframe Calaméo responsive (ratio 16:9 con `padding-bottom:56.25%`), form POST hacia `/plan-request`, feedback `$planFeedback` (ok/invalid/error) con mensajes FR escapados. Nuevo `case 'plan-request'` en `PageController.php`: valida con `FILTER_VALIDATE_EMAIL`, envía vía `MailService::send()` con subject fijo, redirige a `?plan=ok|invalid|error#plan`. Sin persistencia (decisión firme del usuario). Nuevo `EmailTemplates::planByEmail()` con heroHeader teal→violeta, CTA "📑 Télécharger le plan (PDF)", enlace "Lire en ligne (Calaméo)" opcional, noticeBox y firma.
+  - Deuda no bloqueante registrada: SEC-008 (EmailTemplates sin ENT_QUOTES), SEC-009 (iframe sin sandbox), PRD-006/BUG-012 (meta tour-card con slug crudo). BUG-004 aplazado (no tocado).
+
+- **SEC-007 — `htmlspecialchars()` sin `ENT_QUOTES, 'UTF-8'` en `search_results.php` ✅ corregido (2026-06-24)**
+  - Deuda pre-existente cerrada in-situ (fix de 1 archivo, por debajo del umbral del pipeline). No XSS explotable en PHP 8.2 (el flag por defecto ya incluye `ENT_QUOTES`), pero violaba la convención SEC-006.
+  - Alcance ampliado más allá de las dos líneas reportadas (L383/L404): se corrigieron **las 11 instancias** del archivo, varias en contexto de atributo HTML (`value=`, `data-value=`, `data-label=`, `data-selected=`) donde el flag sí importa. Verificado: `grep` → **0 `htmlspecialchars(` sin `ENT_QUOTES`** restantes; `php -l` OK.
+  - Archivo: `src/Infrastructure/Views/search_results.php`. Lección: SEC-006/SEC-007.
+
+- **PRD-004 / BUG-010 + PRD-005 / BUG-011 — "coherencia del buscador hero" ✅ pipeline completo + product ✅ verificado en navegador (2026-06-24)**
+  - **Veredicto product:** ✅ listo. Verificado en navegador (Chrome headless + curl, conteo Y muestra real, PRD-002). Captura: scratchpad `PRD-nautique.png`, `PRD-velo.png`.
+  - **PRD-004 (título con slug crudo → nombre legible):** RESUELTO. `?type=location-de-velo` → `<title>Séjours et activités — Location de vélo …`; `?type=nautique` → `… — Le Canal en Bateau …` (antes imprimía el slug crudo). `$catNameBySlug` (slug→name) construido desde `$categories` ya cargado, sin query extra.
+  - **PRD-005 (filtro náutico contaminado por écluses/ports):** RESUELTO. `?type=nautique` pasó de **136 → 17** resultados. Muestra real: 100% barcos/croisières/péniches/locations (CRIS'BOAT, CROISIERES DU MIDI, LES BATEAUX DU MIDI, LES CANALOUS, PÉNICHE SURCOUF, PURA VIDA CRUISE, NAVICANAL…). **0 écluses, 0 ports** dentro de los `card-title`. La única coincidencia "port" es "NAVICANAL - Port Lauragais", un operador de barcos (no un POI de puerto). El BFS excluye los slugs `ecluses`/`ports` solo cuando el padre seleccionado es `nautique`.
+  - **Regresiones verificadas:** `?type=hotel` → 18 (solo alojamientos, intacto). Sin filtros → "Tous nos séjours et activités", 253. `?type=hotel&city=Homps` → 0 + "Aucun résultat trouvé". `?q=l'hotel` → 6, apóstrofe íntegro `&#039;` en `<title>` (SEC-006 intacto). Slug inexistente/manipulado (`?type=zzz-no-existe-123`) → NO rompe la página: fallback al slug crudo, 253 resultados, 0 warnings/notices/fatal PHP.
+  - Archivos: `src/Infrastructure/Controllers/PageController.php` (L218-243 PRD-004, L1148-1199 PRD-005). `php -l` OK. Deuda pre-existente SEC-007 (search_results.php L383/L404 sin ENT_QUOTES) sigue abierta como tarea aparte, no bloqueante.
 
 - **Cluster "Buscador del hero" — BUG-007/TASK-015 + BUG-008/TASK-016 + BUG-009 + TASK-017 ✅ pipeline completo + product ⚠️ verificado en navegador (2026-06-23)**
   - **Veredicto product:** ⚠️ listo con mejoras menores. Verificado en Chrome headless (CDP) sobre http://localhost/canal_du_midi/. Capturas en scratchpad: `VS-1-home-selects.png`, `VS-2-empty.png`, `VS-3-boat.png`, `VS-4-carcassonne.png`. Criterios principales del cluster CUMPLIDOS; quedan 2 seguimientos abiertos (PRD-004/BUG-010 título con slug crudo, PRD-005/BUG-011 filtro náutico contaminado por écluses/ports) movidos a 🟡 Pendiente, no bloquean el cierre del cluster.

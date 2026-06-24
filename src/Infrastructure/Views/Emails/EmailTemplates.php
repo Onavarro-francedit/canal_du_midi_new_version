@@ -52,7 +52,7 @@ class EmailTemplates {
             . '<body style="margin:0;padding:0;background:#f0eeff;font-family:\'Sora\',Arial,sans-serif;">'
             // Preheader text (hidden, shown in inbox preview)
             . '<div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#f0eeff;">'
-            . htmlspecialchars($preheader)
+            . htmlspecialchars($preheader, ENT_QUOTES, 'UTF-8')
             . '&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>'
             // Outer table
             . '<table class="email-wrap" width="100%" cellpadding="0" cellspacing="0" border="0"'
@@ -214,12 +214,12 @@ class EmailTemplates {
 
         // ── Lignes du tableau client
         $rows = [
-            ['Voyageur',    htmlspecialchars($customerName)],
+            ['Voyageur',    htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8')],
             ['Séjour',      $datesText],
-            ['Groupe',      htmlspecialchars($groupText)],
+            ['Groupe',      htmlspecialchars($groupText, ENT_QUOTES, 'UTF-8')],
         ];
         if ($customerPhone) {
-            $rows[] = ['Téléphone', htmlspecialchars($customerPhone)];
+            $rows[] = ['Téléphone', htmlspecialchars($customerPhone, ENT_QUOTES, 'UTF-8')];
         }
 
         $infoHtml = '';
@@ -238,17 +238,17 @@ class EmailTemplates {
         // ── Bloc contact (un seul accent couleur)
         $contactRows  = '<tr><td style="padding-bottom:14px;">'
             . '<span style="display:block;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">Adresse e-mail</span>'
-            . '<a href="mailto:' . htmlspecialchars($customerEmail) . '"'
+            . '<a href="mailto:' . htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8') . '"'
             .   ' style="font-size:17px;font-weight:700;color:' . self::C_PRIMARY . ';text-decoration:none;">'
-            . htmlspecialchars($customerEmail) . '</a>'
+            . htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8') . '</a>'
             . '</td></tr>';
 
         if ($customerPhone) {
             $contactRows .= '<tr><td>'
                 . '<span style="display:block;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">Téléphone</span>'
-                . '<a href="tel:' . htmlspecialchars($customerPhone) . '"'
+                . '<a href="tel:' . htmlspecialchars($customerPhone, ENT_QUOTES, 'UTF-8') . '"'
                 .   ' style="font-size:22px;font-weight:800;color:#111827;text-decoration:none;letter-spacing:.01em;">'
-                . htmlspecialchars($customerPhone) . '</a>'
+                . htmlspecialchars($customerPhone, ENT_QUOTES, 'UTF-8') . '</a>'
                 . '</td></tr>';
         }
 
@@ -324,7 +324,7 @@ class EmailTemplates {
             . '</td></tr>';
 
         return self::layout(
-            htmlspecialchars($customerName) . ' souhaite faire appel à vos services — Canal du Midi',
+            htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') . ' souhaite faire appel à vos services — Canal du Midi',
             $hero . $body
         );
     }
@@ -357,7 +357,7 @@ class EmailTemplates {
             .              'text-transform:uppercase;letter-spacing:.1em;">Référence</span>'
             . '<span style="display:block;font-size:18px;font-weight:800;color:#ffffff;'
             .              'letter-spacing:.02em;margin-top:4px;font-family:Arial,sans-serif;">'
-            . htmlspecialchars($reference) . '</span>'
+            . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</span>'
             . '</td>'
             . '</tr>'
             . '</table>'
@@ -371,15 +371,15 @@ class EmailTemplates {
             // Greeting
             . '<tr><td style="padding:24px 0 20px;">'
             . '<p style="margin:0;font-size:15px;color:' . self::C_TEXT . ';line-height:1.7;">'
-            . 'Bonjour <strong>' . htmlspecialchars($name) . '</strong>,<br>'
+            . 'Bonjour <strong>' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</strong>,<br>'
             . 'Votre itinéraire sur le <strong>Canal du Midi</strong> est prêt ! Chaque prestataire a reçu vos coordonnées et reviendra vers vous pour confirmer.'
             . '</p>'
             . '</td></tr>'
 
             // Info grid
             . self::infoGrid([
-                ['Dates',   htmlspecialchars($datesText),  '📅'],
-                ['Groupe',  htmlspecialchars($groupText),  '👥'],
+                ['Dates',   htmlspecialchars($datesText, ENT_QUOTES, 'UTF-8'),  '📅'],
+                ['Groupe',  htmlspecialchars($groupText, ENT_QUOTES, 'UTF-8'),  '👥'],
             ])
 
             // Itinerary
@@ -413,6 +413,79 @@ class EmailTemplates {
         );
     }
 
+    // ── Template 3 : Plan du Canal par e-mail ────────────────────────────────
+
+    /**
+     * Email envoyé à l'utilisateur qui demande le plan du Canal du Midi 2026.
+     * Aucune donnée de l'utilisateur n'est réutilisée dans le corps du message.
+     *
+     * @param string $pdfUrl     URL directe du PDF téléchargeable.
+     * @param string $calameoUrl URL de lecture en ligne (Calaméo). Optionnel.
+     */
+    public static function planByEmail(string $pdfUrl, string $calameoUrl = ''): string {
+        $hero = self::heroHeader(
+            'Canal du Midi — Guide officiel',
+            'Votre plan du Canal du Midi 2026',
+            'Tout ce qu\'il faut savoir pour préparer votre voyage sur le plus beau canal du monde.',
+            '#3dada5',
+            '#6a63d9'
+        );
+
+        $body = '<tr><td class="email-body" style="padding:0 36px 32px;">'
+            . '<table width="100%" cellpadding="0" cellspacing="0" border="0">'
+
+            // Greeting
+            . '<tr><td style="padding:28px 0 20px;">'
+            . '<p style="margin:0;font-size:15px;color:' . self::C_TEXT . ';line-height:1.7;">'
+            . 'Bonjour,<br>'
+            . 'Merci de votre int&eacute;r&ecirc;t pour le <strong>Canal du Midi</strong> !'
+            . ' Voici votre plan officiel de la saison 2026, avec toutes les &eacute;tapes,'
+            . ' &eacute;cluses et points d\'int&eacute;r&ecirc;t de Toulouse &agrave; la M&eacute;diterran&eacute;e.'
+            . '</p>'
+            . '</td></tr>'
+
+            // CTA principal — télécharger le PDF
+            . self::ctaButton(
+                htmlspecialchars($pdfUrl, ENT_QUOTES, 'UTF-8'),
+                '&#128209; &nbsp; T&eacute;l&eacute;charger le plan (PDF)'
+            )
+
+            // Lien "Lire en ligne" si Calaméo fourni
+            . ($calameoUrl !== ''
+                ? '<tr><td align="center" style="padding:0 0 28px;">'
+                . '<a href="' . htmlspecialchars($calameoUrl, ENT_QUOTES, 'UTF-8') . '"'
+                .   ' target="_blank" rel="noopener noreferrer"'
+                .   ' style="font-size:14px;color:' . self::C_TEAL . ';text-decoration:underline;">'
+                . 'Lire en ligne (Calam&eacute;o)'
+                . '</a>'
+                . '</td></tr>'
+                : '')
+
+            // Notice informative
+            . self::noticeBox(
+                'Ce plan est fourni &agrave; titre indicatif. '
+                . 'Les informations sont celles de la saison 2026 et peuvent &eacute;voluer. '
+                . 'Consultez les prestataires locaux pour confirmer disponibilit&eacute;s et tarifs.',
+                'info'
+            )
+
+            . self::divider()
+
+            // Sign-off
+            . '<tr><td style="font-size:14px;color:' . self::C_MUTED . ';line-height:1.7;">'
+            . 'Bon voyage ! &#127754;<br>'
+            . '<strong style="color:' . self::C_TEXT . ';">L\'&eacute;quipe Canal du Midi</strong>'
+            . '</td></tr>'
+
+            . '</table>'
+            . '</td></tr>';
+
+        return self::layout(
+            'Votre plan du Canal du Midi 2026 — à télécharger et à emporter',
+            $hero . $body
+        );
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     public static function buildDaysHtml(array $days): string {
@@ -433,7 +506,7 @@ class EmailTemplates {
                 . 'Jour ' . (int)$day['day']
                 . '</td>'
                 . '<td style="padding-left:12px;font-size:14px;font-weight:700;color:#fff;">'
-                . htmlspecialchars($day['label'] ?? '')
+                . htmlspecialchars($day['label'] ?? '', ENT_QUOTES, 'UTF-8')
                 . '</td>'
                 . '</tr></table>'
                 . '</div>';
@@ -455,14 +528,14 @@ class EmailTemplates {
                     // Content
                     . '<td>'
                     . '<strong style="font-size:14px;color:' . self::C_TEXT . ';">'
-                    . htmlspecialchars($act['title'] ?? '') . '</strong>';
-                if (!empty($act['city']))  $html .= '<span style="font-size:12px;color:' . self::C_MUTED . ';margin-left:6px;">— ' . htmlspecialchars($act['city']) . '</span>';
+                    . htmlspecialchars($act['title'] ?? '', ENT_QUOTES, 'UTF-8') . '</strong>';
+                if (!empty($act['city']))  $html .= '<span style="font-size:12px;color:' . self::C_MUTED . ';margin-left:6px;">— ' . htmlspecialchars($act['city'], ENT_QUOTES, 'UTF-8') . '</span>';
                 $html .= '<div style="margin-top:5px;">';
-                if (!empty($act['phone'])) $html .= '<span style="font-size:12px;color:' . self::C_MUTED . ';margin-right:12px;">📞 ' . htmlspecialchars($act['phone']) . '</span>';
-                if (!empty($act['email'])) $html .= '<span style="font-size:12px;color:' . self::C_MUTED . ';">✉️ ' . htmlspecialchars($act['email']) . '</span>';
+                if (!empty($act['phone'])) $html .= '<span style="font-size:12px;color:' . self::C_MUTED . ';margin-right:12px;">📞 ' . htmlspecialchars($act['phone'], ENT_QUOTES, 'UTF-8') . '</span>';
+                if (!empty($act['email'])) $html .= '<span style="font-size:12px;color:' . self::C_MUTED . ';">✉️ ' . htmlspecialchars($act['email'], ENT_QUOTES, 'UTF-8') . '</span>';
                 $html .= '</div>';
-                if (!empty($act['price'])) $html .= '<div style="margin-top:4px;font-size:13px;font-weight:700;color:' . self::C_PRIMARY . ';">' . htmlspecialchars($act['price']) . '</div>';
-                if (!empty($act['note']))  $html .= '<div style="margin-top:4px;font-size:12px;color:#9ca3af;font-style:italic;">' . htmlspecialchars($act['note']) . '</div>';
+                if (!empty($act['price'])) $html .= '<div style="margin-top:4px;font-size:13px;font-weight:700;color:' . self::C_PRIMARY . ';">' . htmlspecialchars($act['price'], ENT_QUOTES, 'UTF-8') . '</div>';
+                if (!empty($act['note']))  $html .= '<div style="margin-top:4px;font-size:12px;color:#9ca3af;font-style:italic;">' . htmlspecialchars($act['note'], ENT_QUOTES, 'UTF-8') . '</div>';
                 $html .= '</td></tr></table></div>';
             }
 
@@ -482,7 +555,7 @@ class EmailTemplates {
         foreach ($slots as $i => $slot) {
             $dayNum = (int)($slot['day'] ?? ($i + 1));
             $slotLabel = $slotLabels[strtolower($slot['slot'] ?? '')] ?? ucfirst($slot['slot'] ?? '');
-            $title = htmlspecialchars($slot['title'] ?? '');
+            $title = htmlspecialchars($slot['title'] ?? '', ENT_QUOTES, 'UTF-8');
 
             // Compute exact date if checkin is provided
             if ($checkin) {

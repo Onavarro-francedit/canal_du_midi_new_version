@@ -30,7 +30,7 @@
         <script src="<?= BASE_URL ?>public/assets/js/scroll-reveal.js"></script>
          <!-- CARGA CONDICIONAL DE SCRIPTS -->
         <?php if (isset($page) && ($page === 'service' || $page === 'fiche')): ?>
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
             <!-- Leaflet JS -->
             <script src="<?= BASE_URL ?>public/assets/js/map.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/booking-ui.js"></script>
@@ -43,8 +43,8 @@
 
         <?php if (isset($page) && $page === 'search'): ?>
             <!-- Leaflet JS -->
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-            <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+            <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
             <!-- Mapa Global -->
             <script src="<?= BASE_URL ?>public/assets/js/search-map.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-tabs.js"></script>
@@ -53,6 +53,11 @@
             <script src="<?= BASE_URL ?>public/assets/js/skeleton-controler.js"></script>
         <?php endif; ?>
 
+
+        <?php if (isset($page) && $page === 'poi'): ?>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/map.js"></script>
+        <?php endif; ?>
 
         <?php if (isset($page) && $page === 'home'): ?>
             <script src="<?= BASE_URL ?>public/assets/js/home-ai.js"></script>

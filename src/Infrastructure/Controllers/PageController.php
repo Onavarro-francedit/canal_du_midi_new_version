@@ -20,9 +20,6 @@ class PageController {
         switch ($page) {
             case 'home':
                 $allServices = $repository->findAll($lang);
-                $destinations = array_filter($allServices, fn($service) => $service->type === 'destination');
-                /* $tours = array_filter($allServices, fn($service) => $service->type === 'tour' || $service->type === 'boat'); */
-                $tours = array_slice($allServices, 0, 4); // Tomamos los primeros 4 servicios como tours
                 $allCategories = $repository->getCategoriesWithCount($lang);
 
                 if (!empty($allCategories)) {
@@ -31,12 +28,10 @@ class PageController {
 
                 $randomCategories = array_slice($allCategories, 0, 6);
 
-                if (empty($destinations)) {
-                    $destinations = array_slice($allServices, 0, 3);
-                }
-
-                $features = $repository->getActiveFeatures($lang);
-                $articles = $repository->getLatestArticles($lang);
+                // TASK-003: eliminadas las consultas/cálculos muertos del case home
+                // ($destinations, $features=getActiveFeatures, $articles=getLatestArticles):
+                // la vista no los usa (usa $randomCategories y features estáticas).
+                // Se ahorran 2 queries por carga.
 
                 // ── Hero buscador: tipos curados (BUG-008 / TASK-016) ─────────
                 // Whitelist de slugs top-level en orden de relevancia turística.
@@ -58,7 +53,8 @@ class PageController {
                     'musees',
                     'oenotourisme',
                 ];
-                // Indexamos todas las categorías por slug para lookup O(1)
+                // Indexamos todas las categorías por slug para lookup O(1).
+                // $allCatsRaw se carga ANTES del cálculo de $tours (BUG-001).
                 $allCatsRaw = $repository->getCategories();
                 $catsBySlug = [];
                 foreach ($allCatsRaw as $cat) {
@@ -78,10 +74,44 @@ class PageController {
                     }
                 }
 
+                // ── BUG-001: $tours filtrados por categorías experienciales ────
+                // $service->type = 'prestataires-touristiques' (253/253) → no sirve.
+                // Usamos searchListings con IDs de categorías excursiones/velo/péniche/nautique
+                // para obtener experiencias reales. $allCatsRaw ya está cargado arriba.
+                $tourCategoryIds = $this->resolveCategoryIdsForSearch(
+                    ['excursions', 'location-de-velo', 'peniche', 'nautique'],
+                    $allCatsRaw
+                );
+                $tourResults = $repository->searchListings('', '', [], $tourCategoryIds);
+                $tours = array_slice($tourResults, 0, 4);
+                // Fallback: si la búsqueda no devuelve nada, usamos los primeros 4 de findAll
+                if (empty($tours)) {
+                    $tours = array_slice($allServices, 0, 4);
+                }
+
+                // ── PRD-006/BUG-012: etiqueta legible para la meta de cada tour-card ──
+                // $tour->categories ya incluye ['id','name','slug'] via searchListings.
+                // Nunca echar el slug crudo ni $tour->type ('prestataires-touristiques').
+                $preferredSlugs = ['excursions', 'location-de-velo', 'peniche', 'nautique'];
+                $tourMetaLabels = [];
+                foreach ($tours as $tour) {
+                    $tourMetaLabels[(int)$tour->id] = $this->resolveTourMetaLabel(
+                        $tour,
+                        $catsBySlug,
+                        $preferredSlugs
+                    );
+                }
+
                 // ── Hero buscador: etapas del canal (BUG-007 / TASK-015) ──────
                 // CANAL_STAGES está definido en config.php y verificado contra BD.
                 // No usamos getCities() porque devuelve nombres de negocios, no etapas.
                 $heroStages = CANAL_STAGES;
+
+                // ── BUG-003: flag de feedback del formulario "plan par e-mail" ─
+                // Whitelist estricta; cualquier valor fuera de la lista → cadena vacía.
+                $planFeedback = in_array($_GET['plan'] ?? '', ['ok', 'invalid', 'error'], true)
+                    ? (string)$_GET['plan']
+                    : '';
 
                 require_once __DIR__ . '/../Views/layout/header.php';
                 require_once __DIR__ . '/../Views/home.php';
@@ -215,16 +245,29 @@ class PageController {
                 $results = $repository->searchListings($query, $city, [], $categoryIds);
                 $cities = $repository->getCities();
 
+                // ── Mapa slug → nombre legible (PRD-004) ─────────────────────
+                // Construido desde $categories ya cargado; sin query adicional.
+                $catNameBySlug = [];
+                foreach ($categories as $c) {
+                    $s = strtolower(trim((string)($c['slug'] ?? '')));
+                    if ($s !== '') {
+                        $catNameBySlug[$s] = (string)($c['name'] ?? $s);
+                    }
+                }
 
-                // ── Título condicional SEO (BUG-009) ─────────────────────────
+                // ── Título condicional SEO (BUG-009 + PRD-004) ───────────────
                 // Tres casos: búsqueda textual / filtro por city o type / sin filtros.
+                // El nombre legible se resuelve desde $catNameBySlug; fallback = slug crudo.
+                // SIN escape aquí: lo aplica header.php con ENT_QUOTES,'UTF-8' (SEC-006).
                 if ($query !== '') {
                     $seoTitle = "Résultats pour '" . $query . "' | Canal du Midi";
                 } elseif ($city !== '') {
                     $seoTitle = "Séjours et activités à " . $city . " | Canal du Midi";
                 } elseif (!empty($types)) {
-                    // Usa el primer tipo seleccionado como label del título
-                    $seoTitle = "Séjours et activités — " . $types[0] . " | Canal du Midi";
+                    // Usa el nombre traducido de BD; fallback al slug si no hay match
+                    $typeSlug  = strtolower(trim($types[0]));
+                    $typeLabel = $catNameBySlug[$typeSlug] ?? $types[0];
+                    $seoTitle  = "Séjours et activités — " . $typeLabel . " | Canal du Midi";
                 } else {
                     $seoTitle = "Tous nos séjours et activités | Canal du Midi";
                 }
@@ -277,6 +320,40 @@ class PageController {
 
             case 'vacation-pdf':
                 $this->renderVacationPDF($params ?? '', $lang);
+                return;
+
+            case 'plan-request':
+                // ── BUG-003: envío del plan du Canal par e-mail ───────────────
+                // Solo acepta POST; no persiste nada (decisión firme del usuario).
+                // Validación con FILTER_VALIDATE_EMAIL; subject fijo (sin input de
+                // usuario → 0 riesgo CRLF). Redirige siempre hacia home#plan.
+                if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+                    header('Location: ' . BASE_URL . $lang . '/home#plan');
+                    return;
+                }
+
+                $emailRaw   = trim($_POST['email'] ?? '');
+                $emailClean = filter_var($emailRaw, FILTER_VALIDATE_EMAIL);
+
+                if ($emailClean === false) {
+                    header('Location: ' . BASE_URL . $lang . '/home?plan=invalid#plan');
+                    return;
+                }
+
+                $pdfUrl     = 'https://www.plan-canal-du-midi.com/wp-content/uploads/pdf/Plan-Canal-du-Midi-2026.pdf';
+                $calameoUrl = 'https://www.calameo.com/read/003331405edc35288442a';
+
+                $ok = $this->mailer()->send(
+                    $emailClean,
+                    'Votre plan du Canal du Midi 2026',
+                    \App\Infrastructure\Views\Emails\EmailTemplates::planByEmail($pdfUrl, $calameoUrl)
+                );
+
+                if ($ok) {
+                    header('Location: ' . BASE_URL . $lang . '/home?plan=ok#plan');
+                } else {
+                    header('Location: ' . BASE_URL . $lang . '/home?plan=error#plan');
+                }
                 return;
 
             default:
@@ -1132,6 +1209,8 @@ class PageController {
 
         $categoryBySlug = [];
         $childrenByParent = [];
+        // Mapa inverso id → slug; necesario para el filtro de hijas no reservables (PRD-005)
+        $slugById = [];
         foreach ($categories as $category) {
             $slug = strtolower(trim((string)($category['slug'] ?? '')));
             $categoryId = (int)($category['id'] ?? 0);
@@ -1139,6 +1218,7 @@ class PageController {
 
             if ($slug !== '' && $categoryId > 0) {
                 $categoryBySlug[$slug] = $categoryId;
+                $slugById[$categoryId]  = $slug;
             }
 
             if ($categoryId > 0 && $parentId > 0) {
@@ -1157,10 +1237,21 @@ class PageController {
         $expandedIds = $selectedIds;
         $stack = $selectedIds;
 
+        // Slugs de hijas no-reservables que se excluyen cuando el padre es "nautique".
+        // Identificados por slug (no por id) para resistir cambios de id en BD (PRD-005).
+        $nautiqueNonBookable = ['ecluses', 'ports'];
+
         while (!empty($stack)) {
             $currentId = array_pop($stack);
             foreach ($childrenByParent[$currentId] ?? [] as $childId) {
                 if (in_array($childId, $expandedIds, true)) {
+                    continue;
+                }
+
+                // Si el usuario filtró por "nautique", excluir hijas de infraestructura
+                // (ecluses, ports) que no son reservables y distorsionan los resultados.
+                $childSlug = $slugById[$childId] ?? '';
+                if (isset($selectedSlugs['nautique']) && in_array($childSlug, $nautiqueNonBookable, true)) {
                     continue;
                 }
 
@@ -1170,6 +1261,61 @@ class PageController {
         }
 
         return array_values(array_unique($expandedIds));
+    }
+
+    /**
+     * Resuelve la etiqueta legible de la meta de una tour-card (PRD-006/BUG-012).
+     *
+     * Orden de preferencia:
+     *  1. Categoría experiencial en $preferredSlugs (en orden).
+     *  2. Primer name real de $tour->categories que no sea slug de infraestructura.
+     *  3. Cadena vacía (el <span> de meta se omite en la vista).
+     *
+     * NUNCA devuelve el slug crudo, $tour->type, ni "Durée flexible".
+     *
+     * @param object   $tour           Instancia de Service con ->categories poblado.
+     * @param array    $catsBySlug     Mapa slug→['slug','name',...] del case home.
+     * @param string[] $preferredSlugs Slugs experienciales en orden de prioridad.
+     */
+    private function resolveTourMetaLabel(object $tour, array $catsBySlug, array $preferredSlugs): string
+    {
+        // Slugs de infraestructura/genéricos que nunca deben mostrarse al usuario.
+        $infraSlugs = ['prestataires-touristiques', 'ecluses', 'ports'];
+
+        // Normaliza las categorías del tour para comparación O(1).
+        $tourCatsBySlug = [];
+        foreach ($tour->categories as $cat) {
+            $s = strtolower(trim((string)($cat['slug'] ?? '')));
+            if ($s !== '') {
+                $tourCatsBySlug[$s] = $cat;
+            }
+        }
+
+        // 1. Categoría experiencial preferida (orden explícito del plan).
+        foreach ($preferredSlugs as $preferred) {
+            if (isset($tourCatsBySlug[$preferred])) {
+                $name = (string)($tourCatsBySlug[$preferred]['name'] ?? '');
+                if ($name === '') {
+                    // Fallback al mapa global si la entrada del tour no tiene name.
+                    $name = (string)($catsBySlug[$preferred]['name'] ?? '');
+                }
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        }
+
+        // 2. Primer name real de las categorías del tour que no sea infraestructura.
+        foreach ($tour->categories as $cat) {
+            $s    = strtolower(trim((string)($cat['slug'] ?? '')));
+            $name = (string)($cat['name'] ?? '');
+            if ($s !== '' && $name !== '' && !in_array($s, $infraSlugs, true)) {
+                return $name;
+            }
+        }
+
+        // 3. Sin etiqueta legible disponible → cadena vacía (omitir el <span>).
+        return '';
     }
 
     private function isAjaxRequest(): bool {

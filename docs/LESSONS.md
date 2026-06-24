@@ -39,6 +39,29 @@ _(sin lecciones todavía)_
   corregido en `footer.php`. Deuda relacionada aún abierta: los `<script>` de
   Leaflet/markercluster (unpkg) en service/search siguen sin SRI.
 
+- **SEC-007 (CORREGIDO 2026-06-24): htmlspecialchars() sin ENT_QUOTES en vistas — deuda pre-existente en search_results.php.**
+  `search_results.php` llamaba a `htmlspecialchars($valor)` sin `ENT_QUOTES, 'UTF-8'`
+  en 11 puntos. Detectado en L383/L404 (texto puro) en la revisión security de
+  PRD-004/PRD-005, pero el grep reveló el mismo patrón en contexto de ATRIBUTO
+  (`value=`, `data-value=`, `data-label=`, `data-selected=`) donde sí es relevante.
+  En PHP 8.2 el flag por defecto ya incluye `ENT_QUOTES`, así que no era explotable,
+  pero violaba SEC-006. CORREGIDO: las 11 instancias ahora usan `ENT_QUOTES, 'UTF-8'`;
+  `grep` confirma 0 restantes, `php -l` OK. Lección operativa: al cerrar una deuda de
+  escape, hacer `grep htmlspecialchars(... sin ENT_QUOTES` en TODO el archivo, no solo
+  en las líneas reportadas.
+
+- **SEC-009: todo `<iframe>` de tercero debe llevar `sandbox` con permisos mínimos.**
+  Sin `sandbox`, el iframe puede acceder a `window.top`, navegar el frame principal o lanzar popups. El mínimo para un visor de documentos: `sandbox="allow-scripts allow-same-origin allow-popups allow-forms"`. Añadir `allow-popups` solo si el visor necesita abrir ventanas. Verificar que el visor funcione con el sandbox antes de desplegar. Detectado en `home.php:323` (iframe Calaméo). Pendiente de corregir (mejora no bloqueante).
+
+- **SEC-008 (CORREGIDO 2026-06-24): al auditar escape en un archivo, hacer `grep htmlspecialchars( | grep -v ENT_QUOTES` sobre TODO el archivo, incluyendo archivos adyacentes en scope.**
+  `EmailTemplates.php` contenía 21 llamadas a `htmlspecialchars()` sin `ENT_QUOTES, 'UTF-8'`, detectadas en la revisión del cluster BUG-003 por extensión de SEC-007. La mayoría texto de nodo (inocuo en PHP 8.2), pero varias en contexto de atributo `href="mailto:…"` y `href="tel:…"`. CORREGIDO en pase de limpieza con `perl` (lookahead para no doble-escapar las ya correctas): las 21 ahora usan `ENT_QUOTES, 'UTF-8'`; `grep` confirma 0 restantes, `php -l` OK, hrefs verificados intactos.
+
+- **SEC-010: nunca emitir un `<iframe>` cuyo `src` viene de BD sin validar el host.**
+  `strip_tags($html, '<iframe>')` NO es un sanitizador de atributos: preserva el `src` íntegro, permitiendo iframes de hosts arbitrarios (phishing, contenido inapropiado). Patrón seguro obligatorio: (1) extraer el `src` del iframe con `preg_match`, (2) validar el host contra una allowlist explícita (`youtube.com`, `youtu.be`, `vimeo.com`, etc.), (3) rechazar (skip) cualquier host no listado, (4) reconstruir el `<iframe>` con `htmlspecialchars($src, ENT_QUOTES, 'UTF-8')` + `sandbox` mínimo. Detectado en `service_detail.php:299`. Corregido en TASK-001 (2026-06-24).
+
+- **SEC-011: al auditar una vista, buscar todos los ecos de IDs de modelo sin cast (int).**
+  SEC-005 establece el cast `(int)` para IDs nullable. Al cerrar una tarea, ejecutar `grep "\$[a-z]*->id\b"` sobre cada vista modificada y confirmar que cada eco lleva `(int)`. Un ID nullable echado sin cast en `data-*` o `value=` emite el atributo vacío si el modelo devuelve NULL, lo que puede silenciar errores o alterar la lógica JS/AJAX downstream. Detectado en `service_detail.php:481` (`data-sid`) y `service_detail.php:634` (`value=service_id`). Corregido en TASK-001 (2026-06-24).
+
 - **SEC-006: htmlspecialchars() SIEMPRE con ENT_QUOTES, 'UTF-8' — nunca confiar en los flags por defecto.**
   PHP usa `ENT_COMPAT` por defecto: escapa `"` pero NO `'`. En atributos HTML delimitados por comillas simples (o en parsers tolerantes), un valor que contenga `'` sin escapar puede romper el atributo o permitir inyección. Además, omitir `'UTF-8'` puede generar comportamientos inesperados con caracteres multibyte. Regla fija del proyecto: `htmlspecialchars($valor, ENT_QUOTES, 'UTF-8')` en cada punto de salida, sin excepción. Detectado en `header.php` (5 llamadas) donde `$seo['title']` podía contener comillas simples vía el patrón "Résultats pour '{query}'" (BUG-009). Corregido en cluster buscador hero (2026-06-23).
 
@@ -110,3 +133,34 @@ _(sin lecciones todavía)_
   **pin de sección completa múltiple en ScrollTrigger es frágil** (secciones
   contiguas con `start:'top top'` se solapan); preferir parallax sutil +
   reveals + progreso sin pins de sección.
+
+- **PRD-007: un `<div id="map">` con `data-lat/lng` correctos NO implica un mapa — verifica que la librería se cargue para ESE `$page`.**
+  El `layout/footer.php` carga Leaflet condicionado por `$page` (`service`/`fiche`/`search`/`home`).
+  La ruta `poi` emite su contenedor de mapa (`poi_detail.php`) con `data-lat`/`data-lng`/`data-title`
+  bien casteados, pero el footer NO tiene rama para `$page === 'poi'`, así que `window.L` queda
+  `undefined` y el mapa nunca inicializa: el turista ve un hueco gris, sin error de consola (falla
+  silenciosa). Detectado en la verificación de TASK-001/002 sobre `/fr/poi/3` (Écluse de Bayard).
+  Es un bug pre-existente de gating del footer (commit `b554b6f`), NO una regresión del escape.
+  Regla: al añadir/tocar una ruta que pinta un mapa, comprobar EN NAVEGADOR que existe
+  `.leaflet-container` + marcador real para ese `$page` (refuerza PRD-002); el `<div>` con
+  `data-*` correcto no basta. Fix: añadir `poi` a la condición de carga de Leaflet en `footer.php`
+  (CSS+JS con el SRI ya existente, SEC-004) + init que lea `#map[data-lat][data-lng]`.
+  **Pendiente de corregir** (seguimiento, fuera del scope de TASK-001/002).
+
+- **PRD-006: PRD-004 (no slugs al usuario) no se limita al `<title>` — audita cards, meta y badges.**
+  Corolario de PRD-004. Tras corregir el slug crudo en el título de search, el mismo
+  patrón reapareció en la HOME: la meta de las `.tour-card` (BUG-001) imprime
+  `prestataires-touristiques` (el `$tour->type` crudo, igual para 253/253 listings) en
+  vez de la categoría legible. Es jerga interna con guiones bajo un título de
+  experiencia real. Regla: al exponer CUALQUIER componente con datos de BD (card,
+  badge, meta, chip, breadcrumb), verificar en navegador el TEXTO REAL renderizado y
+  mapear todo slug/`type`/clave a su `name` traducido; nunca echar `type`/`slug` crudo
+  ni conformarse con un fallback genérico ("Durée flexible") que oculta el problema.
+  Detectado en `home.php` (meta de tour-card) en la verificación del cluster
+  BUG-001/002/003. **CORREGIDO 2026-06-24** (PRD-006/BUG-012, pipeline architect→coder,
+  verdict PASS en navegador): `PageController` calcula `$tourMetaLabels[(int)$tour->id]`
+  vía helper `resolveTourMetaLabel` (prioriza categoría experiencial, excluye
+  `prestataires-touristiques`/`ecluses`/`ports`, fallback a 1ª categoría real, luego
+  `$tour->type` legible, nunca slug crudo); `home.php` lo imprime con
+  `htmlspecialchars(...,ENT_QUOTES,'UTF-8')`. Verificado: las 4 tour-cards muestran
+  "Location de bateau"/"Location de vélo"/"Croisière en bateau", 0 slugs crudos.

@@ -60,6 +60,22 @@ Formato de entrada:
 - Cómo prevenirlo (→ LESSONS.md PRD-001): la decoración dependiente de CDN debe
   ser visible por defecto; ocultar-para-animar es responsabilidad del JS.
 
+### [SEC-007] htmlspecialchars() sin ENT_QUOTES en nodos de texto de search_results.php — 2026-06-24 (revisión PRD-004/PRD-005)
+- Síntoma: `search_results.php` L383 usa `htmlspecialchars($filter)` sin flags para
+  imprimir cada chip de filtro activo (`<span class="active-filter-chip">`);
+  L404 usa `htmlspecialchars($s->translations['title'] ?? ...)` sin flags para
+  `$serviceTitle` (usado en `alt=` y `<h3>` dentro del bucle de resultados).
+  El contexto primario es texto de nodo (no atributo), así que `ENT_COMPAT` previene
+  XSS estricto, pero la incosistencia viola la regla SEC-006 del proyecto y el patrón
+  puede copiarse a atributos donde sí sería insuficiente.
+- Causa raíz: código pre-existente anterior a la lección SEC-006; no introducido
+  por los cambios de PRD-004/PRD-005.
+- Corrección aplicada: NINGUNA todavía — deuda menor. Añadir `ENT_QUOTES, 'UTF-8'`
+  en L383 y L404 de `search_results.php`.
+- Cómo prevenirlo (→ LESSONS.md SEC-007 / SEC-006): toda llamada a
+  `htmlspecialchars()` en el proyecto debe incluir `ENT_QUOTES, 'UTF-8'`,
+  sin excepción, independientemente del contexto de salida.
+
 ### [SEC-006] htmlspecialchars() sin ENT_QUOTES en atributos HTML — 2026-06-23 (cluster buscador hero)
 - Síntoma: `header.php` llamaba a `htmlspecialchars($seo['title'])` etc. sin pasar `ENT_QUOTES, 'UTF-8'`. PHP usa por defecto `ENT_COMPAT` (solo escapa `"`, no `'`). En el elemento `<title>` es inocuo, pero en los atributos `content=` de los meta (`og:title`, `og:description`, `description`, `keywords`) una comilla simple en el valor — posible cuando `$query` contiene `'` y el patrón BUG-009 genera `"Résultats pour 'valor'"` — puede romper el atributo o dar pie a inyección en parsers que acepten comillas simples como delimitadores.
 - Causa raíz: omisión de los flags `ENT_QUOTES, 'UTF-8'` en los cinco `htmlspecialchars()` del header. `sanitizeText()` (upstream) elimina tags y control chars pero NO escapa entidades, por lo que el escape queda únicamente en el output — y sin ENT_QUOTES deja pasar `'`.
@@ -120,6 +136,18 @@ Formato de entrada:
   texto de cara al usuario; mapear siempre a la etiqueta traducida (`name`) que ya
   se muestra en el `<select>`. El select y el título deben hablar el mismo idioma.
 
+### [SEC-008] htmlspecialchars() sin ENT_QUOTES en múltiples puntos de EmailTemplates.php — 2026-06-24 (cluster BUG-001/002/003)
+- Síntoma: `EmailTemplates.php` contiene 19 llamadas a `htmlspecialchars()` sin `ENT_QUOTES, 'UTF-8'`. Afecta a datos que provienen de BD o de inputs validados (nombre del cliente, email, teléfono, referencia, textos de slots). Aunque ninguno llega directamente de `$_POST`/`$_GET` sin validar, y en PHP 8.2 `ENT_QUOTES` es el default, la violación sistemática de SEC-006 es una deuda de convención que debe corregirse. Los puntos más relevantes son los atributos `href="mailto:…"` y `href="tel:…"` (L241, L249), donde el valor está dentro de un atributo HTML delimitado por comillas dobles.
+- Causa raíz: el archivo `EmailTemplates.php` pre-existía a la lección SEC-006 y sus templates no fueron actualizados.
+- Corrección aplicada: NINGUNA todavía — mejora de calidad, no bloqueante (PHP 8.2 aplica `ENT_QUOTES` por defecto). Se registra como deuda pendiente.
+- Cómo prevenirlo (→ LESSONS.md SEC-008): al abrir cualquier archivo PHP con salida HTML, ejecutar `grep htmlspecialchars( | grep -v ENT_QUOTES` antes de cerrar la tarea. Si el archivo no estaba en el scope del cluster, registrar la deuda en TASKS.md.
+
+### [SEC-009] iframe de tercero (Calaméo) sin atributo sandbox — 2026-06-24 (cluster BUG-003)
+- Síntoma: `home.php:323-330` carga `https://www.calameo.com/read/003331405edc35288442a` en un `<iframe>` con `allowfullscreen` y `referrerpolicy="no-referrer"` pero sin `sandbox`. Sin `sandbox`, el iframe de Calaméo puede acceder a `window.top`, navegar el frame principal, o abrir popups. El `src` es literal hardcodeado (sin interpolación de usuario), lo que limita el riesgo, pero la ausencia de contención es una debilidad de defensa en profundidad.
+- Causa raíz: omisión del atributo `sandbox`; la preocupación funcional (Calaméo necesita scripts para renderizar el visor) llevó a no ponerlo.
+- Corrección aplicada: NINGUNA todavía — mejora de calidad. Añadir `sandbox="allow-scripts allow-same-origin allow-popups allow-forms"` para permitir el visor sin dejar al iframe navegar el top frame. Verificar que el visor de Calaméo funcione con ese sandbox antes de desplegar.
+- Cómo prevenirlo (→ LESSONS.md SEC-009): todo `<iframe>` de tercero debe llevar `sandbox` con los permisos mínimos. `allow-scripts allow-same-origin` es el mínimo para iframes de visualización; añadir `allow-popups` solo si el visor necesita abrir ventanas.
+
 ### [PRD-005] Filtro "Le Canal en Bateau" (nautique) devuelve mayoría écluses/ports, no barcos — 2026-06-23 (cluster buscador hero)
 - Síntoma: seleccionar Type="Le Canal en Bateau" (slug `nautique`) en el hero y
   buscar devuelve 136 de 253 listings (54% del catálogo). Verificado en navegador:
@@ -147,3 +175,67 @@ Formato de entrada:
   puede mezclar servicios reservables con POIs de infraestructura. Antes de exponer
   un filtro al usuario, contar y MIRAR la muestra real de resultados en navegador
   (PRD-002) y juzgar si responde a lo que el label promete, no solo si "filtra algo".
+
+### [SEC-010] iframe de video de BD renderizado sin validar el host (strip_tags) — 2026-06-24 (TASK-001)
+- Síntoma: `service_detail.php:299` usaba `strip_tags((string)$video, '<iframe>')` para emitir el contenido del campo `videos` de BD. El `strip_tags` elimina todo excepto el `<iframe>`, pero preserva TODOS sus atributos incluyendo `src`. Un dato corrompido o editado por un administrador CMS puede contener `<iframe src="https://attacker.com/phishing">`, que se renderiza tal cual en la ficha pública del servicio: iframe de host arbitrario visible para cualquier visitante.
+- Causa raíz: confianza implícita en los datos de BD. El campo `videos` se almacena como HTML crudo (import WordPress/Pimcore). `strip_tags` no es un sanitizador de atributos: permite cualquier `src`, `onload`, etc. que el tag permitido lleve.
+- Corrección aplicada: reemplazado por un extractor seguro en `service_detail.php:296-318`: extrae el `src` del primer `<iframe>` con `preg_match`, valida el host contra una allowlist (`youtube.com`, `youtu.be`, `vimeo.com` y sus variantes `www.`/`player.`), rechaza (skip) cualquier host no listado, y reconstruye el iframe con `htmlspecialchars($iframeSrc, ENT_QUOTES, 'UTF-8')` + `sandbox="allow-scripts allow-same-origin allow-presentation"`. `php -l` OK.
+- Cómo prevenirlo (→ LESSONS.md SEC-010): nunca emitir un `<iframe>` cuyo `src` viene de BD sin validar el host contra una allowlist explícita. `strip_tags('<iframe>')` NO es seguro para este caso: preserva el atributo `src` íntegro. Reconstruir siempre el iframe con los atributos controlados + sandbox.
+
+### [SEC-011] IDs numéricos de BD echados sin cast (int) en atributos HTML — 2026-06-24 (TASK-001)
+- Síntoma: `service_detail.php:481` (`data-sid="<?= $service->id ?>"`) y `service_detail.php:634` (`value="<?= $service->id ?>"`) echaban el ID del servicio sin cast ni escape. `$service->id` está declarado como `?int` (nullable) en el modelo. Aunque la BD lo almacena como INT, el tipo PHP es nullable: un NULL emitiría el atributo vacío y la llamada AJAX de "Voir plus d'avis" haría `?sid=` (sin ID), potencial bypass de la lógica de paginación. Además, sin cast el valor no está acotado en superficie de salida.
+- Causa raíz: omisión del cast `(int)` en estos dos puntos, a pesar de existir la lección SEC-005 del proyecto ("IDs numéricos de BD con cast (int) en output"). El coder aplicó SEC-005 en otros puntos del mismo archivo (lat/lng, poi id, reviewCount) pero pasó estos dos por alto.
+- Corrección aplicada: `data-sid="<?= (int)$service->id ?>"` (L481) y `value="<?= (int)$service->id ?>"` (L634). `php -l` OK.
+- Cómo prevenirlo (→ LESSONS.md SEC-005): al cerrar cualquier tarea que toque una vista con IDs de modelo, hacer `grep "\$[a-z]*->id\b" | grep -v "(int)"` sobre el archivo para localizar todos los ecos de IDs sin cast.
+
+### [PRD-006] La meta de las tour-cards imprime el slug técnico del tipo (`prestataires-touristiques`) — 2026-06-24 (verificación product cluster BUG-001/002/003)
+- Síntoma: las 4 `.tour-card` de la home (BUG-001, ahora con experiencias reales)
+  muestran bajo el título una etiqueta de meta `prestataires-touristiques`.
+  Verificado en navegador (captura móvil PROD-mfull-b.png y desktop): debajo de
+  "À L'ABORDAGE MOUSSAILLON !", "CAMPING DE MONTOLIEU", "CRIS'BOAT", "CROISIERES DU
+  MIDI HOMPS" aparece el texto literal `prestataires-touristiques` — el valor crudo
+  de `$tour->type`, que en este dataset es `prestataires-touristiques` para 253/253
+  listings. Es jerga interna con guiones, no francés legible: instancia de PRD-004
+  reaparecida en la HOME (no solo en el título de search ya corregido).
+- Causa raíz: la vista `home.php` (~L250) imprime
+  `$tour->translations['tag'] ?? 'Durée flexible'`; cuando `tag` está vacío debería
+  caer al fallback "Durée flexible", pero el render real muestra el slug de tipo, lo
+  que sugiere que `tag` se está poblando con el `type` crudo o que el meta toma otra
+  fuente. En cualquier caso el usuario ve un slug. El fallback "Durée flexible" no
+  aporta info real de la experiencia y el slug es peor.
+- Corrección aplicada: NINGUNA — observación de UX nueva, NO bloqueante (el cluster
+  cumple todos sus criterios de éxito; BUG-001 pedía "experiencias reales con título
+  e imagen", logrado). Registrada como seguimiento. Dirección de fix: en la
+  tour-card, mapear el tipo/categoría a su `name` traducido (reusar el patrón
+  `slug→name` ya disponible vía `$allCatsRaw`/`$catsBySlug` en el case home), o
+  mostrar la categoría principal legible (location-de-bateau → "Location de bateau",
+  croisiere-bateau → "Croisière en bateau") en vez del `type` o del fallback genérico.
+- Cómo prevenirlo (→ LESSONS.md PRD-004/PRD-006): PRD-004 no se limita al `<title>` de
+  search — auditar TODA superficie de cara al usuario (cards, meta, badges, breadcrumbs)
+  por slugs crudos. Verificar en navegador el texto REAL renderizado de cada componente
+  nuevo o tocado, no solo que "carga".
+
+### [PRD-007] Mapa de la ficha de POI nunca se renderiza (Leaflet no se carga para page==='poi') — 2026-06-24 (verificación product TASK-001/002)
+- Síntoma: en `/fr/poi/{id}` el `<div id="map" class="map-container-small" data-lat data-lng>`
+  queda VACÍO: no hay `.leaflet-container`, `innerHTML` del div = 0, `window.L === undefined`.
+  Verificado en navegador (Playwright) sobre `/fr/poi/3` (Écluse de Bayard): `data-lat="43.601"`
+  `data-lng="1.455"` (floats limpios, el cast `(float)` está bien), pero ningún `<script>` de
+  Leaflet presente en la página → el mapa nunca inicializa. El turista ve un hueco gris donde
+  debería estar la ubicación del punto de interés. 0 errores de consola (falla silenciosa).
+- Causa raíz: `layout/footer.php:32` solo carga el JS/CSS de Leaflet cuando
+  `$page === 'service' || $page === 'fiche'` (L32) o `$page === 'search'` (L44). NO existe
+  una rama para `$page === 'poi'`, aunque `poi_detail.php:27-30` SÍ emite un contenedor de
+  mapa con sus `data-*`. Bug pre-existente de gating en el footer, anterior a TASK-001 (el
+  commit que tocó footer.php fue `b554b6f New features`, no esta tanda). TASK-001 solo añadió
+  escape/cast en `poi_detail.php` y NO introdujo ni agravó este fallo: el `(float)` del lat/lng
+  es correcto, el problema es la ausencia del `<script>` de Leaflet.
+- Corrección aplicada: NINGUNA — fuera del scope de TASK-001/TASK-002 (escape + prompts). Se
+  registra como seguimiento. Dirección de fix: añadir `poi` a la condición de carga de Leaflet
+  en `footer.php` (CSS + JS con su SRI ya existente, SEC-004) y asegurar que el init JS del POI
+  lea `#map[data-lat][data-lng]` (mismo patrón que la ficha de servicio). Re-verificar en
+  navegador que el marcador aparece en la lat/lng del POI.
+- Cómo prevenirlo (→ LESSONS.md PRD-007): si una vista emite un contenedor de mapa con `data-*`,
+  verificar EN NAVEGADOR que la librería del mapa se carga para ESE `$page` concreto (el gating
+  por página del footer es fácil de olvidar al añadir una ruta nueva). Un `<div id="map">` con
+  datos correctos NO implica un mapa: comprobar `.leaflet-container` y el marcador reales
+  (refuerza PRD-002).

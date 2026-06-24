@@ -18,7 +18,7 @@
     <meta property="og:type" content="website">
 
     <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
    
     <link rel="canonical" href="<?= BASE_URL . $lang . '/' . $page . (isset($params) ? '/' . $params : '') ?>">
     
@@ -29,7 +29,7 @@
     </script>
      <?php if (isset($page) && ($page === 'service' || $page === 'fiche')): ?>
          <!-- Leaflet CSS -->
-         <meta property="og:image" content="<?= htmlspecialchars($service->imageUrl ?? BASE_URL . 'public/assets/images/default_service.jpg') ?>">
+         <meta property="og:image" content="<?= htmlspecialchars($service->imageUrl ?? BASE_URL . 'public/assets/images/default_service.jpg', ENT_QUOTES, 'UTF-8') ?>">
          <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/service_detail.css">
             <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/calendar.css">
          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -50,6 +50,7 @@
 
     <?php if (isset($page) && $page === 'poi'): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/poi_detail.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <?php endif; ?>
 
 
@@ -108,7 +109,7 @@
                         >
                             <?php foreach ($languageLinks as $localeCode => $localeUrl): ?>
                                 <option
-                                    value="<?= htmlspecialchars($localeUrl) ?>"
+                                    value="<?= htmlspecialchars($localeUrl, ENT_QUOTES, 'UTF-8') ?>"
                                     lang="<?= $localeCode ?>"
                                     <?= $lang === $localeCode ? 'selected' : '' ?>
                                 >
@@ -121,7 +122,7 @@
                         </span>
                     </div>
                 </div>
-                <a class="button button-small button-ghost" href="#newsletter">S'inscrire</a>
+                <a class="button button-small button-ghost" href="<?= BASE_URL . $lang ?>/home#plan">S'inscrire</a>
             </div>
         </header>
     <button type="button" class="nav-backdrop" aria-label="Fermer le menu" tabindex="-1"></button>

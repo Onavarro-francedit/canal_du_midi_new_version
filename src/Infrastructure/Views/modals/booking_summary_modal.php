@@ -9,7 +9,7 @@
         <div class="summary-details">
             <div class="summary-item">
                 <span class="label">Établissement</span>
-                <strong id="sum-title"><?= htmlspecialchars($service->translations['title']) ?></strong>
+                <strong id="sum-title"><?= htmlspecialchars($service->translations['title'], ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             
             <div class="summary-row">

@@ -31,7 +31,7 @@ $dayColors = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan Canal du Midi — <?= htmlspecialchars($reference) ?></title>
+    <title>Plan Canal du Midi — <?= htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') ?></title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1f2340; background: #fff; }
@@ -187,21 +187,21 @@ $dayColors = [
 
 <div class="pdf-header">
     <div class="pdf-brand">Canal du Midi</div>
-    <div class="pdf-tagline">Votre plan de voyage personnalisé — Réf. <?= htmlspecialchars($reference) ?></div>
+    <div class="pdf-tagline">Votre plan de voyage personnalisé — Réf. <?= htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') ?></div>
     <div class="pdf-meta-grid">
         <div class="pdf-meta-item">
             <div class="pdf-meta-label">Voyageur</div>
-            <div class="pdf-meta-value"><?= htmlspecialchars($customerName) ?></div>
+            <div class="pdf-meta-value"><?= htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') ?></div>
         </div>
         <?php if ($datesText): ?>
         <div class="pdf-meta-item">
             <div class="pdf-meta-label">Dates</div>
-            <div class="pdf-meta-value"><?= htmlspecialchars($datesText) ?></div>
+            <div class="pdf-meta-value"><?= htmlspecialchars($datesText, ENT_QUOTES, 'UTF-8') ?></div>
         </div>
         <?php endif; ?>
         <div class="pdf-meta-item">
             <div class="pdf-meta-label">Groupe</div>
-            <div class="pdf-meta-value"><?= htmlspecialchars($groupText) ?></div>
+            <div class="pdf-meta-value"><?= htmlspecialchars($groupText, ENT_QUOTES, 'UTF-8') ?></div>
         </div>
         <div class="pdf-meta-item">
             <div class="pdf-meta-label">Durée</div>
@@ -213,34 +213,34 @@ $dayColors = [
 <div class="pdf-body">
 
     <?php if (!empty($plan['summary'])): ?>
-    <div class="pdf-summary"><?= htmlspecialchars($plan['summary']) ?></div>
+    <div class="pdf-summary"><?= htmlspecialchars($plan['summary'], ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
     <?php foreach ($plan['days'] as $di => $day): ?>
     <div class="pdf-day">
         <div class="pdf-day-header" style="background:<?= $dayColors[$di % count($dayColors)] ?>;">
             <span class="pdf-day-num">Jour <?= (int)$day['day'] ?></span>
-            <span class="pdf-day-label"><?= htmlspecialchars($day['label'] ?? '') ?></span>
+            <span class="pdf-day-label"><?= htmlspecialchars($day['label'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
         </div>
         <div class="pdf-activities">
             <?php foreach ($day['activities'] as $act): ?>
             <div class="pdf-act">
                 <div class="pdf-act-slot">
-                    <?= ($slotEmoji[$act['slot'] ?? ''] ?? '📍') . ' ' . htmlspecialchars(ucfirst($act['slot'] ?? '')) ?>
+                    <?= ($slotEmoji[$act['slot'] ?? ''] ?? '📍') . ' ' . htmlspecialchars(ucfirst($act['slot'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                 </div>
                 <div class="pdf-act-content">
                     <?php if (!empty($act['type'])): ?>
-                    <span class="pdf-act-type"><?= htmlspecialchars($act['type']) ?></span>
+                    <span class="pdf-act-type"><?= htmlspecialchars($act['type'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php endif; ?>
-                    <div class="pdf-act-title"><?= htmlspecialchars($act['title'] ?? '') ?></div>
+                    <div class="pdf-act-title"><?= htmlspecialchars($act['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="pdf-act-detail">
-                        <?php if (!empty($act['address'])): ?><span>📍 <?= htmlspecialchars($act['address']) ?></span><?php endif; ?>
-                        <?php if (!empty($act['phone'])): ?><span>📞 <?= htmlspecialchars($act['phone']) ?></span><?php endif; ?>
-                        <?php if (!empty($act['email'])): ?><span>✉ <?= htmlspecialchars($act['email']) ?></span><?php endif; ?>
-                        <?php if (!empty($act['price'])): ?><span class="pdf-act-price">💰 <?= htmlspecialchars($act['price']) ?></span><?php endif; ?>
+                        <?php if (!empty($act['address'])): ?><span>📍 <?= htmlspecialchars($act['address'], ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+                        <?php if (!empty($act['phone'])): ?><span>📞 <?= htmlspecialchars($act['phone'], ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+                        <?php if (!empty($act['email'])): ?><span>✉ <?= htmlspecialchars($act['email'], ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+                        <?php if (!empty($act['price'])): ?><span class="pdf-act-price">💰 <?= htmlspecialchars($act['price'], ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
                     </div>
                     <?php if (!empty($act['note'])): ?>
-                    <div class="pdf-act-note">💡 <?= htmlspecialchars($act['note']) ?></div>
+                    <div class="pdf-act-note">💡 <?= htmlspecialchars($act['note'], ENT_QUOTES, 'UTF-8') ?></div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -251,7 +251,7 @@ $dayColors = [
 
     <div class="pdf-footer">
         <span>Canal du Midi — canaldumidi.fr</span>
-        <span>Réf. <?= htmlspecialchars($reference) ?> — Manifestation d'intérêt, non une réservation confirmée.</span>
+        <span>Réf. <?= htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') ?> — Manifestation d'intérêt, non une réservation confirmée.</span>
     </div>
 
 </div>

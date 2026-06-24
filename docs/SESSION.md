@@ -5,52 +5,79 @@ sesión.
 
 ---
 
-## Cluster "Buscador del hero" — CERRADO por product ⚠️ — 2026-06-23
+## PRD-007 / BUG-014 — Cargar Leaflet en la ficha de POI + fix ancla #newsletter — IMPLEMENTADO por coder — 2026-06-24
 
-**Agente activo al cerrar:** product (pipeline completo architect → coder → security → product).
-**Handoff pendiente:** ninguno.
+**Agente activo al cerrar:** coder.
+**Handoff pendiente:** coder → security (ver abajo).
 
-**Veredicto:** ⚠️ listo con mejoras menores. El cluster (BUG-007/TASK-015 +
-BUG-008/TASK-016 + BUG-009 + TASK-017) cumple sus criterios de éxito principales,
-verificado EN NAVEGADOR (Chrome headless/CDP, PRD-002). Quedan 2 mejoras de UX
-abiertas como tareas de seguimiento (no bloquean el cierre):
+**Dónde quedamos:** implementación completa en 3 archivos; `php -l` OK; pendiente
+verificación en navegador por el agente security (`.leaflet-container` en `/fr/poi/3`).
 
-- **PRD-004 / BUG-010 (media):** el título SEO de search imprime el SLUG crudo del
-  tipo (`location-de-velo`, `nautique`) en vez del nombre legible ("Location de
-  vélo", "Le Canal en Bateau"). `PageController.php:227` usa `$types[0]`. El
-  controlador ya tiene `$categories` cargado (mapa slug→name). → 🟡 Pendiente.
-- **PRD-005 / BUG-011 (media-alta):** Type="Le Canal en Bateau" (`nautique`)
-  devuelve 136/253, de los cuales 93 (68%) son écluses(72)+ports(21), no barcos.
-  `resolveCategoryIdsForSearch` expande el padre `nautique` a hijos no reservables.
-  → 🟡 Pendiente (decisión de producto + fix).
+**Archivos modificados en esta sesión:**
+- `src/Infrastructure/Views/layout/header.php` — añadido `<link>` Leaflet CSS 1.9.4
+  al bloque `$page === 'poi'` (tras `poi_detail.css`); ancla `#newsletter` → `BASE_URL.$lang/home#plan`.
+- `src/Infrastructure/Views/layout/footer.php` — añadido bloque `$page === 'poi'` entre
+  `search` y `home`: Leaflet JS 1.9.4 (SRI idéntico al auditado) + `map.js`.
+- `src/Infrastructure/Views/home.php` — ancla `href="#newsletter"` del botón "Voir les offres" → `href="#plan"`.
+- `docs/TASKS.md` — PRD-007/BUG-014 movido de 🔴 a 🟢 (pendiente verif. navegador).
+- `docs/SESSION.md` — este archivo.
 
-**Criterios verificados en navegador (conteos reales):**
-- Selects home: Type=12 tipos reales (sin "boat" fantasma ✅); Destination=9 etapas ✅.
-- Sin filtros/vacío → `<title>Tous nos séjours et activités | Canal du Midi`, 253 ✅
-  (sin comillas vacías, BUG-009 resuelto).
-- type=hotel → 18, solo hoteles ✅. city=Carcassonne → 10, todos con Carcassonne ✅.
-- combo Carcassonne+hotel → 0, estado "Aucun" ✅.
-- type=nautique → 136 ⚠️ (filtra, pero dominado por écluses → PRD-005).
-- q=l'hotel → 6; `<title>` y `<meta>` íntegros con el apóstrofe (SEC-006 ✅).
-- Botón "Rechercher" → `disabled` + spinner "Recherche…" al submit ✅ (TASK-017).
+**Próxima acción:**
+```
+/agent security — verificar PRD-007/BUG-014: mapa Leaflet en /fr/poi/3 (.leaflet-container + marcador), anclas corregidas, regresión service/search, 0 errores integrity.
+```
 
-**Archivos del cluster (sin cambios nuevos de product; solo verificación + docs):**
-- `src/Config/config.php` — CANAL_STAGES (9 etapas).
-- `src/Infrastructure/Controllers/PageController.php` — case home ($heroTypes/$heroStages);
-  case search ($seoTitle condicional). ← aquí viven PRD-004 (L227) y PRD-005 (L1157+).
-- `src/Infrastructure/Views/home.php` — ambos `<select>` poblados dinámicamente.
-- `public/assets/js/home-ai.js` — response.ok + fallbacks + feedback de carga.
-- `src/Infrastructure/Views/layout/header.php` — ENT_QUOTES (SEC-006).
-- `src/Infrastructure/Persistence/MySQLServiceRepository.php` — getCategories() prepared.
+---
 
-**Docs actualizados por product:** ERROR_LOG.md (PRD-004, PRD-005), LESSONS.md
-(PRD-004, PRD-005), TASKS.md (cluster a 🟢; PRD-004/005 a 🟡), CLAUDE.md (Estado actual).
+## TASK-001 + TASK-002 — Hardening escape de salida + prompts OpenAI — PIPELINE CERRADO ✅ product ⚠️ — 2026-06-24
 
-**Capturas de verificación (scratchpad):** `VS-1-home-selects.png`, `VS-2-empty.png`,
-`VS-3-boat.png`, `VS-4-carcassonne.png`. Drivers: `verify-search.mjs`, `verify-loadingbtn.mjs`.
+**Agente activo al cerrar:** product (cierre de pipeline).
+**Handoff pendiente:** ninguno. No hay tarea en curso.
+
+**Veredicto product:** ⚠️ listo con mejoras menores. Pipeline completo
+(architect → coder → security → product). Verificado en navegador con render real
+y muestra (PRD-002, Playwright headless). Los criterios de éxito del handoff
+security→product están CUMPLIDOS; las únicas excepciones son por realidad de datos
+(0 vídeos, 0 servicios con paginación de reviews) o por un bug pre-existente ajeno
+al scope (mapa de POI).
+
+**Qué quedó verificado (evidencia de navegador):**
+- Ficha `/fr/fiche/a-labordage-moussaillon`: HTTP 200; título/h1 `À L'ABORDAGE
+  MOUSSAILLON !` con acento + apóstrofe correctos (0 mojibake, 0 doble-escape);
+  mapa Leaflet con **1 marcador + 12 tiles** (el cast `(float)` de lat/lng NO rompió
+  el marcador); galería, reviews, formulario de reserva + modal de doble
+  confirmación; **0 errores de consola**.
+- `name="service_id" value="246"` entero correcto; `data-sid` usa `(int)$service->id`.
+- SEC-010 vídeo: allowlist correcta; **0/253 servicios tienen vídeo** → no se
+  renderiza iframe (realidad de datos, no bug).
+- "Voir plus d'avis": botón condicional a `reviewCount > mostrados`; **ningún
+  servicio del catálogo lo dispara** → no observado en vivo, atributo `(int)` OK
+  estático.
+- POI `/fr/poi/3`: HTTP 200; título/h1 `Écluse de Bayard (Gare)` + alts con acentos
+  intactos (0 mojibake/doble-escape) → escape de poi_detail.php correcto.
+- Vacation planner `/fr/vacation-planner`: HTTP 200, asistente de 4 pasos, 0
+  errores de consola.
+- Vacation PDF: referencia inválida → **404 + "introuvable"** (manejo elegante).
+  No se probó un PDF real (sin referencia de prueba; lectura de BD bloqueada por la
+  restricción "no tocar BD"). Escape de la vista confirmado estático (16
+  `htmlspecialchars`, todas ENT_QUOTES).
+- Auditoría final: `grep htmlspecialchars | grep -v ENT_QUOTES` → **0** en los 6
+  archivos de TASK-001. Sin regresiones de render.
+
+**Capturas (scratchpad):** `PROD-service.png`, `PROD-poi.png`, `PROD-vacplanner.png`.
+
+**Seguimiento NUEVO abierto (🟡, no bloqueante):**
+- **PRD-007 / BUG-014** — El mapa de la ficha de POI nunca renderiza:
+  `poi_detail.php` emite `<div id="map">` con `data-lat/lng` correctos, pero
+  `footer.php:32` solo carga Leaflet para `$page`=`service`/`fiche`/`search`/`home`;
+  falta la rama `poi`. `window.L` undefined, hueco gris, 0 errores de consola. Bug
+  PRE-EXISTENTE de gating (commit `b554b6f`), NO regresión de TASK-001. Fix: añadir
+  `poi` a la carga de Leaflet en `footer.php` (CSS+JS con SRI ya existente, SEC-004)
+  + init `#map[data-lat][data-lng]`. Ver LESSONS.md PRD-007 / ERROR_LOG.md.
 
 **Próxima acción candidata:**
 ```
-/agent architect Corregir PRD-004 (título search con slug crudo → nombre legible) + PRD-005 (filtro "Le Canal en Bateau" excluye écluses/ports no reservables)
+/agent architect — corregir PRD-007/BUG-014 (cargar Leaflet en la ficha de POI), o
+/agent architect — Incremento 3 visual: TASK-012 "Les étapes du canal"
+   (Toulouse → Castelnaudary → Carcassonne → Béziers → Étang de Thau)
 ```
-O retomar la iniciativa visual home: Incremento 3 (TASK-012 "Les étapes du canal").

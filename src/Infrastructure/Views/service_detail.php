@@ -107,18 +107,18 @@ $equipmentIcons = [
         <div class="container">
             <div class="service-hero-content">
                
-                <h1><?= htmlspecialchars($service->translations['title'] ?? 'Établissement Canal du Midi') ?></h1>
+                <h1><?= htmlspecialchars($service->translations['title'] ?? 'Établissement Canal du Midi', ENT_QUOTES, 'UTF-8') ?></h1>
                 <?php if (!empty($service->raison) && $service->raison !== $service->translations['title']): ?>
-                    <p class="service-raison"><?= htmlspecialchars($service->raison) ?></p>
+                    <p class="service-raison"><?= htmlspecialchars($service->raison, ENT_QUOTES, 'UTF-8') ?></p>
                 <?php endif; ?>
                 <div class="service-location-row">
                     <div class="service-location">
                         <i class="bi bi-geo-alt-fill"></i>
-                        <?= htmlspecialchars($fullAddress) ?>
+                        <?= htmlspecialchars($fullAddress, ENT_QUOTES, 'UTF-8') ?>
                     </div>
                     <?php if (!empty($service->zone)): ?>
                         <div class="service-rating-pill">
-                            <i class="bi bi-map"></i> Zone <?= htmlspecialchars($service->zone) ?>
+                            <i class="bi bi-map"></i> Zone <?= htmlspecialchars($service->zone, ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -152,22 +152,22 @@ $equipmentIcons = [
         <div class="container">
             <div class="action-bar">
                 <?php if (!empty($service->contact['phone'])): ?>
-                    <a href="tel:<?= htmlspecialchars($service->contact['phone']) ?>" class="action-link">
+                    <a href="tel:<?= htmlspecialchars($service->contact['phone'], ENT_QUOTES, 'UTF-8') ?>" class="action-link">
                         <i class="bi bi-telephone-fill"></i> <span>Appeler</span>
                     </a>
                 <?php endif; ?>
                 <?php if ($service->lat && $service->lng): ?>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=<?= $service->lat ?>,<?= $service->lng ?>" target="_blank" class="action-link">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=<?= (float)$service->lat ?>,<?= (float)$service->lng ?>" target="_blank" class="action-link">
                         <i class="bi bi-map-fill"></i> <span>Itinéraire</span>
                     </a>
                 <?php endif; ?>
                 <?php if (!empty($service->contact['email'])): ?>
-                    <a href="mailto:<?= htmlspecialchars($service->contact['email']) ?>" class="action-link">
+                    <a href="mailto:<?= htmlspecialchars($service->contact['email'], ENT_QUOTES, 'UTF-8') ?>" class="action-link">
                         <i class="bi bi-envelope-fill"></i> <span>Email</span>
                     </a>
                 <?php endif; ?>
                 <?php if (!empty($service->contact['website'])): ?>
-                    <a href="<?= htmlspecialchars($service->contact['website']) ?>" target="_blank" rel="noopener" class="action-link">
+                    <a href="<?= htmlspecialchars($service->contact['website'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="action-link">
                         <i class="bi bi-globe"></i> <span>Site Web</span>
                     </a>
                 <?php endif; ?>
@@ -192,11 +192,11 @@ $equipmentIcons = [
             <section class="section-card section-card-intro info-block">
                 <div class="section-heading-inline">
                     <span class="section-kicker">Présentation</span>
-                    <h2><?= htmlspecialchars($service->translations['title'] ?? '') ?></h2>
+                    <h2><?= htmlspecialchars($service->translations['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></h2>
                 </div>
                 <?php if (!empty($service->translations['description'])): ?>
                     <div class="description-text">
-                        <?= nl2br(htmlspecialchars($service->translations['description'])) ?>
+                        <?= nl2br(htmlspecialchars($service->translations['description'], ENT_QUOTES, 'UTF-8')) ?>
                     </div>
                 <?php endif; ?>
 
@@ -206,7 +206,7 @@ $equipmentIcons = [
                             <i class="bi bi-person-badge"></i>
                             <div>
                                 <strong>Responsable</strong>
-                                <span><?= htmlspecialchars($service->responsable) ?></span>
+                                <span><?= htmlspecialchars($service->responsable, ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                         <?php if (!empty($service->label)): ?>
@@ -214,7 +214,7 @@ $equipmentIcons = [
                             <i class="bi bi-award"></i>
                             <div>
                                 <strong>Label qualité</strong>
-                                <span><?= htmlspecialchars($service->label) ?></span>
+                                <span><?= htmlspecialchars($service->label, ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -281,7 +281,7 @@ $equipmentIcons = [
                     <h3>Dernières nouvelles</h3>
                 </div>
                 <div class="description-text actualite-text">
-                    <?= nl2br(htmlspecialchars($service->actualite)) ?>
+                    <?= nl2br(htmlspecialchars($service->actualite, ENT_QUOTES, 'UTF-8')) ?>
                 </div>
             </section>
             <?php endif; ?>
@@ -294,9 +294,26 @@ $equipmentIcons = [
                     <h3>Découvrir en images</h3>
                 </div>
                 <div class="videos-grid">
-                    <?php foreach ($videoItems as $video): ?>
+                    <?php
+                    // SEC-010: allowlist de hosts de video — nunca emitir iframe con src arbitrario.
+                    $videoHostAllowlist = ['www.youtube.com', 'youtube.com', 'youtu.be', 'www.youtu.be', 'player.vimeo.com', 'vimeo.com', 'www.vimeo.com'];
+                    foreach ($videoItems as $video):
+                        // Extraer el src del primer iframe encontrado en el string de BD
+                        preg_match('/<iframe[^>]+src=["\']([^"\']+)["\'][^>]*>/i', (string)$video, $iframeMatch);
+                        $iframeSrc = $iframeMatch[1] ?? '';
+                        if ($iframeSrc === '') continue;
+                        // Validar host contra allowlist
+                        $parsedHost = strtolower(parse_url($iframeSrc, PHP_URL_HOST) ?? '');
+                        if (!in_array($parsedHost, $videoHostAllowlist, true)) continue;
+                    ?>
                         <div class="video-embed">
-                            <?= strip_tags((string)$video, '<iframe>') ?>
+                            <iframe
+                                src="<?= htmlspecialchars($iframeSrc, ENT_QUOTES, 'UTF-8') ?>"
+                                frameborder="0"
+                                allowfullscreen
+                                sandbox="allow-scripts allow-same-origin allow-presentation"
+                                loading="lazy"
+                            ></iframe>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -352,7 +369,7 @@ $equipmentIcons = [
                     </div>
 
                     <a
-                        href="https://www.google.com/maps/dir/?api=1&destination=<?= $service->lat ?? '' ?>,<?= $service->lng ?? '' ?>"
+                        href="https://www.google.com/maps/dir/?api=1&destination=<?= (float)($service->lat ?? 0) ?>,<?= (float)($service->lng ?? 0) ?>"
                         target="_blank"
                         rel="noreferrer"
                         class="location-route-link"
@@ -364,18 +381,18 @@ $equipmentIcons = [
 
                 <div class="location-layout">
                     <div class="location-map-shell">
-                        <div id="map" 
-                            class="map-container" 
-                            data-lat="<?= $service->lat ?>" 
-                            data-lng="<?= $service->lng ?>" 
-                            data-title="<?= htmlspecialchars($service->translations['title']) ?>">
+                        <div id="map"
+                            class="map-container"
+                            data-lat="<?= (float)$service->lat ?>"
+                            data-lng="<?= (float)$service->lng ?>"
+                            data-title="<?= htmlspecialchars($service->translations['title'], ENT_QUOTES, 'UTF-8') ?>">
                         </div>
 
                         <div class="location-address-card">
                             <span class="location-address-label">Adresse de l'établissement</span>
                             <p class="address-footer">
                                 <i class="bi bi-geo-alt-fill"></i>
-                                <?= htmlspecialchars($fullAddress) ?>
+                                <?= htmlspecialchars($fullAddress, ENT_QUOTES, 'UTF-8') ?>
                             </p>
                         </div>
                     </div>
@@ -390,23 +407,23 @@ $equipmentIcons = [
                         <div class="poi-grid">
                             <?php if (!empty($service->nearbyPOIs)): ?>
                                 <?php foreach ($service->nearbyPOIs as $poi): ?>
-                                    <a href="<?= BASE_URL . $lang ?>/poi/<?= $poi->id ?>" class="poi-link">
-                                        <div class="poi-item poi-hover-trigger" 
-                                            data-lat="<?= $poi->lat ?>" 
-                                            data-lng="<?= $poi->lng ?>" 
-                                            data-name="<?= htmlspecialchars($poi->name) ?>">
-                                            
+                                    <a href="<?= BASE_URL . $lang ?>/poi/<?= (int)$poi->id ?>" class="poi-link">
+                                        <div class="poi-item poi-hover-trigger"
+                                            data-lat="<?= (float)$poi->lat ?>"
+                                            data-lng="<?= (float)$poi->lng ?>"
+                                            data-name="<?= htmlspecialchars($poi->name, ENT_QUOTES, 'UTF-8') ?>">
+
                                             <div class="poi-image-container">
                                                 <?php if ($poi->imageUrl): ?>
-                                                    <img src="<?= htmlspecialchars($poi->imageUrl) ?>" alt="<?= htmlspecialchars($poi->name) ?>" class="poi-thumb">
+                                                    <img src="<?= htmlspecialchars($poi->imageUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($poi->name, ENT_QUOTES, 'UTF-8') ?>" class="poi-thumb">
                                                 <?php else: ?>
                                                     <div class="poi-icon-fallback"><i class="bi <?= $poi->getIcon() ?>"></i></div>
                                                 <?php endif; ?>
                                             </div>
 
                                             <div class="poi-info">
-                                                <strong><?= htmlspecialchars($poi->name) ?></strong>
-                                                <span><?= ucfirst($poi->type) ?></span>
+                                                <strong><?= htmlspecialchars($poi->name, ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <span><?= htmlspecialchars(ucfirst((string)$poi->type), ENT_QUOTES, 'UTF-8') ?></span>
                                             </div>
                                             
                                             <div class="poi-distance"><?= $poi->getFormattedDistance() ?></div>
@@ -478,7 +495,7 @@ $equipmentIcons = [
                                 id="load-more-reviews"
                                 class="button button-ghost reviews-load-more"
                                 data-page="1"
-                                data-sid="<?= $service->id ?>"
+                                data-sid="<?= (int)$service->id ?>"
                                 data-total="<?= (int) $service->reviewCount ?>"
                             >
                                 <i class="bi bi-plus-circle"></i> Voir plus d'avis
@@ -505,13 +522,13 @@ $equipmentIcons = [
                 <p class="sidebar-card-copy">Contactez directement l'établissement pour toute demande d'information ou de réservation.</p>
                 <div class="contact-actions">
                     <?php if (!empty($service->contact['phone'])): ?>
-                    <a href="tel:<?= htmlspecialchars($service->contact['phone']) ?>" class="contact-action-pill">
+                    <a href="tel:<?= htmlspecialchars($service->contact['phone'], ENT_QUOTES, 'UTF-8') ?>" class="contact-action-pill">
                         <i class="bi bi-telephone-fill"></i>
                         <span>Appeler</span>
                     </a>
                     <?php endif; ?>
                     <?php if (!empty($service->contact['email'])): ?>
-                    <a href="mailto:<?= htmlspecialchars($service->contact['email']) ?>" class="contact-action-pill">
+                    <a href="mailto:<?= htmlspecialchars($service->contact['email'], ENT_QUOTES, 'UTF-8') ?>" class="contact-action-pill">
                         <i class="bi bi-envelope-fill"></i>
                         <span>Écrire</span>
                     </a>
@@ -523,7 +540,7 @@ $equipmentIcons = [
                         <i class="bi bi-telephone"></i>
                         <div>
                             <strong>Téléphone</strong>
-                            <span><?= htmlspecialchars($service->contact['phone']) ?></span>
+                            <span><?= htmlspecialchars($service->contact['phone'], ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -532,7 +549,7 @@ $equipmentIcons = [
                         <i class="bi bi-telephone"></i>
                         <div>
                             <strong>Tél. secondaire</strong>
-                            <span><?= htmlspecialchars($service->contact['phone2']) ?></span>
+                            <span><?= htmlspecialchars($service->contact['phone2'], ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -541,7 +558,7 @@ $equipmentIcons = [
                         <i class="bi bi-phone"></i>
                         <div>
                             <strong>Mobile</strong>
-                            <span><?= htmlspecialchars($service->contact['mobile']) ?></span>
+                            <span><?= htmlspecialchars($service->contact['mobile'], ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -550,7 +567,7 @@ $equipmentIcons = [
                         <i class="bi bi-printer"></i>
                         <div>
                             <strong>Fax</strong>
-                            <span><?= htmlspecialchars($service->contact['fax']) ?></span>
+                            <span><?= htmlspecialchars($service->contact['fax'], ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -559,7 +576,7 @@ $equipmentIcons = [
                         <i class="bi bi-envelope"></i>
                         <div>
                             <strong>Email</strong>
-                            <span><?= htmlspecialchars($service->contact['email']) ?></span>
+                            <span><?= htmlspecialchars($service->contact['email'], ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -568,7 +585,7 @@ $equipmentIcons = [
                         <i class="bi bi-envelope"></i>
                         <div>
                             <strong>Email secondaire</strong>
-                            <span><?= htmlspecialchars($service->contact['email2']) ?></span>
+                            <span><?= htmlspecialchars($service->contact['email2'], ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -576,7 +593,7 @@ $equipmentIcons = [
                         <i class="bi bi-geo-alt"></i>
                         <div>
                             <strong>Adresse</strong>
-                            <span><?= htmlspecialchars($fullAddress) ?></span>
+                            <span><?= htmlspecialchars($fullAddress, ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </li>
                     <?php if (!empty($service->contact['website'])): ?>
@@ -584,7 +601,7 @@ $equipmentIcons = [
                         <i class="bi bi-globe"></i>
                         <div>
                             <strong>Site web</strong>
-                            <a href="<?= htmlspecialchars($service->contact['website']) ?>" target="_blank" rel="noopener"><?= htmlspecialchars(parse_url($service->contact['website'], PHP_URL_HOST) ?: $service->contact['website']) ?></a>
+                            <a href="<?= htmlspecialchars($service->contact['website'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= htmlspecialchars(parse_url($service->contact['website'], PHP_URL_HOST) ?: $service->contact['website'], ENT_QUOTES, 'UTF-8') ?></a>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -593,7 +610,7 @@ $equipmentIcons = [
                         <i class="bi bi-globe2"></i>
                         <div>
                             <strong>Site alternatif</strong>
-                            <a href="<?= htmlspecialchars($service->contact['website2']) ?>" target="_blank" rel="noopener"><?= htmlspecialchars(parse_url($service->contact['website2'], PHP_URL_HOST) ?: $service->contact['website2']) ?></a>
+                            <a href="<?= htmlspecialchars($service->contact['website2'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= htmlspecialchars(parse_url($service->contact['website2'], PHP_URL_HOST) ?: $service->contact['website2'], ENT_QUOTES, 'UTF-8') ?></a>
                         </div>
                     </li>
                     <?php endif; ?>
@@ -631,7 +648,7 @@ $equipmentIcons = [
                             <i class="bi bi-calendar-range"></i>Sélectionner les dates
                         </button>
                         <!-- Inputs ocultos que el calendario llenará -->
-                        <input type="hidden" name="service_id" value="<?= $service->id ?>">
+                        <input type="hidden" name="service_id" value="<?= (int)$service->id ?>">
                         <input type="hidden" name="checkin" required>
                         <input type="hidden" name="checkout" required>
                     </div>
@@ -714,7 +731,7 @@ $equipmentIcons = [
                 <div class="provider-info">
                     <div class="provider-avatar"><i class="bi bi-person-vcard"></i></div>
                     <div>
-                        <strong><?= htmlspecialchars($service->translations['title']) ?></strong>
+                        <strong><?= htmlspecialchars($service->translations['title'], ENT_QUOTES, 'UTF-8') ?></strong>
                         <span>Établissement Partenaire</span>
                     </div>
                 </div>
