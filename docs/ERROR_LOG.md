@@ -16,6 +16,14 @@ Formato de entrada:
 
 ---
 
+### [SEC-013] Observación: orden sanitización vs. check de API key en VacationPlannerService — 2026-07-06
+- Síntoma: en `VacationPlannerService::generatePlan`, `sanitizeUserPrompt()` se invoca en la línea 19 antes del `if (empty($this->apiKey))` de la línea 36. Esto significa que la sanitización se ejecuta incluso en la ruta del fallback (sin API key).
+- Causa raíz: no es un bug de seguridad (la sanitización es CPU-barata y no filtra ni mutaciones del prompt al exterior en la ruta de fallback). Es una inconsistencia menor de orden respecto a `ClaudeAIService`, donde el check de key precede a la sanitización.
+- Corrección aplicada: ninguna (no bloqueante). Observación registrada como mejora de calidad.
+- Cómo prevenirlo: en servicios IA, el check de `empty($apiKey)` debe ser el primer guard, antes de cualquier procesamiento del prompt. Garantiza que no se consume CPU ni se modifica el input antes de confirmar que habrá una llamada real.
+
+---
+
 ### [SEC-003] JS de terceros por CDN sin Subresource Integrity (SRI) — 2026-06-23
 - Síntoma: en TASK-008 se cargaron `gsap@3.13.0/gsap.min.js` y
   `ScrollTrigger.min.js` desde jsDelivr con `<script defer src>` pero sin

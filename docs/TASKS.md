@@ -4,7 +4,7 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(ninguna — TASK-018 migración IA a Claude completada, pasa a security)_
+_(ninguna — TASK-018 migración IA a Claude, security ⚠️ aprobado, pasa a product)_
 
 ## 🟡 Pendiente
 
@@ -141,7 +141,7 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
-- **TASK-018 — Migración IA: OpenAI → Claude Sonnet 4.6 ✅ coder completo, pasa a security (2026-07-06)**
+- **TASK-018 — Migración IA: OpenAI → Claude Sonnet 4.6 ✅ pipeline completo + security ⚠️ aprobado con observaciones (2026-07-06)**
   - Búsqueda IA (`ClaudeAIService`) y planificateur (`VacationPlannerService`) migrados a `anthropic-ai/sdk` v0.36.0 (Composer). Modelo: `claude-sonnet-4-6`. Constantes `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` en `config.php` (vía `.env`); `OPENAI_*` eliminadas. `OpenAIService.php` borrado (git rm).
   - `SanitizesPrompts` (nuevo trait): `sanitizeUserPrompt()` extraído de los dos servicios; hardening SEC-002/SEC-010 intacto (trim, colapso de saltos, elimina delimitador, `mb_substr`). Test CLI 4/4 PASS.
   - Prompt caching: catálogo en bloque `system` con `cacheControl: ephemeral`; instrucciones en bloque separado (byte-estable). `outputConfig` con `json_schema` structured outputs; prefill `assistant` eliminado (no compatible con Sonnet 4.6 → era causa de 400).

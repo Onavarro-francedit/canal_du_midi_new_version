@@ -15,6 +15,11 @@ class VacationPlannerService {
     }
 
     public function generatePlan(string $userPrompt, array $allServices): array {
+        // Guard fail-fast (SEC-013): sin API key, no procesamos prompt ni catálogo.
+        if (empty($this->apiKey)) {
+            return $this->fallback($allServices);
+        }
+
         $catalog = $this->buildCatalog($allServices);
         $safePrompt = $this->sanitizeUserPrompt($userPrompt, 800);
 
@@ -32,10 +37,6 @@ class VacationPlannerService {
 
         // Catálogo (system, bloque 2, cacheable).
         $catalogBlock = 'CATALOGUE : ' . json_encode($catalog, JSON_UNESCAPED_UNICODE);
-
-        if (empty($this->apiKey)) {
-            return $this->fallback($allServices);
-        }
 
         $schema = [
             'type' => 'object',

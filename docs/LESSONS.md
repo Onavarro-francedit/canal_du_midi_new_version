@@ -35,9 +35,13 @@ _(sin lecciones todavía)_
   recurso de un CDN externo (jsDelivr, unpkg, etc.) debe llevar **versión fija**
   (nunca `@latest`) + `integrity="sha384-…"` (SRI) + `crossorigin="anonymous"`.
   Sin SRI, un CDN comprometido o un MITM ejecuta código arbitrario en la página
-  con plenos privilegios. Detectado en TASK-008 (GSAP/ScrollTrigger en home),
-  corregido en `footer.php`. Deuda relacionada aún abierta: los `<script>` de
-  Leaflet/markercluster (unpkg) en service/search siguen sin SRI.
+  con plenos privilegios. Detectado en TASK-008 (GSAP/ScrollTrigger en home).
+  **CERRADA del todo (2026-06-24):** SEC-004 añadió SRI a los `<script>` de Leaflet
+  1.9.4 + markercluster 1.5.3 (footer) y a bootstrap-icons (header); el cierre final
+  añadió SRI a los `<link>` CSS de leaflet.css (service/search/poi) +
+  MarkerCluster.css + MarkerCluster.Default.css. **Ya no queda ningún recurso CDN
+  (JS ni CSS) sin `integrity` en el proyecto.** Lección operativa: al añadir SRI,
+  cubrir JS *y* CSS del mismo paquete, y todas las páginas que lo cargan, no solo una.
 
 - **SEC-007 (CORREGIDO 2026-06-24): htmlspecialchars() sin ENT_QUOTES en vistas — deuda pre-existente en search_results.php.**
   `search_results.php` llamaba a `htmlspecialchars($valor)` sin `ENT_QUOTES, 'UTF-8'`
@@ -62,8 +66,14 @@ _(sin lecciones todavía)_
 - **SEC-011: al auditar una vista, buscar todos los ecos de IDs de modelo sin cast (int).**
   SEC-005 establece el cast `(int)` para IDs nullable. Al cerrar una tarea, ejecutar `grep "\$[a-z]*->id\b"` sobre cada vista modificada y confirmar que cada eco lleva `(int)`. Un ID nullable echado sin cast en `data-*` o `value=` emite el atributo vacío si el modelo devuelve NULL, lo que puede silenciar errores o alterar la lógica JS/AJAX downstream. Detectado en `service_detail.php:481` (`data-sid`) y `service_detail.php:634` (`value=service_id`). Corregido en TASK-001 (2026-06-24).
 
+- **SEC-012 (CORREGIDO 2026-06-24): el catch de PDOException nunca debe imprimir `$e->getMessage()` al usuario.**
+  Un fallo de conexión a BD en producción expone host, usuario y nombre de BD al navegador si el catch hace `die($e->getMessage())` (ej. `SQLSTATE[HY000] [1045] Access denied for user 'root'@'localhost'`). Patrón seguro obligatorio: `error_log($e->getMessage())` (server-side) + `die("Erreur de connexion à la base de données.")` (mensaje genérico al usuario). Detectado en `src/Config/Database.php:27`. Corregido en SEC-001 (2026-06-24). Corolario: revisar todo `catch` que haga `die`/`echo` con el mensaje crudo de la excepción en capas de infraestructura.
+
 - **SEC-006: htmlspecialchars() SIEMPRE con ENT_QUOTES, 'UTF-8' — nunca confiar en los flags por defecto.**
   PHP usa `ENT_COMPAT` por defecto: escapa `"` pero NO `'`. En atributos HTML delimitados por comillas simples (o en parsers tolerantes), un valor que contenga `'` sin escapar puede romper el atributo o permitir inyección. Además, omitir `'UTF-8'` puede generar comportamientos inesperados con caracteres multibyte. Regla fija del proyecto: `htmlspecialchars($valor, ENT_QUOTES, 'UTF-8')` en cada punto de salida, sin excepción. Detectado en `header.php` (5 llamadas) donde `$seo['title']` podía contener comillas simples vía el patrón "Résultats pour '{query}'" (BUG-009). Corregido en cluster buscador hero (2026-06-23).
+
+- **SEC-013: en servicios IA, el check `empty($apiKey)` debe ser el primer guard, antes de cualquier procesamiento del prompt.**
+  En `VacationPlannerService::generatePlan` la llamada a `sanitizeUserPrompt()` se hace antes del check de API key (líneas 19 y 36 respectivamente). No es un bug de seguridad (la sanitización es barata y el resultado no se filtra al exterior en la ruta de fallback), pero viola el principio de "fail fast": si no hay key, no hay razón para procesar el input. En `ClaudeAIService` el orden es correcto (key primero, sanitización después). Regla: en cualquier servicio que llame a una API externa, el guard `if (empty($apiKey)) { return fallback; }` va al inicio del método, antes de construir catálogos, sanitizar prompts o instanciar el cliente. Detectado en TASK-018 (2026-07-06). Mejora de calidad, no bloqueante.
 
 ## Producto / UX (PRD-NNN)
 
