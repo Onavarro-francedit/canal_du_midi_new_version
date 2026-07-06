@@ -4,7 +4,8 @@
     "type": "project",
     "require": {
         "php": ">=8.0",
-        "phpmailer/phpmailer": "^7.1"
+        "phpmailer/phpmailer": "^7.1",
+        "anthropic-ai/sdk": "^0.36.0"
     },
 "config": {
         "optimize-autoloader": true
