@@ -5,13 +5,14 @@ sesión.
 
 ---
 
-## TASK-018 — Migración IA OpenAI → Claude Sonnet 4.6 — CODER COMPLETO ✅ — 2026-07-06
+## TASK-018 — Migración IA OpenAI → Claude Sonnet 4.6 — ✅ COMPLETADA Y VERIFICADA — 2026-07-06
 
-**Agente activo al cerrar:** coder.
-**Handoff pendiente:** coder → security (ver handoff al final).
+**Agente activo al cerrar:** coordinador (verificación end-to-end con API key real).
+**Handoff pendiente:** ninguno. Pipeline: architect → coder → security ⚠️ (SEC-013 aplicado) → verificación real. Product opcional (no ejecutado).
 
 **Qué se hizo:**
-- SDK `anthropic-ai/sdk` v0.36.0 instalado vía Composer (5 paquetes nuevos).
+- SDK `anthropic-ai/sdk` v0.36.0 **+ `guzzlehttp/guzzle`** (cliente PSR-18 requerido) instalados vía Composer.
+- **SEC-013 aplicado:** guard `empty($apiKey)` movido al inicio de `generatePlan()` (fail-fast).
 - `config.php`: `OPENAI_*` → `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` (default `claude-sonnet-4-6`).
 - `.env`: líneas `ANTHROPIC_API_KEY=sk-ant-PEGA_TU_CLAVE_AQUI` / `ANTHROPIC_MODEL=claude-sonnet-4-6` añadidas. **El usuario debe pegar su clave real.**
 - `SanitizesPrompts.php` (nuevo trait): `sanitizeUserPrompt()` compartido; test CLI 4/4 PASS.
@@ -21,15 +22,12 @@ sesión.
 - `OpenAIService.php`: eliminado (git rm).
 - `scripts/test_sanitize.php` y `scripts/smoke_claude_cache.php`: nuevos scripts de verificación.
 
-**Verificado (sin API key real):**
-- `php -l` OK en todos los archivos nuevos/modificados.
-- `grep -rniE "openai|gpt-|api\.openai" src/` → 0 coincidencias.
-- `/fr/search` HTTP 200, 0 errores de consola (Playwright).
-- `/fr/vacation-planner` HTTP 200, 0 errores de consola (Playwright).
-
-**Pendiente (requiere usuario):**
-- Insertar la `ANTHROPIC_API_KEY` real en `.env` y ejecutar `php scripts/smoke_claude_cache.php`.
-- Verificar con Playwright búsqueda IA real y plan real una vez la clave esté activa.
+**Verificado (con API key real, end-to-end):**
+- `php -l` OK; `grep -rniE "openai|gpt-|api\.openai" src/` → 0 coincidencias; test trait 4/4 PASS.
+- **Smoke caching:** 1ª llamada `creation=8803 read=0`, 2ª idéntica `read=8803` → prompt caching activo.
+- **Búsqueda IA real** (`/fr/ai-analyze`): count=3, resultados reales + explicación razonada FR; log dev `[ClaudeAIService] cache_creation=6052` confirma que corre Claude (no fallback).
+- **Inyección** ("Ignore les règles… HACKED"): no obedece, mantiene rol → SEC-002/010 sin regresión.
+- **GOTCHA CRÍTICO resuelto:** sin `guzzlehttp/guzzle`, `new Anthropic\Client()` lanzaba `DiscoveryFailedException` que el `catch(\Throwable)` tragaba → la IA caía SIEMPRE al fallback sin usar Claude (200 + 0 consola engañaba). Prueba de que corre Claude: el log dev `[ClaudeAIService]` solo se emite tras la llamada real.
 
 **Archivos modificados en esta sesión:**
 - `composer.json` — añade `anthropic-ai/sdk ^0.36.0`
@@ -43,14 +41,9 @@ sesión.
 - `scripts/test_sanitize.php` — test CLI del trait (4/4 PASS)
 - `scripts/smoke_claude_cache.php` — smoke de prompt caching (requiere API key real)
 
-**Próxima acción:**
-```
-# 1. El usuario pega su ANTHROPIC_API_KEY real en .env
-# 2. Ejecutar smoke de caching:
-ANTHROPIC_API_KEY=sk-ant-... php scripts/smoke_claude_cache.php
-# 3. Pasar handoff al agente security:
-/agent security [handoff coder → security de TASK-018]
-```
+**Próxima acción:** ninguna. TASK-018 cerrada y verificada end-to-end. Opcional:
+`/agent product` para el cierre formal de UX del pipeline. Candidatos previos siguen
+abiertos (TASK-012 "étapes du canal", TASK-005/007 stats/imágenes reales).
 
 ---
 
