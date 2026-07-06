@@ -1,0 +1,163 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - link "Canal du Midi" [ref=f1e4] [cursor=pointer]:
+        - /url: http://localhost/canal_du_midi/es/home
+        - generic [ref=f1e6]: Canal du Midi
+      - navigation [ref=f1e7]:
+        - link "Destinations" [ref=f1e8] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/home#destinations
+        - link "Carte Interactive" [ref=f1e9] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/search
+        - link "Expériences" [ref=f1e10] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/home#experiences
+        - link "Pourquoi nous" [ref=f1e11] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/home#why-us
+        - link "Avis" [ref=f1e12] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/home#reviews
+        - link "Actualités" [ref=f1e13] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/home#news
+        - link " Planifier mon voyage" [ref=f1e14] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/es/vacation-planner
+          - generic [ref=f1e15]: 
+          - text: Planifier mon voyage
+      - generic [ref=f1e16]:
+        - generic [ref=f1e17]: Choisir la langue
+        - generic [ref=f1e18]:
+          - combobox "Choisir la langue" [ref=f1e19] [cursor=pointer]:
+            - option "FR"
+            - option "ES" [selected]
+            - option "EN"
+          - generic:
+            - generic: 
+      - link "S'inscrire" [ref=f1e20] [cursor=pointer]:
+        - /url: http://localhost/canal_du_midi/es/home#plan
+  - generic [ref=f1e21]:
+    - generic [ref=f1e22]:
+      - generic [ref=f1e24]:
+        - generic [ref=f1e25]:
+          - generic [ref=f1e26]: ✓
+          - generic [ref=f1e28]: Votre voyage
+        - generic [ref=f1e30]:
+          - generic [ref=f1e31]: ✓
+          - generic [ref=f1e33]: Votre plan
+        - generic [ref=f1e35]:
+          - generic [ref=f1e37]: "3"
+          - generic [ref=f1e38]: Vos infos
+        - generic [ref=f1e40]:
+          - generic [ref=f1e42]: "4"
+          - generic [ref=f1e43]: Confirmation
+      - text:                              
+      - generic [ref=f1e290]:
+        - button " Retour au plan" [ref=f1e292] [cursor=pointer]:
+          - generic [ref=f1e293]: 
+          - text: Retour au plan
+        - generic [ref=f1e294]:
+          - generic [ref=f1e295]:
+            - heading "Vos coordonnées" [level=2] [ref=f1e296]
+            - paragraph [ref=f1e297]: Nous allons transmettre votre demande à chaque prestataire de votre plan. Ils vous contacteront directement pour confirmer votre séjour.
+            - generic [ref=f1e298]:
+              - generic [ref=f1e299]:
+                - generic [ref=f1e300]: Prénom & Nom *
+                - textbox "Prénom & Nom *" [ref=f1e301]:
+                  - /placeholder: Marie Dupont
+              - generic [ref=f1e302]:
+                - generic [ref=f1e303]:
+                  - generic [ref=f1e304]: Email *
+                  - textbox "Email *" [ref=f1e305]:
+                    - /placeholder: marie@email.com
+                - generic [ref=f1e306]:
+                  - generic [ref=f1e307]: Téléphone
+                  - textbox "Téléphone" [ref=f1e308]:
+                    - /placeholder: +33 6 00 00 00 00
+              - generic [ref=f1e309]:
+                - generic [ref=f1e310]:
+                  - generic [ref=f1e311]: Arrivée prévue *
+                  - textbox "Arrivée prévue *" [ref=f1e312]: 2026-09-07
+                - generic [ref=f1e313]:
+                  - generic [ref=f1e314]: Départ prévu *
+                  - textbox "Départ prévu *" [ref=f1e315]: 2026-09-10
+              - paragraph [ref=f1e316]: Fechas estimadas a partir de su solicitud — ajústelas si es necesario.
+              - generic [ref=f1e317]:
+                - generic [ref=f1e318]:
+                  - generic [ref=f1e319]: Adultes
+                  - spinbutton "Adultes" [ref=f1e320]: "2"
+                - generic [ref=f1e321]:
+                  - generic [ref=f1e322]: Enfants
+                  - spinbutton "Enfants" [ref=f1e323]: "0"
+              - button "Envoyer ma demande d'intérêt " [ref=f1e324] [cursor=pointer]:
+                - generic [ref=f1e325]: Envoyer ma demande d'intérêt
+                - generic [ref=f1e326]: 
+          - generic [ref=f1e328]:
+            - heading "Récapitulatif du plan" [level=3] [ref=f1e329]
+            - generic [ref=f1e330]:
+              - generic [ref=f1e331]:
+                - generic [ref=f1e332]: Jour 1 — Llegada a Homps – Embarque y primera navegación
+                - generic [ref=f1e333]:
+                  - generic [ref=f1e334]: 🌅 matin
+                  - generic [ref=f1e335]: Recogida del barco en Les Canalous – Homps
+                - generic [ref=f1e336]:
+                  - generic [ref=f1e337]: ☀️ après-midi
+                  - generic [ref=f1e338]: Croisières du Midi – Crucero por el Canal
+                - generic [ref=f1e339]:
+                  - generic [ref=f1e340]: 🌙 soir
+                  - generic [ref=f1e341]: Cena en la Auberge du Somail
+              - generic [ref=f1e342]:
+                - generic [ref=f1e343]: Jour 2 — Le Somail – Capestang – Colombiers
+                - generic [ref=f1e344]:
+                  - generic [ref=f1e345]: 🌅 matin
+                  - generic [ref=f1e346]: Visita a la Maison des Vins du Minervois
+                - generic [ref=f1e347]:
+                  - generic [ref=f1e348]: ☀️ après-midi
+                  - generic [ref=f1e349]: Escala en el Puerto de Capestang
+                - generic [ref=f1e350]:
+                  - generic [ref=f1e351]: 🌙 soir
+                  - generic [ref=f1e352]: Cena en Le Bistrot de Colombiers
+              - generic [ref=f1e353]:
+                - generic [ref=f1e354]: Jour 3 — Colombiers – Béziers – Fonseranes
+                - generic [ref=f1e355]:
+                  - generic [ref=f1e356]: 🌅 matin
+                  - generic [ref=f1e357]: Visita a las Écluses de Fonseranes
+                - generic [ref=f1e358]:
+                  - generic [ref=f1e359]: ☀️ après-midi
+                  - generic [ref=f1e360]: Crucero en Les Bateaux du Midi
+                - generic [ref=f1e361]:
+                  - generic [ref=f1e362]: 🌙 soir
+                  - generic [ref=f1e363]: Cena y alojamiento en Château Les Carrasses
+              - generic [ref=f1e364]:
+                - generic [ref=f1e365]: Jour 4 — Carcassonne – Fin del viaje
+                - generic [ref=f1e366]:
+                  - generic [ref=f1e367]: 🌅 matin
+                  - generic [ref=f1e368]: Visita al Château et Remparts de la Cité de Carcassonne
+                - generic [ref=f1e369]:
+                  - generic [ref=f1e370]: ☀️ après-midi
+                  - generic [ref=f1e371]: Devolución del barco en Les Canalous – Carcassonne
+                - generic [ref=f1e372]:
+                  - generic [ref=f1e373]: 🌙 soir
+                  - generic [ref=f1e374]: Cena de despedida en la Maison du Cassoulet
+      - text:    
+    - contentinfo [ref=f1e63]:
+      - generic [ref=f1e64]:
+        - generic [ref=f1e65]:
+          - link "Canal du Midi" [ref=f1e66] [cursor=pointer]:
+            - /url: "#top"
+            - generic [ref=f1e68]: Canal du Midi
+          - paragraph [ref=f1e69]: Landing inspirée de votre capture, prête à servir de base pour un site touristique.
+        - generic [ref=f1e70]:
+          - heading "Navigation" [level=3] [ref=f1e71]
+          - link "Destinations" [ref=f1e72] [cursor=pointer]:
+            - /url: "#destinations"
+          - link "Expériences" [ref=f1e73] [cursor=pointer]:
+            - /url: "#experiences"
+          - link "Blog" [ref=f1e74] [cursor=pointer]:
+            - /url: "#news"
+        - generic [ref=f1e75]:
+          - heading "Contact" [level=3] [ref=f1e76]
+          - link "+33 5 00 00 00 00" [ref=f1e77] [cursor=pointer]:
+            - /url: tel:+33500000000
+          - link "bonjour@canaldumidi.local" [ref=f1e78] [cursor=pointer]:
+            - /url: mailto:bonjour@canaldumidi.local
+          - generic [ref=f1e79]: Toulouse, France
+      - generic [ref=f1e80]:
+        - generic [ref=f1e81]: © 2026 Canal du Midi
+        - generic [ref=f1e82]: Built with PHP, CSS and JS (Hexagonal Architecture)

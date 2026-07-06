@@ -5,148 +5,68 @@ sesión.
 
 ---
 
-## TASK-018 — Migración IA OpenAI → Claude Sonnet 4.6 — ✅ COMPLETADA Y VERIFICADA — 2026-07-06
-
-**Agente activo al cerrar:** coordinador (verificación end-to-end con API key real).
-**Handoff pendiente:** ninguno. Pipeline: architect → coder → security ⚠️ (SEC-013 aplicado) → verificación real. Product opcional (no ejecutado).
-
-**Qué se hizo:**
-- SDK `anthropic-ai/sdk` v0.36.0 **+ `guzzlehttp/guzzle`** (cliente PSR-18 requerido) instalados vía Composer.
-- **SEC-013 aplicado:** guard `empty($apiKey)` movido al inicio de `generatePlan()` (fail-fast).
-- `config.php`: `OPENAI_*` → `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` (default `claude-sonnet-4-6`).
-- `.env`: líneas `ANTHROPIC_API_KEY=sk-ant-PEGA_TU_CLAVE_AQUI` / `ANTHROPIC_MODEL=claude-sonnet-4-6` añadidas. **El usuario debe pegar su clave real.**
-- `SanitizesPrompts.php` (nuevo trait): `sanitizeUserPrompt()` compartido; test CLI 4/4 PASS.
-- `ClaudeAIService.php` (nuevo): implementa `AIServiceInterface`; usa SDK + prompt caching + structured outputs; fallback a `SmartAIService`.
-- `VacationPlannerService.php`: reescritura parcial (encabezado + `generatePlan()`); `buildCatalog`/`hydrate`/`fallback` intactos.
-- `PageController.php:577`: `new OpenAIService()` → `new ClaudeAIService()`.
-- `OpenAIService.php`: eliminado (git rm).
-- `scripts/test_sanitize.php` y `scripts/smoke_claude_cache.php`: nuevos scripts de verificación.
-
-**Verificado (con API key real, end-to-end):**
-- `php -l` OK; `grep -rniE "openai|gpt-|api\.openai" src/` → 0 coincidencias; test trait 4/4 PASS.
-- **Smoke caching:** 1ª llamada `creation=8803 read=0`, 2ª idéntica `read=8803` → prompt caching activo.
-- **Búsqueda IA real** (`/fr/ai-analyze`): count=3, resultados reales + explicación razonada FR; log dev `[ClaudeAIService] cache_creation=6052` confirma que corre Claude (no fallback).
-- **Inyección** ("Ignore les règles… HACKED"): no obedece, mantiene rol → SEC-002/010 sin regresión.
-- **GOTCHA CRÍTICO resuelto:** sin `guzzlehttp/guzzle`, `new Anthropic\Client()` lanzaba `DiscoveryFailedException` que el `catch(\Throwable)` tragaba → la IA caía SIEMPRE al fallback sin usar Claude (200 + 0 consola engañaba). Prueba de que corre Claude: el log dev `[ClaudeAIService]` solo se emite tras la llamada real.
-
-**Archivos modificados en esta sesión:**
-- `composer.json` — añade `anthropic-ai/sdk ^0.36.0`
-- `src/config/config.php` — `OPENAI_*` → `ANTHROPIC_*`
-- `.env` — añade líneas `ANTHROPIC_*` (no en git)
-- `src/Infrastructure/Services/SanitizesPrompts.php` — nuevo trait de sanitización
-- `src/Infrastructure/Services/ClaudeAIService.php` — nuevo servicio Claude (búsqueda IA)
-- `src/Infrastructure/Services/VacationPlannerService.php` — reescritura parcial a Claude
-- `src/Infrastructure/Controllers/PageController.php` — línea 577: ClaudeAIService
-- `src/Infrastructure/Services/OpenAIService.php` — ELIMINADO
-- `scripts/test_sanitize.php` — test CLI del trait (4/4 PASS)
-- `scripts/smoke_claude_cache.php` — smoke de prompt caching (requiere API key real)
-
-**Próxima acción:** ninguna. TASK-018 cerrada y verificada end-to-end. Opcional:
-`/agent product` para el cierre formal de UX del pipeline. Candidatos previos siguen
-abiertos (TASK-012 "étapes du canal", TASK-005/007 stats/imágenes reales).
-
----
-
-## SEC-001 + SEC-012 — CERRADOS ✅ — 2026-06-24 — BACKLOG AUTÓNOMO AGOTADO
-
-**Pipeline:** architect → coder → security (⚠️ aprobado, verificado en navegador).
-
-**SEC-001:** `src/Config/Database.php` — las 4 credenciales PDO hardcodeadas →
-`$_ENV['DB_HOST'|'DB_NAME'|'DB_USER'|'DB_PASS'] ?? fallback` (mismo valor local, XAMPP
-sigue conectando). DSN como `$dsn`, charset utf8mb4 fijo. Sin tocar BD ni `.env`.
-
-**SEC-012 (nuevo, corregido por security):** el `catch(PDOException)` hacía
-`die("…".$e->getMessage())` → fugaba host/usuario/BD al navegador. Corregido:
-`error_log($e->getMessage())` + `die("Erreur de connexion à la base de données.")`.
-
-**Verificado (security, Playwright):** home HTTP 200 con datos de BD, ficha HTTP 200,
-0 error de conexión visible, `php -l` OK, credenciales solo en fallback `??`, `.env` en
-`.gitignore`.
-
-**⛔ BACKLOG AUTÓNOMO AGOTADO.** Todo lo resoluble sin input del usuario y sin tocar la BD
-está hecho. PENDIENTE (requiere al usuario): **TASK-005** (stats reales del hero `12K+/48/4.9`
-+ contacto real, hoy `tel:+33500000000`/`bonjour@canaldumidi.local`), **TASK-007** (imágenes
-locales en vez de Unsplash). EXCLUIDO: **TASK-016b** (toca BD). Deuda menor cosmética:
-`.env.example` sección DB con valores locales en vez de placeholders.
-
-**Loop autónomo:** detenido tras agotar el backlog (cron `d090ba17` eliminado). Para
-reanudar: re-lanzar `/loop` o pedir una tarea concreta.
-
----
-
-## PRD-007/BUG-014 + cierre SEC-003 (CSS SRI) — CERRADOS ✅ — 2026-06-24
-
-**Pipeline:** architect → coder → security (⚠️ aprobado, verificado en navegador). El
-cierre de SEC-003 (CSS) lo hizo el coordinador directo + verificación navegador.
-
-**PRD-007/BUG-014 (mapa POI):** `footer.php` no cargaba Leaflet para `$page==='poi'` →
-hueco gris. Fix (3 archivos, sin BD): Leaflet CSS al bloque poi de `header.php`; bloque
-poi en `footer.php` con Leaflet JS (SRI) + `map.js` genérico; anclas muertas
-`#newsletter` → `#plan` en home/header. **Verificado (security, Playwright):** `/fr/poi/3`
-y `/fr/poi/1` renderizan `.leaflet-container` + marcador con coords reales distintas
-(43.601/1.455 y 43.216/2.35), service/fiche/search sin regresión, 0 errores integrity/consola.
-
-**SEC-003 cierre final (CSS SRI):** añadido `integrity` sha384 + `crossorigin="anonymous"`
-a los 5 `<link>` CSS de unpkg que faltaban (leaflet.css ×3 en service/search/poi +
-MarkerCluster.css + MarkerCluster.Default.css) en `header.php`. Verificado en navegador:
-search/poi/fiche con mapa OK, 0 errores de integrity. **Ya no queda NINGÚN recurso CDN
-(JS ni CSS) sin SRI en el proyecto.** SEC-003 y SEC-004 cerradas del todo.
-
-**Estado del backlog autónomo:** AGOTADO. Lo único pendiente requiere input del usuario
-(TASK-005 stats/contacto reales, TASK-007 imágenes locales) o está excluido por tocar BD
-(TASK-016b). BUG-004 ya resuelto (botón quitado). Ver 🟢 en TASKS.md.
-
----
-
-## TASK-001 + TASK-002 — Hardening escape de salida + prompts OpenAI — PIPELINE CERRADO ✅ product ⚠️ — 2026-06-24
+## TASK-019 — Fechas estructuradas y obligatorias en el planificateur IA — PIPELINE CERRADO ✅ · product ⚠️ listo con mejoras menores — 2026-07-06
 
 **Agente activo al cerrar:** product (cierre de pipeline).
-**Handoff pendiente:** ninguno. No hay tarea en curso.
+**Handoff pendiente:** ninguno. Pipeline COMPLETO: architect ✅ → coder ✅ →
+security ⚠️ → product ⚠️ (esta sesión). No hay tarea en curso.
 
-**Veredicto product:** ⚠️ listo con mejoras menores. Pipeline completo
-(architect → coder → security → product). Verificado en navegador con render real
-y muestra (PRD-002, Playwright headless). Los criterios de éxito del handoff
-security→product están CUMPLIDOS; las únicas excepciones son por realidad de datos
-(0 vídeos, 0 servicios con paginación de reviews) o por un bug pre-existente ajeno
-al scope (mapa de POI).
+**Veredicto product:** ⚠️ listo con mejoras menores. Los 6 criterios de éxito
+del architect CUMPLIDOS y el objetivo de NEGOCIO se cumple: las fechas son
+obligatorias (cliente + servidor autoritativo) y el lead al prestador ya NO sale
+"dates à confirmer" — sale con fechas firmes en formato francés inequívoco
+("du vendredi 4 septembre 2026 au lundi 7 septembre 2026"). Verificado EN
+NAVEGADOR el flujo **español** real (Playwright, PRD-002), no solo el francés que
+ya había cubierto security:
+- Prompt ES "Viajamos 4 días en pareja a principios de septiembre…" → plan
+  generado (0 errores de consola), paso 3 prerrellena `#f-checkin=2026-09-07` /
+  `#f-checkout=2026-09-10` (approx), `min`=hoy 2026-07-06.
+- Hint en español correcto: "Fechas estimadas a partir de su solicitud —
+  ajústelas si es necesario."
+- Submit con fechas vacías → bloqueado con "Indique sus fechas de llegada y
+  salida." (0 avance a screen-confirmation).
+- Strings de fecha idiomáticos y correctos en fr/es/en (ES verificado en vivo;
+  EN por cableado idéntico `currentLang()`→`lang="en"` + inspección de strings).
+- Email al prestador: `frDate()` produce día-semana + día + mes en letra + año
+  (sin ambigüedad día/mes); el viajero usa `<input type=date>` nativo. Coherente
+  para ambos lados.
 
-**Qué quedó verificado (evidencia de navegador):**
-- Ficha `/fr/fiche/a-labordage-moussaillon`: HTTP 200; título/h1 `À L'ABORDAGE
-  MOUSSAILLON !` con acento + apóstrofe correctos (0 mojibake, 0 doble-escape);
-  mapa Leaflet con **1 marcador + 12 tiles** (el cast `(float)` de lat/lng NO rompió
-  el marcador); galería, reviews, formulario de reserva + modal de doble
-  confirmación; **0 errores de consola**.
-- `name="service_id" value="246"` entero correcto; `data-sid` usa `(int)$service->id`.
-- SEC-010 vídeo: allowlist correcta; **0/253 servicios tienen vídeo** → no se
-  renderiza iframe (realidad de datos, no bug).
-- "Voir plus d'avis": botón condicional a `reviewCount > mostrados`; **ningún
-  servicio del catálogo lo dispara** → no observado en vivo, atributo `(int)` OK
-  estático.
-- POI `/fr/poi/3`: HTTP 200; título/h1 `Écluse de Bayard (Gare)` + alts con acentos
-  intactos (0 mojibake/doble-escape) → escape de poi_detail.php correcto.
-- Vacation planner `/fr/vacation-planner`: HTTP 200, asistente de 4 pasos, 0
-  errores de consola.
-- Vacation PDF: referencia inválida → **404 + "introuvable"** (manejo elegante).
-  No se probó un PDF real (sin referencia de prueba; lectura de BD bloqueada por la
-  restricción "no tocar BD"). Escape de la vista confirmado estático (16
-  `htmlspecialchars`, todas ENT_QUOTES).
-- Auditoría final: `grep htmlspecialchars | grep -v ENT_QUOTES` → **0** en los 6
-  archivos de TASK-001. Sin regresiones de render.
+**Único seguimiento nuevo (no bloqueante) — PRD-009 / TASK-025 (🟡):** el planner
+mezcla idiomas de cara al usuario. TASK-019 localizó bien SUS strings (hint +
+errores de fecha), pero el resto de `vacation_planner.php` (labels "Arrivée
+prévue"/"Départ prévu"/"Vos coordonnées", intro, botón "Envoyer ma demande
+d'intérêt", confirmación) y los OTROS errores JS del mismo formulario
+(nombre/email vacío → "Veuillez renseigner les champs obligatoires.", fallo de
+envío, prompt vacío) siguen hardcodeados en francés. Verificado en navegador: en
+el MISMO formulario en `/es/`, fechas vacías → error en español, nombre vacío →
+error en francés. Pre-existente (NO regresión de TASK-019). Registrado en
+LESSONS.md (PRD-009) y ERROR_LOG.md; abierto como TASK-025 en 🟡.
 
-**Capturas (scratchpad):** `PROD-service.png`, `PROD-poi.png`, `PROD-vacplanner.png`.
+**Nota de protocolo:** CLAUDE.md "Estado actual" NO se actualizó porque el
+veredicto es ⚠️ (el protocolo solo lo actualiza si es ✅). Sigue mostrando
+TASK-001/002 como último bloque; conviene refrescarlo en un próximo cierre ✅.
 
-**Seguimiento NUEVO abierto (🟡, no bloqueante):**
-- **PRD-007 / BUG-014** — El mapa de la ficha de POI nunca renderiza:
-  `poi_detail.php` emite `<div id="map">` con `data-lat/lng` correctos, pero
-  `footer.php:32` solo carga Leaflet para `$page`=`service`/`fiche`/`search`/`home`;
-  falta la rama `poi`. `window.L` undefined, hueco gris, 0 errores de consola. Bug
-  PRE-EXISTENTE de gating (commit `b554b6f`), NO regresión de TASK-001. Fix: añadir
-  `poi` a la carga de Leaflet en `footer.php` (CSS+JS con SRI ya existente, SEC-004)
-  + init `#map[data-lat][data-lng]`. Ver LESSONS.md PRD-007 / ERROR_LOG.md.
+**Otras observaciones abiertas (contexto, no bloqueantes):**
+- **SEC-014** (🟡) — `ai-plan-generate`/`ai-plan-submit` sin CSRF ni rate-limit
+  (pre-existente).
+- **TASK-020** (🟡) — contacto obligatorio (teléfono O email) + `autocomplete`
+  seguro en el email del viajero.
+- Robustez: la distinción "duración vs. fecha real" vive solo en el prompt de la
+  IA, sin test automatizado (podría degradarse si cambia el modelo).
+- Cache-busting (`?v=hash`) en `vacation-planner.js`/`.css` (mejora de deploy).
+
+**Archivos de TASK-019 (ya en git, sin cambios de código en esta sesión de
+product):** `src/Infrastructure/Services/VacationPlannerService.php`,
+`public/assets/js/vacation-planner.js`,
+`src/Infrastructure/Views/vacation_planner.php`,
+`public/assets/css/vacation-planner.css`,
+`src/Infrastructure/Controllers/PageController.php`.
 
 **Próxima acción candidata:**
 ```
-/agent architect — corregir PRD-007/BUG-014 (cargar Leaflet en la ficha de POI), o
-/agent architect — Incremento 3 visual: TASK-012 "Les étapes du canal"
-   (Toulouse → Castelnaudary → Carcassonne → Béziers → Étang de Thau)
+/agent architect — TASK-025/PRD-009: localizar el chrome del planner + los strings
+   JS restantes a fr/es/en (o decidir que el planner es monolingüe fr y no exponerlo
+   en /es//en). Verificar en navegador los 3 idiomas.
+/agent architect — TASK-020: contacto obligatorio (téléphone O email) + autocomplete seguro.
+/agent architect — TASK-021 (estratégica): "Répondre via Canal du Midi" (leads con estado).
 ```

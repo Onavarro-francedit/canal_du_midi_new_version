@@ -4,6 +4,77 @@
     /* ── State ─────────────────────────────────────────────────────────── */
     var currentPlan   = null;
 
+    /* ── I18N (TASK-019: strings nuevos de validación/hint de fechas) ─────── */
+    var DATE_I18N = {
+        fr: {
+            dateRequired: 'Veuillez indiquer vos dates d’arrivée et de départ.',
+            datePast:     'La date d’arrivée ne peut pas être antérieure à aujourd’hui.',
+            dateOrder:    'La date de départ doit être identique ou postérieure à la date d’arrivée.',
+            approxHint:   'Dates estimées à partir de votre demande — ajustez-les si besoin.',
+        },
+        es: {
+            dateRequired: 'Indique sus fechas de llegada y salida.',
+            datePast:     'La fecha de llegada no puede ser anterior a hoy.',
+            dateOrder:    'La fecha de salida debe ser igual o posterior a la de llegada.',
+            approxHint:   'Fechas estimadas a partir de su solicitud — ajústelas si es necesario.',
+        },
+        en: {
+            dateRequired: 'Please provide your arrival and departure dates.',
+            datePast:     'The arrival date cannot be before today.',
+            dateOrder:    'The departure date must be on or after the arrival date.',
+            approxHint:   'Estimated dates based on your request — adjust them if needed.',
+        },
+    };
+
+    function currentLang() {
+        return (typeof lang !== 'undefined' && DATE_I18N[lang]) ? lang : 'fr';
+    }
+
+    function dateT(key) {
+        var l = currentLang();
+        return (DATE_I18N[l] && DATE_I18N[l][key]) || DATE_I18N.fr[key];
+    }
+
+    function todayIso() {
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    /* ── Fechas: min por defecto + prefill desde el plan generado ─────────── */
+    function setDateMinToday() {
+        var today       = todayIso();
+        var checkinEl   = document.getElementById('f-checkin');
+        var checkoutEl  = document.getElementById('f-checkout');
+        if (checkinEl)  checkinEl.min  = today;
+        if (checkoutEl) checkoutEl.min = today;
+    }
+
+    function prefillDates(plan) {
+        var checkinEl  = document.getElementById('f-checkin');
+        var checkoutEl = document.getElementById('f-checkout');
+        var hintEl     = document.getElementById('date-hint');
+        if (!checkinEl || !checkoutEl) return;
+
+        setDateMinToday();
+
+        var debut = (plan && plan.date_debut) || '';
+        var fin   = (plan && plan.date_fin)   || '';
+        var prec  = (plan && plan.date_precision) || 'none';
+
+        checkinEl.value  = debut;
+        checkoutEl.value = fin;
+        if (debut) checkoutEl.min = debut;
+
+        if (hintEl) {
+            if (prec === 'approx' && debut) {
+                hintEl.textContent = dateT('approxHint');
+                hintEl.style.display = 'block';
+            } else {
+                hintEl.textContent = '';
+                hintEl.style.display = 'none';
+            }
+        }
+    }
+
     /* ── Screen IDs and step mapping ───────────────────────────────────── */
     var SCREENS  = ['screen-input','screen-loading','screen-plan','screen-contact','screen-confirmation'];
     var STEP_MAP = { 'screen-input':1, 'screen-plan':2, 'screen-contact':3, 'screen-confirmation':4 };
@@ -120,6 +191,7 @@
             if (!data.days || !data.days.length) throw new Error('Plan vide');
             currentPlan = JSON.parse(JSON.stringify(data));
             renderPlan(currentPlan);
+            prefillDates(currentPlan);
             showScreen('screen-plan');
         })
         .catch(function() {
@@ -256,6 +328,24 @@
                 if (errEl) { errEl.textContent = 'Veuillez renseigner les champs obligatoires.'; errEl.style.display = 'block'; }
                 return;
             }
+
+            // TASK-019: fechas obligatorias — validación cliente (el "required" de
+            // HTML es evadible; la puerta autoritativa real está en el servidor).
+            var checkinVal  = String(fd.get('checkin')  || '');
+            var checkoutVal = String(fd.get('checkout') || '');
+            if (!checkinVal || !checkoutVal) {
+                if (errEl) { errEl.textContent = dateT('dateRequired'); errEl.style.display = 'block'; }
+                return;
+            }
+            if (checkinVal < todayIso()) {
+                if (errEl) { errEl.textContent = dateT('datePast'); errEl.style.display = 'block'; }
+                return;
+            }
+            if (checkoutVal < checkinVal) {
+                if (errEl) { errEl.textContent = dateT('dateOrder'); errEl.style.display = 'block'; }
+                return;
+            }
+
             fd.append('plan', JSON.stringify(currentPlan));
 
             var btn  = document.getElementById('btn-submit');
@@ -295,6 +385,7 @@
     }
 
     /* ── Init ───────────────────────────────────────────────────────────── */
+    setDateMinToday();
     showScreen('screen-input');
 
 })();

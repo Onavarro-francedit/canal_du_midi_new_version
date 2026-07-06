@@ -1,0 +1,94 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - link "Canal du Midi" [ref=f3e4] [cursor=pointer]:
+        - /url: http://localhost/canal_du_midi/fr/home
+        - generic [ref=f3e6]: Canal du Midi
+      - navigation [ref=f3e7]:
+        - link "Destinations" [ref=f3e8] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/home#destinations
+        - link "Carte Interactive" [ref=f3e9] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/search
+        - link "Expériences" [ref=f3e10] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/home#experiences
+        - link "Pourquoi nous" [ref=f3e11] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/home#why-us
+        - link "Avis" [ref=f3e12] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/home#reviews
+        - link "Actualités" [ref=f3e13] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/home#news
+        - link " Planifier mon voyage" [ref=f3e14] [cursor=pointer]:
+          - /url: http://localhost/canal_du_midi/fr/vacation-planner
+          - generic [ref=f3e15]: 
+          - text: Planifier mon voyage
+      - generic [ref=f3e16]:
+        - generic [ref=f3e17]: Choisir la langue
+        - generic [ref=f3e18]:
+          - combobox "Choisir la langue" [ref=f3e19] [cursor=pointer]:
+            - option "FR" [selected]
+            - option "ES"
+            - option "EN"
+          - generic:
+            - generic: 
+      - link "S'inscrire" [ref=f3e20] [cursor=pointer]:
+        - /url: http://localhost/canal_du_midi/fr/home#plan
+  - generic [ref=f3e21]:
+    - generic [ref=f3e22]:
+      - generic [ref=f3e24]:
+        - generic [ref=f3e25]:
+          - generic [ref=f3e27]: "1"
+          - generic [ref=f3e28]: Votre voyage
+        - generic [ref=f3e30]:
+          - generic [ref=f3e32]: "2"
+          - generic [ref=f3e33]: Votre plan
+        - generic [ref=f3e35]:
+          - generic [ref=f3e37]: "3"
+          - generic [ref=f3e38]: Vos infos
+        - generic [ref=f3e40]:
+          - generic [ref=f3e42]: "4"
+          - generic [ref=f3e43]: Confirmation
+      - generic [ref=f3e46]:
+        - generic [ref=f3e47]: ✨ Planificateur IA
+        - heading "Votre séjour idéal sur le Canal du Midi" [level=1] [ref=f3e48]:
+          - text: Votre séjour idéal sur le
+          - emphasis [ref=f3e49]: Canal du Midi
+        - paragraph [ref=f3e50]:
+          - text: Décrivez votre voyage en quelques mots.
+          - text: Notre IA compose un itinéraire personnalisé avec les meilleurs prestataires de la région.
+        - generic [ref=f3e51]:
+          - button "Romantique 🌹" [ref=f3e52] [cursor=pointer]
+          - button "Famille 👨‍👩‍👧‍👦" [ref=f3e53] [cursor=pointer]
+          - button "Aventure 🚵" [ref=f3e54] [cursor=pointer]
+          - button "Luxe ✨" [ref=f3e55] [cursor=pointer]
+        - generic [ref=f3e56]:
+          - 'textbox "Ex : Je pars 3 jours avec ma femme et mes 2 enfants. On veut faire du vélo le long du canal, une sortie en bateau et bien manger le soir..." [ref=f3e57]'
+          - generic [ref=f3e59]: 0/500
+        - button "Générer mon itinéraire " [ref=f3e60] [cursor=pointer]:
+          - generic [ref=f3e61]: Générer mon itinéraire
+          - generic [ref=f3e62]: 
+      - text:          
+    - contentinfo [ref=f3e63]:
+      - generic [ref=f3e64]:
+        - generic [ref=f3e65]:
+          - link "Canal du Midi" [ref=f3e66] [cursor=pointer]:
+            - /url: "#top"
+            - generic [ref=f3e68]: Canal du Midi
+          - paragraph [ref=f3e69]: Landing inspirée de votre capture, prête à servir de base pour un site touristique.
+        - generic [ref=f3e70]:
+          - heading "Navigation" [level=3] [ref=f3e71]
+          - link "Destinations" [ref=f3e72] [cursor=pointer]:
+            - /url: "#destinations"
+          - link "Expériences" [ref=f3e73] [cursor=pointer]:
+            - /url: "#experiences"
+          - link "Blog" [ref=f3e74] [cursor=pointer]:
+            - /url: "#news"
+        - generic [ref=f3e75]:
+          - heading "Contact" [level=3] [ref=f3e76]
+          - link "+33 5 00 00 00 00" [ref=f3e77] [cursor=pointer]:
+            - /url: tel:+33500000000
+          - link "bonjour@canaldumidi.local" [ref=f3e78] [cursor=pointer]:
+            - /url: mailto:bonjour@canaldumidi.local
+          - generic [ref=f3e79]: Toulouse, France
+      - generic [ref=f3e80]:
+        - generic [ref=f3e81]: © 2026 Canal du Midi
+        - generic [ref=f3e82]: Built with PHP, CSS and JS (Hexagonal Architecture)

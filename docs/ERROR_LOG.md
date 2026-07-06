@@ -16,6 +16,66 @@ Formato de entrada:
 
 ---
 
+### [PRD-009] Planner con idiomas mezclados: hint/errores de fecha localizados dentro de un chrome hardcodeado en francés — 2026-07-06
+- Síntoma: en `/es/vacation-planner` y `/en/vacation-planner`, TASK-019 añadió el
+  hint de fecha aproximada y los errores de fecha correctamente en español/inglés,
+  pero el resto de la página sigue en francés. Verificado en navegador (Playwright,
+  flujo real con prompt español "Viajamos 4 días en pareja a principios de
+  septiembre…" → plan generado, dates prerrellenadas 2026-09-07→2026-09-10):
+  · Hint (ES, correcto): "Fechas estimadas a partir de su solicitud — ajústelas si
+    es necesario."
+  · Error fechas vacías (ES, correcto): "Indique sus fechas de llegada y salida."
+  · Pero labels/heading/intro/botón en FRANCÉS: "Arrivée prévue *", "Départ prévu *",
+    "Vos coordonnées", "Nous allons transmettre votre demande…", "Envoyer ma demande
+    d'intérêt".
+  · En el MISMO formulario, dejar el nombre vacío da error en FRANCÉS ("Veuillez
+    renseigner les champs obligatoires.") mientras dejar las fechas vacías da error
+    en español → dos idiomas en el mismo formulario.
+- Causa raíz: `vacation_planner.php` tiene todo el texto hardcodeado en francés
+  (deuda pre-existente, la página se construyó monolingüe). `vacation-planner.js`
+  solo pasó a `DATE_I18N` (fr/es/en) los 4 strings NUEVOS de TASK-019; los demás
+  mensajes JS (`input-error` prompt vacío/fallo de generación, `submit-error`
+  nombre-email/fallo de envío) siguen como literales franceses. TASK-018 hizo que la
+  IA responda en el idioma del usuario, así que el contenido del plan llega en es/en,
+  acentuando la mezcla.
+- Corrección aplicada: ninguna en esta revisión. NO es regresión de TASK-019 (su
+  objetivo de negocio —fechas firmes en el lead— se cumple, y sus propios strings
+  quedaron correctos en los 3 idiomas). Se abre TASK-025 (🟡) para localizar el
+  chrome del planner + los mensajes JS restantes.
+- Cómo prevenirlo (→ LESSONS.md PRD-009): al localizar un string nuevo, auditar TODA
+  la pantalla/formulario en ese idioma (labels, intro, botones, TODOS los errores del
+  mismo handler, confirmación); localizar el conjunto coherente o registrar la deuda,
+  nunca dejar dos idiomas mezclados de cara al usuario (corolario PRD-004/PRD-006).
+
+### [SEC-014] Endpoints ai-plan-generate / ai-plan-submit sin token CSRF ni rate-limit — 2026-07-06
+- Síntoma: `PageController::handleAIPlanGenerate()` y `::handleAIPlanSubmit()` (case
+  `ai-plan-generate`/`ai-plan-submit` del router) aceptan POST sin verificar ningún
+  token CSRF ni aplicar límite de tasa por IP/sesión. El handoff coder→security de
+  TASK-019 afirmaba que esto ya estaba "registrado en TASKS.md", pero al revisar
+  `docs/TASKS.md` y `docs/LESSONS.md` no existe ninguna entrada previa sobre esto
+  (`grep -i csrf\|rate.limit` → 0 coincidencias). Se registra aquí por primera vez.
+- Causa raíz: el endpoint `ai-plan-generate` reenvía el prompt del visitante a la
+  API de Anthropic (coste por token) y `ai-plan-submit` crea filas en BD y dispara
+  hasta N emails (uno por prestador del plan + uno al usuario). Sin CSRF, un sitio
+  malicioso puede forzar estas acciones desde el navegador de un visitante
+  autenticado con cookies de sesión válidas (aunque aquí no hay sesión de usuario
+  final, así que el impacto real es más de abuso/costo que de suplantación). Sin
+  rate-limit, un atacante puede automatizar llamadas masivas: (a) agotar cuota/
+  presupuesto de la API key de Anthropic, (b) inundar de emails a los prestadores
+  reales y al buzón de contacto, (c) llenar `vacation_plans` de filas basura.
+- Corrección aplicada: ninguna en esta revisión — NO es una regresión introducida
+  por TASK-019 (el guard de fechas de TASK-019 no agrava ni mitiga este vector);
+  es deuda pre-existente desde que se creó el planificateur IA. Se eleva como
+  recomendación no bloqueante para un ticket de backlog dedicado.
+- Cómo prevenirlo (→ LESSONS.md): todo endpoint POST que (1) llame a una API de
+  pago externa o (2) escriba en BD/envíe email debe llevar como mínimo un token
+  CSRF de sesión y algún throttling básico (por IP y/o por sesión) antes de
+  ejecutar la acción cara. Verificar en cada nueva tarea de IA/formulario si el
+  endpoint que se toca ya tiene esta protección; si no, señalarlo explícitamente
+  en el handoff en vez de asumir que "ya está registrado".
+
+---
+
 ### [SEC-013] Observación: orden sanitización vs. check de API key en VacationPlannerService — 2026-07-06
 - Síntoma: en `VacationPlannerService::generatePlan`, `sanitizeUserPrompt()` se invoca en la línea 19 antes del `if (empty($this->apiKey))` de la línea 36. Esto significa que la sanitización se ejecuta incluso en la ruta del fallback (sin API key).
 - Causa raíz: no es un bug de seguridad (la sanitización es CPU-barata y no filtra ni mutaciones del prompt al exterior en la ruta de fallback). Es una inconsistencia menor de orden respecto a `ClaudeAIService`, donde el check de key precede a la sanitización.

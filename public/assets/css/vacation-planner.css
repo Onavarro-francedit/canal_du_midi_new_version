@@ -242,6 +242,18 @@
     border-left: 3px solid rgba(192,57,43,0.4);
 }
 
+/* ── Hint fechas (TASK-019, date_precision=approx) ─────────────────────── */
+.planner-date-hint {
+    background: rgba(43,182,196,0.08);
+    color: #1d7a86;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 13px;
+    margin: -6px 0 14px;
+    text-align: left;
+    border-left: 3px solid rgba(43,182,196,0.4);
+}
+
 /* ── Buttons ────────────────────────────────────────────────────────── */
 .btn-planner-primary {
     display: inline-flex;

@@ -4,9 +4,32 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(ninguna — TASK-018 migración IA a Claude, security ⚠️ aprobado, pasa a product)_
+_(ninguna — TASK-019 pasó a security ⚠️ aprobada con observaciones, ver 🟢
+Completadas; pendiente de handoff a product)_
 
 ## 🟡 Pendiente
+
+- **SEC-014** (backlog, no bloqueante) — `ai-plan-generate`/`ai-plan-submit` sin
+  token CSRF ni rate-limit por IP/sesión. Pre-existente (no es regresión de
+  TASK-019). Ver LESSONS.md / ERROR_LOG.md.
+
+- **TASK-025 / PRD-009** (i18n, UX — abierta por product en el cierre de TASK-019,
+  2026-07-06) — El planificateur mezcla idiomas de cara al usuario. `vacation_planner.php`
+  tiene todo el chrome hardcodeado en francés (títulos, labels "Arrivée prévue"/"Départ
+  prévu"/"Vos coordonnées", intro "Nous allons transmettre votre demande…", botón
+  "Envoyer ma demande d'intérêt", pantalla de confirmación), y `vacation-planner.js`
+  solo localizó los 4 strings de fecha de TASK-019 (`DATE_I18N` fr/es/en); los demás
+  errores JS (`input-error` prompt vacío/fallo de generación; `submit-error`
+  nombre/email vacío → "Veuillez renseigner les champs obligatoires."/fallo de envío)
+  siguen en francés fijo. Verificado en navegador (`/es/vacation-planner`, flujo real):
+  en el MISMO formulario, fechas vacías → error en español, nombre vacío → error en
+  francés; hint español entre labels francesas. Con TASK-018 (IA responde en el idioma
+  del usuario) la mezcla es más evidente: plan en es/en dentro de marco francés. Fix:
+  extraer todos los textos del planner (vista + strings JS restantes) a un mapa i18n
+  fr/es/en coherente, o decidir explícitamente que el planner es monolingüe francés y
+  no exponerlo en `/es/`·`/en/`. Verificar en navegador los 3 idiomas. Lección: PRD-009,
+  corolario de PRD-004/PRD-006. (Severidad: media — no bloquea la conversión, pero
+  rompe la coherencia para el turista hispano/anglófono.)
 
 - **PRD-006 / BUG-012** — _(✅ CORREGIDO 2026-06-24 — ver 🟢 Completadas)_
 
@@ -108,6 +131,71 @@ Datos verificados en BD local (253 listings publicados, 26 categorías top-level
   "Rechercher" del flujo clásico. Añadir chequeo de `response.ok`, mensajes de error
   más claros y feedback de carga en submit clásico. (Severidad: media.)
 
+### Buscador `/search` — filtro por tipo del sidebar (verificado en navegador 2026-07-06)
+
+- **BUG-015** — En `/search`, un `type[]` inválido/desconocido (reproducido con
+  `?q=&type[]=portsc`) **no se ignora ni da 404**; ensucia toda la página:
+  (1) aparece como chip de servicio seleccionado en el dropdown "Service(s)
+  souhaité(s)" (se ve literalmente "portsc" con un badge numérico "47");
+  (2) el filtro no casa ningún slug real → efecto BUG-007: **devuelve los 253
+  listings sin filtrar** mientras el usuario cree que filtró; (3) el slug crudo se
+  imprime en el `<title>` → "Séjours et activités — portsc"; (4) el selector de
+  idioma **propaga el `type[]` roto** a ES/EN (`.../es/search?…&type[]=portsc`).
+  Mismo patrón que BUG-007/PRD-004 pero en la página de resultados, no en el hero.
+  Fix: validar cada `type[]` contra los slugs reales de categoría; descartar los
+  inválidos (o 404 explícito); no imprimir slug crudo en título ni chip; no arrastrar
+  tipos inválidos al cambiar de idioma. Lección aplicable: BUG-007, PRD-004.
+  (Severidad: alta — es lo primero que toca el usuario y rompe el filtro.)
+
+### Planificateur IA — conversión del lead (iniciativa de negocio, 2026-07-06)
+
+Contexto: el flujo del planificador (`/fr/vacation-planner`) funciona de punta a
+punta (petición NL → itinerario IA con catálogo real → edición → captura de lead →
+email por prestador, branded). Análisis de negocio del usuario ("como Steve Jobs"):
+**el producto está construido pero regala el lead y la relación** — manda el email
+del viajero a cada prestador y se sale del bucle, sin fechas firmes, sin seguimiento
+ni monetización. Tesis: pasar de "buzón de leads" a "conserje que cierra el viaje" —
+la plataforma se queda en medio, mide conversión y habilita el cobro. Verificado en
+navegador (Brave, extensión Claude) el flujo completo + el email al prestador (solo
+lleva email del viajero; `Séjour: dates à confirmer`; "contactez directement").
+
+- **TASK-019** _(✅ pipeline coder + security ⚠️ aprobado con observaciones
+  2026-07-06 — ver 🟢 Completadas; pendiente handoff a product)_
+  (conversión, barata, alto impacto) — Fechas estructuradas en el
+  planner. La IA ya interpreta "début septembre" para el itinerario, pero los campos
+  Arrivée/Départ del paso 3 quedan vacíos y el email al prestador sale
+  "dates à confirmer". Extraer/normalizar las fechas del texto libre → (a) prerrellenar
+  Arrivée/Départ, (b) hacerlas obligatorias antes del envío, (c) incluirlas en el email
+  al prestador. Un lead con fechas convierte mucho más que "dates à confirmer".
+- **TASK-020** (conversión) — Contacto obligatorio: exigir **teléfono O email** (hoy
+  ambos opcionales; el turismo cierra por teléfono). Además `autocomplete` seguro en el
+  campo email del viajero: la autofill de Brave metió un correo personal ajeno en la
+  prueba — usar `autocomplete="off"`/`"new-password"` para que el viajero no envíe sin
+  querer datos guardados.
+- **TASK-021** (ESTRATÉGICA, mayor — pasar por architect) — "Répondre via Canal du
+  Midi". Sustituir en el email del prestador el "aquí tienes su email, contáctalo
+  directement" por un CTA que lleve a una página propia donde el prestador hace
+  **Disponible / Proposer une autre date / Non**. La plataforma queda en medio:
+  ID único de lead, estados (envoyé/vu/répondu/confirmé), página de respuesta del
+  prestador y vista de seguimiento del viajero. Desbloquea la métrica de conversión
+  vendible al prestador y la monetización (pay-per-lead / pay-per-réservation). Toca
+  BD (nueva persistencia de leads/estados), email, controladores y vistas → architect.
+- **TASK-022** (conversión + viralidad) — Plan guardable/compartible: URL única por
+  itinerario (token opaco tipo el de `vacation_pdf`, `CDM-YYYY-XXXXXXXX`) + "guardar/
+  partager mon plan". Habilita re-engagement (nudge a las 48 h) y planificación en
+  pareja. Hoy el plan solo vive en el PDF/email, no se puede volver a él.
+- **TASK-023** (conversión, UX) — Respuesta consolidada al viajero: en vez de que 12
+  negocios le escriban por separado, la plataforma le da UNA actualización
+  ("3 de 5 paradas confirmadas para el 1–4 sept"). Depende de TASK-021. Reduce carga
+  mental y drop-off del viajero.
+- **PRD-008** — Poner el planificador al frente. Evaluar que la home lleve al
+  planificador como acción principal (no el buscador tipo directorio, que es el plan B
+  para quien ya sabe qué quiere). Verificar el cambio en navegador.
+- **TASK-024** — Contenido real en las páginas del planner (extiende TASK-005): footer
+  con `+33 5 00 00 00 00`, `bonjour@canaldumidi.local` y el texto placeholder
+  "Landing inspirée de votre capture, prête à servir de base pour un site touristique."
+  Sustituir por datos reales antes de exponerlo.
+
 ### Motion / animaciones
 
 _(TASK-008 revertida — ver 🚫 Descartadas / en pausa)_
@@ -140,6 +228,163 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **TASK-019 — Fechas estructuradas y obligatorias en el planificateur IA ✅ PIPELINE COMPLETO — architect → coder → security ⚠️ → product ⚠️ listo con mejoras menores, verificado en navegador (2026-07-06)**
+  - **Revisión product (2026-07-06):** ⚠️ listo con mejoras menores. Los 6 criterios
+    de éxito del architect CUMPLIDOS. El objetivo de NEGOCIO (el corazón de la tarea)
+    se cumple: las fechas son obligatorias (cliente + servidor autoritativo) y el lead
+    al prestador ya NO puede salir "dates à confirmer" — sale con fechas firmes en el
+    formato francés inequívoco "du vendredi 4 septembre 2026 au lundi 7 septembre 2026"
+    (frDate: día-semana + día + mes en letra + año, sin ambigüedad día/mes). El viajero
+    edita las fechas en un `<input type=date>` nativo (picker localizado, tampoco
+    ambiguo). Verificado EN NAVEGADOR el flujo ES real (Playwright, PRD-002): prompt
+    "Viajamos 4 días en pareja a principios de septiembre…" → plan generado (0 errores
+    de consola), dates prerrellenadas 2026-09-07→2026-09-10 (approx), `min`=hoy, hint
+    en español "Fechas estimadas a partir de su solicitud — ajústelas si es necesario.",
+    submit con fechas vacías → bloqueado con "Indique sus fechas de llegada y salida.".
+    Strings de fecha correctos e idiomáticos en fr/es/en (inspección + ES verificado en
+    vivo; EN por cableado idéntico + inspección). La copy de confirmación-antes-de-
+    -acción-irreversible existe y es clara ("Nous allons transmettre votre demande à
+    chaque prestataire… Ils vous contacteront directement") + se reitera en la pantalla
+    de confirmación → el usuario sabe que al enviar se contacta a los prestadores.
+  - **Mejora menor / seguimiento abierto (no bloqueante):** PRD-009 / TASK-025 (🟡) —
+    idiomas mezclados en el planner: TASK-019 localizó bien SUS strings (hint + errores
+    de fecha), pero el resto de la página (labels, intro, botón, confirmación, y los
+    OTROS errores JS del mismo formulario: nombre/email vacío → francés) sigue
+    hardcodeado en francés. En `/es/` el mismo formulario da error de fecha en español
+    y error de nombre en francés. Pre-existente, NO regresión de TASK-019. Registrado en
+    LESSONS.md (PRD-009) / ERROR_LOG.md, elevado a 🟡 (TASK-025). Como el objetivo de
+    negocio y los 6 criterios se cumplen, no bloquea el cierre.
+  - **Revisión security (2026-07-06):** ⚠️ aprobado con observaciones. Verificado
+    en NAVEGADOR real (Playwright, PRD-002), no solo curl:
+    - Prompt "Nous partons 4 jours en couple début septembre…" → plan generado,
+      paso 3 (`#f-checkin`/`#f-checkout`) prerrellenado `2026-09-04`→`2026-09-07`,
+      `min` de ambos inputs correcto, `#date-hint` visible con el texto i18n
+      "Dates estimées à partir de votre demande…" (criterios (a) y (b) del aviso
+      del coder, CONFIRMADOS).
+    - Submit con fecha borrada por JS → bloqueado client-side con mensaje i18n
+      "Veuillez indiquer vos dates d'arrivée et de départ.", **0 requests** a
+      `ai-plan-submit` (criterio (c) CONFIRMADO).
+    - **GOTCHA de verificación (no es bug de producto):** el primer intento de
+      render mostró los inputs vacíos y el hint oculto pese a que la respuesta de
+      `ai-plan-generate` sí traía `date_debut`/`date_fin`/`date_precision=approx`
+      correctos (confirmado inspeccionando el `response-body` real de la request).
+      Causa: el Chrome reutilizado por Playwright MCP tenía en caché de disco una
+      copia VIEJA de `vacation-planner.js` (12660 bytes, sin `prefillDates`) de una
+      sesión de verificación anterior a los cambios de TASK-019; `curl` al mismo
+      tiempo servía los 17786 bytes correctos. Se vació la caché de disco del
+      perfil de Chrome del MCP y se repitió el flujo completo → prefill y hint
+      funcionan correctamente. **No hay ningún bug de caché en el servidor ni en
+      el código**: Apache no envía cache-busting en `<script src>` de assets
+      estáticos (mejora de calidad no bloqueante, ver abajo).
+    - `isValidIsoDate()` server-side re-confirmado de forma independiente (curl,
+      sin depender del test previo del coder): sin fechas, `checkout<checkin`,
+      `2026-02-30`, `'; DROP TABLE…` y `<script>alert(1)</script>` en `checkin` →
+      los 5 casos `{success:false,error:'Dates requises'}`, **0 filas nuevas**
+      (`SELECT COUNT(*)`=0 confirmado por SQL). Envío válido → `{success:true,...}`
+      + fila con `checkin_date`/`checkout_date` exactos; `EmailTemplates::
+      actorNotification()` invocada con esos datos NO contiene "dates à confirmer"
+      y sí "du vendredi 4 septembre 2026 au lundi 7 septembre 2026" (criterio (d)
+      CONFIRMADO a nivel de plantilla; no se pudo inspeccionar la bandeja real de
+      `MAIL_TEST_ADDRESS`, pero `MailService::send()` no lanzó excepción). Fila de
+      prueba eliminada tras verificar.
+    - `php -l` OK en los 3 PHP; `node --check` OK en el JS; `grep htmlspecialchars
+      | grep -v ENT_QUOTES` → 0 en `vacation_planner.php`; `git diff --stat` de
+      `EmailTemplates.php` → 0 (confirmado sin cambios). home/search/planner HTTP
+      200 sin regresión. 0 errores de consola en todo el flujo (Playwright).
+    - Sin inyección SQL (PDO preparado en INSERT/SELECT), sin XSS nuevo (fechas
+      viajan por `.value=`/JSON, nunca por `echo` PHP), sin CRLF en cabeceras de
+      email (`sanitizeText()` retira `\x00-\x1F`/`\x7F` de name/email/phone/
+      checkin/checkout antes de usarse en subject/headers), sin prompt injection
+      nuevo (la fecha de hoy va FUERA de `<<<DEMANDE_UTILISATEUR>>>`, el bloque
+      `system` sigue cacheable), sin secretos en cliente, SEC-013 intacto (guard
+      `empty($apiKey)` sigue siendo el primer statement).
+    - **SEC-014 (nuevo, registrado esta revisión):** `ai-plan-generate`/
+      `ai-plan-submit` sin CSRF ni rate-limit. El coder afirmó en su handoff que
+      esto "ya estaba registrado en TASKS.md", pero no había ninguna entrada
+      previa (`grep -i csrf` → 0). Pre-existente, NO regresión de TASK-019.
+      Registrado en LESSONS.md/ERROR_LOG.md, elevado a 🟡 Pendiente.
+    - Riesgo de robustez (no de seguridad, señalado por el coder): la distinción
+      "duración vs. fecha real" vive solo en el prompt del modelo, sin test
+      automatizado — podría degradarse si el modelo cambia. Anotado, no bloqueante.
+    - Mejora de calidad no bloqueante: los `<script>`/`<link>` de assets propios
+      (`vacation-planner.js`, `.css`) no llevan versión/hash de cache-busting; un
+      deploy que cambie JS/CSS puede servir una copia cacheada obsoleta a
+      visitantes recurrentes hasta que expire la caché HTTP del navegador.
+      Recomendación: `?v=<hash o timestamp de build>` en los `<script src>`/
+      `<link href>` propios.
+  - **(entrada original coder, sin cambios) implementación coder lista
+    (2026-07-06):**
+  - `VacationPlannerService::generatePlan()`: schema structured-outputs +3 campos
+    (`date_debut`/`date_fin`/`date_precision` enum exact|approx|none, todos
+    `required`). Reglas de determinación en `systemInstructions` (bloque no
+    cacheado): exact/approx/none, `date_fin = date_debut + (duration_days-1)`,
+    nunca fecha pasada, y regla explícita para que "week-end"/"séjour"/"X jours"
+    (palabras de DURACIÓN sin mes/estación/fecha) cuenten como `none`, no `approx`.
+    Fecha de hoy inyectada en `messages[0].content` ("Date du jour : AAAA-MM-JJ.")
+    ANTES de `<<<DEMANDE_UTILISATEUR>>>`, fuera de los bloques `system` (prompt
+    caching de TASK-018 intacto: catálogo cacheado sin tocar).
+  - `normalizePlanDates(array $plan): array` (nuevo, privado): valida ISO real vía
+    `DateTime::createFromFormat('Y-m-d', $v)` + round-trip `format()==$v` (rechaza
+    "2026-02-30"); fuerza enum a `none` si no es exact/approx/none; deriva
+    `date_fin` si falta/inválida/`< date_debut`; blanquea TODO si `date_debut` no es
+    válida. Se llama sobre `hydrate()` antes del `return` de `generatePlan()`.
+    **Nota de implementación:** se usó el idiom "createFromFormat + round-trip
+    format()" en vez de `DateTime::getLastErrors()` (mencionado en el plan) porque
+    la semántica de retorno de `getLastErrors()` (array vs `false`) cambió entre
+    versiones de PHP; el round-trip es equivalente y estable en PHP 8.2+.
+  - `fallback()`: añadidos `date_debut:''`, `date_fin:''`, `date_precision:'none'`.
+    Guard `empty($this->apiKey)` sigue siendo el PRIMER statement (SEC-013 intacto).
+  - `vacation_planner.php`: labels Arrivée/Départ con `<span class="req">*</span>`,
+    inputs `required`; nuevo `<p class="planner-date-hint" id="date-hint" style="display:none;">`.
+    (Estilo `.planner-date-hint` añadido en `vacation-planner.css`, archivo no
+    listado en el plan pero necesario para que el hint no se vea sin estilo —
+    adición de bajo riesgo, solo CSS.)
+  - `vacation-planner.js`: `DATE_I18N` (fr/es/en) con `dateRequired`/`datePast`/
+    `dateOrder`/`approxHint`; `setDateMinToday()` (min=hoy en ambos inputs, llamado
+    en init y en prefill); `prefillDates(plan)` (nuevo, llamado en el `.then` de
+    `generatePlan()` tras `renderPlan()`): rellena `#f-checkin`/`#f-checkout` con
+    `date_debut`/`date_fin`, ajusta `min`, muestra/oculta `#date-hint` si
+    `date_precision==='approx'`. Validación en el submit de `#contact-form`:
+    checkin/checkout no vacíos, checkin ≥ hoy, checkout ≥ checkin, con mensajes
+    i18n vía `#submit-error` — SIN tocar la validación existente de name/email.
+  - `PageController::handleAIPlanSubmit()`: nuevo guard AUTORITATIVO server-side
+    ANTES de `CREATE TABLE`/`INSERT`/emails — `isValidIsoDate($checkin)` +
+    `isValidIsoDate($checkout)` + `$checkout >= $checkin`; si falla,
+    `{success:false,error:'Dates requises'}` y no se ejecuta nada más. Nuevo
+    helper privado `isValidIsoDate(string): bool` (mismo idiom round-trip que en
+    el servicio). `handleAIPlanGenerate()` sin cambios de contrato.
+    `EmailTemplates.php` **sin cambios** (confirmado con `git diff --stat` → 0
+    líneas): al llegar `checkin`/`checkout` siempre reales y validados,
+    `actorNotification()`/`buildSlotsHtml()` dejan de disparar "dates à confirmer"
+    de forma automática, sin tocar la plantilla — tal como preveía el plan.
+  - **Verificado en local (curl + navegador, servidor XAMPP real, API key real):**
+    (1) `php -l` OK en los 3 PHP tocados + `EmailTemplates.php` sin diff;
+    `node --check` OK en el JS. (2) Prompt real "Nous partons 4 jours en couple
+    début septembre…" → `date_debut=2026-09-01`, `date_fin=2026-09-04`,
+    `date_precision=approx`, `duration_days=4` (hoy=2026-07-06) — coincide con el
+    criterio de éxito #1. (3) Prompt "Un week-end romantique…" (sin mes/estación) →
+    `date_debut=''`, `date_fin=''`, `date_precision=none` — coincide con el
+    criterio #2 (tras ajustar la regla del prompt para distinguir "duración" de
+    "fecha real"; la 1ª versión del prompt clasificaba "week-end" como `approx`,
+    corregido y re-verificado). (4) `curl` directo a `ai-plan-submit` evadiendo el
+    cliente: sin fechas → `{success:false,error:'Dates requises'}`, 0 filas nuevas
+    en `vacation_plans`; `checkout<checkin` → mismo rechazo; fecha calendario
+    inválida `2026-02-30` → mismo rechazo. Confirmado con `SELECT COUNT(*)` en
+    BD = 0 para los 3 casos. (5) `curl` con fechas válidas (`2026-09-01`/`09-04`) →
+    `{success:true,reference:...}`, fila creada con esas fechas exactas en
+    `checkin_date`/`checkout_date` (verificado por SQL), emails enviados sin error
+    (`MailService::send()` retornó sin excepción). Filas de prueba eliminadas tras
+    verificar (no quedan datos de test en `vacation_plans`). Home/search/planner
+    HTTP 200 sin regresión.
+  - **Pendiente para security:** ver "AVISOS PARA SECURITY" en el handoff de
+    SESSION.md — confirmar en navegador (no solo curl) el flujo completo de UI
+    (paso 3 prerrellenado, hint visible, bloqueo de submit) y el contenido real
+    del email al prestador ("Séjour: du X au Y", no "dates à confirmer").
+  - Archivos: `src/Infrastructure/Services/VacationPlannerService.php`,
+    `public/assets/js/vacation-planner.js`, `src/Infrastructure/Views/vacation_planner.php`,
+    `public/assets/css/vacation-planner.css` (nuevo, no listado en el plan),
+    `src/Infrastructure/Controllers/PageController.php`.
 
 - **TASK-018 — Migración IA: OpenAI → Claude Sonnet 4.6 ✅ pipeline completo + security ⚠️ aprobado con observaciones (2026-07-06)**
   - Búsqueda IA (`ClaudeAIService`) y planificateur (`VacationPlannerService`) migrados a `anthropic-ai/sdk` v0.36.0 (Composer). Modelo: `claude-sonnet-4-6`. Constantes `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` en `config.php` (vía `.env`); `OPENAI_*` eliminadas. `OpenAIService.php` borrado (git rm).

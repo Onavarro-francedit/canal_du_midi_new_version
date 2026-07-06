@@ -328,18 +328,11 @@
 
             <!-- Visor Calaméo (preview "mini" propre, sans pub) -->
             <div class="plan-viewer" style="flex:0 0 480px;max-width:100%;">
-                <iframe
-                    src="https://v.calameo.com/?bkcode=003331405edc35288442a&amp;mode=mini"
-                    width="480" height="400"
-                    allowfullscreen
-                    referrerpolicy="no-referrer"
-                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                    scrolling="no"
-                    style="display:block;width:100%;max-width:480px;height:400px;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto;"
-                    title="Plan du Canal du Midi 2026 — Calaméo"
-                    loading="lazy">
-                </iframe>
+                <img src="<?= BASE_URL ?>public/assets/img/plan_canal_du_midi.png" alt="Plan du Canal du Midi 2026 — cliquez pour agrandir" role="button" tabindex="0" style="display:block;width:100%;max-width:480px;height:400px;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto; cursor:pointer;" data-open-plan-modal/>
             </div>
+
+            
+
 
             <!-- Texte et formulaire -->
             <div>
@@ -375,8 +368,8 @@
                     </button>
                 </form>
 
-                <div style="margin-top:1.25rem;display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;">
-                    <span style="font-size:.85rem;color:var(--c-muted,#6b7280);">ou</span>
+                <div style="margin-top:1.25rem;display:flex;flex-direction:column;align-items:center;gap:.65rem;flex-wrap:wrap;">
+                    <span style="font-size:.85rem;color:var(--c-muted,#6b7280); font-weight:bold;">ou</span>
                     <a href="<?= BASE_URL ?>public/Plan-Canal-du-Midi-2026.pdf" download class="btn-pdf">
                         <i class="bi bi-file-earmark-arrow-down"></i> Télécharger le PDF
                         <span class="btn-pdf__size">32 Mo</span>
@@ -386,4 +379,25 @@
 
         </div>
     </section>
+    <!-- Modal to display the Calaméo preview -->
+    <div id="plan-modal" style="display: none;" aria-hidden="true">
+        <div class="plan-modal-content" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title" style="max-width: 58rem;">
+            <button type="button" class="plan-modal-close" data-close-plan-modal aria-label="Fermer la fenêtre du plan">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <h2 id="plan-modal-title">Plan du Canal du Midi 2026</h2>
+            <iframe
+            data-src="https://v.calameo.com/?bkcode=003331405edc35288442a&amp;mode=mini"
+            width="480" height="400"
+            allowfullscreen
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            scrolling="no"
+            style="display:block;width:100%;max-width:67rem;height:43rem;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto;"
+            title="Plan du Canal du Midi 2026 — Calaméo"
+            loading="lazy">
+            </iframe>
+        </div>
+    </div>
+        
 </main>

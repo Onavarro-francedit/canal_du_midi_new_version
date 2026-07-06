@@ -1362,6 +1362,15 @@ class PageController {
             return;
         }
 
+        // TASK-019: fechas obligatorias — validación AUTORITATIVA server-side.
+        // El "required" del <input type="date"> del cliente es evadible (curl/
+        // devtools); sanitizeText() no valida semántica de fecha (SEC-010/SEC-011).
+        // Puerta dura ANTES de crear la tabla/insertar/enviar cualquier email.
+        if (!$this->isValidIsoDate($checkin) || !$this->isValidIsoDate($checkout) || $checkout < $checkin) {
+            echo json_encode(['success' => false, 'error' => 'Dates requises']);
+            return;
+        }
+
         $plan = json_decode($planJson, true);
         if (!is_array($plan) || empty($plan['days'])) {
             echo json_encode(['success' => false, 'error' => 'Plan invalide']);
@@ -1488,5 +1497,20 @@ class PageController {
         } catch (\Throwable $e) {
             return $date;
         }
+    }
+
+    /**
+     * TASK-019: valida que $value sea una fecha de calendario ISO (AAAA-MM-JJ)
+     * real (rechaza "2026-02-30" y cualquier string mal formado), no solo que
+     * tenga la forma correcta. Round-trip createFromFormat()+format() en vez de
+     * DateTime::getLastErrors() (semántica de retorno inestable entre versiones
+     * de PHP). Puerta autoritativa server-side — nunca confiar en el cliente.
+     */
+    private function isValidIsoDate(string $value): bool {
+        if ($value === '') {
+            return false;
+        }
+        $dt = \DateTime::createFromFormat('Y-m-d', $value);
+        return $dt !== false && $dt->format('Y-m-d') === $value;
     }
 }

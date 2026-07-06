@@ -149,14 +149,15 @@
                         </div>
                         <div class="form-row-2">
                             <div class="form-group">
-                                <label for="f-checkin">Arrivée prévue</label>
-                                <input type="date" id="f-checkin" name="checkin">
+                                <label for="f-checkin">Arrivée prévue <span class="req">*</span></label>
+                                <input type="date" id="f-checkin" name="checkin" required>
                             </div>
                             <div class="form-group">
-                                <label for="f-checkout">Départ prévu</label>
-                                <input type="date" id="f-checkout" name="checkout">
+                                <label for="f-checkout">Départ prévu <span class="req">*</span></label>
+                                <input type="date" id="f-checkout" name="checkout" required>
                             </div>
                         </div>
+                        <p class="planner-date-hint" id="date-hint" style="display:none;"></p>
                         <div class="form-row-2">
                             <div class="form-group">
                                 <label for="f-adults">Adultes</label>

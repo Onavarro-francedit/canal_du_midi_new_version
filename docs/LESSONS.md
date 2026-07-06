@@ -75,7 +75,45 @@ _(sin lecciones todavía)_
 - **SEC-013: en servicios IA, el check `empty($apiKey)` debe ser el primer guard, antes de cualquier procesamiento del prompt.**
   En `VacationPlannerService::generatePlan` la llamada a `sanitizeUserPrompt()` se hace antes del check de API key (líneas 19 y 36 respectivamente). No es un bug de seguridad (la sanitización es barata y el resultado no se filtra al exterior en la ruta de fallback), pero viola el principio de "fail fast": si no hay key, no hay razón para procesar el input. En `ClaudeAIService` el orden es correcto (key primero, sanitización después). Regla: en cualquier servicio que llame a una API externa, el guard `if (empty($apiKey)) { return fallback; }` va al inicio del método, antes de construir catálogos, sanitizar prompts o instanciar el cliente. Detectado en TASK-018 (2026-07-06). Mejora de calidad, no bloqueante.
 
+- **SEC-014: todo endpoint POST que llame a una API de pago externa o escriba en BD/envíe email necesita CSRF + rate-limit — no asumir que "ya está registrado" sin comprobarlo.**
+  `ai-plan-generate` (llama a Anthropic, coste por token) y `ai-plan-submit`
+  (crea filas en `vacation_plans` + dispara N emails a prestadores reales) no
+  tienen token CSRF ni límite de tasa. El handoff de TASK-019 afirmó que esto
+  "ya estaba registrado en TASKS.md", pero `grep -i "csrf\|rate.limit"` sobre
+  `docs/TASKS.md`/`docs/LESSONS.md` dio 0 resultados: era una suposición no
+  verificada. Regla operativa doble: (1) cualquier endpoint que dispare una
+  llamada de pago o efectos secundarios costosos (email masivo, escritura BD)
+  debe protegerse con CSRF + throttling básico por IP/sesión; (2) si un handoff
+  dice "ya registrado en X", el siguiente agente debe verificarlo con `grep`
+  antes de darlo por bueno, no repetir la afirmación sin comprobar. Detectado en
+  la revisión security de TASK-019 (2026-07-06). Pendiente de corregir (ticket
+  de backlog dedicado, no bloqueante para TASK-019: no es una regresión de esta
+  tarea).
+
 ## Producto / UX (PRD-NNN)
+
+- **PRD-009: al localizar strings NUEVOS en una página cuyo "chrome" ya está hardcodeado en un idioma, verificar la coherencia de idioma de TODA la pantalla, no solo del string nuevo.**
+  TASK-019 añadió `DATE_I18N` (fr/es/en) para el hint de fecha aproximada y los 3
+  errores de fecha del planner, y quedaron CORRECTOS en los 3 idiomas (verificado
+  en navegador: `/es/vacation-planner` muestra el hint "Fechas estimadas a partir de
+  su solicitud…" y el error "Indique sus fechas de llegada y salida."). Pero el
+  resto de `vacation_planner.php` está **hardcodeado en francés**: títulos, labels
+  ("Arrivée prévue *", "Départ prévu *", "Vos coordonnées"), intro, botón de envío,
+  pantalla de confirmación, Y los OTROS errores JS del mismo formulario
+  (nombre/email vacío → "Veuillez renseigner les champs obligatoires.", fallo de
+  envío, prompt vacío, fallo de generación). Resultado verificado en navegador: en
+  el MISMO formulario en `/es/`, dejar fechas vacías da error en español pero dejar
+  el nombre vacío da error en francés; y el hint español aparece incrustado entre
+  labels francesas. Además TASK-018 hace que la IA responda en el idioma del usuario,
+  así que el CONTENIDO del plan llega en es/en dentro de un marco francés. Regla:
+  cuando localices un string nuevo en una vista, (1) audita TODA la pantalla que el
+  usuario ve en ese idioma (labels, intro, botones, TODOS los mensajes de error del
+  mismo handler JS, confirmación), (2) o localizas el conjunto coherente o registras
+  la deuda explícita — nunca dejar dos idiomas mezclados en la misma pantalla o el
+  mismo formulario (corolario de PRD-004/PRD-006: coherencia de cara al usuario).
+  Detectado en la revisión product de TASK-019 (2026-07-06). NO es regresión de
+  TASK-019 (el chrome francés es pre-existente); TASK-019 hizo bien SU parte, pero
+  su localización dejó visible la costura. Pendiente: ver TASK-025 en 🟡.
 
 - **PRD-001: Decoración anti-FOUC debe ser visible por defecto, no opacity:0.**
   Cualquier elemento puramente decorativo cuya animación dependa de un JS de CDN
