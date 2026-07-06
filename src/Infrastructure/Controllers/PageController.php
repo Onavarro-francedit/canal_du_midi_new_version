@@ -574,7 +574,7 @@ class PageController {
         $allServices = $repository->findAll($this->normalizeLanguage($lang), true);
         $relevantServices = $this->rankServicesForAI($prompt, $allServices);
 
-        $aiService = new \App\Infrastructure\Services\OpenAIService();
+        $aiService = new \App\Infrastructure\Services\ClaudeAIService();
         $result = $aiService->analyzeRequest($prompt, $relevantServices);
 
         header('Content-Type: application/json');
