@@ -4,18 +4,14 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(ninguna tarea activa)_
+_(ninguna — TASK-018 migración IA a Claude completada, pasa a security)_
 
 ## 🟡 Pendiente
 
 - **PRD-006 / BUG-012** — _(✅ CORREGIDO 2026-06-24 — ver 🟢 Completadas)_
 
-- **BUG-004 (APLAZADO 2026-06-24)** — Botón "Lire la vidéo" del bloque inmersivo
-  (`home.php:264`) sin lógica asociada. Sacado del cluster "Bugs funcionales de la
-  home" por decisión de producto. `lightbox.js` es **solo imágenes** (no soporta
-  vídeo), y la banda no está ligada a ningún vídeo concreto. Decisión futura:
-  quitar el botón (menor riesgo) o cablear a un vídeo real (extender lightbox a
-  iframe/video + URL real).
+- **BUG-004** — _(✅ RESUELTO 2026-06-24 — botón "Lire la vidéo" eliminado en la tanda
+  autónoma; ver 🟢 Completadas)_
 
 - **TASK-016b** (datos, largo plazo) — Backfill de una columna `commune` limpia en
   `listings`, extraída de `address`/`postal_code` (la columna `city` actual contiene
@@ -24,8 +20,7 @@ _(ninguna tarea activa)_
   Sustituye la lista curada de TASK-016 (a) cuando esté lista. FUERA del cluster del
   buscador del hero.
 
-- **SEC-001** — Unificar credenciales de BD: `src/config/Database.php` hardcodea
-  `root`/password vacío; debe leer `DB_HOST/DB_NAME/DB_USER/DB_PASS` del `.env`.
+- **SEC-001** — _(✅ → ver 🟢)_
 - **TASK-001** — _(✅ → ver 🟢)_
 - **TASK-002** — _(✅ → ver 🟢)_
 - **SEC-004** — Añadir SRI (`integrity` + `crossorigin="anonymous"`) a los
@@ -146,10 +141,28 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
-- **PRD-007 / BUG-014 — Cargar Leaflet en la ficha de POI + fix ancla #newsletter ✅ implementado (2026-06-24, pendiente verificación en navegador por security)**
+- **TASK-018 — Migración IA: OpenAI → Claude Sonnet 4.6 ✅ coder completo, pasa a security (2026-07-06)**
+  - Búsqueda IA (`ClaudeAIService`) y planificateur (`VacationPlannerService`) migrados a `anthropic-ai/sdk` v0.36.0 (Composer). Modelo: `claude-sonnet-4-6`. Constantes `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL` en `config.php` (vía `.env`); `OPENAI_*` eliminadas. `OpenAIService.php` borrado (git rm).
+  - `SanitizesPrompts` (nuevo trait): `sanitizeUserPrompt()` extraído de los dos servicios; hardening SEC-002/SEC-010 intacto (trim, colapso de saltos, elimina delimitador, `mb_substr`). Test CLI 4/4 PASS.
+  - Prompt caching: catálogo en bloque `system` con `cacheControl: ephemeral`; instrucciones en bloque separado (byte-estable). `outputConfig` con `json_schema` structured outputs; prefill `assistant` eliminado (no compatible con Sonnet 4.6 → era causa de 400).
+  - Fallback: sin API key o ante `\Throwable` → `SmartAIService::analyzeRequest` (búsqueda) / `::fallback()` (planner).
+  - Verificado: `php -l` OK en todos los archivos; `grep -rniE "openai|gpt-|api\.openai" src/` → **0**; `/fr/search` y `/fr/vacation-planner` HTTP 200, **0 errores de consola** (Playwright). Smoke de caching (`scripts/smoke_claude_cache.php`) y verificación con API key real pendientes de que el usuario inserte su `ANTHROPIC_API_KEY` en `.env`.
+  - Archivos: `composer.json`, `src/config/config.php`, `src/Infrastructure/Services/SanitizesPrompts.php` (nuevo), `src/Infrastructure/Services/ClaudeAIService.php` (nuevo), `src/Infrastructure/Services/VacationPlannerService.php` (reescritura parcial), `src/Infrastructure/Controllers/PageController.php:577`, `scripts/test_sanitize.php` (nuevo), `scripts/smoke_claude_cache.php` (nuevo). `src/Infrastructure/Services/OpenAIService.php` eliminado.
+
+- **SEC-001 + SEC-012 — Credenciales de BD vía `.env` + fix leak en catch PDO ✅ pipeline completo + security ⚠️ verificado en navegador (2026-06-24)**
+  - **SEC-001:** `src/Config/Database.php`: las 4 credenciales hardcodeadas (`localhost`/`canal_du_midi`/`root`/`""`) → `$_ENV['DB_HOST'|'DB_NAME'|'DB_USER'|'DB_PASS'] ?? fallback` (mismo valor local, XAMPP sigue conectando). DSN como `$dsn`, charset=utf8mb4 fijo. Sin tocar BD ni `.env`/`.env.example`.
+  - **SEC-012 (nuevo, corregido por security):** el `catch(PDOException)` hacía `die("…" . $e->getMessage())` → fugaba host/usuario/BD al navegador (ej. `Access denied for user 'root'@'localhost'`). Corregido: `error_log($e->getMessage())` (server-side) + `die("Erreur de connexion à la base de données.")` (genérico). Lección SEC-012 registrada.
+  - Verificado (security, Playwright): `php -l` OK; `grep '"root"|canal_du_midi|localhost'` solo en fallbacks `??`; `.env` en `.gitignore`; home HTTP 200 con datos de BD ("ABORDAGE MOUSSAILLON" ×12); `/fr/fiche/a-labordage-moussaillon` HTTP 200; 0 error de conexión en pantalla. Veredicto ⚠️ aprobado.
+  - Deuda menor (no bloqueante): `.env.example` sección DB usa valores XAMPP locales en vez de placeholders `your-db-host` (cosmético, sin riesgo).
+    de `??` (líneas 15-16), no como credenciales sueltas. Verificación navegador: pendiente del agente fork.
+
+- **PRD-007 / BUG-014 — Cargar Leaflet en la ficha de POI + fix ancla #newsletter ✅ pipeline completo + security ⚠️ verificado en navegador (2026-06-24)**
   - Causa raíz: `footer.php` no tenía rama `$page === 'poi'` → `window.L` undefined → hueco gris silencioso.
-  - Fix (3 archivos, sin BD): (1) `header.php` — añadido `<link>` Leaflet CSS 1.9.4 al bloque `$page === 'poi'` (L52-53), reusando el tag literal de service/search. (2) `footer.php` — añadido bloque `$page === 'poi'` entre el bloque `search` y el bloque `home`: Leaflet JS 1.9.4 con SRI idéntico al ya auditado + `map.js`. Orden garantizado: Leaflet antes de `map.js`. Sin markercluster (1 marcador, no clúster). (3) `home.php:312` + `header.php:124` — anclas `href="#newsletter"` (ancla muerta) → `href="#plan"` (home.php, relativa) y `href="BASE_URL.$lang/home#plan"` (header.php, absoluta para funcionar desde cualquier página). `grep -rn 'href="#newsletter"' src/` → 0 restantes. `php -l` OK en los 3 archivos.
-  - Pendiente: verificación en navegador por security (`.leaflet-container` + 1 marcador en `/fr/poi/3`, 0 errores integrity/consola).
+  - Fix (3 archivos, sin BD): (1) `header.php` — `<link>` Leaflet CSS 1.9.4 al bloque `$page === 'poi'`. (2) `footer.php` — bloque `$page === 'poi'` con Leaflet JS 1.9.4 (SRI auditado) + `map.js` (genérico, reusado; orden Leaflet→map.js). Sin markercluster. (3) `home.php` + `header.php` — anclas muertas `#newsletter` → `#plan` (relativa en home; `BASE_URL.$lang/home#plan` absoluta en header). `grep 'href="#newsletter"' src/` → 0.
+  - **Verificado en navegador (security, Playwright, PRD-002):** `/fr/poi/3` → HTTP 200, `.leaflet-container` + 8 tiles CartoDB + 1 marcador, `window.L.version=1.9.4`, coords `43.601/1.455`; `/fr/poi/1` → coords distintas `43.216/2.35` (leídas de `data-*`, no hardcodeadas); service/fiche y search sin regresión; anclas correctas; 0 errores consola/integrity. Veredicto ⚠️ aprobado.
+
+- **SEC-003 (CERRADA del todo) — SRI en los CSS de Leaflet/markercluster ✅ (2026-06-24)**
+  - Última deuda de SRI: los 3 `<link>` de `leaflet.css` (service/search/poi) + `MarkerCluster.css` + `MarkerCluster.Default.css` en `header.php` iban sin `integrity`. Añadido SRI sha384 + `crossorigin="anonymous"` a los 5 (hashes calculados de unpkg). Verificado en navegador: search/poi/fiche renderizan el mapa con 0 errores de integrity, 0 de consola. **Ya NO queda ningún recurso CDN (JS ni CSS) sin SRI en todo el proyecto.** Cierra SEC-003 y SEC-004 por completo.
 
 - **TASK-001 + TASK-002 — Hardening escape de salida + prompts OpenAI ✅ pipeline COMPLETO + product ⚠️ verificado en navegador (2026-06-24)**
   - **Veredicto product:** ⚠️ listo con mejoras menores. Verificado en navegador (Playwright headless, render real + muestra, PRD-002). Capturas en scratchpad: `PROD-service.png`, `PROD-poi.png`, `PROD-vacplanner.png`.
