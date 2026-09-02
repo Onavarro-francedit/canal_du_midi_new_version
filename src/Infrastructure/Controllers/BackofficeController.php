@@ -197,9 +197,58 @@ class BackofficeController
 
     private function handleAdminDashboard(string $lang, string $page, array $seo, MySQLServiceRepository $repo): void
     {
-        // Implementado en Task 11.
+        $message = '';
+        $error = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!Csrf::check($_POST['csrf'] ?? null)) {
+                http_response_code(403);
+                require __DIR__ . '/../Views/layout/header.php';
+                require __DIR__ . '/../Views/errors/403.php';
+                require __DIR__ . '/../Views/layout/footer.php';
+                return;
+            }
+
+            $action = (string) ($_POST['action'] ?? '');
+
+            if ($action === 'create_owner') {
+                $email = trim((string) ($_POST['owner_email'] ?? ''));
+                $password = (string) ($_POST['owner_password'] ?? '');
+                $listingId = (int) ($_POST['listing_id'] ?? 0);
+
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $error = "L'email du compte n'est pas valide.";
+                } elseif (strlen($password) < 8) {
+                    $error = 'Le mot de passe doit contenir au moins 8 caractères.';
+                } elseif ($listingId <= 0) {
+                    $error = 'Sélectionnez une fiche.';
+                } else {
+                    try {
+                        $this->auth->createOwnerAccount($email, $password, $listingId);
+                        $message = 'Compte créé avec succès.';
+                    } catch (\PDOException $e) {
+                        $error = 'Cet email est déjà utilisé.';
+                    }
+                }
+            } elseif ($action === 'reset_password') {
+                $listingId = (int) ($_POST['listing_id'] ?? 0);
+                $newPassword = (string) ($_POST['new_password'] ?? '');
+
+                if (strlen($newPassword) < 8) {
+                    $error = 'Le mot de passe doit contenir au moins 8 caractères.';
+                } else {
+                    $this->auth->resetOwnerPassword($listingId, $newPassword);
+                    $message = 'Mot de passe réinitialisé.';
+                }
+            }
+        }
+
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $allListings = $repo->searchListings($search);
+        $owners = $this->auth->listOwnersWithListing();
+
         require __DIR__ . '/../Views/layout/header.php';
-        echo '<div class="container"><p>Admin dashboard en construcción.</p></div>';
+        require __DIR__ . '/../Views/backoffice/admin_dashboard.php';
         require __DIR__ . '/../Views/layout/footer.php';
     }
 }
