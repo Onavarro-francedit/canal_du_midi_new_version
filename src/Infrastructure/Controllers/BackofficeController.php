@@ -51,6 +51,7 @@ class BackofficeController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Csrf::check($_POST['csrf'] ?? null)) {
+                http_response_code(403);
                 require __DIR__ . '/../Views/layout/header.php';
                 require __DIR__ . '/../Views/errors/403.php';
                 require __DIR__ . '/../Views/layout/footer.php';
