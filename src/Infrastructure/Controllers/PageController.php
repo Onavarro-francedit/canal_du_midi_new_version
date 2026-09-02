@@ -18,6 +18,10 @@ class PageController {
         ];
 
         switch ($page) {
+            case 'backoffice':
+                (new \App\Infrastructure\Controllers\BackofficeController())->handle($lang, $params);
+                return;
+
             case 'home':
                 $allServices = $repository->findAll($lang);
                 $allCategories = $repository->getCategoriesWithCount($lang);
