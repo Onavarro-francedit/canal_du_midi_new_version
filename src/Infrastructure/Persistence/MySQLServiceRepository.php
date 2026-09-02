@@ -464,6 +464,7 @@ class MySQLServiceRepository implements ServiceRepository
             $decoded = json_decode((string) $row['gallery'], true);
             if (is_array($decoded)) {
                 $gallery = array_values(array_filter($decoded));
+                $gallery = array_map(fn($url) => $this->normalizeMediaUrl((string) $url), $gallery);
             }
         }
 

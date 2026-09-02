@@ -9,28 +9,6 @@ Completadas; pendiente de handoff a product)_
 
 ## 🟡 Pendiente
 
-- **BUG-013** (backoffice, encontrada en Task 12, 2026-09-02) — Las fotos de
-  galería subidas desde el backoffice dan **404** al mostrarse tanto en
-  `/backoffice?id=X` (preview de edición) como en la página pública
-  `/fr/fiche/{slug}` (thumbnail bajo la portada). Causa raíz:
-  `MySQLServiceRepository::rowToService()` normaliza `cover` con
-  `normalizeMediaUrl()` (antepone `BASE_URL` si la ruta no es `http(s)://`), pero
-  el array `$gallery` (línea ~462-468, decodificado directo del JSON de BD) se usa
-  TAL CUAL, sin pasar por esa misma función — con lo que las rutas nuevas
-  (`public/uploads/listings/{id}/xxx.jpg`, formato del `ListingUploader` de Task 9)
-  quedan relativas. Bajo una URL con prefijo de idioma (`/fr/...`, el caso normal)
-  el navegador resuelve `public/uploads/...` contra el path actual → pide
-  `/fr/public/uploads/...` → 404. Las fotos WordPress antiguas (URL absoluta
-  `https://...`) no se ven afectadas, por eso no se detectó en fiches sin subidas
-  nuevas. Confirmado en vivo: `curl -I .../fr/public/uploads/listings/1/x.jpg` →
-  404; `curl -I .../public/uploads/listings/1/x.jpg` → 200. Fix candidato (una
-  línea, en el mismo sitio que ya normaliza `cover`): mapear
-  `normalizeMediaUrl()` sobre cada elemento de `$gallery` en `rowToService()` —
-  arregla ambas vistas (backoffice y `/fiche/`) de una vez, no es un problema de
-  vista/plantilla. No bloqueante para el cierre de la feature (la subida y el
-  guardado en BD funcionan; solo el render del thumbnail falla), pero rompe la
-  promesa de "sube tu foto y se ve" para cualquier owner que use la galería.
-
 - **SEC-014** (backlog, no bloqueante) — `ai-plan-generate`/`ai-plan-submit` sin
   token CSRF ni rate-limit por IP/sesión. Pre-existente (no es regresión de
   TASK-019). Ver LESSONS.md / ERROR_LOG.md.
@@ -250,6 +228,45 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **BUG-013 — Galería del backoffice sin normalizar, fotos subidas daban 404
+  ✅ corregido (2026-09-02)**
+  - **Origen:** encontrada en Task 12 (verificación end-to-end del backoffice de
+    fichas, 2026-09-02). Las fotos de galería subidas desde el backoffice daban
+    **404** al mostrarse tanto en `/backoffice?id=X` (preview de edición) como en
+    la página pública `/fr/fiche/{slug}` (thumbnail bajo la portada).
+  - **Causa raíz:** `MySQLServiceRepository::rowToService()` normaliza `cover` con
+    `normalizeMediaUrl()` (antepone `BASE_URL` si la ruta no es `http(s)://`), pero
+    el array `$gallery` (línea ~462-468, decodificado directo del JSON de BD) se
+    usaba TAL CUAL, sin pasar por esa misma función — con lo que las rutas nuevas
+    (`public/uploads/listings/{id}/xxx.jpg`, formato del `ListingUploader` de
+    Task 9) quedaban relativas. Bajo una URL con prefijo de idioma (`/fr/...`, el
+    caso normal) el navegador resolvía `public/uploads/...` contra el path
+    actual → pedía `/fr/public/uploads/...` → 404. Las fotos WordPress antiguas
+    (URL absoluta `https://...`) no se veían afectadas, por eso no se detectó en
+    fiches sin subidas nuevas.
+  - **Fix:** en `rowToService()`, tras decodificar y filtrar `$gallery`, se mapea
+    `normalizeMediaUrl()` sobre cada elemento (mismo patrón que ya usaba `cover`):
+    `$gallery = array_map(fn($url) => $this->normalizeMediaUrl((string) $url), $gallery);`.
+    Los otros dos usos de `gallery` en el archivo (`resolveGalleryFirst()`, usado
+    por `getServicesNearPoi()`, y `getMediaFromDisk()`) ya normalizaban
+    correctamente por elemento — no necesitaron cambios.
+  - **Verificación:** (1) smoke check aislado (`assert`, fixture `draft` insertada
+    y borrada por SQL directo) confirmó que una ruta relativa en el JSON de
+    `gallery` sale de `findByIdForEdit()` con `BASE_URL` antepuesto y que una URL
+    ya absoluta queda intacta. (2) Re-ejecución del repro real de Task 12 sobre la
+    fiche id=1 (cuentas admin/owner throwaway creadas y borradas por SQL/flujo
+    real, fiche respaldada y restaurada byte a byte): subida real de una foto de
+    galería vía `curl` multipart autenticado como owner → el `<img src="...">`
+    devuelto tanto por `/backoffice?saved=1` como por `/fr/fiche/
+    la-marelle-chambres-dhotes` ahora es
+    `http://localhost/canal_du_midi/public/uploads/listings/1/xxx.jpg` (antes
+    relativo) → `curl -o /dev/null -w "%{http_code}"` sobre esa URL exacta →
+    **200** (antes 404). Archivo de test, cuentas throwaway, categorías y fila de
+    `listings` restaurados al estado previo tras la prueba.
+  - Archivos: `src/Infrastructure/Persistence/MySQLServiceRepository.php`.
+    Reporte completo: `.superpowers/sdd/task-12-report.md` (sección "Fix: BUG-013
+    — gallery URL normalization").
 
 - **Backoffice de fichas (owner/admin) — Tasks 1-12 ✅ FEATURE COMPLETA — verificación end-to-end (Task 12, 2026-09-02)**
   - **Qué es:** espacio `/backoffice` con login (email+password, CSRF, rate-limit
