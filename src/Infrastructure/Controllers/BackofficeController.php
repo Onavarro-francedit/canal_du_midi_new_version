@@ -79,9 +79,89 @@ class BackofficeController
 
     private function handleDashboard(string $lang, string $page, array $seo): void
     {
-        // Implementado en Task 8 (owner) y Task 11 (admin).
+        $user = $this->auth->currentUser();
+        $repo = new MySQLServiceRepository();
+
+        $listingId = $this->auth->isAdmin()
+            ? (int) ($_GET['id'] ?? 0)
+            : $this->auth->ownerListingId();
+
+        if ($this->auth->isAdmin() && $listingId === 0) {
+            $this->handleAdminDashboard($lang, $page, $seo, $repo);
+            return;
+        }
+
+        if (!$listingId) {
+            require __DIR__ . '/../Views/layout/header.php';
+            require __DIR__ . '/../Views/errors/403.php';
+            require __DIR__ . '/../Views/layout/footer.php';
+            return;
+        }
+
+        $saved = false;
+        $formError = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!Csrf::check($_POST['csrf'] ?? null)) {
+                http_response_code(403);
+                require __DIR__ . '/../Views/layout/header.php';
+                require __DIR__ . '/../Views/errors/403.php';
+                require __DIR__ . '/../Views/layout/footer.php';
+                return;
+            }
+
+            $fields = [
+                'title'       => trim((string) ($_POST['title'] ?? '')),
+                'description' => trim((string) ($_POST['description'] ?? '')),
+                'phone'       => trim((string) ($_POST['phone'] ?? '')),
+                'mobile'      => trim((string) ($_POST['mobile'] ?? '')),
+                'email'       => trim((string) ($_POST['email'] ?? '')),
+                'website'     => trim((string) ($_POST['website'] ?? '')),
+                'facebook'    => trim((string) ($_POST['facebook'] ?? '')),
+                'address'     => trim((string) ($_POST['address'] ?? '')),
+                'address2'    => trim((string) ($_POST['address2'] ?? '')),
+                'postal_code' => trim((string) ($_POST['postal_code'] ?? '')),
+                'city'        => trim((string) ($_POST['city'] ?? '')),
+            ];
+
+            if ($fields['title'] === '') {
+                $formError = 'Le titre est obligatoire.';
+            } elseif ($fields['email'] !== '' && !filter_var($fields['email'], FILTER_VALIDATE_EMAIL)) {
+                $formError = "L'email n'est pas valide.";
+            } else {
+                $repo->updateListing($listingId, $fields);
+
+                $categoryIds = array_map('intval', (array) ($_POST['categories'] ?? []));
+                $repo->setListingCategories($listingId, $categoryIds);
+
+                header('Location: ' . BASE_URL . $lang . '/backoffice' .
+                    ($this->auth->isAdmin() ? '?id=' . $listingId . '&saved=1' : '?saved=1'));
+                exit;
+            }
+        }
+
+        $service = $repo->findByIdForEdit($listingId);
+        if ($service === null) {
+            require __DIR__ . '/../Views/layout/header.php';
+            require __DIR__ . '/../Views/errors/403.php';
+            require __DIR__ . '/../Views/layout/footer.php';
+            return;
+        }
+
+        $allCategories = $repo->getCategories();
+        $saved = isset($_GET['saved']);
+        $isAdmin = $this->auth->isAdmin();
+
         require __DIR__ . '/../Views/layout/header.php';
-        echo '<div class="container"><p>Dashboard en construcción.</p></div>';
+        require __DIR__ . '/../Views/backoffice/edit_listing.php';
+        require __DIR__ . '/../Views/layout/footer.php';
+    }
+
+    private function handleAdminDashboard(string $lang, string $page, array $seo, MySQLServiceRepository $repo): void
+    {
+        // Implementado en Task 11.
+        require __DIR__ . '/../Views/layout/header.php';
+        echo '<div class="container"><p>Admin dashboard en construcción.</p></div>';
         require __DIR__ . '/../Views/layout/footer.php';
     }
 }
