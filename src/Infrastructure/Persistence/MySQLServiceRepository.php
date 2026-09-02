@@ -41,6 +41,79 @@ class MySQLServiceRepository implements ServiceRepository
         return $row ? $this->rowToService($row) : null;
     }
 
+    public function findByIdForEdit(int $id): ?Service
+    {
+        $sql = "SELECT l.*,
+                       GROUP_CONCAT(c.id   ORDER BY c.name SEPARATOR ',') AS cat_ids,
+                       GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR '|') AS cat_names,
+                       GROUP_CONCAT(c.slug ORDER BY c.name SEPARATOR ',') AS cat_slugs
+                FROM listings l
+                LEFT JOIN listing_categories lc ON l.id = lc.listing_id
+                LEFT JOIN categories         c  ON lc.category_id = c.id
+                WHERE l.id = :id
+                GROUP BY l.id
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->rowToService($row) : null;
+    }
+
+    private const EDITABLE_FIELDS = [
+        'title', 'description', 'phone', 'mobile', 'email', 'website',
+        'facebook', 'address', 'address2', 'postal_code', 'city', 'cover',
+    ];
+
+    public function updateListing(int $id, array $fields): void
+    {
+        $set = [];
+        $params = ['id' => $id];
+
+        foreach (self::EDITABLE_FIELDS as $field) {
+            if (array_key_exists($field, $fields)) {
+                $set[] = "`$field` = :$field";
+                $params[$field] = $fields[$field];
+            }
+        }
+
+        if (empty($set)) {
+            return;
+        }
+
+        $sql = "UPDATE listings SET " . implode(', ', $set) . ", updated_at = NOW() WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+    }
+
+    public function setListingCategories(int $id, array $categoryIds): void
+    {
+        $categoryIds = array_values(array_unique(array_map('intval', $categoryIds)));
+
+        $this->db->beginTransaction();
+        try {
+            $delete = $this->db->prepare("DELETE FROM listing_categories WHERE listing_id = :id");
+            $delete->execute(['id' => $id]);
+
+            if (!empty($categoryIds)) {
+                $insert = $this->db->prepare(
+                    "INSERT INTO listing_categories (listing_id, category_id) VALUES (:listing_id, :category_id)"
+                );
+                foreach ($categoryIds as $categoryId) {
+                    $insert->execute(['listing_id' => $id, 'category_id' => $categoryId]);
+                }
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+
+        $this->refreshCategoryCountsCache();
+    }
+
     public function findAll(string $lang, bool $withDetails = false): array
     {
         return $this->search('', '', '', $lang);
