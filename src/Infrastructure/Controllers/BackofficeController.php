@@ -195,7 +195,7 @@ class BackofficeController
             $service->contact['email'] = $fields['email'];
             $service->contact['website'] = $fields['website'];
             $service->contact['facebook'] = $fields['facebook'];
-            $service->contact['address'] = $fields['address'];
+            $service->contact['address_raw'] = $fields['address'];
             $service->contact['cp'] = $fields['postal_code'];
             $service->contact['ville'] = $fields['city'];
 

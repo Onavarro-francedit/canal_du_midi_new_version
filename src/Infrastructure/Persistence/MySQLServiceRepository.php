@@ -570,6 +570,7 @@ class MySQLServiceRepository implements ServiceRepository
                 'website' => trim((string) ($row['website']     ?? '')),
                 'facebook'=> trim((string) ($row['facebook']    ?? '')),
                 'address' => $address,
+                'address_raw' => trim((string) ($row['address'] ?? '')),
                 'cp'      => trim((string) ($row['postal_code'] ?? '')),
                 'ville'   => trim((string) ($row['city']        ?? '')),
             ],

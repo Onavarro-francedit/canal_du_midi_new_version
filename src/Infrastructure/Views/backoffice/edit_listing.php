@@ -53,7 +53,7 @@ $actionUrl = BASE_URL . $lang . '/backoffice' . ($isAdmin ? '?id=' . $service->i
             <legend>Adresse</legend>
 
             <label for="bo-address">Adresse</label>
-            <input type="text" id="bo-address" name="address" value="<?= htmlspecialchars($service->contact['address'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="text" id="bo-address" name="address" value="<?= htmlspecialchars($service->contact['address_raw'], ENT_QUOTES, 'UTF-8') ?>">
 
             <label for="bo-postal">Code postal</label>
             <input type="text" id="bo-postal" name="postal_code" value="<?= htmlspecialchars($service->contact['cp'], ENT_QUOTES, 'UTF-8') ?>">
