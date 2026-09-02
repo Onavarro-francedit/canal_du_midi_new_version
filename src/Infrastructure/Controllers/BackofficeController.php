@@ -124,12 +124,50 @@ class BackofficeController
                 'city'        => trim((string) ($_POST['city'] ?? '')),
             ];
 
-            if ($fields['title'] === '') {
+            $uploader = new \App\Infrastructure\Services\ListingUploader();
+            $uploadError = '';
+
+            if (!empty($_FILES['cover_file']['tmp_name'])) {
+                try {
+                    $fields['cover'] = $uploader->store($listingId, $_FILES['cover_file']);
+                } catch (\RuntimeException $e) {
+                    $uploadError = $e->getMessage();
+                }
+            }
+
+            $newGalleryPhotos = [];
+            if (!empty($_FILES['gallery_files']['tmp_name'][0])) {
+                foreach ($_FILES['gallery_files']['tmp_name'] as $i => $tmpName) {
+                    if ($tmpName === '') {
+                        continue;
+                    }
+                    $fileEntry = [
+                        'tmp_name' => $tmpName,
+                        'size'     => $_FILES['gallery_files']['size'][$i],
+                        'name'     => $_FILES['gallery_files']['name'][$i],
+                    ];
+                    try {
+                        $newGalleryPhotos[] = $uploader->store($listingId, $fileEntry);
+                    } catch (\RuntimeException $e) {
+                        $uploadError = $e->getMessage();
+                    }
+                }
+            }
+
+            if ($uploadError !== '') {
+                $formError = $uploadError;
+            } elseif ($fields['title'] === '') {
                 $formError = 'Le titre est obligatoire.';
             } elseif ($fields['email'] !== '' && !filter_var($fields['email'], FILTER_VALIDATE_EMAIL)) {
                 $formError = "L'email n'est pas valide.";
             } else {
                 $repo->updateListing($listingId, $fields);
+
+                if (!empty($newGalleryPhotos)) {
+                    $currentGallery = $repo->findByIdForEdit($listingId)->gallery ?? [];
+                    $updatedGallery = array_values(array_merge($currentGallery, $newGalleryPhotos));
+                    $repo->updateListing($listingId, ['gallery' => json_encode($updatedGallery)]);
+                }
 
                 $categoryIds = array_map('intval', (array) ($_POST['categories'] ?? []));
                 $repo->setListingCategories($listingId, $categoryIds);

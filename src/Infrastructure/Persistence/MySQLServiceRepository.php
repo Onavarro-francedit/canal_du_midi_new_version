@@ -63,7 +63,7 @@ class MySQLServiceRepository implements ServiceRepository
 
     private const EDITABLE_FIELDS = [
         'title', 'description', 'phone', 'mobile', 'email', 'website',
-        'facebook', 'address', 'address2', 'postal_code', 'city', 'cover',
+        'facebook', 'address', 'address2', 'postal_code', 'city', 'cover', 'gallery',
     ];
 
     public function updateListing(int $id, array $fields): void
