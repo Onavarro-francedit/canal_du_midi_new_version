@@ -58,12 +58,21 @@ class AuthService
 
         $this->recordAttempt($ip);
 
-        if (!$row || !password_verify($password, $row['password_hash'])) {
+        if (!$row) {
+            // Mitigación de timing side-channel: paga el mismo coste bcrypt
+            // que la rama de "contraseña incorrecta" para no filtrar por
+            // temporización si el email existe o no.
+            password_verify($password, '$2y$10$usesomesillystringfortestingusesomesillystringforte');
+            return false;
+        }
+
+        if (!password_verify($password, $row['password_hash'])) {
             return false;
         }
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $row['id'];
+        $_SESSION['email']   = $row['email'];
         $_SESSION['role']    = $row['role'];
 
         if ($row['role'] === 'owner') {
@@ -88,6 +97,7 @@ class AuthService
         }
         return [
             'id'    => (int) $_SESSION['user_id'],
+            'email' => (string) ($_SESSION['email'] ?? ''),
             'role'  => (string) ($_SESSION['role'] ?? 'owner'),
         ];
     }
