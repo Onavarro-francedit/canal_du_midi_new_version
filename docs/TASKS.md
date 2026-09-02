@@ -9,6 +9,28 @@ Completadas; pendiente de handoff a product)_
 
 ## 🟡 Pendiente
 
+- **BUG-013** (backoffice, encontrada en Task 12, 2026-09-02) — Las fotos de
+  galería subidas desde el backoffice dan **404** al mostrarse tanto en
+  `/backoffice?id=X` (preview de edición) como en la página pública
+  `/fr/fiche/{slug}` (thumbnail bajo la portada). Causa raíz:
+  `MySQLServiceRepository::rowToService()` normaliza `cover` con
+  `normalizeMediaUrl()` (antepone `BASE_URL` si la ruta no es `http(s)://`), pero
+  el array `$gallery` (línea ~462-468, decodificado directo del JSON de BD) se usa
+  TAL CUAL, sin pasar por esa misma función — con lo que las rutas nuevas
+  (`public/uploads/listings/{id}/xxx.jpg`, formato del `ListingUploader` de Task 9)
+  quedan relativas. Bajo una URL con prefijo de idioma (`/fr/...`, el caso normal)
+  el navegador resuelve `public/uploads/...` contra el path actual → pide
+  `/fr/public/uploads/...` → 404. Las fotos WordPress antiguas (URL absoluta
+  `https://...`) no se ven afectadas, por eso no se detectó en fiches sin subidas
+  nuevas. Confirmado en vivo: `curl -I .../fr/public/uploads/listings/1/x.jpg` →
+  404; `curl -I .../public/uploads/listings/1/x.jpg` → 200. Fix candidato (una
+  línea, en el mismo sitio que ya normaliza `cover`): mapear
+  `normalizeMediaUrl()` sobre cada elemento de `$gallery` en `rowToService()` —
+  arregla ambas vistas (backoffice y `/fiche/`) de una vez, no es un problema de
+  vista/plantilla. No bloqueante para el cierre de la feature (la subida y el
+  guardado en BD funcionan; solo el render del thumbnail falla), pero rompe la
+  promesa de "sube tu foto y se ve" para cualquier owner que use la galería.
+
 - **SEC-014** (backlog, no bloqueante) — `ai-plan-generate`/`ai-plan-submit` sin
   token CSRF ni rate-limit por IP/sesión. Pre-existente (no es regresión de
   TASK-019). Ver LESSONS.md / ERROR_LOG.md.
@@ -228,6 +250,76 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **Backoffice de fichas (owner/admin) — Tasks 1-12 ✅ FEATURE COMPLETA — verificación end-to-end (Task 12, 2026-09-02)**
+  - **Qué es:** espacio `/backoffice` con login (email+password, CSRF, rate-limit
+    5 intentos/IP/15 min), rol `owner` (edita solo su fiche, `?id=` ignorado) y rol
+    `admin` (busca/lista fiches, crea cuentas owner, resetea passwords), edición de
+    texto/contacto, subida de foto de portada + galería (validación MIME real vía
+    `finfo`, no por extensión) y gestión de categorías. Plan:
+    `docs/superpowers/plans/2026-09-02-backoffice-fichas.md`. Ledger de las 12 tareas:
+    `.superpowers/sdd/progress.md` (Tasks 1-11, cada una con su propio review/commit) +
+    este cierre (Task 12).
+  - **Task 12 — verificación end-to-end de las 8 piezas juntas (checklist del spec),
+    HTTP/curl real + Playwright, cuentas throwaway creadas/borradas por SQL (NUNCA se
+    tocó `admin@canaldumidi.local`), sobre la fiche id=1 (sin owner previo,
+    respaldada y restaurada byte a byte al terminar):**
+    1. ✅ Admin (throwaway) crea cuenta owner para fiche 1 vía POST real a
+       `/backoffice` (`action=create_owner`) → owner logueado ve/edita fiche 1
+       incluso pidiendo `/backoffice?id=2` (título de fiche 2 NUNCA aparece).
+    2. ✅ Editar descripción/ciudad → guardar (302 a `?saved=1`) → `/fr/fiche/
+       la-marelle-chambres-dhotes` recargado muestra el texto nuevo y "Carcassonne".
+    3. ✅ Subida de portada + 1 foto de galería (JPG real) → `cover`/`gallery` en BD
+       actualizados, archivos físicos en `public/uploads/listings/1/`. **Hallazgo:**
+       el thumbnail de galería NO se renderiza en el navegador (404) porque el array
+       `gallery` se usa sin pasar por `normalizeMediaUrl()` (a diferencia de `cover`,
+       que sí la usa) — ver BUG-013 más abajo en 🟡. La foto de portada sí se ve bien.
+    4. ✅ Cambiar categorías (id 22 → id 10 "nautique") → `/fr/search?type=nautique`
+       pasó de 16 a 17 resultados tras guardar.
+    5. ✅ CSRF: POST a `/backoffice/login` sin `csrf` → `HTTP 403` + página
+       "Accès refusé", 0 intento de login procesado.
+    6. ✅ Rate-limit: 4 intentos fallidos → "Identifiants incorrects"; a partir del
+       5º (incluso más estricto que el "6º" del checklist) → "Trop de tentatives.
+       Réessayez dans 15 minutes.", con cookies nuevas en cada intento (bloqueo por
+       IP en `login_attempts`, no por sesión).
+    7. ✅ `.php` renombrado a `.jpg` (contenido real `<?php ... ?>`, MIME real
+       detectado por `finfo`) → rechazado con "Formato de imagen no permitido
+       (solo JPG, PNG o WEBP)", 0 archivo escrito a disco. Defensa adicional
+       confirmada: `public/uploads/.htaccess` (`php_flag engine off` +
+       `Require all denied` sobre `.php*`), aunque no llegó a ejercitarse porque el
+       upload ya fue rechazado en capa de aplicación.
+    8. ✅ Admin resetea password del owner (`action=reset_password`) → owner
+       inicia sesión con la password nueva (`HTTP 302` a `/backoffice`).
+  - **Consola del navegador (Playwright):** `/backoffice/login` → 0 errores.
+    `/backoffice` como owner → 1 error (el 404 del thumbnail de galería, ver
+    BUG-013). `/backoffice` como admin (listado) → 0 errores. `/backoffice?id=1`
+    como admin → mismo 1 error de galería (reproducible, no es un fluke).
+  - **Limitaciones conocidas, ya revisadas y aceptadas como no bloqueantes**
+    (heredadas de los reviews de Tasks 9-10, documentadas aquí para no perderlas —
+    ver también nuevo ítem 🟡 más abajo):
+    1. Upload huérfano: si portada/galería se sube con éxito pero título/email
+       fallan validación en la MISMA request, el archivo queda escrito en disco
+       sin referencia en BD (Task 9).
+    2. Fallo silencioso de upload a nivel PHP (ej. excede `upload_max_filesize`)
+       en un slot de `gallery_files[]` da `tmp_name` vacío, indistinguible de "no
+       elegí archivo" — sin mensaje de error para ese slot concreto (Task 9).
+    3. Los campos de password en `admin_dashboard.php` (password temporal al crear
+       cuenta y el de resetear) son `type="text"`, no `type="password"` —
+       credenciales visibles en pantalla. Coincide con el código de referencia del
+       plan (Task 10).
+    4. Este entorno local necesitó `chmod 777 public/uploads/listings/` (Apache
+       corre como `daemon`, el directorio se creó con dueño `imac:staff`) — fix de
+       entorno, no de código; anotado por si un nuevo setup local lo repite (Task 9).
+  - **Limpieza de artefactos de test confirmada por consulta a BD:** `SELECT COUNT(*)
+    FROM users` → 1 (solo `admin@canaldumidi.local`); fiche 1 con `owner_user_id`
+    NULL, `claimed=0`, `title`/`city`/`cover` restaurados al valor original;
+    categorías de fiche 1 restauradas a `22,45,47`; `login_attempts` → 0 filas;
+    `public/uploads/listings/` vacío (archivos huérfanos borrados vía script PHP
+    temporal ejecutado por Apache/`daemon`, ya que los archivos subidos quedan con
+    dueño `daemon` y el shell local no tiene permiso de borrado directo — mismo
+    fix de entorno del punto 4).
+  - Archivos: ninguno de código (verificación pura). Reporte completo:
+    `.superpowers/sdd/task-12-report.md`.
 
 - **TASK-019 — Fechas estructuradas y obligatorias en el planificateur IA ✅ PIPELINE COMPLETO — architect → coder → security ⚠️ → product ⚠️ listo con mejoras menores, verificado en navegador (2026-07-06)**
   - **Revisión product (2026-07-06):** ⚠️ listo con mejoras menores. Los 6 criterios
