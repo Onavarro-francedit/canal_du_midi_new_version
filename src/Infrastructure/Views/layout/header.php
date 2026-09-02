@@ -66,6 +66,9 @@
     <?php if (isset($page) && $page === 'vacation-planner'): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/vacation-planner.css">
     <?php endif; ?>
+    <?php if (isset($page) && $page === 'backoffice'): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/backoffice.css">
+    <?php endif; ?>
 </head>
 <body>
     <?php

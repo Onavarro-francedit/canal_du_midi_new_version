@@ -1,0 +1,97 @@
+/* public/assets/css/backoffice.css */
+.backoffice-page {
+    max-width: 960px;
+    margin: 48px auto;
+    padding: 0 20px;
+}
+
+.backoffice-login-shell {
+    max-width: 420px;
+    margin: 80px auto;
+    padding: 32px;
+    border: 1px solid var(--line, #e2e2e2);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.backoffice-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 20px;
+}
+
+.backoffice-form label {
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.backoffice-form input,
+.backoffice-form textarea,
+.backoffice-form select {
+    padding: 10px 12px;
+    border: 1px solid var(--line, #ccc);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.backoffice-form button {
+    margin-top: 20px;
+}
+
+.backoffice-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.backoffice-alert--error {
+    background: #fdecea;
+    color: #b3261e;
+}
+
+.backoffice-alert--success {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.backoffice-fieldset {
+    border: 1px solid var(--line, #e2e2e2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.backoffice-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.backoffice-gallery-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.backoffice-gallery-preview img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.backoffice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.backoffice-table th,
+.backoffice-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line, #e2e2e2);
+}
