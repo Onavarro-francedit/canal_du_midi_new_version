@@ -3,6 +3,12 @@
 use App\Infrastructure\Services\Csrf;
 ?>
 <main class="backoffice-page">
+    <?php if (!empty($currentUser)): ?>
+        <div class="backoffice-userbar">
+            <span><?= htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></span>
+            <a href="<?= BASE_URL . $lang ?>/backoffice/logout">Déconnexion</a>
+        </div>
+    <?php endif; ?>
     <h1>Backoffice — Administration</h1>
 
     <?php if (!empty($message)): ?>

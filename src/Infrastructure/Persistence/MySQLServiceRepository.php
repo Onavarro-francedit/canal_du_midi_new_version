@@ -255,6 +255,50 @@ class MySQLServiceRepository implements ServiceRepository
         return array_map(fn($row) => $this->rowToService($row), $rows);
     }
 
+    /**
+     * Búsqueda de fichas para el backoffice de admin: mismo matching de texto
+     * que searchListings(), pero SIN el filtro `status = 'publish'` (debe
+     * poder encontrar/editar/asignar propietario a fichas en borrador).
+     * No usar para el buscador público — ese debe seguir usando searchListings().
+     */
+    public function searchListingsForAdmin(string $query = ''): array
+    {
+        $where  = [];
+        $params = [];
+
+        if ($query !== '') {
+            $where[]      = "(l.title       LIKE :q
+                           OR l.description LIKE :q
+                           OR l.address     LIKE :q
+                           OR l.postal_code LIKE :q
+                           OR l.phone       LIKE :q
+                           OR l.mobile      LIKE :q
+                           OR l.email       LIKE :q
+                           OR l.website     LIKE :q
+                           OR l.city        LIKE :q)";
+            $params['q']  = '%' . $this->escapeLike($query) . '%';
+        }
+
+        $whereClause = !empty($where) ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+        $sql = "SELECT l.*,
+                       GROUP_CONCAT(c.id   ORDER BY c.name SEPARATOR ',') AS cat_ids,
+                       GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR '|') AS cat_names,
+                       GROUP_CONCAT(c.slug ORDER BY c.name SEPARATOR ',') AS cat_slugs
+                FROM listings l
+                LEFT JOIN listing_categories lc ON l.id = lc.listing_id
+                LEFT JOIN categories         c  ON lc.category_id = c.id
+                $whereClause
+                GROUP BY l.id
+                ORDER BY l.title ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn($row) => $this->rowToService($row), $rows);
+    }
+
     public function getAllCategories(string $lang): array
     {
         return $this->getCategories();

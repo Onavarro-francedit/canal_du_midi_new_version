@@ -56,17 +56,17 @@ class AuthService
         $stmt->execute(['email' => $email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $this->recordAttempt($ip);
-
         if (!$row) {
             // Mitigación de timing side-channel: paga el mismo coste bcrypt
             // que la rama de "contraseña incorrecta" para no filtrar por
             // temporización si el email existe o no.
             password_verify($password, '$2y$10$usesomesillystringfortestingusesomesillystringforte');
+            $this->recordAttempt($ip);
             return false;
         }
 
         if (!password_verify($password, $row['password_hash'])) {
+            $this->recordAttempt($ip);
             return false;
         }
 
@@ -80,6 +80,9 @@ class AuthService
             $listingStmt->execute(['uid' => $row['id']]);
             $_SESSION['owner_listing_id'] = (int) ($listingStmt->fetchColumn() ?: 0) ?: null;
         }
+
+        $clear = $this->db->prepare("DELETE FROM login_attempts WHERE ip = :ip");
+        $clear->execute(['ip' => $ip]);
 
         return true;
     }
@@ -114,19 +117,33 @@ class AuthService
 
     public function createOwnerAccount(string $email, string $password, int $listingId): int
     {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $this->db->beginTransaction();
+        try {
+            $check = $this->db->prepare("SELECT owner_user_id FROM listings WHERE id = :id LIMIT 1");
+            $check->execute(['id' => $listingId]);
+            $existingOwner = $check->fetchColumn();
+            if ($existingOwner !== false && $existingOwner !== null) {
+                throw new \RuntimeException('Cette fiche a déjà un compte associé.');
+            }
 
-        $stmt = $this->db->prepare("INSERT INTO users (email, password_hash, role) VALUES (:email, :hash, 'owner')");
-        $stmt->execute(['email' => $email, 'hash' => $hash]);
-        $userId = (int) $this->db->lastInsertId();
+            $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $update = $this->db->prepare("UPDATE listings SET owner_user_id = :uid, claimed = 1 WHERE id = :id");
-        $update->execute(['uid' => $userId, 'id' => $listingId]);
+            $stmt = $this->db->prepare("INSERT INTO users (email, password_hash, role) VALUES (:email, :hash, 'owner')");
+            $stmt->execute(['email' => $email, 'hash' => $hash]);
+            $userId = (int) $this->db->lastInsertId();
 
-        return $userId;
+            $update = $this->db->prepare("UPDATE listings SET owner_user_id = :uid, claimed = 1 WHERE id = :id");
+            $update->execute(['uid' => $userId, 'id' => $listingId]);
+
+            $this->db->commit();
+            return $userId;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
-    public function resetOwnerPassword(int $listingId, string $newPassword): void
+    public function resetOwnerPassword(int $listingId, string $newPassword): bool
     {
         $hash = password_hash($newPassword, PASSWORD_DEFAULT);
         $stmt = $this->db->prepare(
@@ -136,6 +153,7 @@ class AuthService
              WHERE l.id = :listing_id"
         );
         $stmt->execute(['hash' => $hash, 'listing_id' => $listingId]);
+        return $stmt->rowCount() > 0;
     }
 
     public function listOwnersWithListing(): array

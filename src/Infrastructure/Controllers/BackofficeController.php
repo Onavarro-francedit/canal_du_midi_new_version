@@ -119,7 +119,6 @@ class BackofficeController
                 'website'     => trim((string) ($_POST['website'] ?? '')),
                 'facebook'    => trim((string) ($_POST['facebook'] ?? '')),
                 'address'     => trim((string) ($_POST['address'] ?? '')),
-                'address2'    => trim((string) ($_POST['address2'] ?? '')),
                 'postal_code' => trim((string) ($_POST['postal_code'] ?? '')),
                 'city'        => trim((string) ($_POST['city'] ?? '')),
             ];
@@ -187,8 +186,29 @@ class BackofficeController
         }
 
         $allCategories = $repo->getCategories();
+
+        if ($formError !== '' && isset($fields)) {
+            $service->translations['title'] = $fields['title'];
+            $service->translations['description'] = $fields['description'];
+            $service->contact['phone'] = $fields['phone'];
+            $service->contact['mobile'] = $fields['mobile'];
+            $service->contact['email'] = $fields['email'];
+            $service->contact['website'] = $fields['website'];
+            $service->contact['facebook'] = $fields['facebook'];
+            $service->contact['address'] = $fields['address'];
+            $service->contact['cp'] = $fields['postal_code'];
+            $service->contact['ville'] = $fields['city'];
+
+            $submittedCategoryIds = array_map('intval', (array) ($_POST['categories'] ?? []));
+            $service->categories = array_values(array_filter(
+                $allCategories,
+                fn($cat) => in_array((int) $cat['id'], $submittedCategoryIds, true)
+            ));
+        }
+
         $saved = isset($_GET['saved']);
         $isAdmin = $this->auth->isAdmin();
+        $currentUser = $this->auth->currentUser();
 
         require __DIR__ . '/../Views/layout/header.php';
         require __DIR__ . '/../Views/backoffice/edit_listing.php';
@@ -228,6 +248,8 @@ class BackofficeController
                         $message = 'Compte créé avec succès.';
                     } catch (\PDOException $e) {
                         $error = 'Cet email est déjà utilisé.';
+                    } catch (\RuntimeException $e) {
+                        $error = $e->getMessage();
                     }
                 }
             } elseif ($action === 'reset_password') {
@@ -236,16 +258,18 @@ class BackofficeController
 
                 if (strlen($newPassword) < 8) {
                     $error = 'Le mot de passe doit contenir au moins 8 caractères.';
-                } else {
-                    $this->auth->resetOwnerPassword($listingId, $newPassword);
+                } elseif ($this->auth->resetOwnerPassword($listingId, $newPassword)) {
                     $message = 'Mot de passe réinitialisé.';
+                } else {
+                    $error = 'Aucun compte associé à cette fiche.';
                 }
             }
         }
 
         $search = trim((string) ($_GET['q'] ?? ''));
-        $allListings = $repo->searchListings($search);
+        $allListings = $repo->searchListingsForAdmin($search);
         $owners = $this->auth->listOwnersWithListing();
+        $currentUser = $this->auth->currentUser();
 
         require __DIR__ . '/../Views/layout/header.php';
         require __DIR__ . '/../Views/backoffice/admin_dashboard.php';

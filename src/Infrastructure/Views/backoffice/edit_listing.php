@@ -6,6 +6,12 @@ $categoryIds = array_column($service->categories, 'id');
 $actionUrl = BASE_URL . $lang . '/backoffice' . ($isAdmin ? '?id=' . $service->id : '');
 ?>
 <main class="backoffice-page">
+    <?php if (!empty($currentUser)): ?>
+        <div class="backoffice-userbar">
+            <span><?= htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></span>
+            <a href="<?= BASE_URL . $lang ?>/backoffice/logout">Déconnexion</a>
+        </div>
+    <?php endif; ?>
     <h1>Modifier ma fiche</h1>
 
     <?php if ($saved): ?>
