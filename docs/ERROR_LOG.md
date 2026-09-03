@@ -16,6 +16,28 @@ Formato de entrada:
 
 ---
 
+### [SEC-015] CSS injection potencial en `style.backgroundImage` sin escapar comillas — 2026-09-03
+- Síntoma: `setHeroPreview()` y `renderPhotos()` en `public/assets/js/backoffice-edit.js`
+  fijan `el.style.backgroundImage = \`url('${imageUrl}')\`` interpolando `imageUrl`
+  directamente en un template string, sin escapar comillas simples.
+- Causa raíz: el patrón trata un valor destinado a CSS igual que texto plano;
+  cualquier `'` en el valor cierra `url('...')` antes de tiempo y permite inyectar
+  CSS arbitrario a continuación (ej. `background-image` extra, `expression()` en
+  motores legacy).
+- Corrección aplicada: ninguna en esta sesión — NO es explotable en el vector
+  actual: `imageUrl` siempre es una URL de foto ya subida por el propio owner de
+  la fiche (nombre de archivo generado con `bin2hex(random_bytes(8))` en
+  `ListingUploader::store()`, nunca el nombre original del usuario) o una URL ya
+  existente en BD gestionada por el mismo backoffice. Sin vector de entrada de
+  terceros en este flujo. Queda documentado como deuda de patrón (SEC-015) porque
+  el mismo código se reutiliza (`renderPhotos`) y podría exponerse a una fuente
+  menos controlada en el futuro.
+- Cómo prevenirlo (→ LESSONS.md): SEC-015 — escapar comillas/backslashes antes de
+  interpolar cualquier valor en un `style` vía JS, igual que se exige en atributos
+  HTML server-side (SEC-006).
+
+---
+
 ### [PRD-009] Planner con idiomas mezclados: hint/errores de fecha localizados dentro de un chrome hardcodeado en francés — 2026-07-06
 - Síntoma: en `/es/vacation-planner` y `/en/vacation-planner`, TASK-019 añadió el
   hint de fecha aproximada y los errores de fecha correctamente en español/inglés,
@@ -307,3 +329,77 @@ Formato de entrada:
   por página del footer es fácil de olvidar al añadir una ruta nueva). Un `<div id="map">` con
   datos correctos NO implica un mapa: comprobar `.leaflet-container` y el marcador reales
   (refuerza PRD-002).
+
+### [PRD-010] El error de validación de subida se pinta fuera de la zona visible del modal (fallo silencioso) — 2026-09-03 (verificación product TASK-026)
+- Síntoma: en `#modal-photos`, con el modal desplazado (situación NORMAL: los dropzones
+  "Remplacer la couverture" y "Ajouter des photos à la galerie" están al final del formulario,
+  hay que scrollear para llegar a ellos), elegir un archivo inválido NO muestra nada al usuario.
+  Verificado en navegador (Playwright, viewport 1440×800, fiche 226 con owner de prueba):
+  seleccionado `doc.pdf` en el dropzone de galería → `.ficha-modal-error` recibe el texto
+  correcto («doc.pdf » : format non pris en charge (JPG, PNG ou WEBP).») y `hidden=false`,
+  pero su `getBoundingClientRect().top = -367.9` mientras el formulario visible va de
+  `top=60` a `bottom=740`: el mensaje queda 368 px POR ENCIMA del área visible. Captura del
+  viewport: modal sin ninguna banda roja, dropzone vacío, cero feedback. El input queda
+  vaciado (`files.length = 0`) y ninguna petición de red se dispara (correcto), así que el
+  prestador cree haber añadido la foto, pulsa "Enregistrer" y guarda sin ella.
+- Causa raíz: `.ficha-modal-error` es un único bloque colocado en la CABECERA del formulario
+  del modal (`edit_listing.php`), mientras que el handler de validación
+  (`backoffice-edit.js`, `handleFiles()` → `errorBox.hidden = false`) lo revela sin
+  desplazarlo a la vista. La spec pedía el error "inline junto al dropzone correspondiente";
+  se implementó reutilizando el error global del modal, que está lejos del punto de acción.
+- Corrección aplicada: NINGUNA en esta sesión (rol product). Dirección de fix (una línea):
+  `errorBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' })` justo después de
+  `errorBox.hidden = false` en `handleFiles()` — y lo mismo en el `catch`/rama `!data.success`
+  del submit y del borrado, que usan el mismo `errorBox`. Alternativa más fiel a la spec:
+  un `<p class="ficha-modal-error">` propio bajo cada dropzone.
+- Cómo prevenirlo (→ LESSONS.md PRD-010): un mensaje de error no está "mostrado" porque el
+  nodo tenga texto y `hidden=false`; hay que comprobar EN NAVEGADOR que su rect cae dentro
+  del contenedor scrolleable visible en el momento en que se dispara, y en un viewport
+  realista (1440×800), no solo en uno alto.
+
+### [PRD-011] Tras borrar la ÚLTIMA foto, el preview del modal sigue mostrando la foto borrada y el picker queda vacío sin mensaje — 2026-09-03 (verificación product TASK-026)
+- Síntoma: borradas las 6 fotos restantes de la fiche 226 una a una desde el modal (AJAX, sin
+  recargar), la BD queda correcta (`cover=''`, `gallery=[]`) y `#ficha-gallery-preview` muestra
+  "Aucune photo pour le moment.", pero: (1) `#bo-hero-preview` y `#ficha-hero` CONSERVAN el
+  `background-image` de la última foto borrada (`ABBAYE_ST-PAPOUL_P8-2024.jpg`) — el prestador
+  ve como portada exactamente la foto que acaba de eliminar; (2) `.ficha-cover-picker` queda
+  como un div vacío (`innerHTML=''`, altura 0) bajo el label "Photo de couverture (cliquez une
+  photo pour la choisir)", sin ningún texto que explique que ya no hay fotos. Verificado en
+  navegador con captura.
+- Causa raíz: en `renderPhotos()` (`backoffice-edit.js`) las dos escrituras del hero están
+  guardadas por la verdad del valor — `if (hero && imageUrl) hero.style.backgroundImage = …` y
+  `if (imageUrl) setHeroPreview(imageUrl)` — así que con `imageUrl === ''` no se limpia nada y
+  queda el estado anterior. Y la rama de galería vacía (`gallery.length === 0` →
+  "Aucune photo pour le moment.") existe solo para `#ficha-gallery-preview`, no para el picker
+  del modal, que se vacía sin sustituto.
+- Nota: la ficha PÚBLICA sí degrada bien — con 0 fotos cae a la imagen genérica del canal, sin
+  `<img src="">` roto ni hueco gris (verificado con captura en `/fr/fiche/abbaye-cathedrale-de-saint-papoul`).
+  El problema es solo la vista del prestador en el backoffice.
+- Corrección aplicada: NINGUNA (rol product). Dirección de fix: en `renderPhotos()`, tratar el
+  caso `!imageUrl` explícitamente (limpiar `backgroundImage` o poner el mismo placeholder que
+  usa la ficha pública) y pintar en el picker vacío un `<p>Aucune photo — ajoutez-en une
+  ci-dessous.</p>` equivalente al de la galería.
+- Cómo prevenirlo (→ LESSONS.md PRD-011): al repintar un bloque por AJAX, la rama "cero
+  elementos" debe limpiar TODOS los reflejos del dato anterior (fondos CSS incluidos) y decir
+  algo al usuario; un `if (valor)` alrededor de una escritura de estado convierte el vaciado en
+  "no hacer nada", dejando en pantalla el dato que se acaba de borrar.
+
+### [PRD-010 · cierre] `scrollIntoView({block:'nearest'})` no basta bajo una cabecera collant — 2026-09-03 (re-verificación product TASK-026)
+- Síntoma: aplicado el fix de BUG-018 (`showModalError()` con
+  `scrollIntoView({ block: 'nearest' })`), el mensaje SEGUÍA invisible. Medido en navegador a
+  1440×800 con el modal desplazado al máximo: `hidden=false`, texto correcto, rect
+  `top=60.1 / bottom=105.7` con el formulario visible de `top=60` a `bottom=740` — o sea
+  "dentro" según el rect — pero `document.elementFromPoint()` en el centro del mensaje devolvía
+  **`H2`**: el título collant "Photos" ocupa y=60→163 y lo tapaba por completo. Captura del
+  viewport: ninguna banda roja.
+- Causa raíz: `block: 'nearest'` desplaza lo MÍNIMO, dejando el elemento pegado al borde
+  superior de la zona desplazable, que es justo la franja que el `<h2>` collant cubre.
+- Corrección aplicada: `block: 'center'` en `showModalError()` (`backoffice-edit.js`).
+  Re-verificado: rect `169→215`, `elementFromPoint()` devuelve la propia caja de error, captura
+  con la banda roja legible, input vaciado, 0 peticiones de red, 0 errores de consola.
+  Alternativa equivalente descartada por ser más código: `scroll-margin-top` en el CSS del
+  error igual a la altura de la cabecera.
+- Cómo prevenirlo (→ LESSONS.md PRD-010): la prueba de que un mensaje se VE no es su
+  `getBoundingClientRect()` — es `document.elementFromPoint()` en su centro devolviendo el
+  propio mensaje, más la captura del viewport. Un rect "dentro del contenedor" es compatible
+  con estar tapado por un sticky/overlay.

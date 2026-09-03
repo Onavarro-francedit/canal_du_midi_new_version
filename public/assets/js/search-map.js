@@ -12,6 +12,8 @@
  *  - CSS.escape() en selectores dinámicos
  *  - rel="noopener noreferrer" en enlaces con target="_blank"
  *  - resetMarker también reinicia zIndexOffset
+ *
+ * v3: motor de mapa migrado de Leaflet a Google Maps JS API + @googlemaps/markerclusterer.
  */
 
 const CAROUSEL_INTERVAL_MS = 3500;
@@ -204,6 +206,55 @@ const createPopupCarousel = (images, title) => {
     return { element: wrapper, destroy: stopAutoPlay };
 };
 
+/* ── Iconos de marcador (SVG data URI, sin dependencia de sprites externos) ── */
+
+const PIN_COLOR        = '#6366f1';
+const PIN_COLOR_ACTIVE = '#ef4444';
+const CLUSTER_TIERS = [
+    { min: 50, size: 60, color: '#8b5cf6' },
+    { min: 20, size: 52, color: '#6366f1' },
+    { min: 0,  size: 44, color: '#1a1d26' },
+];
+
+const svgToDataUrl = (svg) => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+
+const buildPinIcon = (active) => {
+    const color = active ? PIN_COLOR_ACTIVE : PIN_COLOR;
+    const size  = active ? 40 : 32;
+    return {
+        url: svgToDataUrl(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' +
+            '<path fill="' + color + '" stroke="#fff" stroke-width="1" ' +
+            'd="M12 0C7.6 0 4 3.6 4 8c0 5.4 6.6 13.2 7.1 13.8.2.2.5.3.9.3s.7-.1.9-.3C13.4 21.2 20 13.4 20 8c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z"/>' +
+            '</svg>'
+        ),
+        scaledSize: new google.maps.Size(size, size),
+        anchor: new google.maps.Point(size / 2, size),
+    };
+};
+
+const buildClusterIcon = (count) => {
+    const tier = CLUSTER_TIERS.find((t) => count >= t.min);
+    const r    = tier.size / 2;
+    return {
+        icon: {
+            url: svgToDataUrl(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="' + tier.size + '" height="' + tier.size + '" viewBox="0 0 ' + tier.size + ' ' + tier.size + '">' +
+                '<circle cx="' + r + '" cy="' + r + '" r="' + (r - 2) + '" fill="' + tier.color + '" stroke="#fff" stroke-width="3"/>' +
+                '</svg>'
+            ),
+            scaledSize: new google.maps.Size(tier.size, tier.size),
+            anchor: new google.maps.Point(r, r),
+        },
+        label: {
+            text: String(count),
+            color: '#fff',
+            fontWeight: '800',
+            fontSize: count >= 50 ? '1rem' : count >= 20 ? '0.9rem' : '0.85rem',
+        },
+    };
+};
+
 /* ── DOMContentLoaded ── */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -221,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.dispatchEvent(new CustomEvent('search:map-ready'));
     };
 
-    if (!mapElement || typeof L === 'undefined') {
+    if (!mapElement || typeof google === 'undefined' || !google.maps) {
         signalMapReady();
         return;
     }
@@ -237,76 +288,51 @@ document.addEventListener('DOMContentLoaded', () => {
         : [];
 
     // 1. Inicializar Mapa centrado en el Canal du Midi
-    let mapTilesReady = false;
-    let markersReady = false;
     let mapReadyEmitted = false;
 
     const maybeSignalMapReady = () => {
-        if (mapReadyEmitted || !mapTilesReady || !markersReady) return;
+        if (mapReadyEmitted) return;
         mapReadyEmitted = true;
         window.dispatchEvent(new CustomEvent('search:map-ready'));
     };
 
-    map = L.map('explore-map', { zoomControl: false }).setView([43.6, 1.44], 10);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors © CARTO',
+    map = new google.maps.Map(mapElement, {
+        center: { lat: 43.6, lng: 1.44 },
+        zoom: 10,
+        zoomControl: true,
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+        mapTypeControl: true,
+        mapTypeControlOptions: { position: google.maps.ControlPosition.TOP_LEFT },
+        streetViewControl: true,
+        streetViewControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+        fullscreenControl: true,
     });
 
-    tileLayer.once('load', () => {
-        mapTilesReady = true;
-        maybeSignalMapReady();
-    });
+    google.maps.event.addListenerOnce(map, 'idle', maybeSignalMapReady);
 
-    tileLayer.once('tileerror', () => {
-        mapTilesReady = true;
-        maybeSignalMapReady();
+    const infoWindow = new google.maps.InfoWindow({ maxWidth: 320 });
+    let activeCarouselDestroy = null;
+    infoWindow.addListener('closeclick', () => {
+        if (typeof activeCarouselDestroy === 'function') activeCarouselDestroy();
+        activeCarouselDestroy = null;
     });
-
-    tileLayer.addTo(map);
 
     // 2. Añadir Marcadores con clustering
-    let clusterGroup = null;
-    let carouselDestroyFns = {};
+    let clusterer = null;
 
-    const createClusterGroup = () => L.markerClusterGroup({
-        maxClusterRadius: 50,
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        iconCreateFunction: function (cluster) {
-            const count = cluster.getChildCount();
-            const size  = count >= 50 ? 'large' : count >= 20 ? 'medium' : 'small';
-            return L.divIcon({
-                html: '<div class="cluster-marker cluster-' + size + '"><span>' + count + '</span></div>',
-                className: 'search-cluster-icon',
-                iconSize: [44, 44],
-                iconAnchor: [22, 22],
-            });
-        },
-    });
+    const buildMarkers = (items) => items.map((item) => {
+        const marker = new google.maps.Marker({
+            position: { lat: item.lat, lng: item.lng },
+            icon: buildPinIcon(false),
+        });
+        marker.set('serviceId', item.id);
 
-    const buildMarkers = (items) => {
-        carouselDestroyFns = {};
-        markers = {};
+        const galleryImages = Array.isArray(item.gallery) && item.gallery.length > 0
+            ? item.gallery
+            : (item.image ? [item.image] : []);
 
-        const nextClusterGroup = createClusterGroup();
-
-        items.forEach((item) => {
-            const customIcon = L.divIcon({
-                className: 'search-marker',
-                html: '<div class="map-pin" id="marker-' + escapeText(item.id) + '"><i class="bi bi-geo-alt-fill"></i></div>',
-                iconSize: [32, 32],
-                iconAnchor: [16, 32],
-            });
-
-            const galleryImages = Array.isArray(item.gallery) && item.gallery.length > 0
-                ? item.gallery
-                : (item.image ? [item.image] : []);
-
+        marker.addListener('click', () => {
             const { element: carouselEl, destroy: destroyCarousel } = createPopupCarousel(galleryImages, item.title);
-            carouselDestroyFns[item.id] = destroyCarousel;
 
             const popupContent = document.createElement('div');
             popupContent.className = 'map-popup-shell';
@@ -370,20 +396,22 @@ document.addEventListener('DOMContentLoaded', () => {
             popupLink.rel = 'noopener noreferrer';
             popupContent.appendChild(popupLink);
 
-            const marker = L.marker([item.lat, item.lng], { icon: customIcon })
-                .bindPopup(popupContent);
+            if (typeof activeCarouselDestroy === 'function') activeCarouselDestroy();
+            activeCarouselDestroy = destroyCarousel;
 
-            marker.on('popupclose', () => {
-                if (typeof carouselDestroyFns[item.id] === 'function') {
-                    carouselDestroyFns[item.id]();
-                }
-            });
-
-            nextClusterGroup.addLayer(marker);
-            markers[item.id] = marker;
+            infoWindow.setContent(popupContent);
+            infoWindow.open({ map, anchor: marker });
         });
 
-        return nextClusterGroup;
+        markers[item.id] = marker;
+        return marker;
+    });
+
+    const clusterRenderer = {
+        render: ({ count, position }) => {
+            const { icon, label } = buildClusterIcon(count);
+            return new google.maps.Marker({ position, icon, label, zIndex: 1000 + count });
+        },
     };
 
     const renderMapResults = (items) => {
@@ -391,20 +419,23 @@ document.addEventListener('DOMContentLoaded', () => {
             ? items.filter((item) => item && Number(item.lat) !== 0 && Number(item.lng) !== 0)
             : [];
 
-        if (clusterGroup) {
-            map.removeLayer(clusterGroup);
+        if (clusterer) {
+            clusterer.clearMarkers();
         }
+        markers = {};
 
-        clusterGroup = buildMarkers(normalizedItems);
-        map.addLayer(clusterGroup);
+        const newMarkers = buildMarkers(normalizedItems);
+        clusterer = new markerClusterer.MarkerClusterer({ map, markers: newMarkers, renderer: clusterRenderer });
 
         if (normalizedItems.length > 0) {
-            map.fitBounds(clusterGroup.getBounds(), { padding: [50, 50] });
+            const bounds = new google.maps.LatLngBounds();
+            normalizedItems.forEach((item) => bounds.extend({ lat: item.lat, lng: item.lng }));
+            map.fitBounds(bounds, 50);
         } else {
-            map.setView([43.6, 1.44], 10);
+            map.setCenter({ lat: 43.6, lng: 1.44 });
+            map.setZoom(10);
         }
 
-        markersReady = true;
         maybeSignalMapReady();
 
         return normalizedItems;
@@ -414,9 +445,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderMapResults(validResults);
 
-    maybeSignalMapReady();
-
     /* ── Vista móvil ── */
+
+    const refreshMapSize = () => {
+        const center = map.getCenter();
+        google.maps.event.trigger(map, 'resize');
+        if (center) map.setCenter(center);
+    };
 
     const setMobileView = (view) => {
         if (!pageShell) return;
@@ -435,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = pageShell.dataset.filtersOpen === 'true' ? 'hidden' : '';
 
         if (pageShell.dataset.mobileView === 'map') {
-            window.setTimeout(() => map.invalidateSize(), 180);
+            window.setTimeout(refreshMapSize, 180);
         }
     };
 
@@ -468,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileTriggers.forEach((button) => {
                 button.classList.toggle('is-active', button.dataset.mobileTarget === 'list');
             });
-            map.invalidateSize();
+            refreshMapSize();
         } else {
             setMobileView(pageShell?.dataset.mobileView || 'list');
         }
@@ -504,13 +539,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!mapTarget) return;
 
         if (!detailMap) {
-            detailMap = L.map('listing-detail-map', { zoomControl: true, attributionControl: true });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors © CARTO',
-            }).addTo(detailMap);
+            detailMap = new google.maps.Map(mapTarget, {
+                center: { lat: service.lat, lng: service.lng },
+                zoom: 14,
+                zoomControl: true,
+            });
         }
 
-        if (detailMarker) detailMarker.remove();
+        if (detailMarker) detailMarker.setMap(null);
+
+        detailMarker = new google.maps.Marker({
+            position: { lat: service.lat, lng: service.lng },
+            map: detailMap,
+        });
 
         // textContent en lugar de innerHTML para el título del popup
         const popupDiv = document.createElement('div');
@@ -518,10 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
         strong.textContent = escapeText(service.title);
         popupDiv.appendChild(strong);
 
-        detailMarker = L.marker([service.lat, service.lng]).addTo(detailMap);
-        detailMarker.bindPopup(popupDiv).openPopup();
-        detailMap.setView([service.lat, service.lng], 14);
-        setTimeout(() => detailMap.invalidateSize(), 120);
+        const detailInfoWindow = new google.maps.InfoWindow({ content: popupDiv });
+        detailInfoWindow.open({ map: detailMap, anchor: detailMarker });
+
+        detailMap.setCenter({ lat: service.lat, lng: service.lng });
+        detailMap.setZoom(14);
+        setTimeout(() => google.maps.event.trigger(detailMap, 'resize'), 120);
     };
 
     const openDetailModal = (serviceId) => {
@@ -597,15 +640,15 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── API pública ── */
 
 window.highlightMarker = (id) => {
-    const markerDiv = document.getElementById('marker-' + id);
-    if (markerDiv) {
-        markerDiv.classList.add('is-active');
-        if (markers[id]) markers[id].setZIndexOffset(1000);
-    }
+    const marker = markers[id];
+    if (!marker) return;
+    marker.setIcon(buildPinIcon(true));
+    marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
 };
 
 window.resetMarker = (id) => {
-    const markerDiv = document.getElementById('marker-' + id);
-    if (markerDiv) markerDiv.classList.remove('is-active');
-    if (markers[id]) markers[id].setZIndexOffset(0);
+    const marker = markers[id];
+    if (!marker) return;
+    marker.setIcon(buildPinIcon(false));
+    marker.setZIndex(null);
 };

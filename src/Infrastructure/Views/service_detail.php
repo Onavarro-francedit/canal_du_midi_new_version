@@ -63,6 +63,12 @@ if ($fullAddress === '') {
 }
 
 $heroImage = $service->imageUrl ?: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80';
+$heroSlides = $service->heroMode === 'single'
+    ? [$heroImage]
+    : array_values(array_unique(array_filter(array_merge(
+        [$heroImage],
+        (array)($service->gallery ?? [])
+    ))));
 $priceLabel = $service->getFormattedPrice();
 $roomsCount = (int)($service->features['rooms_count'] ?? 0);
 $socialLinks = [];
@@ -103,7 +109,9 @@ $equipmentIcons = [
 <?php endif; ?>
 <main class="service-page">
     <!-- 1. HERO -->
-    <section class="service-hero" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.78)), url('<?= htmlspecialchars($heroImage, ENT_QUOTES, 'UTF-8') ?>');">
+    <section class="service-hero" id="service-hero" data-gallery="<?= htmlspecialchars(json_encode($heroSlides), ENT_QUOTES, 'UTF-8') ?>">
+        <div class="service-hero-bg service-hero-bg--a is-visible" style="background-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES, 'UTF-8') ?>');"></div>
+        <div class="service-hero-bg service-hero-bg--b"></div>
         <div class="container">
             <div class="service-hero-content">
                

@@ -5,6 +5,14 @@
     padding: 0 20px;
 }
 
+.backoffice-page-title{
+    font-size: 2rem;
+}
+
+.ul_item_active{
+    border-bottom: 2px solid #667eea;
+}
+
 .backoffice-login-shell {
     max-width: 420px;
     margin: 80px auto;
@@ -103,4 +111,413 @@
     text-align: left;
     padding: 10px 12px;
     border-bottom: 1px solid var(--line, #e2e2e2);
+}
+
+/* Écran d'édition — réutilise les classes de service_detail.css (chargé aussi
+   sur la page backoffice), on n'ajoute ici que le nécessaire pour l'édition. */
+.ficha-floating-alert {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 10001;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.ficha-editable {
+    position: relative;
+}
+
+.ficha-edit-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line, #e2e2e2);
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--muted, #666);
+    z-index: 5;
+}
+
+.ficha-edit-btn:hover {
+    background: #f5f5f5;
+    color: var(--primary, #667eea);
+}
+
+.ficha-edit-btn--hero {
+    top: 24px;
+    right: 24px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Override du .modal-card générique (pensé pour des popups de confirmation
+   centrées) pour un formulaire aligné à gauche. */
+.ficha-modal-card {
+    text-align: left;
+    max-width: 520px;
+    width: 90%;
+    padding: 0;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ficha-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 32px;
+}
+
+/* Le formulaire se réduit pour tenir dans les 85vh de la carte (voulu), mais
+   ses enfants ne doivent pas se comprimer avec lui : chacun garde sa taille
+   naturelle et c'est le scroll interne qui prend le relais. */
+.ficha-modal-form > * {
+    flex-shrink: 0;
+}
+
+.ficha-modal-form h2 {
+    position: sticky;
+    top: -32px;
+    margin: -32px -32px 0;
+    padding: 32px 32px 16px;
+    background: #fff;
+    z-index: 2;
+}
+
+.ficha-modal-form .modal-actions {
+    position: sticky;
+    bottom: -32px;
+    margin: 20px -32px -32px;
+    padding: 16px 32px 32px;
+    background: #fff;
+}
+
+.ficha-modal-card--wide {
+    max-width: 640px;
+}
+
+@media (max-width: 640px) {
+    .ficha-modal-card {
+        width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+.ficha-hero-preview {
+    position: relative;
+    height: 140px;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    background-color: #1c2340;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px;
+    margin: 4px 0 16px;
+    overflow: hidden;
+}
+
+.ficha-hero-preview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 20, 40, 0.1), rgba(15, 20, 40, 0.75));
+}
+
+.ficha-hero-preview span {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ficha-cover-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 4px 0 4px;
+}
+
+.ficha-cover-option {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+/* .ficha-modal-form label { margin-top: 12px } décale les tuiles (ce sont des
+   <label>) par rapport à .ficha-cover-add (un <div>, pas concerné) — d'où le
+   désalignement vertical dans la grille. Sélecteur plus spécifique que la règle
+   d'origine pour être sûr de l'emporter. */
+.ficha-modal-form .ficha-cover-option {
+    margin-top: 0;
+}
+
+.ficha-cover-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.ficha-cover-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.ficha-cover-option:has(input:checked) {
+    border-color: var(--primary, #667eea);
+}
+
+.ficha-cover-check {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    color: #fff;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+}
+
+.ficha-cover-option:has(input:checked) .ficha-cover-check {
+    opacity: 1;
+}
+
+.ficha-cover-option.is-dragging {
+    opacity: 0.4;
+}
+
+.ficha-cover-order {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--primary, #667eea);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.ficha-cover-order:empty {
+    display: none;
+}
+
+/* Vignette d'une photo pas encore envoyée (avant clic sur "Enregistrer") : même gabarit et
+   même interaction (checkbox, ordre, glisser-déposer) qu'une photo déjà enregistrée — seul
+   le bord pointillé + le badge "Nouvelle" la distinguent visuellement. */
+.ficha-cover-pending {
+    border-style: dashed;
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.ficha-cover-pending-badge {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.ficha-cover-option,
+#ficha-gallery-preview .gallery-item {
+    position: relative;
+}
+
+.ficha-photo-delete {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 2;
+    width: 22px;
+    height: 22px;
+    line-height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 1rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.ficha-photo-delete:hover {
+    background: #d92d20;
+}
+
+.button.is-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.button.is-loading::after {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: ficha-spin 0.7s linear infinite;
+}
+
+@keyframes ficha-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button.is-loading::after {
+        animation: none;
+    }
+}
+
+.ficha-hero-mode-picker {
+    display: flex;
+    gap: 10px;
+    margin: 4px 0 4px;
+    flex-wrap: wrap;
+}
+
+.ficha-radio-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line, #ccc);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.ficha-radio-pill input {
+    accent-color: var(--primary, #667eea);
+}
+
+.ficha-radio-pill:has(input:checked) {
+    border-color: var(--primary, #667eea);
+    background: rgba(102, 199, 199, 0.1);
+    font-weight: 700;
+}
+
+.ficha-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    border: 2px dashed var(--line, #ccc);
+    border-radius: 10px;
+    text-align: center;
+    color: var(--muted, #666);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.ficha-dropzone i {
+    font-size: 1.6rem;
+}
+
+.ficha-dropzone.is-dragover {
+    border-color: var(--primary, #667eea);
+    background: rgba(102, 199, 199, 0.08);
+    color: var(--primary, #667eea);
+}
+
+/* Tuile "Ajouter des photos" : dernière case du grid .ficha-cover-picker, même
+   gabarit que .ficha-cover-option pour s'aligner comme une photo de plus. */
+.ficha-cover-add {
+    aspect-ratio: 1;
+    padding: 8px;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    gap: 4px;
+    /* .ficha-dropzone hérite --line (rgba(…, 0.12)) : trop pâle pour une tuile de
+       104px noyée parmi des photos saturées — on la rend visible et cohérente
+       avec la couleur d'accent déjà utilisée sur les tuiles sélectionnées. */
+    border-color: rgba(102, 126, 234, 0.35);
+    background: rgba(102, 126, 234, 0.04);
+}
+
+.ficha-cover-add i {
+    font-size: 1.3rem;
+}
+
+.ficha-dropzone-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ficha-dropzone-preview img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.ficha-map-hint {
+    font-weight: 400;
+    color: var(--muted, #666);
+    font-size: 0.85rem;
+}
+
+.ficha-address-map {
+    width: 100%;
+    height: 260px;
+    border-radius: 8px;
+    border: 1px solid var(--line, #ccc);
+}
+
+.ficha-modal-form label {
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.ficha-modal-form input,
+.ficha-modal-form textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--line, #ccc);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.ficha-modal-error {
+    background: #fdecea;
+    color: #b3261e;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin: 0;
 }

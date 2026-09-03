@@ -45,4 +45,36 @@ class ListingUploader
 
         return 'public/uploads/listings/' . $listingId . '/' . $filename;
     }
+
+    /**
+     * Borra físicamente una foto subida por el propio backoffice. Best-effort:
+     * nunca lanza excepción hacia el usuario (TASK-026). Doble comprobación de
+     * pertenencia: (1) prefijo del path del listing, (2) realpath() dentro del
+     * directorio real de ese listing — evita borrar fuera de su carpeta
+     * (seeds en public/clients_images/, URLs externas, otro listing).
+     */
+    public function delete(int $listingId, string $storedPath): void
+    {
+        $path = $storedPath;
+        if (defined('BASE_URL') && str_starts_with($path, rtrim(BASE_URL, '/'))) {
+            $path = substr($path, strlen(rtrim(BASE_URL, '/')));
+        }
+        $path = ltrim($path, '/');
+
+        $prefix = 'public/uploads/listings/' . $listingId . '/';
+        if (!str_starts_with($path, $prefix)) {
+            return;
+        }
+
+        $listingDir = realpath(__DIR__ . '/../../../public/uploads/listings/' . $listingId);
+        $fullPath = realpath(__DIR__ . '/../../../' . $path);
+
+        if ($listingDir === false || $fullPath === false || !str_starts_with($fullPath, $listingDir)) {
+            return;
+        }
+
+        if (!@unlink($fullPath)) {
+            error_log('ListingUploader::delete — impossible de supprimer ' . $fullPath);
+        }
+    }
 }

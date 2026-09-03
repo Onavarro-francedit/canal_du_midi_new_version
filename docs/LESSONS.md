@@ -75,6 +75,23 @@ _(sin lecciones todavía)_
 - **SEC-013: en servicios IA, el check `empty($apiKey)` debe ser el primer guard, antes de cualquier procesamiento del prompt.**
   En `VacationPlannerService::generatePlan` la llamada a `sanitizeUserPrompt()` se hace antes del check de API key (líneas 19 y 36 respectivamente). No es un bug de seguridad (la sanitización es barata y el resultado no se filtra al exterior en la ruta de fallback), pero viola el principio de "fail fast": si no hay key, no hay razón para procesar el input. En `ClaudeAIService` el orden es correcto (key primero, sanitización después). Regla: en cualquier servicio que llame a una API externa, el guard `if (empty($apiKey)) { return fallback; }` va al inicio del método, antes de construir catálogos, sanitizar prompts o instanciar el cliente. Detectado en TASK-018 (2026-07-06). Mejora de calidad, no bloqueante.
 
+- **SEC-015: un valor interpolado en un template string de CSS inline (`style.backgroundImage = \`url('${valor}')\``) puede romper el atributo igual que un `href`/`src` sin escapar, aunque no sea `innerHTML`.**
+  En `backoffice-edit.js`, `setHeroPreview(url)` y `renderPhotos()` construyen
+  `style.backgroundImage` con un template string sin escapar la comilla simple.
+  El valor viene de `imageUrl`/`data.imageUrl` (URL de foto ya subida por el propio
+  owner de esa fiche — no es input arbitrario de un tercero en este flujo), así que
+  NO es explotable en el vector actual, pero es el mismo patrón de raíz que un XSS
+  de atributo: si `imageUrl` alguna vez llegase de una fuente menos controlada
+  (ej. nombre de archivo original del upload en vez de un hash aleatorio), una
+  comilla simple cerraría `url('...')` y permitiría inyectar CSS/`expression()`
+  arbitrario. Detectado en la revisión security de TASK-026 (2026-09-03). Regla:
+  al fijar una URL en un `style` vía JS, usar `el.style.backgroundImage =
+  \`url("${CSS.escape ? url.replace(/["\\]/g, '\\$&') : url}")\`` o, mejor,
+  fijar la propiedad con un objeto CSSStyleValue si el navegador lo soporta;
+  como mínimo escapar comillas dobles/simples y backslashes antes de interpolar
+  en cualquier valor de `style`. **Pendiente de corregir** (mejora no bloqueante,
+  no es una regresión de TASK-026 — el patrón `setHeroPreview` ya existía antes).
+
 - **SEC-014: todo endpoint POST que llame a una API de pago externa o escriba en BD/envíe email necesita CSRF + rate-limit — no asumir que "ya está registrado" sin comprobarlo.**
   `ai-plan-generate` (llama a Anthropic, coste por token) y `ai-plan-submit`
   (crea filas en `vacation_plans` + dispara N emails a prestadores reales) no
@@ -212,3 +229,52 @@ _(sin lecciones todavía)_
   `$tour->type` legible, nunca slug crudo); `home.php` lo imprime con
   `htmlspecialchars(...,ENT_QUOTES,'UTF-8')`. Verificado: las 4 tour-cards muestran
   "Location de bateau"/"Location de vélo"/"Croisière en bateau", 0 slugs crudos.
+
+- **PRD-010: un mensaje de error no está "mostrado" por tener texto y `hidden=false` — hay que comprobar que su rect cae DENTRO del área visible del contenedor scrolleable, en un viewport realista.**
+  En `#modal-photos` (TASK-026) la validación cliente de subida funciona: rechaza el archivo,
+  vacía el input y NO dispara ninguna petición de red. Pero el `.ficha-modal-error` vive en la
+  cabecera del formulario y los dropzones están al final: con el modal desplazado (lo normal
+  para llegar a ellos) el mensaje se pinta 368 px por encima del área visible en un viewport
+  1440×800 → el prestador elige un PDF o una foto de 7 Mo y **no ve absolutamente nada**, cree
+  que la foto se añadió y guarda sin ella. Regla: (1) al revelar un error, desplazarlo a la
+  vista (`scrollIntoView({block:'nearest'})`) o pintarlo junto al control que lo provocó;
+  (2) al verificar, medir `getBoundingClientRect()` del mensaje contra el rect del contenedor
+  scrolleable en el momento del fallo y capturar el viewport — nunca conformarse con
+  `hidden === false` ni con una captura en un viewport artificialmente alto (refuerza PRD-002).
+  Detectado en la revisión product de TASK-026 (2026-09-03). **CORREGIDO el mismo día**
+  (helper `showModalError()` + `scrollIntoView`), con un segundo hallazgo en la
+  re-verificación que es la parte más valiosa de la lección: **`block: 'nearest'` NO basta
+  cuando hay una cabecera collant**. Deja el mensaje justo en el borde superior de la zona
+  desplazable, es decir DEBAJO del `<h2>Photos</h2>` (y=60→163) — rect "dentro" del formulario,
+  `hidden=false`, y aun así invisible. Se detectó con
+  `document.elementFromPoint(centro del mensaje)`, que devolvía el `H2` en vez de la caja de
+  error. Regla final de verificación: la prueba de que un mensaje se ve no es su rect, es que
+  `elementFromPoint()` en su centro devuelva el propio mensaje (más la captura). Fix aplicado:
+  `block: 'center'` (alternativa equivalente: `scroll-margin-top` igual a la altura de la
+  cabecera collant).
+
+- **PRD-011: al repintar por AJAX, la rama "cero elementos" debe limpiar TODOS los reflejos del dato anterior (fondos CSS incluidos) y decir algo al usuario.**
+  `renderPhotos()` escribe el hero con `if (hero && imageUrl) hero.style.backgroundImage = …`:
+  cuando el usuario borra la ÚLTIMA foto, `imageUrl` llega vacío, el `if` no entra y la pantalla
+  se queda con el fondo de **la foto recién borrada** — la acción parece no haber tenido efecto
+  (la BD sí quedó correcta). Además el picker de portada se vacía sin mensaje, bajo un label que
+  sigue diciendo "cliquez une photo pour la choisir" y sin nada que clicar. Regla: un `if (valor)`
+  alrededor de una escritura de estado convierte el vaciado en un no-op; tratar el caso vacío de
+  forma explícita (limpiar/placeholder) y dar el mismo tipo de mensaje de estado vacío que ya
+  tienen las listas hermanas ("Aucune photo pour le moment."). Corolario de verificación: probar
+  siempre el borrado hasta 0 elementos, no solo el de "uno de varios". Detectado en la revisión
+  product de TASK-026 (2026-09-03). **CORREGIDO y re-verificado en navegador el mismo día**
+  (`setHeroPreview`/`renderPhotos` limpian `backgroundImage` a `''` y el picker pinta
+  "Aucune photo pour le moment." con `photos.length === 0`).
+
+- **PRD-012: una interacción sin affordance no existe para el usuario.**
+  El reordenado por drag & drop de TASK-026 funciona (verificado: arrastrar la 6ª vignette a la
+  1ª posición reordena el DOM y el orden persiste en BD y en el carrusel público tras guardar y
+  recargar), pero nada lo anuncia: el label del picker dice solo "(cliquez une photo pour la
+  choisir)", el `cursor` es `pointer` (no `grab`/`move`) y no hay icono de arrastre. Un prestador
+  no descubrirá la función. Además el drag nativo HTML5 (`draggable="true"`) **no funciona en
+  táctil**, así que en tablet/móvil el reordenado es sencillamente inaccesible, sin fallback.
+  Regla: toda interacción nueva necesita (1) una pista textual o visual explícita en el idioma del
+  usuario, (2) `cursor` coherente, y (3) una decisión consciente y documentada sobre táctil
+  (fallback con flechas ↑↓, o "el backoffice es desktop-only"). Detectado en la revisión product
+  de TASK-026 (2026-09-03). **Pendiente de decidir/corregir** (BUG-020).

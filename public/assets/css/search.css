@@ -2172,7 +2172,7 @@ body.search-page-loading .site-footer {
 
     .search-mobile-backdrop {
         position: fixed;
-        inset: 82px 0 76px;
+        inset: 82px 0 62px;
         z-index: 1001;
         background: rgba(15, 23, 42, 0.35);
     }
@@ -2250,7 +2250,7 @@ body.search-page-loading .site-footer {
 
     .explore-map-wrapper {
         position: fixed;
-        inset: 82px 0 76px;
+        inset: 82px 0 62px;
         z-index: 1000;
         background: #ffffff;
         opacity: 0;

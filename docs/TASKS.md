@@ -4,10 +4,28 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(ninguna — TASK-019 pasó a security ⚠️ aprobada con observaciones, ver 🟢
-Completadas; pendiente de handoff a product)_
+_(vacío — TASK-026 cerrada ✅, ver 🟢 Completadas. De sus 3 seguimientos de product,
+BUG-018 y BUG-019 quedaron corregidos y re-verificados el mismo día; solo BUG-020
+sigue abierto en 🟡 Pendiente.)_
 
 ## 🟡 Pendiente
+
+- **BUG-020 / PRD-012 (medio — product, TASK-026, 2026-09-03)** — El reordenado
+  por drag & drop funciona y persiste, pero es **indescubrible**: ninguna pista
+  textual, `cursor: pointer` en vez de `grab`/`move`, ningún icono de arrastre;
+  el label solo menciona elegir la portada. Además el drag nativo HTML5 no
+  funciona en táctil → en tablet/móvil el reordenado es inaccesible sin fallback.
+  Decidir: añadir pista + `cursor: grab` (+ flechas ↑↓ como fallback táctil), o
+  documentar que el backoffice es desktop-only. Nota relacionada: el picker mezcla
+  portada y galería y, tras recargar, la portada vuelve siempre al primer hueco,
+  así que la disposición exacta que hizo el usuario puede no coincidir con lo que
+  ve al volver (el ORDEN de la galería sí se respeta, en el picker y en el
+  carrusel público).
+
+- **SEC-015** (backlog, no bloqueante) — `backoffice-edit.js` interpola URLs sin
+  escapar comillas en `style.backgroundImage` (`setHeroPreview`/`renderPhotos`).
+  No explotable HOY (URL siempre generada server-side con hash aleatorio), pero
+  es deuda de patrón. Ver LESSONS.md / ERROR_LOG.md.
 
 - **SEC-014** (backlog, no bloqueante) — `ai-plan-generate`/`ai-plan-submit` sin
   token CSRF ni rate-limit por IP/sesión. Pre-existente (no es regresión de
@@ -228,6 +246,74 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
+  ✅ corregido y verificado (2026-09-03)**
+  - **Síntoma:** `.ficha-modal-error` vive en la cabecera del formulario y los
+    dropzones al final; con el modal desplazado (lo normal) el mensaje quedaba
+    368 px por encima del área visible a 1440×800 → el prestador elegía un PDF o
+    una foto de 7 Mo y no veía nada.
+  - **Fix:** helper `showModalError(errorBox, message)` en `backoffice-edit.js`
+    (textContent + `hidden = false` + `scrollIntoView`), usado en los 4 puntos de
+    error (validación de dropzone, borrado fallido/red, submit fallido/red).
+  - **Corrección adicional de product en la re-verificación:** la primera versión
+    usaba `block: 'nearest'`, que deja el mensaje justo en el borde superior de la
+    zona desplazable — **debajo del `<h2>Photos</h2> collant**, que va de y=60 a
+    y=163. Medido en navegador: `elementFromPoint()` en el centro del mensaje
+    devolvía el `H2`, o sea seguía invisible pese a `hidden=false` y a un rect
+    "dentro" del formulario. Cambiado a `block: 'center'`.
+  - **Verificado en navegador (1440×800, modal desplazado al máximo):** elegir
+    `doc.pdf` → mensaje « doc.pdf » : format non pris en charge (JPG, PNG ou
+    WEBP). visible sin scroll manual (rect 169→215, `elementFromPoint` devuelve
+    la propia caja), input vaciado, **0 peticiones de red**, 0 errores de consola.
+
+- **BUG-019 / PRD-011 — Estado sucio tras borrar la última foto
+  ✅ corregido y verificado (2026-09-03)**
+  - **Fix:** `setHeroPreview()` y `renderPhotos()` limpian `backgroundImage` a `''`
+    cuando no hay portada (antes el `if (imageUrl)` hacía que el vaciado fuese un
+    no-op y quedaba pegada la foto recién borrada), y `.ficha-cover-picker` pinta
+    "Aucune photo pour le moment." cuando `photos.length === 0`.
+  - **Verificado en navegador:** borradas las 8 fotos una a una desde el modal →
+    `bo-hero-preview` y `ficha-hero` con `backgroundImage` vacío (bloque neutro,
+    sin la foto borrada), picker con el mensaje, galería con el suyo, 0 errores de
+    consola. La ficha pública sigue degradando a la imagen genérica del canal.
+  - **Nit cosmético pendiente (no bloqueante):** el `<p>` del picker hereda las
+    columnas del grid y el mensaje se parte en 3 líneas en una columna estrecha;
+    un `grid-column: 1 / -1` en `backoffice.css` lo dejaría en una línea.
+
+- **TASK-026 — Modal "Photos" del backoffice: borrar, reordenar y validar
+  ✅ CERRADA (2026-09-03)**
+  - **Pipeline:** architect ✅ → coder ✅ → security ⚠️ (0 críticos, SEC-015 no
+    bloqueante) → product ⚠️ → **fix de BUG-018/BUG-019 + re-verificación en
+    navegador → ✅ limpio**. Único seguimiento vivo: BUG-020 (🟡, decisión de UX).
+    Spec: `docs/superpowers/specs/2026-09-03-backoffice-photos-modal-design.md`.
+  - **Qué se implementó:** (1) borrado de fotos (portada y galería) desde
+    `#modal-photos` con botón "×", `confirm()` y AJAX (`case 'delete_photo'` en
+    `handleAjaxBlockUpdate`), con reasignación automática de portada; (2)
+    reordenado de la galería por drag & drop nativo sobre `.ficha-cover-picker`,
+    persistido como `gallery_order[]` al guardar; (3) validación cliente 5 Mo +
+    MIME y estado "Envoi en cours…" con spinner y botón deshabilitado.
+    Archivos: `MySQLServiceRepository.php`, `ListingUploader.php`,
+    `BackofficeController.php`, `edit_listing.php`, `backoffice-edit.js`,
+    `backoffice.css`.
+  - **Verificación en navegador (Playwright, owner de prueba sobre la fiche 226,
+    datos restaurados byte a byte al terminar):** borrado de foto de galería →
+    desaparece sin recargar y sigue ausente tras F5 (BD confirmada); "Annuler" en
+    el `confirm()` no dispara ninguna petición; borrado de la portada activa →
+    se reasigna sola a la siguiente y el hero del modal + la ficha pública la
+    reflejan, sin hueco gris; drag de la 6ª vignette a la 1ª + "Enregistrer" +
+    F5 → el nuevo orden persiste en BD, en el picker y en el carrusel público
+    (comparado antes/después, no asumido); archivo de 7 Mo y `doc.pdf` →
+    rechazados en cliente con texto francés correcto y **cero peticiones de red**;
+    durante el envío el botón muestra "Envoi en cours…" + spinner y queda
+    deshabilitado (capturado en vuelo ralentizando `fetch`), luego vuelve a
+    "Enregistrer" y sale "Modifications enregistrées."; **0 errores de consola**
+    en toda la sesión (solo warnings preexistentes de Google Maps); todos los
+    textos nuevos en francés y coherentes con el resto del backoffice.
+  - **Seguimientos:** BUG-018/PRD-010 y BUG-019/PRD-011 → **corregidos y
+    re-verificados en navegador el mismo día** (ver sus entradas arriba en 🟢).
+    Queda abierto solo **BUG-020/PRD-012** en 🟡 (el drag & drop es indescubrible
+    y no funciona en táctil — decisión de UX, no defecto de implementación).
 
 - **BUG-013 — Galería del backoffice sin normalizar, fotos subidas daban 404
   ✅ corregido (2026-09-02)**

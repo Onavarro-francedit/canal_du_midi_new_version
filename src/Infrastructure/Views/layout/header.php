@@ -35,6 +35,11 @@
          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
     <?php endif; ?>
 
+    <?php if (isset($page) && $page === 'backoffice'): ?>
+        <!-- Réutilise le design de la fiche publique pour l'écran d'édition -->
+        <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/service_detail.css">
+    <?php endif; ?>
+
     <?php if (isset($page) && $page === 'search'): ?>
         <!-- Leaflet CSS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />

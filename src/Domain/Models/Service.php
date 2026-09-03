@@ -31,6 +31,7 @@ class Service {
         public array $socials = [],
         public array $videos = [],
         public string $slug = '',
+        public string $heroMode = 'carousel',
     ) {
         $this->translations['title'] = $this->translations['title'] ?? 'Sans titre';
         $this->translations['description'] = $this->translations['description'] ?? '';

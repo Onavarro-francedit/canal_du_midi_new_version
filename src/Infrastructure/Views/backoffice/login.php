@@ -4,7 +4,7 @@ use App\Infrastructure\Services\Csrf;
 ?>
 <main class="backoffice-page backoffice-login">
     <div class="container backoffice-login-shell">
-        <h1>Espace professionnel</h1>
+        <h3 class="backoffice-page-title">Espace professionnel</h3>
         <p>Connectez-vous pour gérer votre fiche Canal du Midi.</p>
 
         <?php if (!empty($error)): ?>

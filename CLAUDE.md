@@ -88,7 +88,19 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 
 ## 📌 Estado actual del proyecto
 
-- **Último completado:** TASK-001 (escape de salida `ENT_QUOTES,'UTF-8'` en 6 vistas:
+- **Último completado:** **TASK-026 — modal "Photos" del backoffice: borrar, reordenar
+  y validar ✅** (pipeline completo + re-verificación en navegador, 2026-09-03). Borrado
+  de portada/galería vía AJAX con `confirm()` y reasignación automática de portada,
+  reordenado por drag & drop nativo persistido como `gallery_order[]`, validación cliente
+  (5 Mo + MIME) y estado "Envoi en cours…" con spinner. Verificado con Playwright sobre la
+  fiche 226 (owner throwaway, datos restaurados byte a byte): borrado que persiste tras F5,
+  orden que llega al carrusel público, rechazo de archivos inválidos sin ninguna petición de
+  red, 0 errores de consola, textos en francés. Se abrieron 3 hallazgos de product; **BUG-018**
+  (mensaje de error invisible — `showModalError()` + `scrollIntoView({block:'center'})`, ojo:
+  `'nearest'` NO basta bajo el `<h2>` collant) y **BUG-019** (hero y picker sucios tras borrar
+  la última foto) están corregidos y re-verificados. Queda **BUG-020** en 🟡 (el drag & drop es
+  indescubrible y no funciona en táctil — decisión de UX).
+- **Antes:** TASK-001 (escape de salida `ENT_QUOTES,'UTF-8'` en 6 vistas:
   service_detail, poi_detail, vacation_pdf, review_item, header, booking_summary_modal)
   + TASK-002 (hardening de prompts OpenAI: `sanitizeUserPrompt`, delimitadores,
   cláusula anti-override). Pipeline completo + product ⚠️ verificado en navegador
@@ -103,7 +115,8 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   resueltos: título legible + filtro náutico 136→17). SEC-007/008 y la tanda de
   backlog (PRD-006, TASK-003/004, BUG-004, SEC-004/009/002) cerradas. Detalle en
   `docs/TASKS.md` 🟢.
-- **Seguimientos abiertos (🟡):** PRD-007/BUG-014 (el mapa de la ficha de POI nunca
+- **Seguimientos abiertos (🟡):** BUG-020/PRD-012 (el reordenado del modal Photos es
+  indescubrible y el drag nativo no funciona en táctil); PRD-007/BUG-014 (el mapa de la ficha de POI nunca
   renderiza — `footer.php` no carga Leaflet para `$page==='poi'`; bug PRE-EXISTENTE,
   no regresión de TASK-001); deuda de fondo — SEC-001 (credenciales BD en
   `Database.php`), TASK-005/007 (stats/contacto/imágenes reales), TASK-016b (backfill

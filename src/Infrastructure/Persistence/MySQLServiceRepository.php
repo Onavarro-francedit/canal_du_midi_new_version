@@ -64,6 +64,7 @@ class MySQLServiceRepository implements ServiceRepository
     private const EDITABLE_FIELDS = [
         'title', 'description', 'phone', 'mobile', 'email', 'website',
         'facebook', 'address', 'address2', 'postal_code', 'city', 'cover', 'gallery',
+        'lat', 'lng', 'hero_mode',
     ];
 
     public function updateListing(int $id, array $fields): void
@@ -348,6 +349,70 @@ class MySQLServiceRepository implements ServiceRepository
         $this->rebuildCategoryCountsCache();
     }
 
+    /**
+     * Borra una foto (cover o galería) de la fiche. Match normalizado: acepta
+     * tanto la ruta relativa cruda guardada en BD como su forma normalizada
+     * (con BASE_URL) que es lo que maneja el cliente (TASK-026).
+     *
+     * @return array{deleted: bool, orphanPath: ?string}
+     */
+    public function deleteListingPhoto(int $id, string $photoUrl): array
+    {
+        $raw = $this->readRawMedia($id);
+
+        $coverMatch = $this->matchStoredUrl([$raw['cover']], $photoUrl);
+        $galleryMatch = $coverMatch === null ? $this->matchStoredUrl($raw['gallery'], $photoUrl) : null;
+        $matched = $coverMatch ?? $galleryMatch;
+
+        if ($matched === null) {
+            return ['deleted' => false, 'orphanPath' => null];
+        }
+
+        $newGallery = array_values(array_filter(
+            $raw['gallery'],
+            fn(string $stored) => $stored !== $matched
+        ));
+
+        $newCover = $raw['cover'] === $matched ? ($newGallery[0] ?? '') : $raw['cover'];
+
+        $this->updateListing($id, [
+            'cover'   => $newCover,
+            'gallery' => json_encode($newGallery),
+        ]);
+
+        $orphanPath = null;
+        if (!in_array($matched, $newGallery, true) && $matched !== $newCover) {
+            $orphanPath = $matched;
+        }
+
+        return ['deleted' => true, 'orphanPath' => $orphanPath];
+    }
+
+    /**
+     * Reordena la galería según el orden de URLs recibido del cliente.
+     * Ignora URLs desconocidas, conserva al final los miembros de la galería
+     * que no llegaron en la lista (TASK-026).
+     */
+    public function reorderListingGallery(int $id, array $photoUrls): void
+    {
+        $raw = $this->readRawMedia($id);
+        $remaining = $raw['gallery'];
+        $ordered = [];
+
+        foreach ($photoUrls as $url) {
+            $matched = $this->matchStoredUrl($remaining, (string) $url);
+            if ($matched === null) {
+                continue;
+            }
+            $ordered[] = $matched;
+            $remaining = array_values(array_filter($remaining, fn(string $stored) => $stored !== $matched));
+        }
+
+        $ordered = array_merge($ordered, $remaining);
+
+        $this->updateListing($id, ['gallery' => json_encode($ordered)]);
+    }
+
     // ── Métodos que no dependen de listings (sin cambios) ────────────────────
 
     public function saveReview(array $data): bool
@@ -589,6 +654,7 @@ class MySQLServiceRepository implements ServiceRepository
             socials:     $socials,
             videos:      $videos,
             slug:        trim((string) ($row['slug']         ?? '')),
+            heroMode:    ($row['hero_mode'] ?? 'carousel') === 'single' ? 'single' : 'carousel',
         );
     }
 
@@ -760,6 +826,54 @@ class MySQLServiceRepository implements ServiceRepository
             return rtrim(BASE_URL, '/') . '/' . ltrim($url, '/');
         }
         return $url;
+    }
+
+    /**
+     * Lee cover/gallery SIN normalizar (rutas relativas tal cual están en BD).
+     * Usado por deleteListingPhoto()/reorderListingGallery() para poder casar
+     * contra las URLs normalizadas que maneja el cliente (TASK-026).
+     *
+     * @return array{cover: string, gallery: string[]}
+     */
+    private function readRawMedia(int $id): array
+    {
+        $stmt = $this->db->prepare('SELECT cover, gallery FROM listings WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return ['cover' => '', 'gallery' => []];
+        }
+
+        $gallery = [];
+        if (!empty($row['gallery'])) {
+            $decoded = json_decode((string) $row['gallery'], true);
+            if (is_array($decoded)) {
+                $gallery = array_values(array_filter(array_map('strval', $decoded)));
+            }
+        }
+
+        return ['cover' => trim((string) ($row['cover'] ?? '')), 'gallery' => $gallery];
+    }
+
+    /**
+     * Busca en $stored (valores raw de BD) el que coincide con $url, aceptando
+     * tanto el raw literal como su forma normalizada (BASE_URL). Devuelve el
+     * valor RAW (el que está en BD), no el normalizado.
+     */
+    private function matchStoredUrl(array $stored, string $url): ?string
+    {
+        foreach ($stored as $candidate) {
+            $candidate = (string) $candidate;
+            if ($candidate === '') {
+                continue;
+            }
+            if ($candidate === $url || $this->normalizeMediaUrl($candidate) === $url) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     private function getMediaFromDisk(int $id): array

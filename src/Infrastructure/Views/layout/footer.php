@@ -30,9 +30,10 @@
         <script src="<?= BASE_URL ?>public/assets/js/scroll-reveal.js"></script>
          <!-- CARGA CONDICIONAL DE SCRIPTS -->
         <?php if (isset($page) && ($page === 'service' || $page === 'fiche')): ?>
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
-            <!-- Leaflet JS -->
+            <!-- Google Maps JS API -->
+            <script src="https://maps.googleapis.com/maps/api/js?key=<?= urlencode(GOOGLE_MAPS_API_KEY) ?>"></script>
             <script src="<?= BASE_URL ?>public/assets/js/map.js"></script>
+            <script src="<?= BASE_URL ?>public/assets/js/hero-carousel.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/booking-ui.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/reviews.js"></script>
             <script src="<?=  BASE_URL ?>public/assets/js/calendar.js"></script>
@@ -42,9 +43,9 @@
         <?php endif; ?>
 
         <?php if (isset($page) && $page === 'search'): ?>
-            <!-- Leaflet JS -->
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
-            <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
+            <!-- Google Maps JS API + clustering -->
+            <script src="https://maps.googleapis.com/maps/api/js?key=<?= urlencode(GOOGLE_MAPS_API_KEY) ?>"></script>
+            <script src="https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js"></script>
             <!-- Mapa Global -->
             <script src="<?= BASE_URL ?>public/assets/js/search-map.js"></script>
             <script src="<?= BASE_URL ?>public/assets/js/search-tabs.js"></script>
@@ -66,6 +67,14 @@
         <?php endif; ?>
         <?php if (isset($page) && $page === 'vacation-planner'): ?>
             <script src="<?= BASE_URL ?>public/assets/js/vacation-planner.js"></script>
+        <?php endif; ?>
+
+        <?php if (isset($page) && $page === 'backoffice'): ?>
+            <script src="<?= BASE_URL ?>public/assets/js/backoffice-edit.js"></script>
+            <?php if (isset($service)): ?>
+                <script src="https://maps.googleapis.com/maps/api/js?key=<?= urlencode(GOOGLE_MAPS_API_KEY) ?>"></script>
+                <script src="<?= BASE_URL ?>public/assets/js/backoffice-map.js"></script>
+            <?php endif; ?>
         <?php endif; ?>
 
     </body>
