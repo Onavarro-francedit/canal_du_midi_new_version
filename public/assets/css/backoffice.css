@@ -56,6 +56,94 @@
     color: var(--muted, #666);
 }
 
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    background: var(--surface-strong, #fff);
+    border-bottom: 1px solid var(--line, #e2e2e2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.admin-topbar-brand {
+    font-weight: 700;
+    color: var(--text, #1f2340);
+}
+
+.admin-topbar-brand small {
+    font-weight: 400;
+    color: var(--muted, #666);
+    margin-left: 6px;
+}
+
+.admin-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--muted, #666);
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.admin-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    border: 1px solid var(--line, #e2e2e2);
+    border-radius: var(--radius-lg, 16px);
+    background: var(--surface-strong, #fff);
+    box-shadow: var(--shadow, none);
+}
+
+.admin-stat-card i {
+    font-size: 1.6rem;
+    color: var(--primary, #667eea);
+}
+
+.admin-stat-value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text, #1f2340);
+}
+
+.admin-stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted, #666);
+}
+
+.admin-card {
+    border: 1px solid var(--line, #e2e2e2);
+    border-radius: var(--radius-lg, 16px);
+    box-shadow: var(--shadow, none);
+    background: var(--surface-strong, #fff);
+    padding: 20px 24px;
+    margin-top: 20px;
+}
+
+.admin-card h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    margin-top: 0;
+}
+
+.admin-card h2 i {
+    color: var(--primary, #667eea);
+}
+
 .backoffice-alert {
     padding: 12px 16px;
     border-radius: 8px;
@@ -111,6 +199,10 @@
     text-align: left;
     padding: 10px 12px;
     border-bottom: 1px solid var(--line, #e2e2e2);
+}
+
+.backoffice-table tbody tr:hover {
+    background: var(--bg, #fcf8ff);
 }
 
 /* Écran d'édition — réutilise les classes de service_detail.css (chargé aussi
