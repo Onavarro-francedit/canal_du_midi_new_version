@@ -112,17 +112,27 @@ prompt sea estable.
 Composer; el vhost corre 7.4 → HTTP crudo es la única opción viable.
 - `model`: `claude-opus-5` (valor por defecto; cambiar a `claude-haiku-4-5`
   es decisión del usuario por coste/latencia — constante en el archivo de config).
+  **Ojo:** Haiku 4.5 rechaza `effort` (400) y no usa `fallbacks`; el código
+  solo envía `effort`, `fallbacks` y la cabecera beta si el modelo **no** es
+  `claude-haiku-*`. `thinking` no se envía (en Opus 5 es adaptativo por defecto).
 - `output_config`: `{effort: "low", format: {type: "json_schema", schema}}` con
-  schema `{results: [{slug: string, reason: string}]}`,
-  `additionalProperties: false`. Tarea de selección simple → effort `low`.
+  schema `{results: [{slug: string, reason: string}]}`. La API exige
+  `additionalProperties: false` y `required` en **cada** objeto (raíz e ítems
+  de `results`); `maxLength`/`maxItems` no se admiten → los límites (3–5
+  resultados, `reason` ≤ 140 car.) van en las instrucciones y se **recortan en
+  servidor** (`array_slice`, `mb_substr`). Tarea de selección simple → effort `low`.
 - `system`: [instrucciones (FR, 3–5 resultados, solo slugs del catálogo, raison
   ≤ 140 car. en francés), catálogo] con `cache_control: {type: "ephemeral"}` en
   el bloque del catálogo. El prompt del usuario va en `messages`, fuera del
   prefijo cacheado.
 - `fallbacks: "default"` + cabecera `anthropic-beta:
-  server-side-fallback-2026-07-01`; si `stop_reason === "refusal"` → error
-  controlado.
-- `max_tokens`: 2000.
+  server-side-fallback-2026-07-01`; si `stop_reason === "refusal"` (toda la
+  cadena rechazó) → error controlado.
+- `max_tokens`: 8000 (el pensamiento adaptativo también consume de este tope;
+  2000 podía truncar el JSON). Si `stop_reason === "max_tokens"` → error
+  controlado, nunca `json_decode` de una salida cortada.
+- Se lee el primer bloque `type === "text"` de `content` (puede haber bloques
+  `thinking` antes), no `content[0]`.
 
 **Validación de la respuesta:** se descartan slugs que no estén en el catálogo;
 título, imagen, categoría, ciudad y URL se construyen **en servidor** desde WP
@@ -136,15 +146,21 @@ texto plano y el JS lo inserta con `textContent`.
   controlado y la home sigue funcionando.
 - Rate limit por IP con transients: 10 peticiones / 10 min → HTTP 429 con
   mensaje francés.
+- **Tope global** diario (transient `canal_home_ai_daily`, p. ej. 300
+  llamadas/día, constante en el config): el endpoint es público y cada llamada
+  cuesta dinero; el límite por IP no para un abuso desde muchas IPs. Superado →
+  mismo mensaje de error + enlace al explorador.
 - Prompt: `trim`, máx. 500 caracteres, se eliminan etiquetas y caracteres de
   control (misma lógica que `SanitizesPrompts` local); vacío → 400.
 - Sin nonce (la home pública pasará por WP Fastest Cache; un nonce cacheado
   caducaría). La ruta es pública (`permission_callback => '__return_true'`)
-  y se protege con el rate limit.
+  y se protege con los dos límites. La URL del endpoint se inyecta en el JS con
+  `rest_url('canal-home/v1/ai')`, no se escribe `/wp-json/` a mano.
 
 **Errores (UX):** timeout / error API / 0 resultados → mensaje francés en el
 modal + enlace « Voir les résultats dans l'explorateur » →
-`/explorer/?type=prestataires-touristiques&search_keywords=<prompt>`.
+`/explorer/?type=prestataires-touristiques&search_keywords=<prompt>` (prompt
+codificado con `encodeURIComponent`).
 Durante la llamada: botón deshabilitado + « Recherche en cours… ».
 
 ## Puesta en marcha
@@ -157,7 +173,10 @@ Durante la llamada: botón deshabilitado + « Recherche en cours… ».
    famille »), búsqueda clásica → `/explorer/` filtrado, modal plan, móvil
    (375 px), 0 errores de consola, publicidad 940 visible, resto del sitio
    sin cambios (home actual, una ficha, `/explorer/`).
-5. Cambio de portada: solo cuando el usuario lo pida explícitamente.
+5. Cambio de portada: solo cuando el usuario lo pida explícitamente. Requiere
+   **publicar** antes la página (el selector de *Réglages → Lecture* solo
+   lista páginas publicadas); en cuanto se publica es accesible por su slug,
+   así que publicar y cambiar la portada se hacen en el mismo momento.
 
 ## Criterios de éxito
 - La página privada muestra las 7 secciones con datos reales de producción y
@@ -167,7 +186,9 @@ Durante la llamada: botón deshabilitado + « Recherche en cours… ».
   tomado antes de empezar solo lista `plugins/canal-home/`, caché y uploads.
   Única escritura en opciones: la entrada del plugin en `active_plugins`
   (inherente a activar un plugin) + transients propios `canal_home_*`.
-- Desactivar el plugin deja el sitio exactamente como antes.
+- Desactivar el plugin deja el sitio como antes en todo lo visible. Rollback
+  completo = desactivar + enviar a la papelera la página « Accueil 2026 »
+  (sin plugin cae a la plantilla por defecto) + borrar transients `canal_home_*`.
 
 ## Fuera de alcance
 Cambio de portada, `/carte`, diseño de fichas, actualizar PHP/Elementor,
