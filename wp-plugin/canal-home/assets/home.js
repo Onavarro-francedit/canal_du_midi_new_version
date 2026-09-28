@@ -144,9 +144,105 @@
         return true;
     }
 
+    // ── Modal IA: envío y resultados ────────────────────────────────────
+    function explorerLink(prompt) {
+        var a = document.createElement('a');
+        a.href = CDM_HOME.explorerUrl + '?type=prestataires-touristiques&search_keywords=' + encodeURIComponent(prompt);
+        a.textContent = "Voir les résultats dans l'explorateur";
+        return a;
+    }
+
+    function showMessage(text, prompt) {
+        ai.feedback.textContent = text + ' ';
+        if (prompt) ai.feedback.appendChild(explorerLink(prompt));
+    }
+
+    function renderResults(results) {
+        ai.results.replaceChildren();
+        results.forEach(function (r) {
+            var card = document.createElement('a');
+            card.className = 'cdm-ai-card';
+            card.href = r.url;
+
+            var img = document.createElement('img');
+            img.src = r.image;
+            img.alt = '';
+            img.loading = 'lazy';
+
+            var body = document.createElement('div');
+            body.className = 'cdm-ai-card-body';
+            var title = document.createElement('h3');
+            title.textContent = r.title;
+            var meta = document.createElement('p');
+            meta.className = 'cdm-ai-card-meta';
+            meta.textContent = [r.category, r.city].filter(Boolean).join(' · ');
+            var reason = document.createElement('p');
+            reason.className = 'cdm-ai-card-reason';
+            reason.textContent = r.reason;
+
+            body.append(title, meta, reason);
+            card.append(img, body);
+            ai.results.appendChild(card);
+        });
+    }
+
+    function initAiSubmit() {
+        var label = ai.submit.querySelector('span');
+        var idleLabel = label ? label.textContent : '';
+
+        ai.form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var prompt = ai.prompt.value.trim();
+            ai.results.replaceChildren();
+            if (prompt.length < 3) {
+                showMessage('Décrivez votre envie en quelques mots.', '');
+                ai.prompt.focus();
+                return;
+            }
+
+            ai.submit.disabled = true;
+            if (label) label.textContent = 'Recherche en cours…';
+            ai.feedback.textContent = '';
+
+            var controller = 'AbortController' in window ? new AbortController() : null;
+            var timer = controller ? window.setTimeout(function () { controller.abort(); }, 40000) : null;
+
+            fetch(CDM_HOME.aiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: prompt }),
+                signal: controller ? controller.signal : undefined
+            })
+                .then(function (res) {
+                    return res.json().catch(function () { return {}; }).then(function (data) {
+                        return { ok: res.ok, data: data };
+                    });
+                })
+                .then(function (out) {
+                    var results = (out.data && Array.isArray(out.data.results)) ? out.data.results : [];
+                    if (!out.ok) {
+                        showMessage((out.data && out.data.message) || "L'assistant IA est momentanément indisponible.", prompt);
+                    } else if (results.length === 0) {
+                        showMessage('Aucune adresse ne correspond précisément à votre demande.', prompt);
+                    } else {
+                        ai.feedback.textContent = 'Voici les adresses qui correspondent le mieux à votre demande :';
+                        renderResults(results);
+                    }
+                })
+                .catch(function () {
+                    showMessage("L'assistant IA est momentanément indisponible.", prompt);
+                })
+                .then(function () {
+                    if (timer) window.clearTimeout(timer);
+                    ai.submit.disabled = false;
+                    if (label) label.textContent = idleLabel;
+                });
+        });
+    }
+
     initHero();
     initReveal();
     initPlanModal();
     initSearchForm();
-    initAiModal();
+    if (initAiModal()) initAiSubmit();
 })();
