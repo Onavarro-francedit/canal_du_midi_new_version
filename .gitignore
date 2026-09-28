@@ -13,3 +13,9 @@ composer.lock
 
 # macOS
 .DS_Store
+
+# Build del plugin WP (solo local)
+wp-plugin/build/node_modules/
+
+# Espacio de trabajo de superpowers (ledger/briefs)
+.superpowers/
