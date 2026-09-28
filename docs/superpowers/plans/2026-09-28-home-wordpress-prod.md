@@ -1692,7 +1692,7 @@ git commit -m "feat(wp-home): endpoint IA canal-home/v1/ai (límites IP/diario, 
 
 ### Task 6: Despliegue en producción (página privada) y verificación
 
-**Files:** ninguno del repo (operaciones en el servidor). `$WP` = comando de Global Constraints.
+**Files:** Create `wp-plugin/tests/check-cache.php` (paso 7); el resto son operaciones en el servidor vía `wp-plugin/remote.sh`.
 
 - [ ] **Step 1: Marca de referencia (para demostrar que no se tocó nada existente)**
 
