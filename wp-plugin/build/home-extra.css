@@ -1,0 +1,38 @@
+/* Ajustes propios de la home WordPress. Fuente: se prefija con .cdm-home en el build. */
+
+/* Bootstrap del tema añade padding/max-width a .container */
+.container { padding-left: 0; padding-right: 0; max-width: none; }
+
+/* Banda inmersiva con foto propia del sitio (no Unsplash) */
+.immersive-band {
+    background:
+        linear-gradient(180deg, rgba(12, 79, 77, 0.28), rgba(6, 88, 77, 0.52)),
+        url('/wp-content/uploads/2023/04/photo_canal_du_midi_AdobeStock_375323747.jpg') center/cover;
+}
+.band-inner .button { margin-top: 8px; }
+
+.photo-card { position: relative; }
+.photo-credit {
+    position: absolute; right: 10px; bottom: 8px; margin: 0;
+    font-size: 0.7rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.cdm-center-cta { width: 100%; display: flex; justify-content: center; margin-top: 2rem; }
+.cdm-center-cta .button { background-color: var(--violet); color: #fff; }
+
+.plan-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-top: 1.25rem; }
+
+/* Resultados del asistente IA dentro del modal */
+.cdm-ai-results { display: grid; gap: 12px; margin-top: 16px; max-height: 50vh; overflow-y: auto; }
+.cdm-ai-results:empty { display: none; }
+.cdm-ai-card {
+    display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 10px;
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    background: var(--surface-strong); transition: box-shadow 0.2s ease;
+}
+.cdm-ai-card:hover, .cdm-ai-card:focus-visible { box-shadow: var(--shadow); }
+.cdm-ai-card img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; }
+.cdm-ai-card-body h3 { margin: 0 0 2px; font-size: 1rem; }
+.cdm-ai-card-meta { margin: 0; font-size: 0.8rem; color: var(--muted); }
+.cdm-ai-card-reason { margin: 4px 0 0; font-size: 0.88rem; }
+.hero-ai-feedback a { color: var(--primary-deep); text-decoration: underline; }
