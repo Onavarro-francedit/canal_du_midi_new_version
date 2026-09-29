@@ -154,3 +154,12 @@ p { color: inherit; }
     .destination-grid::-webkit-scrollbar, .tour-grid::-webkit-scrollbar { display: none; }
     .destination-grid > *, .tour-grid > * { scroll-snap-align: start; }
 }
+
+/* « Expériences » en móvil: foto grande a todo el ancho y las dos pequeñas debajo, lado a
+   lado (antes 130px, superpuestas y giradas sobre la grande). */
+@media (max-width: 560px) {
+    .stacked-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 0; }
+    .stacked-photos .photo-card { position: relative; inset: auto; width: auto; transform: none; }
+    .stacked-photos .photo-large { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+    .stacked-photos .photo-small { aspect-ratio: 4 / 3; }
+}
