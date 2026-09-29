@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const allListings = getAvailableResults().slice(); // WP: copia completa para resolver los slugs de la IA en cada consulta
 
     const hasAppliedFilters = () => {
-        const keys = ['q', 'city', 'type', 'type[]', 'location', 'lat', 'search_keywords', 'search_location', 'category[]']; // WP: + lugar, posición y alias
+        const keys = ['q', 'city', 'type', 'type[]', 'location', 'lat', 'search_keywords', 'search_location', 'category', 'category[]']; // WP: + lugar, posición y alias
         return keys.some((key) => currentParams.has(key) && currentParams.getAll(key).some((value) => String(value || '').trim() !== ''));
     };
 

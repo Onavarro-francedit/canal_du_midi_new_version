@@ -43,6 +43,7 @@ function canal_carte_listings(): array
         if ($desc === '') {
             $desc = $post->post_content;
         }
+        $desc = strip_shortcodes($desc); // WP: los shortcodes no deben verse en tarjetas ni alimentar la búsqueda
         $items[] = [
             'id'          => (int) $post->ID,
             'slug'        => $post->post_name,
