@@ -24,7 +24,8 @@ run_test() {
     ssh "$REMOTE" "set -e
         for f in \$(find $TMP/canal-home -name '*.php'); do $PHP74 -l \"\$f\"; done
         $PHP74 $TMP/tests/test-ai-core.php
-        $PHP74 $TMP/tests/test-carte-filter.php"
+        $PHP74 $TMP/tests/test-carte-filter.php
+        $PHP74 $TMP/tests/test-fiche.php"
 }
 
 case "${1:-}" in
