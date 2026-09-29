@@ -11,11 +11,14 @@ portada, SOLO con orden explícita del usuario: TASK-028 en 🟡.)_
 
 ### Migración visual del WordPress de producción (nuevo rumbo, 2026-09-28)
 - **TASK-028 — Publicar « Accueil 2026 » como portada** — SOLO con orden explícita del
-  usuario. `wp-plugin/remote.sh wp post update 18500 --post_status=publish` y *Réglages →
+  usuario. **Decisión 2026-09-29: se deja privada por ahora.** `wp-plugin/remote.sh wp post update 18500 --post_status=publish` y *Réglages →
   Lecture* → página de inicio = « Accueil 2026 » (hoy `page_on_front` = 15269, la home
   Elementor). Publicar y cambiar portada en el mismo momento (al publicarse ya es
   accesible en `/accueil-2026/`). Rollback: volver a poner 15269.
-- **TASK-029 — Rediseño de `/carte`** (fase 2 acordada). Mismo enfoque: añadir, no modificar.
+- **TASK-029 — Rediseño de la « Carte interactive »** (fase 2 acordada). OJO: no es `/carte/`
+  (404) sino **`/explorer/`** (página WP 10154, Elementor + widget explore de my-listing), destino
+  del botón « Carte interactive » y del buscador de la home. Mismo enfoque que la home: añadir
+  desde el plugin, no modificar lo existente. Fuente de diseño: `/search` de la app local.
 - **TASK-030 — Diseño de la ficha (`/fiche/<slug>/`)** (fase 3 acordada).
 - **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
   (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por

@@ -5,7 +5,41 @@ sesión.
 
 ---
 
-## TASK-027 — Home « Accueil 2026 » en el WordPress de producción — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
+## CIERRE 2026-09-29 — Home « Accueil 2026 » TERMINADA (privada, NO publicar) · Siguiente: la carte interactive
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Decisión del usuario:** la home queda terminada pero **privada** (página 18500, portada
+sigue siendo la 15269). No publicarla ni cambiar la portada sin orden explícita.
+**Git:** todo en `main` y en `origin/main` (push hecho); sin commitear solo: cambios de
+« Se connecter » de la app local (`header.php`, `styles.css`) y la skill `.claude/skills/seo-geo/`.
+
+**Hecho en la sesión:** home completa (diseño, IA, envío del plan por e-mail, móvil, navbar
+restilizada solo en esa página, SEO/AEO: meta/OG/JSON-LD/FAQ/étapes/llms.txt/llms-full.txt),
+`robots.txt` y `.htaccess` modificados con autorización (copias: `robots.txt.orig`,
+`htaccess.bak-2026-09-29` en `/var/www/vhosts/plan-canal-du-midi.com/`), sitemap enviado a
+Google Search Console y a Bing (Googlebot y Bingbot lo leyeron con 200 el 29/09;
+`BingSiteAuth.xml` en la raíz, no borrarlo). Detalle en `docs/TASKS.md` 🟢 TASK-027.
+
+**Siguiente tarea — TASK-029 « Carte interactive »:** el botón « Carte interactive » y todos
+los enlaces de la home apuntan a **`/explorer/`** (página WP **10154**, plantilla Elementor
+`elementor_header_footer` con el widget de exploración del tema my-listing: filtros
+search_keywords / category[] / search_location+lat/lng/proximity, lista + Google Maps).
+`/carte/` no existe (404). Misma regla que la home: no modificar nada existente; rediseñar
+AÑADIENDO desde el plugin `canal-home` (página nueva o CSS/plantilla propios), fuente de
+diseño = vista `/search` de la app local (`src/Infrastructure/Views/search_results.php`,
+`public/assets/js/search-map.js`, `public/assets/css/search.css`).
+
+**Próxima acción:**
+```
+Leer docs/SESSION.md y docs/TASKS.md (TASK-029), analizar /explorer/ en producción
+(solo lectura) y la vista /search local, y proponer el enfoque antes de escribir código.
+```
+
+---
+
+### Histórico
+
+### TASK-027 — Home « Accueil 2026 » en el WordPress de producción — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
 
 **Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → ejecución
 directa con executing-plans).
