@@ -4,12 +4,8 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-- **TASK-030 — Fiche 2026 (`/fiche-2026/<slug>/`)** — diseño aprobado 2026-09-29, spec en
-  `docs/superpowers/specs/2026-09-29-wp-fiche-2026-design.md`; siguiente: plan de implementación.
-
-_(vacío — TASK-029 « Carte interactive » desplegada en privado ✅ (página 18502), ver 🟢.
-Publicar home y carte: SOLO con orden explícita del usuario, TASK-028 / TASK-029b en 🟡.
-Siguiente fase: TASK-030 diseño de la ficha.)_
+_(vacío — TASK-030 « Fiche 2026 » desplegada en privado ✅ (`/fiche-2026/<slug>/`), ver 🟢.
+Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente
 
@@ -26,9 +22,12 @@ Siguiente fase: TASK-030 diseño de la ficha.)_
   carte, esos enlaces dan 404 a los visitantes. Al publicar: página 18502 → publish; quitar el sufijo -2026 (la página 10154 `/explorer/` actual se retira o renombra antes) y
   `CANAL_CARTE_PATH` → `/explorer/`; con eso el botón del menú del tema ya apunta bien. Revisar `wp-plugin/llms.txt` y `build/build-llms-full.php`
   (hoy públicos, se dejaron en `/explorer/`). Revisar noindex/SEO y peso (~0,6–0,8 MB).
-- **TASK-030 — Nueva versión de la ficha (`/fiche/<slug>/`)** (fase 3 acordada). Mismo enfoque:
-  añadir desde el plugin, sin tocar lo existente, y URL nueva con sufijo `-2026` (convención de
-  CLAUDE.md). Fuente de diseño: la vista de ficha de la app local.
+- **TASK-030b — Publicar la ficha 2026** — SOLO con orden explícita, JUNTO con TASK-028/029b.
+  `CANAL_FICHE_PATH` → `/fiche/`; aplicar la plantilla a `is_singular('job_listing')` (sin regla
+  propia); 301 de `/fiche-2026/…` a `/fiche/…`; quitar el control de sesión y el noindex (la
+  condición `CANAL_FICHE_PATH !== '/fiche/'` en seo-fiche.php ya lo hace); vaciar
+  `canal_carte_listings`. Rollback de TASK-030: quitar los archivos fiche-* del plugin y
+  `wp option delete canal_fiche_rewrite && wp rewrite flush`.
 - **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
   (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por
   anidado; límite por IP eludible rotando IPv6 /64; `replaceChildren` (Safari ≥ 14);
@@ -279,6 +278,22 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-030 — Fiche 2026 (`/fiche-2026/<slug>/`) — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
+- Spec `docs/superpowers/specs/2026-09-29-wp-fiche-2026-design.md`, plan
+  `docs/superpowers/plans/2026-09-29-wp-fiche-2026.md`. Rama `feat/wp-fiche-2026`.
+- Regla de reescritura propia (opción `canal_fiche_rewrite`); sin sesión `read_private_pages` → 404
+  del tema; `DONOTCACHEPAGE`; `/fiche/<slug>/` actuales sin cambios.
+- Port de `service_detail.php` sin reserva/avis/equipamientos: hero con galería, barra de acciones
+  (sticky bajo la cabecera del tema, estática en móvil), présentation, catégories (→ carte
+  filtrada), vídeo (allowlist YouTube/Vimeo, youtube-nocookie), galería + lightbox, mapa +
+  « Autour de ce lieu » (6 fichas más cercanas), coordonnées.
+- Datos: imágenes forzadas a https; `tel:` limpio (« Tél Atelier : 07… »); `_job_location` con
+  coordenadas (écluses) → « Commune — Canal du Midi »; `_work_hours` vacío en prod → sin horarios.
+- SEO: título « X à Commune — Canal du Midi », meta, OG con la portada, canonical, JSON-LD
+  LocalBusiness/TouristAttraction + BreadcrumbList, `noindex,nofollow`.
+- Home y carte enlazan a `CANAL_FICHE_PATH`. Tests: `test-fiche.php` (en `remote.sh test`),
+  `smoke-fiche.php`, `smoke-carte-data.php`.
 
 ### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
 - **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is

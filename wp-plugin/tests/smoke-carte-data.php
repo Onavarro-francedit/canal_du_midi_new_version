@@ -22,7 +22,7 @@ $published = (int) wp_count_posts('job_listing')->publish;
 $listings = canal_carte_listings();
 $check(count($listings) === $published, "listings: todas las publicadas ($published)");
 $check(is_array(get_transient(CANAL_CARTE_CACHE)), 'cache: transient creado');
-$check(count(array_filter($listings, fn($l) => strpos($l['url'], '/fiche/') === false)) === 0, 'listings: todas con url /fiche/');
+$check(count(array_filter($listings, fn($l) => strpos($l['url'], CANAL_FICHE_PATH . $l['slug'] . '/') === false)) === 0, 'listings: todas con url ' . CANAL_FICHE_PATH);
 $check(count(array_filter($listings, fn($l) => !is_float($l['lat']) || !is_float($l['lng']))) === 0, 'listings: todas con lat/lng float');
 $check(count(array_filter($listings, fn($l) => $l['image'] !== '')) > 200, 'listings: >200 con imagen de portada');
 $check(count(array_filter($listings, fn($l) => strpos($l['title'] . $l['description'], '&#') !== false)) === 0, 'listings: sin entidades HTML');

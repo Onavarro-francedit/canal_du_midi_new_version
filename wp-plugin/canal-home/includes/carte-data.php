@@ -48,7 +48,7 @@ function canal_carte_listings(): array
             'id'          => (int) $post->ID,
             'slug'        => $post->post_name,
             'title'       => canal_home_plain(get_the_title($post)),
-            'url'         => (string) get_permalink($post),
+            'url'         => canal_fiche_url($post->post_name),
             'lat'         => is_numeric($lat) ? (float) $lat : null,
             'lng'         => is_numeric($lng) ? (float) $lng : null,
             'image'       => canal_home_cover($post->ID),

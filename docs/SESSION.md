@@ -5,6 +5,35 @@ sesión.
 
 ---
 
+## CIERRE 2026-09-29 (noche) — Fiche 2026 `/fiche-2026/<slug>/` terminada (privada) · Siguiente: decidir publicación
+
+**Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → executing-plans).
+**Handoff pendiente:** ninguno. **Git:** rama `feat/wp-fiche-2026` (sin fusionar ni push).
+**Dónde quedamos:** las 254 fichas tienen versión nueva en `/fiche-2026/<slug>/` (solo con sesión;
+sin sesión → 404), enlazadas desde la home y la carte privadas. Nada publicado.
+
+**Archivos:** `wp-plugin/canal-home/includes/fiche-core.php` (puras), `fiche-data.php`,
+`fiche-route.php`, `seo-fiche.php`, `template-fiche.php`, `assets/fiche/fiche.js`,
+`assets/fiche.css` (generado; fuente `build/fiche-extra.css`), `canal-home.php`, `data.php` y
+`carte-data.php` (url → `canal_fiche_url`), `seo.php` (`$image` opcional en `canal_home_seo_social`),
+tests `test-fiche.php`, `smoke-fiche.php`, `smoke-carte-data.php`, `remote.sh`.
+
+**Decisiones que no están en ARCHITECTURE.md:**
+- Ruta propia por regla de reescritura (`CANAL_FICHE_PATH`); una query var sola deja `is_home` →
+  hay que `set_404()` explícitamente.
+- El tema ya reserva el hueco de su cabecera fija; la barra sticky sigue su borde (`--fiche-bar-top`).
+- En producción hay fichas `expired` (p. ej. Nicols): no se muestran.
+
+**Próxima acción:**
+```
+Revisar /fiche-2026/<slug>/ (con sesión) y decidir: fusionar feat/wp-fiche-2026 en main + push;
+publicar home + carte + ficha juntas = TASK-028 / TASK-029b / TASK-030b, SOLO con orden explícita.
+```
+
+---
+
+### Histórico
+
 ## CIERRE 2026-09-29 (tarde) — Carte `/explorer-2026/` terminada (privada) · Siguiente: TASK-030 ficha
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
@@ -41,10 +70,6 @@ leer docs/SESSION.md y docs/TASKS.md, analizar una ficha de producción (solo le
 local de ficha (src/Infrastructure/Views/…), y proponer el enfoque (brainstorming) antes de código.
 ```
 (Publicar home/carte = TASK-028 / TASK-029b, SOLO con orden explícita.)
-
----
-
-### Histórico
 
 ### CIERRE 2026-09-29 (mañana) — Home « Accueil 2026 » TERMINADA (privada, NO publicar) · Siguiente: la carte interactive
 
