@@ -4,8 +4,9 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(vacío — TASK-027 desplegada en privado ✅, ver 🟢. Siguiente paso = publicarla como
-portada, SOLO con orden explícita del usuario: TASK-028 en 🟡.)_
+_(vacío — TASK-029 « Carte interactive » desplegada en privado ✅ (página 18502), ver 🟢.
+Publicar home y carte: SOLO con orden explícita del usuario, TASK-028 / TASK-029b en 🟡.
+Siguiente fase: TASK-030 diseño de la ficha.)_
 
 ## 🟡 Pendiente
 
@@ -15,10 +16,11 @@ portada, SOLO con orden explícita del usuario: TASK-028 en 🟡.)_
   Lecture* → página de inicio = « Accueil 2026 » (hoy `page_on_front` = 15269, la home
   Elementor). Publicar y cambiar portada en el mismo momento (al publicarse ya es
   accesible en `/accueil-2026/`). Rollback: volver a poner 15269.
-- **TASK-029 — Rediseño de la « Carte interactive »** (fase 2 acordada). OJO: no es `/carte/`
-  (404) sino **`/explorer/`** (página WP 10154, Elementor + widget explore de my-listing), destino
-  del botón « Carte interactive » y del buscador de la home. Mismo enfoque que la home: añadir
-  desde el plugin, no modificar lo existente. Fuente de diseño: `/search` de la app local.
+- **TASK-029b — Publicar la carte (`/carte/`)** — SOLO con orden explícita. Publicar la
+  página 18502, cambiar los enlaces de la home privada de `/explorer/` a `/carte/`
+  (`template-home.php` l.45/152/234, `canal-home.php` `explorerUrl`) y decidir si
+  `/explorer/` redirige a `/carte/`. Antes: noindex/SEO de la página y revisar peso
+  (~0,6–0,8 MB de HTML sin filtros: tarjetas + JSON con galerías).
 - **TASK-030 — Diseño de la ficha (`/fiche/<slug>/`)** (fase 3 acordada).
 - **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
   (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por
@@ -270,6 +272,30 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-029 — « Carte interactive » en el WordPress de producción — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
+- **Qué:** copia fiel de `/search` local como página nueva **privada** `/carte/` (ID **18502**,
+  plantilla `canal-home/template-carte.php`). `/explorer/` intacta. Spec y plan en
+  `docs/superpowers/specs|plans/2026-09-29-carte-interactive*`.
+- **Archivos (plugin `canal-home`):** `includes/carte-filter.php` (filtro puro: q, type[]
+  padre⇒hijas, location, lat/lng redondeados, distancia; alias de `/explorer/`),
+  `includes/carte-data.php` (254 fichas en transient `canal_carte_listings` 12 h, invalidación
+  en save/delete de fichas y edición de categorías), `template-carte.php`, `assets/carte/*.js`
+  (copias de local marcadas `WP:`), `assets/carte.css` (generado: `styles.css` + `search.css` +
+  `build/carte-extra.css` bajo `.cdm-carte`), `canal-home.php` (registro + assets),
+  `data.php` (`slug` en `canal_home_card`). Tests: `tests/test-carte-filter.php` (en
+  `remote.sh test`), `tests/smoke-carte-data.php` (`remote.sh run`, con el plugin activo).
+- **Decisiones:** filtros por GET y filtrado en PHP (como local); Google Maps lo carga el tema
+  (no se duplica); solo 6 imágenes iniciales, resto lazy; reveal forzado a los 5 s; cabecera
+  fija del tema compensada por JS (`--cdm-header-h` + padding); IA = endpoint de la home, los
+  resultados se resuelven por `slug` contra una copia de todas las fichas.
+- **Verificado en Chrome (admin):** escritorio/1024/390 iguales a local; filtros, alias,
+  categorías, « Autour de moi » (denegado y OK), IA 2 consultas seguidas, popup con carrusel,
+  vista mapa móvil, 0 errores de consola. No probado: Maps bloqueado (camino de código revisado).
+- **Rollback:** `wp-plugin/remote.sh wp post delete 18502 --force` y
+  `wp-plugin/remote.sh wp transient delete canal_carte_listings`.
+- **Diferido (menor):** sin invalidación en `edited_region`; sin quitar un solo filtro (solo
+  « Effacer »); fichas sin portada muestran el icono de local; peso de página (ver TASK-029b).
 
 - **TASK-027 — Home « Accueil 2026 » en el WordPress de producción (plugin
   `canal-home`) ✅ desplegada en PRIVADO (2026-09-28/29)**

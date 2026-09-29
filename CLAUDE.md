@@ -93,14 +93,15 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   **7.4**). Esta app PHP local ya no es el sitio: es la **fuente de diseño**. Regla dura:
   **en producción no se modifica nada existente, solo se añade.** Fases: home → `/carte` →
   diseño de la ficha.
-- **Último completado:** **TASK-027 — home « Accueil 2026 »** como plugin nuevo
-  `canal-home` (fuente en `wp-plugin/`), desplegada en **privado** (página 18500) con
-  asistente IA (claude-opus-5). Detalle en `docs/TASKS.md` 🟢.
+- **Último completado:** **TASK-029 — « Carte interactive »**: copia de `/search` local como
+  página nueva **privada** `/carte/` (ID 18502) desde el plugin `canal-home` (fuente en
+  `wp-plugin/`). Antes, TASK-027: home « Accueil 2026 » privada (página 18500). Detalle en
+  `docs/TASKS.md` 🟢.
 - **Comandos:** `wp-plugin/remote.sh test` (tests + lint 7.4 en el servidor) ·
   `remote.sh deploy` · `remote.sh run tests/<smoke>.php` (con el plugin desactivado) ·
   `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:
   `node wp-plugin/build/build-css.mjs` (nunca editar `assets/home.css` a mano).
-- **Siguiente:** TASK-028 publicar como portada (solo con orden explícita), luego
-  TASK-029 `/carte`.
+- **Siguiente:** TASK-030 diseño de la ficha. Publicar home (TASK-028) y carte (TASK-029b)
+  solo con orden explícita.
 - Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
   antes de la captura de página completa: scroll-reveal + lazy-load).

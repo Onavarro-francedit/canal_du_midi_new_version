@@ -5,7 +5,37 @@ sesión.
 
 ---
 
-## CIERRE 2026-09-29 — Home « Accueil 2026 » TERMINADA (privada, NO publicar) · Siguiente: la carte interactive
+## CIERRE 2026-09-29 — TASK-029 « Carte interactive » DESPLEGADA EN PRIVADO · Siguiente: TASK-030 ficha
+
+**Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → subagent-driven
+development). **Handoff pendiente:** ninguno.
+**Dónde quedamos:** `/carte/` (página WP **18502**, **privada**) es una copia fiel de `/search`
+local servida por el plugin `canal-home`, verificada en Chrome y con revisión final aprobada.
+`/explorer/` intacta; los enlaces de la home privada siguen apuntando a `/explorer/`.
+**Git:** todo en `main` (sin push). Sin commitear, ajenos a esta tarea: `header.php`,
+`styles.css` (solo un comentario) y `.claude/skills/seo-geo/`.
+
+**Archivos de la sesión:** ver `docs/TASKS.md` 🟢 TASK-029 (filtro, datos, plantilla, JS,
+CSS generado, tests, build generalizado).
+
+**Decisiones que no están en ARCHITECTURE.md:**
+- La carte filtra por GET en PHP (como local), no en JS; datos en transient de 12 h.
+- Google Maps lo carga el tema en todas las páginas: los plugins no deben cargarlo otra vez.
+- La cabecera fija del tema tapa ~20 px en escritorio: se compensa por JS en la plantilla.
+- `build-css.mjs` genera `home.css` y `carte.css`; `82px` de `search.css` → `--cdm-header-h`.
+
+**Próxima acción:**
+```
+TASK-030 — diseño de la ficha (/fiche/<slug>/): leer docs/SESSION.md y docs/TASKS.md,
+analizar una ficha de producción (solo lectura) y la vista local de ficha, y proponer enfoque.
+```
+(Publicar home/carte = TASK-028 / TASK-029b, SOLO con orden explícita.)
+
+---
+
+### Histórico
+
+### CIERRE 2026-09-29 (mañana) — Home « Accueil 2026 » TERMINADA (privada, NO publicar) · Siguiente: la carte interactive
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
 **Decisión del usuario:** la home queda terminada pero **privada** (página 18500, portada
@@ -34,10 +64,6 @@ diseño = vista `/search` de la app local (`src/Infrastructure/Views/search_resu
 Leer docs/SESSION.md y docs/TASKS.md (TASK-029), analizar /explorer/ en producción
 (solo lectura) y la vista /search local, y proponer el enfoque antes de escribir código.
 ```
-
----
-
-### Histórico
 
 ### TASK-027 — Home « Accueil 2026 » en el WordPress de producción — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
 
