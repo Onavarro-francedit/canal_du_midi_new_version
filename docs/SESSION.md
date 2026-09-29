@@ -25,7 +25,10 @@ directa con executing-plans).
 **En el servidor (añadido, nada existente modificado):**
 `wp-content/plugins/canal-home/`, `/var/www/vhosts/plan-canal-du-midi.com/canal-ai-config.php`
 (clave del `.env` local, modelo `claude-opus-5`, tope 300/día), página 18500 privada,
-`active_plugins` + transients `canal_home_*`.
+`active_plugins`, transients `canal_home_*` y la fila `wp_options`
+`canal_home_ai_daily_YYYYMMDD` (tope diario atómico). **Rollback completo:** desactivar el
+plugin, papelera de la página 18500, borrar transients `canal_home_*` y filas
+`canal_home_ai_daily_%`.
 
 **Decisiones que no están en ARCHITECTURE.md:**
 - Producción = WordPress; la app local es solo fuente de diseño.

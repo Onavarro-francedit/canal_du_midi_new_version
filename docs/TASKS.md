@@ -17,9 +17,14 @@ portada, SOLO con orden explícita del usuario: TASK-028 en 🟡.)_
   accesible en `/accueil-2026/`). Rollback: volver a poner 15269.
 - **TASK-029 — Rediseño de `/carte`** (fase 2 acordada). Mismo enfoque: añadir, no modificar.
 - **TASK-030 — Diseño de la ficha (`/fiche/<slug>/`)** (fase 3 acordada).
-- **Minors de TASK-027 (diferidos):** « DE GÉNIE HYDRAULIQUE » roza el borde derecho de
-  la tarjeta de stats a 375 px; la foto `rando-velo_2.webp` tiene zonas blancas en la
-  composición apilada; los smokes que cargan desde `/tmp` exigen el plugin desactivado.
+- **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
+  (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por
+  anidado; límite por IP eludible rotando IPv6 /64; `replaceChildren` (Safari ≥ 14);
+  `@keyframes` sin prefijo; `url('…')` inline con `esc_url`; `remote.sh` con `/tmp` fijo y
+  despliegue no atómico (`--delay-updates`); a 375 px « DE GÉNIE HYDRAULIQUE » roza el
+  borde; foto `rando-velo_2.webp` con zonas blancas; los smokes exigen el plugin desactivado.
+- **Antes de publicar (TASK-028):** revisar `pm.max_children` del pool PHP-FPM (cada
+  llamada IA ocupa un worker ~7 s, hasta 30 s).
 - **Observación (no nuestra, no tocada):** `httpdocs/wp-config.php` se reescribe de
   madrugada (29/09 01:24:47 UTC, usuario del sitio, 600) — probable tarea de
   Plesk/WP Toolkit. Contraseña de BD en claro en `my-listing/page_accueil_test.php`
@@ -270,7 +275,8 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     plantilla de página con las 7 secciones (textos validados), datos reales de WP,
     asistente IA `POST /wp-json/canal-home/v1/ai` (claude-opus-5, catálogo de 254 fichas
     con prompt caching ~34k tokens → ~0,025 $/búsqueda con caché caliente, límite
-    10/10 min por IP + 300/día). Clave en `/var/www/vhosts/plan-canal-du-midi.com/canal-ai-config.php`
+    10/10 min por IP + 300/día; el tope diario es un contador atómico en `wp_options`
+    `canal_home_ai_daily_YYYYMMDD` — fail-closed, independiente de Redis). Clave en `/var/www/vhosts/plan-canal-du-midi.com/canal-ai-config.php`
     (fuera de httpdocs, 640). Página ID **18500**, privada; portada intacta (15269).
   - Tests: 42 de `ai-core` (PHP 7.4 del servidor) + smokes de datos, render y endpoint
     (API simulada) + verificación en navegador 1440/375 px.
