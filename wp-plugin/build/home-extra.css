@@ -237,3 +237,5 @@ a.etape-name:hover { color: var(--primary); }
 .faq-item p { margin: 0 0 12px; color: var(--muted); line-height: 1.7; }
 .faq-link { display: inline-flex; gap: 6px; align-items: center; margin-bottom: 18px; color: var(--primary-deep); font-weight: 700; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .faq-item summary::after { transition: none; } }
+.faq-item .faq-source { margin: -8px 0 18px; font-size: 13px; color: var(--muted); }
+.faq-item .faq-source a { color: var(--primary-deep); text-decoration: underline; }

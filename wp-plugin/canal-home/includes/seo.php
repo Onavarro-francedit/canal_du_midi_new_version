@@ -9,10 +9,12 @@ defined('ABSPATH') || exit;
 const CANAL_HOME_SITE_NAME = "L'Officiel du Canal du Midi";
 const CANAL_HOME_LOGO      = '/wp-content/uploads/2020/04/logo_canal_nouveau_2020_v6.png';
 const CANAL_HOME_FACEBOOK  = 'https://www.facebook.com/canaldumidi.officiel/';
+const CANAL_HOME_INSTAGRAM = 'https://www.instagram.com/lofficielducanaldumidi/';
+const CANAL_HOME_OG_IMAGE  = 'assets/og-canal-du-midi-1200x630.jpg';
 
 function canal_home_seo_title(): string
 {
-    return "Canal du Midi : bateaux sans permis, vélos, hébergements | L'Officiel";
+    return "Canal du Midi : bateaux, vélos, hébergements | L'Officiel"; // ≤ 60 car.
 }
 
 function canal_home_seo_description(): string
@@ -30,7 +32,7 @@ function canal_home_seo_items(?array $items = null): array
     return $registered;
 }
 
-function canal_home_seo_graph(string $url, array $sejours): array
+function canal_home_seo_graph(string $url, array $sejours, string $modified = ''): array
 {
     $home  = home_url('/');
     $hero  = home_url(CANAL_HOME_HERO_IMAGE);
@@ -60,7 +62,9 @@ function canal_home_seo_graph(string $url, array $sejours): array
                 'name'               => CANAL_HOME_SITE_NAME,
                 'url'                => $home,
                 'logo'               => home_url(CANAL_HOME_LOGO),
-                'sameAs'             => [CANAL_HOME_FACEBOOK],
+                'sameAs'             => [CANAL_HOME_FACEBOOK, CANAL_HOME_INSTAGRAM],
+                'description'        => "Guide pratique et plan officiel du Canal du Midi, édité chaque année par Azur Communications.",
+                'knowsAbout'         => ['Canal du Midi', 'Tourisme fluvial', 'Cyclotourisme', 'Navigation de plaisance', "Patrimoine mondial de l'UNESCO"],
                 'parentOrganization' => [
                     '@type'     => 'Organization',
                     'name'      => 'Azur Communications',
@@ -94,13 +98,23 @@ function canal_home_seo_graph(string $url, array $sejours): array
                 'isPartOf'           => ['@id' => $site],
                 'about'              => ['@id' => $canal],
                 'primaryImageOfPage' => ['@type' => 'ImageObject', 'url' => $hero, 'width' => 1898, 'height' => 682],
+                'dateModified'       => $modified,
+                // Fragmentos aptos para lectura en voz alta (asistentes de voz / AEO).
+                'speakable'          => [
+                    '@type'       => 'SpeakableSpecification',
+                    'cssSelector' => ['#etapes .section-heading p', '#faq .faq-item p'],
+                ],
             ],
             [
                 '@type'       => 'TouristDestination',
                 '@id'         => $canal,
                 'name'        => 'Canal du Midi',
                 'description' => "Voie navigable de 240 km et 63 écluses reliant Toulouse à l'étang de Thau, construite par Pierre-Paul Riquet, inaugurée en 1681 et inscrite au patrimoine mondial de l'UNESCO depuis 1996.",
-                'sameAs'      => 'https://fr.wikipedia.org/wiki/Canal_du_Midi',
+                'sameAs'      => [
+                    'https://fr.wikipedia.org/wiki/Canal_du_Midi',
+                    'https://www.wikidata.org/wiki/Q202494',
+                    'https://whc.unesco.org/fr/list/770/',
+                ],
                 'touristType' => ['Tourisme fluvial', 'Cyclotourisme', 'Tourisme culturel'],
             ],
             [
@@ -116,11 +130,11 @@ function canal_home_seo_graph(string $url, array $sejours): array
     ];
 }
 
-function canal_home_seo_head(string $url, array $sejours): string
+function canal_home_seo_head(string $url, array $sejours, string $modified = ''): string
 {
     $title = canal_home_seo_title();
     $desc  = canal_home_seo_description();
-    $image = home_url(CANAL_HOME_HERO_IMAGE);
+    $image = CANAL_HOME_URL . CANAL_HOME_OG_IMAGE;
     $meta  = function (string $attr, string $key, string $value): string {
         return '<meta ' . $attr . '="' . esc_attr($key) . '" content="' . esc_attr($value) . '">' . "\n";
     };
@@ -132,14 +146,16 @@ function canal_home_seo_head(string $url, array $sejours): string
     $out .= $meta('property', 'og:description', $desc);
     $out .= $meta('property', 'og:url', $url);
     $out .= $meta('property', 'og:image', $image);
-    $out .= $meta('property', 'og:image:width', '1898');
-    $out .= $meta('property', 'og:image:height', '682');
+    $out .= $meta('property', 'og:image:width', '1200');
+    $out .= $meta('property', 'og:image:height', '630');
+    $out .= $meta('property', 'og:image:alt', 'Le Canal du Midi : péniches, chemin de halage et vélo');
     $out .= $meta('name', 'twitter:card', 'summary_large_image');
     $out .= $meta('name', 'twitter:title', $title);
     $out .= $meta('name', 'twitter:description', $desc);
     $out .= $meta('name', 'twitter:image', $image);
     // JSON_HEX_TAG: '<' y '>' como </> → imposible cerrar el <script> desde los datos.
-    $json = wp_json_encode(canal_home_seo_graph($url, $sejours), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
+    $out .= '<link rel="alternate" type="text/markdown" title="llms.txt" href="' . esc_url(home_url('/llms.txt')) . '">' . "\n";
+    $json = wp_json_encode(canal_home_seo_graph($url, $sejours, $modified), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
     $out .= '<script type="application/ld+json">' . $json . '</script>' . "\n";
     return $out;
 }
@@ -153,7 +169,7 @@ add_action('wp_head', function () {
         return;
     }
     $url = is_front_page() ? home_url('/') : (string) get_permalink();
-    echo canal_home_seo_head($url, canal_home_seo_items()); // phpcs:ignore — escapado dentro.
+    echo canal_home_seo_head($url, canal_home_seo_items(), (string) get_the_modified_date('c', get_queried_object_id())); // phpcs:ignore — escapado dentro.
 }, 5);
 
 // Rendimiento: conexión anticipada a Google Fonts (solo en esta página).
@@ -164,3 +180,35 @@ add_filter('wp_resource_hints', function ($urls, $relation) {
     }
     return $urls;
 }, 10, 2);
+
+// Cabecera Link hacia llms.txt en la home (descubrimiento por agentes de IA).
+add_action('template_redirect', function () {
+    if (canal_home_is_page() && !headers_sent()) {
+        header('Link: <' . esc_url_raw(home_url('/llms.txt')) . '>; rel="llms-txt"', false);
+    }
+});
+
+// ── Ajustes de todo el sitio autorizados por el usuario (2026-09-29, auditoría seo-geo) ──
+// Sitemaps: fuera el listado de autores (expone slugs de cuentas, uno derivado de un e-mail) y
+// la biblioteca de plantillas de Elementor (no es contenido público).
+add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
+    return $name === 'users' ? false : $provider;
+}, 10, 2);
+add_filter('wp_sitemaps_post_types', function ($types) {
+    unset($types['elementor_library']);
+    return $types;
+});
+// No publicar la versión de WordPress ni la de PHP.
+remove_action('wp_head', 'wp_generator');
+add_filter('the_generator', '__return_empty_string');
+// Cabeceras de seguridad. HSTS sin includeSubDomains/preload (no se controla cada subdominio).
+add_action('send_headers', function () {
+    if (headers_sent()) {
+        return;
+    }
+    header_remove('X-Powered-By');
+    header('X-Content-Type-Options: nosniff');
+    if (is_ssl()) {
+        header('Strict-Transport-Security: max-age=15552000');
+    }
+});

@@ -4,6 +4,8 @@
 
 Le Canal du Midi relie Toulouse à l'étang de Thau sur 240 km et compte 63 écluses. Construit par Pierre-Paul Riquet et inauguré en 1681, il est inscrit au patrimoine mondial de l'UNESCO depuis 1996. Le site est en français.
 
+- [Version complète (FAQ, étapes, prestataires par catégorie)](https://www.plan-canal-du-midi.com/llms-full.txt)
+
 ## Préparer un séjour
 - [Explorer les prestataires sur la carte](https://www.plan-canal-du-midi.com/explorer/): recherche par activité, par étape et par mot-clé.
 - [Organiser votre séjour](https://www.plan-canal-du-midi.com/organiser-votre-sejour/): demande transmise aux prestataires correspondants.

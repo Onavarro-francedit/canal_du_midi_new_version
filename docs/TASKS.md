@@ -340,6 +340,18 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   - **Pendiente del usuario / al publicar:** enviar `wp-sitemap.xml` en Search Console y Bing
     Webmaster; verificar canonical `/`, redirección de `/accueil-2026/`, ausencia de `noindex`,
     Rich Results Test y PageSpeed móvil en anónimo.
+  - Auditoría con la skill `seo-geo` (--audit-only, 2026-09-29): 58/100 → correcciones aplicadas:
+    título 57 car., og:image 1200×630 propia, `sameAs` Instagram + Wikidata Q202494 + UNESCO 770,
+    `knowsAbout`, `dateModified`, `speakable`, cabecera `Link: rel="llms-txt"` + `<link>`,
+    fuentes VNF/UNESCO en la FAQ, 2 H2 en forma de pregunta, `llms-full.txt` (generado desde
+    content.php por `build/build-llms-full.php`). Con autorización del usuario, cambios de todo el
+    sitio desde el plugin: sitemaps sin autores ni `elementor_library`, sin `wp_generator`, sin
+    `X-Powered-By: PHP`, HSTS (6 meses, sin subdominios) y `nosniff`; `robots.txt` sustituido
+    (original guardado en `/var/www/vhosts/plan-canal-du-midi.com/robots.txt.orig`): bots de
+    búsqueda IA permitidos, entrenamiento no (`Content-Signal: ai-train=no`), `Sitemap:`.
+    NO tocado: regla del `.htaccess` que da 403 a GPTBot/ClaudeBot/Amazonbot (decisión del sitio).
+  - Pendiente del usuario: datos del editor para E-E-A-T (año de inicio del plan, tirada,
+    responsable) — no se inventan.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

@@ -13,12 +13,12 @@ $check = function (bool $cond, string $label) use (&$fails): void {
 };
 
 $title = canal_home_seo_title();
-$check(mb_strlen($title) >= 40 && mb_strlen($title) <= 75 && strpos($title, 'Canal du Midi') !== false, "título ($title)");
+$check(mb_strlen($title) >= 40 && mb_strlen($title) <= 60 && strpos($title, 'Canal du Midi') !== false, "título ($title)");
 $desc = canal_home_seo_description();
 $check(mb_strlen($desc) >= 120 && mb_strlen($desc) <= 160, 'meta description 120–160 car. (' . mb_strlen($desc) . ')');
 
 $sejours = canal_home_sejours();
-$html = canal_home_seo_head('https://www.plan-canal-du-midi.com/', $sejours);
+$html = canal_home_seo_head('https://www.plan-canal-du-midi.com/', $sejours, '2026-09-29T10:00:00+00:00');
 $check(strpos($html, '<meta name="description" content="') !== false, 'meta description emitida');
 foreach (['og:title', 'og:description', 'og:image', 'og:url', 'og:type', 'og:locale', 'og:site_name'] as $p) {
     $check(strpos($html, 'property="' . $p . '"') !== false, "Open Graph $p");
@@ -49,4 +49,18 @@ foreach ($faq as $q) {
 }
 $check($plain, 'respuestas FAQ en texto plano');
 $check(stripos($m[1][0] ?? '', '</script') === false, 'JSON-LD sin </script');
+$check(strpos($html, 'og-canal-du-midi-1200x630.jpg') !== false && strpos($html, 'property="og:image:width" content="1200"') !== false && strpos($html, 'property="og:image:height" content="630"') !== false, 'og:image 1200×630');
+$check(strpos($html, 'rel="alternate" type="text/markdown"') !== false && strpos($html, '/llms.txt') !== false, '<link> a llms.txt en <head>');
+$check(in_array('https://www.instagram.com/lofficielducanaldumidi/', (array) ($org['sameAs'] ?? []), true) && !empty($org['knowsAbout']), 'Organization: Instagram + knowsAbout');
+$dest = (array) ($types['TouristDestination']['sameAs'] ?? []);
+$check(in_array('https://www.wikidata.org/wiki/Q202494', $dest, true) && in_array('https://whc.unesco.org/fr/list/770/', $dest, true), 'TouristDestination: Wikidata Q202494 + UNESCO 770');
+$wp = $types['WebPage'] ?? [];
+$check(($wp['dateModified'] ?? '') === '2026-09-29T10:00:00+00:00', 'WebPage dateModified');
+$check(($wp['speakable']['@type'] ?? '') === 'SpeakableSpecification' && !empty($wp['speakable']['cssSelector']), 'WebPage speakable');
+// Sitemaps: sin autores ni biblioteca de Elementor; cabeceras de seguridad y sin generator.
+// En eval-file los providers ya están registrados antes de cargar el plugin: se prueba el filtro
+// (el efecto real se verifica por HTTP en /wp-sitemap.xml tras desplegar).
+$check(apply_filters('wp_sitemaps_add_provider', new stdClass(), 'users') === false && apply_filters('wp_sitemaps_add_provider', new stdClass(), 'posts') !== false, 'filtro: sitemap sin provider users');
+$check(!isset(apply_filters('wp_sitemaps_post_types', ['page' => 1, 'elementor_library' => 1])['elementor_library']), 'sitemap sin elementor_library');
+$check(has_action('wp_head', 'wp_generator') === false, 'wp_generator retirado');
 WP_CLI::log($fails === 0 ? 'TODO OK' : "$fails FALLO(S)");

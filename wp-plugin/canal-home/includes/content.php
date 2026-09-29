@@ -7,7 +7,8 @@
  */
 defined('ABSPATH') || exit;
 
-// Preguntas frecuentes: respuesta en texto plano + enlace opcional a la página que la amplía.
+// Preguntas frecuentes: respuesta en texto plano + enlace interno opcional + fuente externa
+// de autoridad opcional ('source' => [etiqueta, url]).
 const CANAL_HOME_FAQ = [
     [
         'q'    => 'Faut-il un permis pour naviguer sur le Canal du Midi ?',
@@ -20,18 +21,21 @@ const CANAL_HOME_FAQ = [
         'a'    => "Le Canal du Midi relie Toulouse à l'étang de Thau sur 240 km et compte 63 écluses. Construit par Pierre-Paul Riquet et inauguré en 1681, il est inscrit au patrimoine mondial de l'UNESCO depuis 1996.",
         'url'  => '/calcul-de-distance-canal-du-midi/',
         'link' => 'Calculer une distance entre deux écluses',
+        'source' => ['UNESCO — Canal du Midi', 'https://whc.unesco.org/fr/list/770/'],
     ],
     [
         'q'    => 'Faut-il payer pour naviguer sur le Canal du Midi ?',
         'a'    => "Oui : la navigation de plaisance est soumise à un péage perçu par Voies Navigables de France (VNF). Son montant dépend de la surface du bateau et de la durée, avec plusieurs forfaits (journée, vacances de 16 jours, loisirs de 30 jours…).",
         'url'  => '/foire-aux-question-faq-canal-du-midi/',
         'link' => 'Voir toutes les questions fréquentes',
+        'source' => ['Voies Navigables de France (VNF)', 'https://www.vnf.fr/'],
     ],
     [
         'q'    => 'Peut-on longer le Canal du Midi à vélo ?',
         'a'    => "Oui. Les voies vertes aménagées sur les anciens chemins de halage se parcourent sans autorisation, par exemple Toulouse – Port-Lauragais (49 km) ou Castelnaudary – Carcassonne (40 km). Pour connaître l'état de la piste, renseignez-vous auprès de VNF.",
         'url'  => '/voie-verte-et-veloroute/',
         'link' => 'Voies vertes et véloroutes',
+        'source' => ['Voies Navigables de France (VNF)', 'https://www.vnf.fr/'],
     ],
     [
         'q'    => 'Quels ouvrages ne pas manquer le long du canal ?',

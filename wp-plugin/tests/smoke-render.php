@@ -34,6 +34,8 @@ $check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');
 $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
+$check(strpos($html, 'https://www.vnf.fr/') !== false && strpos($html, 'https://whc.unesco.org/fr/list/770/') !== false, 'FAQ: enlaces a VNF y UNESCO');
+$check(strpos($html, '<h2>Quelles sont les étapes du Canal du Midi ?</h2>') !== false && strpos($html, '<h2>Comment préparer votre séjour sur le canal ?</h2>') !== false, 'H2 en forma de pregunta');
 preg_match('/<section id="etapes".*?<\/section>/s', $html, $etapes);
 $check(isset($etapes[0]) && substr_count($etapes[0], 'class="etape"') === 8 && strpos($etapes[0], 'km 208') !== false, 'étapes: 8 etapas con PK del sitio');
 preg_match('/<section id="faq".*?<\/section>/s', $html, $faqSec);

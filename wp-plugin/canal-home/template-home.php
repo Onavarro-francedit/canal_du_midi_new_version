@@ -170,7 +170,7 @@ get_header();
             </div>
             <div class="split-copy" data-reveal="right">
                 <div class="eyebrow">Votre séjour</div>
-                <h2>Préparer et profiter de votre séjour</h2>
+                <h2>Comment préparer votre séjour sur le canal ?</h2>
                 <p>
                     Site unique inscrit au patrimoine mondial de l'UNESCO, le Canal du Midi se découvre à son rythme :
                     en péniche avec ou sans permis, à vélo sur les chemins de halage, ou d'étape en étape entre
@@ -223,7 +223,7 @@ get_header();
         <div class="container">
             <div class="section-heading center" data-reveal="up">
                 <div class="eyebrow">Itinéraire</div>
-                <h2>Les étapes du canal, de Toulouse à la Méditerranée</h2>
+                <h2>Quelles sont les étapes du Canal du Midi ?</h2>
                 <p>240 km et 63 écluses entre Toulouse et l'étang de Thau. Distances en points kilométriques (PK) depuis Toulouse.</p>
             </div>
             <ol class="etapes-list">
@@ -311,6 +311,9 @@ get_header();
                         <p><?= esc_html($item['a']) ?></p>
                         <?php if (!empty($item['url'])): ?>
                             <a class="faq-link" href="<?= $link($item['url']) ?>"><?= esc_html($item['link']) ?> <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                        <?php endif; ?>
+                        <?php if (!empty($item['source'])): ?>
+                            <p class="faq-source">Source : <a href="<?= esc_url($item['source'][1]) ?>" target="_blank" rel="noopener"><?= esc_html($item['source'][0]) ?></a></p>
                         <?php endif; ?>
                     </details>
                 <?php endforeach; ?>
