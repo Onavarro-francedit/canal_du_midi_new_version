@@ -558,7 +558,16 @@ get_header();
         const header = document.querySelector('.c27-main-header');
         const shell = page.closest('.cdm-carte');
         const setHeaderHeight = () => {
-            if (header && shell) shell.style.setProperty('--cdm-header-h', header.offsetHeight + 'px');
+            if (!header || !shell) return;
+            shell.style.setProperty('--cdm-header-h', header.offsetHeight + 'px');
+            // WP: la cabecera fija del tema ocupa más alto del que reserva → se compensa el solapamiento.
+            // Solo con la página arriba: al hacer scroll el tema oculta la cabecera y la medida no vale.
+            if (window.scrollY !== 0) return;
+            shell.style.paddingTop = '0px';
+            const overlap = getComputedStyle(header).position === 'fixed'
+                ? Math.round(header.getBoundingClientRect().bottom - shell.getBoundingClientRect().top)
+                : 0;
+            shell.style.paddingTop = overlap > 0 ? overlap + 'px' : '0px';
         };
         setHeaderHeight();
         window.addEventListener('resize', setHeaderHeight);
