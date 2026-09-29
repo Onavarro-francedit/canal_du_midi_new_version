@@ -4,11 +4,26 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(vacío — TASK-026 cerrada ✅, ver 🟢 Completadas. De sus 3 seguimientos de product,
-BUG-018 y BUG-019 quedaron corregidos y re-verificados el mismo día; solo BUG-020
-sigue abierto en 🟡 Pendiente.)_
+_(vacío — TASK-027 desplegada en privado ✅, ver 🟢. Siguiente paso = publicarla como
+portada, SOLO con orden explícita del usuario: TASK-028 en 🟡.)_
 
 ## 🟡 Pendiente
+
+### Migración visual del WordPress de producción (nuevo rumbo, 2026-09-28)
+- **TASK-028 — Publicar « Accueil 2026 » como portada** — SOLO con orden explícita del
+  usuario. `wp-plugin/remote.sh wp post update 18500 --post_status=publish` y *Réglages →
+  Lecture* → página de inicio = « Accueil 2026 » (hoy `page_on_front` = 15269, la home
+  Elementor). Publicar y cambiar portada en el mismo momento (al publicarse ya es
+  accesible en `/accueil-2026/`). Rollback: volver a poner 15269.
+- **TASK-029 — Rediseño de `/carte`** (fase 2 acordada). Mismo enfoque: añadir, no modificar.
+- **TASK-030 — Diseño de la ficha (`/fiche/<slug>/`)** (fase 3 acordada).
+- **Minors de TASK-027 (diferidos):** « DE GÉNIE HYDRAULIQUE » roza el borde derecho de
+  la tarjeta de stats a 375 px; la foto `rando-velo_2.webp` tiene zonas blancas en la
+  composición apilada; los smokes que cargan desde `/tmp` exigen el plugin desactivado.
+- **Observación (no nuestra, no tocada):** `httpdocs/wp-config.php` se reescribe de
+  madrugada (29/09 01:24:47 UTC, usuario del sitio, 600) — probable tarea de
+  Plesk/WP Toolkit. Contraseña de BD en claro en `my-listing/page_accueil_test.php`
+  (regla: no se modifica nada existente).
 
 - **BUG-020 / PRD-012 (medio — product, TASK-026, 2026-09-03)** — El reordenado
   por drag & drop funciona y persiste, pero es **indescubrible**: ninguna pista
@@ -246,6 +261,23 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+- **TASK-027 — Home « Accueil 2026 » en el WordPress de producción (plugin
+  `canal-home`) ✅ desplegada en PRIVADO (2026-09-28/29)**
+  - Spec `docs/superpowers/specs/2026-09-28-home-wordpress-prod-design.md`, plan
+    `docs/superpowers/plans/2026-09-28-home-wordpress-prod.md`, rama `feat/wp-home-accueil-2026`.
+  - Plugin nuevo (fuente en `wp-plugin/`, despliegue `wp-plugin/remote.sh deploy`):
+    plantilla de página con las 7 secciones (textos validados), datos reales de WP,
+    asistente IA `POST /wp-json/canal-home/v1/ai` (claude-opus-5, catálogo de 254 fichas
+    con prompt caching ~34k tokens → ~0,025 $/búsqueda con caché caliente, límite
+    10/10 min por IP + 300/día). Clave en `/var/www/vhosts/plan-canal-du-midi.com/canal-ai-config.php`
+    (fuera de httpdocs, 640). Página ID **18500**, privada; portada intacta (15269).
+  - Tests: 42 de `ai-core` (PHP 7.4 del servidor) + smokes de datos, render y endpoint
+    (API simulada) + verificación en navegador 1440/375 px.
+  - Hallazgos de compatibilidad con el tema corregidos: `html{font-size:10px}` (rem→px en
+    build), clearfix Bootstrap en `.container`, color de h1–h6, z-index de la cabecera
+    (500), caché de assets (versión = filemtime), y el explorador filtra por
+    `search_location` (texto geocodificado, 10 km), no por la taxonomía `region`.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

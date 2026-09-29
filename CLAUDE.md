@@ -88,43 +88,19 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 
 ## 📌 Estado actual del proyecto
 
-- **Último completado:** **TASK-026 — modal "Photos" del backoffice: borrar, reordenar
-  y validar ✅** (pipeline completo + re-verificación en navegador, 2026-09-03). Borrado
-  de portada/galería vía AJAX con `confirm()` y reasignación automática de portada,
-  reordenado por drag & drop nativo persistido como `gallery_order[]`, validación cliente
-  (5 Mo + MIME) y estado "Envoi en cours…" con spinner. Verificado con Playwright sobre la
-  fiche 226 (owner throwaway, datos restaurados byte a byte): borrado que persiste tras F5,
-  orden que llega al carrusel público, rechazo de archivos inválidos sin ninguna petición de
-  red, 0 errores de consola, textos en francés. Se abrieron 3 hallazgos de product; **BUG-018**
-  (mensaje de error invisible — `showModalError()` + `scrollIntoView({block:'center'})`, ojo:
-  `'nearest'` NO basta bajo el `<h2>` collant) y **BUG-019** (hero y picker sucios tras borrar
-  la última foto) están corregidos y re-verificados. Queda **BUG-020** en 🟡 (el drag & drop es
-  indescubrible y no funciona en táctil — decisión de UX).
-- **Antes:** TASK-001 (escape de salida `ENT_QUOTES,'UTF-8'` en 6 vistas:
-  service_detail, poi_detail, vacation_pdf, review_item, header, booking_summary_modal)
-  + TASK-002 (hardening de prompts OpenAI: `sanitizeUserPrompt`, delimitadores,
-  cláusula anti-override). Pipeline completo + product ⚠️ verificado en navegador
-  (Playwright, PRD-002). Incluye SEC-010 (iframe de vídeo de BD con allowlist
-  youtube/vimeo + sandbox) y SEC-011 (`$service->id` casteado a `(int)` en `data-sid` y
-  `service_id`). Ficha de servicio renderiza con mapa Leaflet (1 marcador OK pese al
-  cast float), acentos franceses intactos, 0 errores de consola; vacation-pdf con ref
-  inválida → 404 "introuvable". Auditoría: `grep htmlspecialchars | grep -v ENT_QUOTES`
-  → 0 en los 6 archivos. Ver 🟢 en TASKS.md.
-- **Antes (resumen):** clusters home BUG-001/002/003 (tour-cards reales + sección plan
-  Calaméo + form e-mail) y "buscador del hero" (selects reales, PRD-004/PRD-005
-  resueltos: título legible + filtro náutico 136→17). SEC-007/008 y la tanda de
-  backlog (PRD-006, TASK-003/004, BUG-004, SEC-004/009/002) cerradas. Detalle en
-  `docs/TASKS.md` 🟢.
-- **Seguimientos abiertos (🟡):** BUG-020/PRD-012 (el reordenado del modal Photos es
-  indescubrible y el drag nativo no funciona en táctil); PRD-007/BUG-014 (el mapa de la ficha de POI nunca
-  renderiza — `footer.php` no carga Leaflet para `$page==='poi'`; bug PRE-EXISTENTE,
-  no regresión de TASK-001); deuda de fondo — SEC-001 (credenciales BD en
-  `Database.php`), TASK-005/007 (stats/contacto/imágenes reales), TASK-016b (backfill
-  `commune`), BUG-004 ("Lire la vidéo" aplazado, ya eliminado el botón). En
-  `docs/TASKS.md`.
-- **Siguiente candidato:** corregir PRD-007/BUG-014 (Leaflet en ficha de POI), o
-  Incremento 3 visual — TASK-012 "Les étapes du canal" (Toulouse → … → Étang de Thau).
-- Recordatorio: el motion/render Y los filtros/resultados se verifican SIEMPRE en
-  navegador con captura, muestreo de píxeles o conteo+muestra real
-  (PRD-002/PRD-003/PRD-005/PRD-007); el computed style/“filtra algo”/“el div existe”
-  no basta. Nada de pins/scroll-jacking (TASK-008 revertida).
+- **Nuevo rumbo (2026-09-28):** producción sigue siendo el **WordPress** de
+  `https://www.plan-canal-du-midi.com` (servidor `plesk-prod`, tema my-listing, PHP-FPM
+  **7.4**). Esta app PHP local ya no es el sitio: es la **fuente de diseño**. Regla dura:
+  **en producción no se modifica nada existente, solo se añade.** Fases: home → `/carte` →
+  diseño de la ficha.
+- **Último completado:** **TASK-027 — home « Accueil 2026 »** como plugin nuevo
+  `canal-home` (fuente en `wp-plugin/`), desplegada en **privado** (página 18500) con
+  asistente IA (claude-opus-5). Detalle en `docs/TASKS.md` 🟢.
+- **Comandos:** `wp-plugin/remote.sh test` (tests + lint 7.4 en el servidor) ·
+  `remote.sh deploy` · `remote.sh run tests/<smoke>.php` (con el plugin desactivado) ·
+  `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:
+  `node wp-plugin/build/build-css.mjs` (nunca editar `assets/home.css` a mano).
+- **Siguiente:** TASK-028 publicar como portada (solo con orden explícita), luego
+  TASK-029 `/carte`.
+- Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
+  antes de la captura de página completa: scroll-reveal + lazy-load).
