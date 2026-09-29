@@ -131,9 +131,11 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
 }
 
 // Meta description + Open Graph + Twitter card. Compartido por la home y la carte.
-function canal_home_seo_social(string $title, string $desc, string $url, string $imageAlt): string
+// $image: imagen propia (ficha); vacía → la imagen OG genérica 1200×630.
+function canal_home_seo_social(string $title, string $desc, string $url, string $imageAlt, string $image = ''): string
 {
-    $image = CANAL_HOME_URL . CANAL_HOME_OG_IMAGE;
+    $generic = $image === '';
+    $image = $generic ? CANAL_HOME_URL . CANAL_HOME_OG_IMAGE : $image;
     $meta  = function (string $attr, string $key, string $value): string {
         return '<meta ' . $attr . '="' . esc_attr($key) . '" content="' . esc_attr($value) . '">' . "\n";
     };
@@ -145,8 +147,10 @@ function canal_home_seo_social(string $title, string $desc, string $url, string 
     $out .= $meta('property', 'og:description', $desc);
     $out .= $meta('property', 'og:url', $url);
     $out .= $meta('property', 'og:image', $image);
-    $out .= $meta('property', 'og:image:width', '1200');
-    $out .= $meta('property', 'og:image:height', '630');
+    if ($generic) {
+        $out .= $meta('property', 'og:image:width', '1200');
+        $out .= $meta('property', 'og:image:height', '630');
+    }
     $out .= $meta('property', 'og:image:alt', $imageAlt);
     $out .= $meta('name', 'twitter:card', 'summary_large_image');
     $out .= $meta('name', 'twitter:title', $title);
