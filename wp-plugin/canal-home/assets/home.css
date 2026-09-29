@@ -2139,3 +2139,7 @@
 @media (prefers-reduced-motion: reduce) { .cdm-home .faq-item summary::after { transition: none; } }
 .cdm-home .faq-item .faq-source { margin: -8px 0 18px; font-size: 13px; color: var(--muted); }
 .cdm-home .faq-item .faq-source a { color: var(--primary-deep); text-decoration: underline; }
+
+/* Envío IA en curso: el tema no distingue un botón deshabilitado → se ve bloqueado mientras espera. */
+.cdm-home .hero-ai-actions .button:disabled { opacity: 0.7; cursor: progress; }
+.cdm-home .hero-ai-actions .button .bi.ai-loading { display: inline-block; }

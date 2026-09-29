@@ -178,6 +178,7 @@
     }
 
     function showMessage(text, prompt) {
+        ai.feedback.classList.remove('is-info');
         ai.feedback.textContent = text + ' ';
         if (prompt) ai.feedback.appendChild(carteLink(prompt));
     }
@@ -213,7 +214,17 @@
 
     function initAiSubmit() {
         var label = ai.submit.querySelector('span');
+        var icon = ai.submit.querySelector('.bi');
         var idleLabel = label ? label.textContent : '';
+        // La respuesta tarda de 8 a 30 s: el estado de espera debe verse (botón bloqueado + mensaje).
+        function setBusy(busy) {
+            ai.submit.disabled = busy;
+            ai.submit.setAttribute('aria-busy', busy ? 'true' : 'false');
+            if (label) label.textContent = busy ? 'Recherche en cours…' : idleLabel;
+            if (icon && !reduceMotion) icon.classList.toggle('ai-loading', busy);
+            ai.feedback.classList.toggle('is-info', busy);
+            if (busy) ai.feedback.textContent = "L'assistant analyse votre demande… cela peut prendre jusqu'à 30 secondes.";
+        }
 
         ai.form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -227,9 +238,7 @@
 
             // Cierra el teclado en móvil: si no, tapa los resultados al llegar.
             ai.prompt.blur();
-            ai.submit.disabled = true;
-            if (label) label.textContent = 'Recherche en cours…';
-            ai.feedback.textContent = '';
+            setBusy(true);
 
             var controller = 'AbortController' in window ? new AbortController() : null;
             var timer = controller ? window.setTimeout(function () { controller.abort(); }, 40000) : null;
@@ -246,24 +255,26 @@
                     });
                 })
                 .then(function (out) {
+                    setBusy(false);
                     var results = (out.data && Array.isArray(out.data.results)) ? out.data.results : [];
                     if (!out.ok) {
                         showMessage((out.data && out.data.message) || "L'assistant IA est momentanément indisponible.", prompt);
                     } else if (results.length === 0) {
                         showMessage('Aucune adresse ne correspond précisément à votre demande.', prompt);
                     } else {
+                        ai.feedback.classList.add('is-info');
                         ai.feedback.textContent = 'Voici les adresses qui correspondent le mieux à votre demande :';
                         renderResults(results);
                         ai.feedback.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
                     }
                 })
                 .catch(function () {
+                    setBusy(false);
                     showMessage("L'assistant IA est momentanément indisponible.", prompt);
                 })
                 .then(function () {
                     if (timer) window.clearTimeout(timer);
-                    ai.submit.disabled = false;
-                    if (label) label.textContent = idleLabel;
+                    if (ai.submit.disabled) setBusy(false);
                 });
         });
     }
