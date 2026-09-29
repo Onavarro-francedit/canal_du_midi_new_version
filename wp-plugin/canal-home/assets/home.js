@@ -32,6 +32,28 @@
         update();
     }
 
+    // ── Banda inmersiva: parallax de la foto (muestra otra parte según el scroll) ──
+    // background-position de la 2ª capa (la foto) de 0 % a 100 % mientras la banda cruza
+    // la pantalla; la 1ª capa (velo oscuro) no se mueve. Sin background-attachment:fixed
+    // porque iOS no lo soporta.
+    function initBandParallax() {
+        var band = document.querySelector('.cdm-home .immersive-band');
+        if (!band || reduceMotion) return;
+        var ticking = false;
+        var update = function () {
+            ticking = false;
+            var rect = band.getBoundingClientRect();
+            var vh = window.innerHeight;
+            if (rect.bottom < 0 || rect.top > vh) return;
+            var progress = Math.max(0, Math.min(1, (vh - rect.top) / (vh + rect.height)));
+            band.style.backgroundPosition = '0% 0%, center ' + (progress * 100).toFixed(1) + '%';
+        };
+        var onScroll = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+        update();
+    }
+
     // ── Scroll reveal ───────────────────────────────────────────────────
     function initReveal() {
         if (reduceMotion || !('IntersectionObserver' in window)) return;
@@ -244,6 +266,7 @@
     }
 
     initHero();
+    initBandParallax();
     initReveal();
     initPlanModal();
     initSearchForm();

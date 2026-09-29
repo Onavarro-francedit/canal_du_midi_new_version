@@ -284,6 +284,9 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     build), clearfix Bootstrap en `.container`, color de h1–h6, z-index de la cabecera
     (500), caché de assets (versión = filemtime), y el explorador filtra por
     `search_location` (texto geocodificado, 10 km), no por la taxonomía `region`.
+  - Parallax en la banda inmersiva (petición del usuario, 2026-09-29): la foto se desplaza
+    de 0 % a 100 % de `background-position` mientras la banda cruza la pantalla; desactivado
+    con `prefers-reduced-motion`.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**
