@@ -42,7 +42,7 @@ Regla dura de producción: **no se modifica nada existente, solo se añade.** `/
 | `wp-plugin/canal-home/template-carte.php` | Markup portado de `search_results.php` |
 | `wp-plugin/canal-home/includes/carte-data.php` | `canal_carte_listings()` (lectura + caché) e invalidación |
 | `wp-plugin/canal-home/includes/carte-filter.php` | `canal_carte_params()` y `canal_carte_filter()` — **puras**, sin WP |
-| `wp-plugin/canal-home/assets/carte/*.js` | **Copias** de `search-map.js`, `search-tabs.js`, `search-ai.js`, `ai-search.js`, `skeleton-controler.js` con los mismos nombres; cambios mínimos y comentados (endpoint IA, globales). « Autour de moi » va en `search-tabs.js` |
+| `wp-plugin/canal-home/assets/carte/*.js` | **Copias** de `search-map.js`, `search-tabs.js`, `ai-search.js`, `skeleton-controler.js` (`search-ai.js` no: sus estrategias usan precio/habitaciones, que no existen en WP) con los mismos nombres; cambios mínimos y comentados (endpoint IA, globales). « Autour de moi » va en `search-tabs.js` |
 | `wp-plugin/canal-home/assets/carte.css` | **Generado**: `styles.css` + `search.css` locales + `carte-extra.css`, todo bajo `.cdm-carte`, rem→px |
 | `wp-plugin/build/build-css.mjs` | Generalizar a dos salidas (`home.css` sin cambios de resultado, `carte.css`) |
 | `wp-plugin/build/carte-extra.css` | Adaptaciones CSS (alto de cabecera del tema, « Autour de moi », chip de lugar) |
@@ -66,7 +66,7 @@ con geolocalización). Una sola `get_posts` + `update_meta_cache` +
 id, slug, title, url (permalink → /fiche/<slug>/), lat, lng (float|null),
 cover (_job_cover[0] o imagen por defecto de la home), gallery (_job_gallery, array de URLs),
 excerpt (_job_description o post_content, sin tags, 200 car.), phone (_job_phone),
-website (_job_website), address (_job_location), city (término region, Title Case),
+address (_job_location), city (término region, Title Case),
 email (_job_email), cats: [{slug, name, parent_slug}]
 ```
 
@@ -93,7 +93,7 @@ El JSON inline que recibe el JS usa **las mismas claves que `searchResults` en l
 | `lat`, `lng` | — | float, lat ∈ [-90,90], lng ∈ [-180,180]; si no, se ignoran. **Redondeados a 2 decimales (~1 km)** en el cliente y en el servidor: la URL no lleva la posición exacta del visitante |
 
 `canal_carte_filter(array $listings, array $params): array`:
-- `q`: todas las palabras deben aparecer en título + categorías + commune + extracto;
+- `q`: todas las palabras de 3+ letras deben aparecer en título + categorías + commune + extracto;
   sin distinguir acentos ni mayúsculas.
 - `type[]`: una ficha pasa si tiene alguna de las categorías o una hija de ellas (padre ⇒ hijas).
 - `location`: coincidencia sin acentos en commune o dirección.
@@ -108,14 +108,16 @@ El JSON inline que recibe el JS usa **las mismas claves que `searchResults` en l
   botón **« Autour de moi »** (geolocalización del navegador → reenvía el GET con `lat`/`lng`;
   si se deniega: aviso en línea, sin `alert`). Con distancia, la tarjeta muestra « à X km ».
 - **Lugar:** sin campo en la sidebar (local no lo tiene). Si llega `location` por URL, se
-  muestra como chip activo « 📍 <texto> » que se puede quitar.
+  muestra como chip activo (igual que `city` en local), se conserva en un `<input hidden>` al
+  reenviar el formulario y se borra con « Effacer ».
 - **Catégories:** tarjetas de las categorías padre con contador (enlazan a `?type[]=<slug>`).
 - **Ai:** textarea + sugerencias adaptadas al canal (los botones « best-value / spacious »
   de local son de hoteles y se sustituyen). Llama a `POST /wp-json/canal-home/v1/ai`, pinta los
   resultados con su `reason` en la `ai-response-card` y resalta sus pines por `slug`. Errores
   y límites: se muestra el `message` del endpoint.
-- **Modal de detalle:** el de local (foto/carrusel, categoría, descripción, teléfono, web,
-  dirección, mini-mapa, « Itinéraire », « Voir la fiche » → permalink).
+- **Modal de detalle y popup del mapa:** los de local (foto/carrusel, categoría, descripción,
+  teléfono, e-mail, dirección, mini-mapa, « Itinéraire », « Voir la fiche » → permalink).
+  Sin web: local no la muestra.
 - El « reveal » de local se conserva, pero `search:map-ready` se emite también si Maps no
   está disponible (si no, la página quedaría oculta).
 - Alturas `calc(100vh - 82px)` de local → alto real de la cabecera del tema (en `carte-extra.css`).
@@ -128,8 +130,9 @@ El JSON inline que recibe el JS usa **las mismas claves que `searchResults` en l
 
 - **El tema my-listing ya carga Maps en todas las páginas** (`<script id="google-maps-js">`,
   síncrono, `libraries=places`, `language=fr`; comprobado en `/`, `/fiche/…` y `/explorer/`).
-  No se carga una segunda vez: los JS de la carte dependen del handle del tema. Solo si
-  `window.google?.maps` no existe, se inyecta con la clave de `options_general_google_maps_api_key`.
+  No se carga una segunda vez ni se declara dependencia de su handle (si no estuviera
+  registrado, WP no imprimiría nuestros scripts): van en el footer y `search-map.js` arranca en
+  `DOMContentLoaded`, cuando Maps ya está cargado.
 - Sin Maps: la lista funciona y el panel del mapa muestra « Carte indisponible ».
 
 ## Seguridad
@@ -145,8 +148,8 @@ El JSON inline que recibe el JS usa **las mismas claves que `searchResults` en l
    « Écluse »), varias palabras, padre ⇒ hijas, slug inválido descartado, alias de
    `/explorer/`, `location`, orden por distancia, lat/lng fuera de rango ignorados,
    entrada con HTML/script neutralizada.
-2. `smoke-carte-data.php` (`remote.sh run`, plugin desactivado unos segundos, como los
-   smokes de la home; la home 18500 es privada, no afecta a visitantes): nº de fichas = nº de
+2. `smoke-carte-data.php` (`remote.sh run`; carga los includes solo si el plugin activo no
+   los ha cargado ya, así que **no hace falta desactivar el plugin**): nº de fichas = nº de
    `job_listing` publicados, cada una con url `/fiche/` y lat/lng numéricos; el transient se
    crea y se borra tras `save_post_job_listing`.
 3. Visual en navegador, lado a lado con `/search` local, a 1440, 1024 y 390 px; con scroll
