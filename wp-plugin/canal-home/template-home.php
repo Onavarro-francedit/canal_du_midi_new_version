@@ -139,7 +139,7 @@ get_header();
                 <?php foreach ($categories as $cat): ?>
                     <a href="<?= esc_url($cat['url']) ?>" class="destination-card-link">
                         <article class="destination-card">
-                            <span class="destination-card-media" style="background-image: linear-gradient(180deg, transparent 40%, rgba(14, 20, 36, 0.88)), url('<?= esc_url($cat['image']) ?>');"></span>
+                            <span class="destination-card-media" style="background-image: linear-gradient(180deg, transparent 40%, rgba(14, 20, 36, 0.88)), <?= canal_home_css_url($cat['image']) ?>;"></span>
                             <span class="pill"><?= (int) $cat['count'] ?> adresse<?= $cat['count'] > 1 ? 's' : '' ?></span>
                             <h3><?= esc_html($cat['name']) ?></h3>
                         </article>
@@ -198,15 +198,15 @@ get_header();
             </div>
             <div class="tour-grid">
                 <?php foreach ($sejours as $s): ?>
-                    <a href="<?= esc_url($s['url']) ?>">
+                    <a href="<?= esc_url($s['url']) ?>" class="tour-card-link">
                         <article class="tour-card">
-                            <img src="<?= esc_url($s['image']) ?>" alt="<?= esc_attr($s['title']) ?>" loading="lazy">
+                            <div class="tour-card-media" role="img" aria-label="<?= esc_attr($s['title']) ?>" style="background-image:<?= canal_home_css_url($s['image']) ?>"></div>
                             <div class="tour-body">
+                                <?php if ($s['category'] !== ''): ?><span class="tour-category"><?= esc_html($s['category']) ?></span><?php endif; ?>
                                 <h3><?= esc_html($s['title']) ?></h3>
-                                <div class="tour-meta">
-                                    <?php if ($s['category'] !== ''): ?><span><?= esc_html($s['category']) ?></span><?php endif; ?>
-                                    <?php if ($s['city'] !== ''): ?><span><?= esc_html($s['city']) ?></span><?php endif; ?>
-                                </div>
+                                <?php if ($s['city'] !== ''): ?>
+                                    <p class="tour-city"><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= esc_html($s['city']) ?></p>
+                                <?php endif; ?>
                             </div>
                         </article>
                     </a>

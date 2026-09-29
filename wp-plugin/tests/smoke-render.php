@@ -34,6 +34,14 @@ $check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');
 $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
+preg_match_all('/<article class="tour-card">(.*?)<\/article>/s', $html, $tourCards);
+$tourOk = count($tourCards[1]) === 4;
+foreach ($tourCards[1] as $card) {
+    $tourOk = $tourOk && strpos($card, '<img') === false
+        && preg_match('/class="tour-card-media" role="img" aria-label="[^"]+" style="background-image:url\(&quot;https:[^"]+&quot;\)"/', $card) === 1
+        && strpos($card, 'class="tour-category"') !== false && strpos($card, 'class="tour-city"') !== false;
+}
+$check($tourOk, 'séjours: 4 tarjetas con foto de fondo (sin <img>), categoría y ciudad separadas');
 $check(strpos($html, 'CRTL Occitanie') === false && strpos($html, 'photo-credit') === false, 'expériences: sin crédito de foto visible');
 $check(strpos($html, '2020/01/img_8404_1.jpeg') !== false && strpos($html, 'rando-velo_2.webp') === false, 'expériences: foto vélo del canal (no rando-velo_2)');
 preg_match_all('/style="[^"]*\d(\.\d+)?rem[^"]*"/', $html, $remInline);

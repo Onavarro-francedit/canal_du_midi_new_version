@@ -31,7 +31,18 @@ $check(count($sejours) === 4, 'sejours: 4');
 foreach ($sejours as $s) {
     $check(strpos($s['url'], '/fiche/') !== false && $s['image'] !== '' && $s['category'] !== '', "sejour {$s['title']}: url+imagen+categoría");
     $check(strpos($s['title'], '&#') === false, "sejour {$s['title']}: título sin entidades");
+    $check(!in_array($s['category'], ['Ecluses', 'Écluses', 'Ports', 'Ports fluviaux'], true), "sejour {$s['title']}: no es esclusa/puerto ({$s['category']})");
 }
+// Muestreo amplio: 40 séjours seguidos sin ninguna esclusa ni puerto.
+$bad = 0;
+for ($i = 0; $i < 10; $i++) {
+    foreach (canal_home_sejours(4) as $s) {
+        if (in_array($s['category'], ['Ecluses', 'Écluses', 'Ports', 'Ports fluviaux'], true)) {
+            $bad++;
+        }
+    }
+}
+$check($bad === 0, "sejours: 0 esclusas/puertos en 40 tarjetas aleatorias ($bad)");
 
 $card = canal_home_card_by_slug('hotel-de-bordeaux');
 $check($card !== null && substr($card['url'], -strlen('/fiche/hotel-de-bordeaux/')) === '/fiche/hotel-de-bordeaux/', 'card_by_slug: permalink /fiche/');

@@ -95,3 +95,28 @@ p { color: inherit; }
 @media (max-width: 560px) {
     .container.newsletter-box { padding: 22px; }
 }
+
+/* « Croisières, balades et excursions » — tarjeta: foto de fondo (nunca deformada) +
+   categoría / nombre / ciudad con jerarquía y alineación fijas. */
+.tour-card-link { display: flex; }
+.tour-card { min-height: 0; background: var(--surface-strong); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.tour-card-media {
+    aspect-ratio: 4 / 3; width: 100%; flex: none;
+    background-color: var(--sand-warm); background-size: cover; background-position: center;
+    transition: transform 0.4s ease;
+}
+.tour-card { overflow: hidden; }
+.tour-card-link:hover .tour-card-media { transform: scale(1.04); }
+.tour-card .tour-body { gap: 6px; padding: 18px 20px 20px; }
+.tour-category {
+    align-self: flex-start; padding: 4px 10px; border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 12%, #fff); color: var(--primary-deep);
+    font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tour-card .tour-body h3 { margin: 4px 0 0; font-size: 18px; line-height: 1.25; min-height: 2.5em; }
+.tour-city { margin: auto 0 0; padding-top: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
+.tour-city i { color: var(--terracotta); margin-right: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    .tour-card-media { transition: none; }
+    .tour-card-link:hover .tour-card-media { transform: none; }
+}

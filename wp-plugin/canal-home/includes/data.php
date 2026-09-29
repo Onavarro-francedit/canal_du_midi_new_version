@@ -15,7 +15,11 @@ const CANAL_HOME_STAGES = [
     'trebes' => 'Trèbes', 'homps' => 'Homps', 'argens-minervois' => 'Argens-Minervois',
     'beziers' => 'Béziers', 'agde' => 'Agde', 'sete' => 'Sète',
 ];
-const CANAL_HOME_SEJOUR_CATS = ['excursions', 'location-de-velo', 'peniche', 'nautique'];
+// Categorías de « Croisières, balades et excursions ». NO usar 'nautique': sus hijas incluyen
+// ecluses (72) y ports (21), que llenaban la sección de esclusas.
+const CANAL_HOME_SEJOUR_CATS = [
+    'croisiere-bateau', 'location-bateau', 'peniche', 'excursions', 'location-de-velo', 'location-de-canoe-kayak',
+];
 
 function canal_home_plain(string $s): string
 {
@@ -77,6 +81,16 @@ function canal_home_categories(int $limit = 6): array
     return $out;
 }
 
+/**
+ * Valor CSS url("…") seguro para un atributo style: las comillas y paréntesis se codifican
+ * (esc_url deja ' como &#039;, que el navegador decodifica dentro del atributo).
+ */
+function canal_home_css_url(string $url): string
+{
+    $safe = str_replace(["'", '"', '(', ')', ' '], ['%27', '%22', '%28', '%29', '%20'], esc_url_raw($url));
+    return 'url(&quot;' . esc_attr($safe) . '&quot;)';
+}
+
 function canal_home_cover(int $postId): string
 {
     // _job_cover es un array serializado de URLs.
@@ -132,6 +146,7 @@ function canal_home_sejours(int $limit = 4): array
             'taxonomy' => 'job_listing_category',
             'field'    => 'slug',
             'terms'    => CANAL_HOME_SEJOUR_CATS,
+            'include_children' => false,
         ]],
     ]);
     return array_map(function ($post) {

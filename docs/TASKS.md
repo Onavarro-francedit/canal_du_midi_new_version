@@ -299,6 +299,13 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     a www.plan-canal-du-midi.com). No guarda e-mails. Honeypot `website`, 3 envíos/h por IP,
     tope 200/día (contador atómico `canal_home_plan_daily_YYYYMMDD` en `wp_options`).
     Envío real de prueba a onavarro@francedit.com → `?plan=ok`.
+  - Tarjetas « Croisières, balades et excursions » (2026-09-29): foto como `background-image`
+    (4:3, `cover`, nunca deformada), categoría en etiqueta / nombre / ciudad con icono, alineadas.
+    Categorías explícitas sin hijas (`croisiere-bateau`, `location-bateau`, `peniche`,
+    `excursions`, `location-de-velo`, `location-de-canoe-kayak`): antes `nautique` arrastraba
+    `ecluses` (72) y `ports` (21) → 30 de 40 tarjetas eran esclusas. `canal_home_css_url()`
+    codifica comillas/paréntesis en los `background-image` en línea (cierra el minor de
+    inyección CSS de las tarjetas de destinos).
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**
