@@ -28,6 +28,8 @@ require_once CANAL_HOME_DIR . 'includes/carte-filter.php';
 require_once CANAL_HOME_DIR . 'includes/carte-data.php';
 require_once CANAL_HOME_DIR . 'includes/carte-faq.php';
 require_once CANAL_HOME_DIR . 'includes/seo-carte.php';
+require_once CANAL_HOME_DIR . 'includes/fiche-core.php';
+require_once CANAL_HOME_DIR . 'includes/fiche-data.php';
 
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';
