@@ -164,7 +164,7 @@ get_header();
                     <img src="<?= $upload('2022/03/peniche_toulouse.jpg') ?>" alt="Péniche amarrée à Toulouse" loading="lazy">
                 </figure>
                 <figure class="photo-card photo-small bottom">
-                    <img src="<?= $upload('2020/04/rando-velo_2.webp') ?>" alt="Balade à vélo le long du canal" loading="lazy">
+                    <img src="<?= $upload('2020/01/img_8404_1.jpeg') ?>" alt="Balade à vélo sur le chemin de halage du canal" loading="lazy">
                 </figure>
             </div>
             <div class="split-copy" data-reveal="right">

@@ -22,7 +22,8 @@ portada, SOLO con orden explícita del usuario: TASK-028 en 🟡.)_
   anidado; límite por IP eludible rotando IPv6 /64; `replaceChildren` (Safari ≥ 14);
   `@keyframes` sin prefijo; `url('…')` inline con `esc_url`; `remote.sh` con `/tmp` fijo y
   despliegue no atómico (`--delay-updates`); a 375 px « DE GÉNIE HYDRAULIQUE » roza el
-  borde; foto `rando-velo_2.webp` con zonas blancas; los smokes exigen el plugin desactivado.
+  borde; los smokes exigen el plugin desactivado. (Foto `rando-velo_2.webp` sustituida por
+  `2020/01/img_8404_1.jpeg`, la imagen propia de la categoría « Le Canal à Vélo », 2026-09-29.)
 - **Antes de publicar (TASK-028):** revisar `pm.max_children` del pool PHP-FPM (cada
   llamada IA ocupa un worker ~7 s, hasta 30 s).
 - **Observación (no nuestra, no tocada):** `httpdocs/wp-config.php` se reescribe de
