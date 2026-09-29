@@ -39,7 +39,7 @@ $f = function (array $get) use ($listings, $valid): array {
 
 // ── canal_carte_fold ────────────────────────────────────────────────────
 check(canal_carte_fold('Écluse À BÉZIERS œuf') === 'ecluse a beziers oeuf', 'fold: minúsculas sin acentos + ligaduras');
-check(canal_carte_fold("l'Écluse") === "l'ecluse", 'fold: apóstrofo tipográfico → recto');
+check(canal_carte_fold("l\u{2019}Écluse") === "l'ecluse", 'fold: apóstrofo tipográfico → recto');
 
 // ── canal_carte_params ──────────────────────────────────────────────────
 check(canal_carte_params([], $valid) === ['q' => '', 'type' => [], 'location' => '', 'lat' => null, 'lng' => null], 'params: vacío');
