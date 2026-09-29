@@ -79,8 +79,8 @@ Funciones puras (sin WP, testeables en `tests/test-fiche.php`):
   Bloques (cada uno solo si tiene datos), en el orden de la vista local: hero con galería
   (fondo cruzado) + H1 + dirección + zona + 3 categorías; barra de acciones (Appeler,
   Itinéraire, Email, Site web, redes); présentation; catégories; vídeo (iframe `loading=lazy`,
-  `sandbox` como en local); galería + lightbox; mapa; « Autour de ce lieu » (tarjetas como las de
-  la carte). Lateral: « Coordonnées » (pills + lista + redes). Todo escapado con `esc_html`,
+  `sandbox` como en local); galería + lightbox; mapa con « Autour de ce lieu » en su panel lateral
+  (el hueco « À proximité » de la vista local; hover → marcador). Lateral: « Coordonnées » (pills + lista + redes). Todo escapado con `esc_html`,
   `esc_url`, `esc_attr`; `tel:` con el número limpiado.
 - CSS: `build-css.mjs` genera `assets/fiche.css` desde `service_detail.css` (+ `styles.css` si
   hace falta) con prefijo `.cdm-fiche` y rem→px; ajustes WP en `build/fiche-extra.css`.
