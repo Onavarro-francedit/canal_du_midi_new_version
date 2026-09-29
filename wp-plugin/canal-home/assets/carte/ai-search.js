@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof searchResults !== 'undefined' && Array.isArray(searchResults)) return searchResults;
         return [];
     };
+    const allListings = getAvailableResults().slice(); // WP: copia completa para resolver los slugs de la IA en cada consulta
 
     const hasAppliedFilters = () => {
         const keys = ['q', 'city', 'type', 'type[]', 'location', 'lat', 'search_keywords', 'search_location', 'category[]']; // WP: + lugar, posición y alias
@@ -311,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: text }),
             });
-            const payload = await response.json();
+            const payload = await response.json().catch(() => ({}));
 
             if (!response.ok || payload.error) {
                 // Límite o indisponible: se muestra el mensaje y la lista no se toca.
@@ -326,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Sin filtros aplicados, window.searchResults contiene todas las fichas: se completan por slug.
-            const all = getAvailableResults();
+            const all = allListings;
             const results = (Array.isArray(payload.results) ? payload.results : [])
                 .map((row) => {
                     const base = all.find((item) => item.slug === row.slug);
