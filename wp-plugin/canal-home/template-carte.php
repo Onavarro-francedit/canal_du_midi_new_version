@@ -37,17 +37,6 @@ $activeFilters = array_filter(array_merge(
     array_values($selectedTypeLabels)
 ));
 
-$rootCategories = [];
-$childCategoriesByParent = [];
-foreach ($categories as $cat) {
-    $parentId = (int)($cat['parent_id'] ?? 0);
-    if ($parentId > 0) {
-        $childCategoriesByParent[$parentId][] = $cat;
-        continue;
-    }
-    $rootCategories[] = $cat;
-}
-
 get_header();
 ?>
 <div class="cdm-carte">
@@ -104,7 +93,6 @@ get_header();
         <aside class="search-sidebar" id="search-sidebar-panel">
             <div class="search-sidebar-tabs">
                 <div class="search-sidebar-tab is-active" data-tab-target="filters-content"><i class="bi bi-sliders2"></i> Filtres</div>
-                <div class="search-sidebar-tab" data-tab-target="categories-content"><i class="bi bi-bookmark"></i> Catégories</div>
                 <div class="search-sidebar-tab" data-tab-target="ai-content"><i class="bi bi-stars"></i> Ai</div>
             </div>
 
@@ -234,92 +222,7 @@ get_header();
                 </form>
             </div>
 
-            <div id="categories-content" class="search-sidebar-content">
-                <div class="category-explorer-list">
-                    <?php
-                        $renderCategoryCard = function (array $cat, bool $isChild = false) use ($resetUrl, $selectedTypes) {
-                            $categorySlugRaw = trim((string)($cat['slug'] ?? ''));
-                            $categoryNameRaw = trim((string)($cat['name'] ?? ''));
-                            $categoryName = htmlspecialchars($categoryNameRaw !== '' ? $categoryNameRaw : ucfirst($categorySlugRaw), ENT_QUOTES, 'UTF-8');
-                            $offersCount = (int)($cat['offers_count'] ?? 0);
-                            $categorySlug = rawurlencode($categorySlugRaw);
-
-                            $categoryIconMap = [
-                                'restaurant' => 'bi-cup-hot',
-                                'hebergement' => 'bi-house-door',
-                                'hotel' => 'bi-house-door',
-                                'camping' => 'bi-tree',
-                                'gite' => 'bi-house-heart',
-                                'location' => 'bi-key',
-                                'activite' => 'bi-compass',
-                                'activités' => 'bi-compass',
-                                'loisirs' => 'bi-stars',
-                                'service' => 'bi-gear',
-                                'transport' => 'bi-bus-front',
-                                'velo' => 'bi-bicycle',
-                                'vélo' => 'bi-bicycle',
-                                'bateau' => 'bi-water',
-                                'peniche' => 'bi-water',
-                                'péniche' => 'bi-water',
-                            ];
-
-                            $categoryIcon = 'bi-grid';
-                            foreach ($categoryIconMap as $needle => $iconClass) {
-                                if ($categorySlugRaw !== '' && strpos($categorySlugRaw, $needle) !== false) {
-                                    $categoryIcon = $iconClass;
-                                    break;
-                                }
-                                if ($categoryNameRaw !== '' && strpos(mb_strtolower($categoryNameRaw), $needle) !== false) {
-                                    $categoryIcon = $iconClass;
-                                    break;
-                                }
-                            }
-
-                            $categoryBackgrounds = [
-                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #dcecff 0%, #bfdaf8 100%)',
-                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #e7f4ee 0%, #c9e9da 100%)',
-                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #f8eadf 0%, #f0c9b1 100%)',
-                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #efe5ff 0%, #d8c7ff 100%)',
-                                'linear-gradient(180deg, rgba(10, 18, 32, 0.08), rgba(10, 18, 32, 0.62)), linear-gradient(135deg, #eef0f8 0%, #d8deef 100%)',
-                            ];
-                            $categoryBackground = $categoryBackgrounds[abs(crc32($categorySlugRaw)) % count($categoryBackgrounds)];
-                            $categoryClasses = 'category-item' . ((string)($cat['slug'] ?? '') !== '' && in_array((string)($cat['slug'] ?? ''), $selectedTypes, true) ? ' is-active' : '');
-                            if ($isChild) {
-                                $categoryClasses .= ' category-item--child';
-                            }
-
-                            return '<a href="' . esc_url(add_query_arg('type', $categorySlugRaw, $resetUrl)) . '"'
-                                . ' class="' . htmlspecialchars($categoryClasses, ENT_QUOTES, 'UTF-8') . '"'
-                                . ' style="background-image: ' . htmlspecialchars($categoryBackground, ENT_QUOTES, 'UTF-8') . ';">'
-                                . '<div class="cat-card-top"><div class="cat-icon-box"><i class="bi ' . htmlspecialchars($categoryIcon, ENT_QUOTES, 'UTF-8') . '"></i></div></div>'
-                                . '<div class="cat-card-bottom"><span class="cat-name">' . $categoryName . '</span><span class="cat-hint">' . $offersCount . ' offre' . ($offersCount > 1 ? 's' : '') . '</span></div>'
-                                . '</a>';
-                        };
-                    ?>
-
-                    <?php if (!empty($rootCategories)): ?>
-                        <?php foreach ($rootCategories as $parentCat): ?>
-                            <div class="category-group">
-                                <?= $renderCategoryCard($parentCat, false) ?>
-
-                                <?php $parentId = (int)($parentCat['id'] ?? 0); ?>
-                                <?php if (!empty($childCategoriesByParent[$parentId])): ?>
-                                    <div class="category-group-children">
-                                        <?php foreach ($childCategoriesByParent[$parentId] as $childCat): ?>
-                                            <?= $renderCategoryCard($childCat, true) ?>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <?php foreach ($categories as $cat): ?>
-                            <?= $renderCategoryCard($cat, false) ?>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-
+            <?php // WP: pestaña « Catégories » de local eliminada a petición del usuario (2026-09-29). ?>
             <div id="ai-content" class="search-sidebar-content">
                 <div class="ai-panel">
                     

@@ -15,3 +15,8 @@ p { color: inherit; }
 
 /* WP: mapa sin Google Maps. */
 .map-unavailable { display: flex; align-items: center; justify-content: center; height: 100%; min-height: 240px; color: #64748b; font-weight: 600; }
+
+/* WP: todas las fichas con la misma altura de imagen. En search.css, `.card-image img { height: 100% }`
+   (bloque del skeleton) anula los 200px iniciales y cada foto conserva su proporción. */
+.card-image { height: 200px; }
+.card-image img { height: 100%; object-fit: cover; }

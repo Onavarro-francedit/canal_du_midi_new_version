@@ -292,6 +292,9 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 - **Verificado en Chrome (admin):** escritorio/1024/390 iguales a local; filtros, alias,
   categorías, « Autour de moi » (denegado y OK), IA 2 consultas seguidas, popup con carrusel,
   vista mapa móvil, 0 errores de consola. No probado: Maps bloqueado (camino de código revisado).
+- **Ajustes del usuario (29/09, tarde):** pestaña « Catégories » eliminada; imagen de tarjeta a
+  200 px fijos (`carte-extra.css`); el cargador del tema (`.loader-bg.main-loader`) se oculta
+  solo en esta plantilla porque tapaba el skeleton de local hasta `window.load`.
 - **Rollback:** `wp-plugin/remote.sh wp post delete 18502 --force` y
   `wp-plugin/remote.sh wp transient delete canal_carte_listings`.
 - **Diferido (menor):** sin invalidación en `edited_region`; sin quitar un solo filtro (solo
