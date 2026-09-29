@@ -216,12 +216,14 @@
         var label = ai.submit.querySelector('span');
         var icon = ai.submit.querySelector('.bi');
         var idleLabel = label ? label.textContent : '';
+        var idleIcon = icon ? icon.className : '';
         // La respuesta tarda de 8 a 30 s: el estado de espera debe verse (botón bloqueado + mensaje).
         function setBusy(busy) {
             ai.submit.disabled = busy;
             ai.submit.setAttribute('aria-busy', busy ? 'true' : 'false');
             if (label) label.textContent = busy ? 'Recherche en cours…' : idleLabel;
-            if (icon && !reduceMotion) icon.classList.toggle('ai-loading', busy);
+            // Durante la espera, el icono de la IA se sustituye por un spinner; vuelve al terminar.
+            if (icon) icon.className = busy ? 'cdm-spinner' : idleIcon;
             ai.feedback.classList.toggle('is-info', busy);
             if (busy) ai.feedback.textContent = "L'assistant analyse votre demande… cela peut prendre jusqu'à 30 secondes.";
         }

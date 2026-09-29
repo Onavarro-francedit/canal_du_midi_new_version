@@ -242,4 +242,10 @@ a.etape-name:hover { color: var(--primary); }
 
 /* Envío IA en curso: el tema no distingue un botón deshabilitado → se ve bloqueado mientras espera. */
 .hero-ai-actions .button:disabled { opacity: 0.7; cursor: progress; }
-.hero-ai-actions .button .bi.ai-loading { display: inline-block; }
+.cdm-spinner {
+    display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+    border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
+    animation: cdm-spin 0.75s linear infinite;
+}
+@keyframes cdm-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .cdm-spinner { animation-duration: 2.5s; } }
