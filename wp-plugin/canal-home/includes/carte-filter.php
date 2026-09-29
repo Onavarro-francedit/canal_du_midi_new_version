@@ -59,6 +59,23 @@ function canal_carte_params(array $get, array $validCatSlugs): array
     ];
 }
 
+// Parámetros que filtran la carte (propios + alias de /explorer/). Una URL con alguno relleno es una
+// variante de la página: noindex,follow (la canonical de WordPress apunta a la URL limpia).
+const CANAL_CARTE_FILTER_PARAMS = ['q', 'type', 'location', 'lat', 'lng', 'search_keywords', 'search_location', 'category'];
+
+function canal_carte_has_filters(array $get): bool
+{
+    foreach (CANAL_CARTE_FILTER_PARAMS as $key) {
+        $values = (array) ($get[$key] ?? []);
+        foreach ($values as $value) {
+            if (is_string($value) && trim($value) !== '') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 function canal_carte_distance(float $lat1, float $lng1, float $lat2, float $lng2): float
 {
     $dLat = deg2rad($lat2 - $lat1);

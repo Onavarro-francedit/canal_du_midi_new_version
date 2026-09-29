@@ -20,3 +20,7 @@ p { color: inherit; }
    (bloque del skeleton) anula los 200px iniciales y cada foto conserva su proporción. */
 .card-image { height: 200px; }
 .card-image img { height: 100%; object-fit: cover; }
+
+/* WP: H1 e introducción de la columna de resultados (SEO). */
+.search-results-title { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.25; color: #1a1d26; }
+.search-results-intro { margin: 4px 0 10px; font-size: 13px; line-height: 1.45; color: #64748b; }

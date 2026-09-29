@@ -37,6 +37,9 @@ $activeFilters = array_filter(array_merge(
     array_values($selectedTypeLabels)
 ));
 
+// WP: datos para el <head> (título, meta, JSON-LD), que get_header() imprime.
+canal_carte_seo_state(['results' => $results, 'total' => count($listings)]);
+
 get_header();
 ?>
 <div class="cdm-carte">
@@ -288,6 +291,9 @@ get_header();
         <section class="search-results-column" id="results-list">
             <header class="search-results-toolbar">
                 <div class="search-toolbar-left">
+                    <?php // WP: H1 e introducción (SEO/AEO: la página no tenía H1 y el texto empezaba por los filtros). ?>
+                    <h1 class="search-results-title">Carte des prestataires du Canal du Midi</h1>
+                    <p class="search-results-intro"><?= (int) count($listings) ?> adresses le long des 240 km du canal, de Toulouse à l'étang de Thau : où dormir, louer un bateau ou un vélo, manger et visiter.</p>
                     <h2 class="search-results-count">
                         <?= $resultsCount ?> résultat<?= $resultsCount > 1 ? 's' : '' ?>
                     </h2>

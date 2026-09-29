@@ -75,5 +75,14 @@ check($r[0]['distance_km'] < 1, 'filter: distancia al hotel < 1 km');
 check($r[1]['distance_km'] > 80 && $r[1]['distance_km'] < 90, 'filter: Toulouse → Carcassonne ≈ 85 km');
 check(!isset($r[3]['distance_km']), 'filter: sin GPS → sin distance_km');
 
+// ── canal_carte_has_filters (noindex de las URLs filtradas) ─────────────
+check(!canal_carte_has_filters([]), 'has_filters: URL limpia');
+check(!canal_carte_has_filters(['search_keywords' => '', 'category' => [''], 'search_location' => '']), 'has_filters: parámetros vacíos (formulario de la home sin rellenar)');
+check(canal_carte_has_filters(['q' => 'vélo']), 'has_filters: q');
+check(canal_carte_has_filters(['type' => ['hotel']]), 'has_filters: type[]');
+check(canal_carte_has_filters(['search_location' => 'Toulouse']), 'has_filters: alias de /explorer/');
+check(canal_carte_has_filters(['lat' => '43.60', 'lng' => '1.44']), 'has_filters: posición');
+check(!canal_carte_has_filters(['utm_source' => 'newsletter']), 'has_filters: parámetros ajenos no cuentan');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

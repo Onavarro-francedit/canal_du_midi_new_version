@@ -130,10 +130,9 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
     ];
 }
 
-function canal_home_seo_head(string $url, array $sejours, string $modified = ''): string
+// Meta description + Open Graph + Twitter card. Compartido por la home y la carte.
+function canal_home_seo_social(string $title, string $desc, string $url, string $imageAlt): string
 {
-    $title = canal_home_seo_title();
-    $desc  = canal_home_seo_description();
     $image = CANAL_HOME_URL . CANAL_HOME_OG_IMAGE;
     $meta  = function (string $attr, string $key, string $value): string {
         return '<meta ' . $attr . '="' . esc_attr($key) . '" content="' . esc_attr($value) . '">' . "\n";
@@ -148,15 +147,25 @@ function canal_home_seo_head(string $url, array $sejours, string $modified = '')
     $out .= $meta('property', 'og:image', $image);
     $out .= $meta('property', 'og:image:width', '1200');
     $out .= $meta('property', 'og:image:height', '630');
-    $out .= $meta('property', 'og:image:alt', 'Le Canal du Midi : péniches, chemin de halage et vélo');
+    $out .= $meta('property', 'og:image:alt', $imageAlt);
     $out .= $meta('name', 'twitter:card', 'summary_large_image');
     $out .= $meta('name', 'twitter:title', $title);
     $out .= $meta('name', 'twitter:description', $desc);
     $out .= $meta('name', 'twitter:image', $image);
-    // JSON_HEX_TAG: '<' y '>' como </> → imposible cerrar el <script> desde los datos.
+    return $out;
+}
+
+// JSON-LD en un <script>. JSON_HEX_TAG: '<' y '>' como \u003C/\u003E → imposible cerrar el <script> desde los datos.
+function canal_home_seo_jsonld(array $graph): string
+{
+    return '<script type="application/ld+json">' . wp_json_encode($graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . '</script>' . "\n";
+}
+
+function canal_home_seo_head(string $url, array $sejours, string $modified = ''): string
+{
+    $out  = canal_home_seo_social(canal_home_seo_title(), canal_home_seo_description(), $url, 'Le Canal du Midi : péniches, chemin de halage et vélo');
     $out .= '<link rel="alternate" type="text/markdown" title="llms.txt" href="' . esc_url(home_url('/llms.txt')) . '">' . "\n";
-    $json = wp_json_encode(canal_home_seo_graph($url, $sejours, $modified), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
-    $out .= '<script type="application/ld+json">' . $json . '</script>' . "\n";
+    $out .= canal_home_seo_jsonld(canal_home_seo_graph($url, $sejours, $modified));
     return $out;
 }
 

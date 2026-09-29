@@ -307,6 +307,12 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 - **Ajustes del usuario (29/09, tarde):** pestaña « Catégories » eliminada; imagen de tarjeta a
   200 px fijos (`carte-extra.css`); el cargador del tema (`.loader-bg.main-loader`) se oculta
   solo en esta plantilla porque tapaba el skeleton de local hasta `window.load`.
+- **SEO (auditoría seo-geo 29/09, 32/100 → fixes):** `includes/seo-carte.php` (título 52 car., meta
+  159 car., Open Graph/Twitter, JSON-LD CollectionPage + BreadcrumbList + ItemList de 30 fichas
+  visibles con numberOfItems total, `noindex,follow` si hay filtros — `canal_carte_has_filters`,
+  con tests); H1 + introducción en la columna de resultados; `seo.php` comparte
+  `canal_home_seo_social()`/`canal_home_seo_jsonld()`. Canonical: la emite WordPress al publicar.
+  Pendiente: peso de la página (1,1 MB de HTML), imágenes solo por `data-src`, `<h2>` vacío del modal.
 - **Rollback:** `wp-plugin/remote.sh wp post delete 18502 --force` y
   `wp-plugin/remote.sh wp transient delete canal_carte_listings`.
 - **Diferido (menor):** sin invalidación en `edited_region`; sin quitar un solo filtro (solo
