@@ -6,12 +6,11 @@
 /* Banda inmersiva con foto propia del sitio (no Unsplash) */
 .immersive-band {
     background:
-        linear-gradient(180deg, rgba(12, 79, 77, 0.28), rgba(6, 88, 77, 0.52)),
+        linear-gradient(180deg, rgba(8, 40, 44, 0.55), rgba(6, 50, 48, 0.7)),
         url('/wp-content/uploads/2023/04/photo_canal_du_midi_AdobeStock_375323747.jpg') center/cover;
 }
 .band-inner .button { margin-top: 8px; }
 
-.photo-card { position: relative; }
 .photo-credit {
     position: absolute; right: 10px; bottom: 8px; margin: 0;
     font-size: 0.7rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
@@ -36,3 +35,16 @@
 .cdm-ai-card-meta { margin: 0; font-size: 0.8rem; color: var(--muted); }
 .cdm-ai-card-reason { margin: 4px 0 0; font-size: 0.88rem; }
 .hero-ai-feedback a { color: var(--primary-deep); text-decoration: underline; }
+
+/* Compatibilidad con el tema my-listing (Bootstrap) */
+/* Clearfix de Bootstrap: sus pseudoelementos se convierten en celdas de grid/flex. */
+.container::before, .container::after { content: none; display: none; }
+/* El tema colorea h1–h6 directamente: se vuelve a heredar el color del bloque (hero, banda, tarjetas). */
+h1, h2, h3, h4, h5, h6 { color: inherit; }
+/* Modal IA por encima de la cabecera fija del tema (z-index 500) y con scroll propio. */
+.hero-ai-modal { z-index: 1000; }
+.hero-ai-dialog { max-height: calc(100vh - 48px); overflow-y: auto; }
+.cdm-ai-results { max-height: none; overflow: visible; }
+/* Los <p> de las tarjetas heredan margin-bottom: 22px (.hero-ai-dialog p). */
+.cdm-ai-results .cdm-ai-card p { margin: 0; line-height: 1.45; }
+.cdm-ai-results .cdm-ai-card .cdm-ai-card-reason { margin-top: 4px; }

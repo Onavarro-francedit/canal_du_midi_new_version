@@ -17,6 +17,13 @@ const result = await postcss([
             return prefixed;
         },
     }),
+    // El tema fija html{font-size:10px}; la home local se diseñó con 16px → rem a px fijos.
+    {
+        postcssPlugin: 'rem-to-px',
+        Declaration(decl) {
+            decl.value = decl.value.replace(/(\d*\.?\d+)rem\b/g, (_, n) => `${+(parseFloat(n) * 16).toFixed(2)}px`);
+        },
+    },
 ]).process(source, { from: undefined });
 
 // Verificación: ninguna regla fuera de @keyframes puede escapar del contenedor.
@@ -30,6 +37,24 @@ postcss.parse(result.css).walkRules((rule) => {
 if (leaks.length) {
     console.error('Selectores sin prefijo:', leaks);
     process.exit(1);
+}
+
+// Verificación: el tema fija html{font-size:10px} → ningún valor puede depender de rem.
+const remDecls = [];
+postcss.parse(result.css).walkDecls((decl) => {
+    if (/\d(\.\d+)?rem\b/.test(decl.value)) remDecls.push(`${decl.parent.selector} { ${decl.prop}: ${decl.value} }`);
+});
+if (remDecls.length) {
+    console.error('Valores en rem (dependen del font-size raíz del tema):', remDecls.slice(0, 5), `(${remDecls.length})`);
+    process.exit(1);
+}
+
+// Verificación: neutralizar el clearfix de Bootstrap del tema y el color de titulares del tema.
+for (const needle of ['.cdm-home .container::before', '.cdm-home h1']) {
+    if (!result.css.includes(needle)) {
+        console.error('Falta el ajuste de compatibilidad con el tema:', needle);
+        process.exit(1);
+    }
 }
 
 writeFileSync(

@@ -43,8 +43,9 @@ add_action('wp_enqueue_scripts', function () {
         null
     );
     wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
-    wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], CANAL_HOME_VERSION);
-    wp_enqueue_script('canal-home', CANAL_HOME_URL . 'assets/home.js', [], CANAL_HOME_VERSION, true);
+    // Versión = fecha del archivo: cada despliegue invalida la caché del navegador.
+    wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.css'));
+    wp_enqueue_script('canal-home', CANAL_HOME_URL . 'assets/home.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.js'), true);
     wp_localize_script('canal-home', 'CDM_HOME', [
         'aiUrl'       => rest_url('canal-home/v1/ai'),
         'explorerUrl' => home_url('/explorer/'),

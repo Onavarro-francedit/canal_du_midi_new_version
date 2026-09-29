@@ -58,10 +58,11 @@ get_header();
                             <span class="search-field-copy"><span class="search-field-label">Destination</span></span>
                         </span>
                         <span class="search-field-select-wrap">
-                            <select name="region" class="search-field-input">
+                            <?php // /explorer/ no filtra por taxonomía region: geocodifica search_location (radio 10 km). ?>
+                            <select name="search_location" class="search-field-input">
                                 <option value="">Toutes les étapes</option>
-                                <?php foreach ($heroStages as $slug => $name): ?>
-                                    <option value="<?= esc_attr($slug) ?>"><?= esc_html($name) ?></option>
+                                <?php foreach ($heroStages as $name): ?>
+                                    <option value="<?= esc_attr($name) ?>"><?= esc_html($name) ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <span class="search-field-select-caret" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>

@@ -29,6 +29,8 @@ $check(substr_count($html, 'class="destination-card-link"') === 6, 'destinos: 6'
 $check(substr_count($html, 'class="tour-card"') === 4, 'séjours: 4');
 $form = (string) strstr((string) strstr($html, 'id="home-search-form"'), '</form>', true);
 $options = preg_match_all('/<option value="[^"]+"/', $form);
+$check(strpos($form, 'name="search_location"') !== false && strpos($form, 'name="region"') === false, '/explorer/ filtra por search_location (texto geocodificado), no por region');
+$check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como nombre legible (Béziers)');
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');
 $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
