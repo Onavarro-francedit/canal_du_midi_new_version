@@ -4306,16 +4306,17 @@
 .cdm-carte .card-image { height: 200px; }
 .cdm-carte .card-image img { height: 100%; object-fit: cover; }
 
-/* WP: H1 e introducción de la columna de resultados (SEO). */
-.cdm-carte .search-results-title { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.25; color: #1a1d26; }
-.cdm-carte .search-results-intro { margin: 4px 0 10px; font-size: 13px; line-height: 1.45; color: #64748b; }
+/* WP: H1 + introducción + editor al pie de la columna de filtros, en letra pequeña (SEO). */
+.cdm-carte .search-sidebar-about { flex-shrink: 0; padding: 12px 20px 14px; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+.cdm-carte .search-results-title { margin: 0 0 3px; font-size: 12px; font-weight: 700; line-height: 1.3; color: #475569; }
+.cdm-carte .search-results-intro { margin: 0 0 4px; font-size: 11px; line-height: 1.45; color: #64748b; }
 
 /* WP: 254 tarjetas en el DOM (SEO) → el navegador no pinta las que están fuera de pantalla.
    contain-intrinsic-size reserva su altura aproximada para que la barra de scroll no salte. */
 .cdm-carte .explore-card { content-visibility: auto; contain-intrinsic-size: auto 420px; }
 
 /* WP: editor + fecha (E-E-A-T) y preguntas frecuentes al final de la lista (AEO). */
-.cdm-carte .search-results-publisher { margin: -4px 0 10px; font-size: 12px; color: #94a3b8; }
+.cdm-carte .search-results-publisher { margin: 0; font-size: 10.5px; line-height: 1.4; color: #94a3b8; }
 .cdm-carte .carte-faq { grid-column: 1 / -1; padding: 22px 4px 8px; border-top: 1px solid rgba(0, 0, 0, 0.08); }
 .cdm-carte .carte-faq-kicker { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6a63d9; }
 .cdm-carte .carte-faq-item { margin: 0 0 16px; }

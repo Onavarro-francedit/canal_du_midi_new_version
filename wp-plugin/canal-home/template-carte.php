@@ -288,17 +288,19 @@ get_header();
                     </div>
                 </div>
             </div>
+            <?php // WP: H1, introducción y editor (SEO/AEO/E-E-A-T), al pie de la columna de filtros en letra pequeña. ?>
+            <div class="search-sidebar-about">
+                <h1 class="search-results-title">Carte des prestataires du Canal du Midi</h1>
+                <p class="search-results-intro"><?= (int) count($listings) ?> adresses le long des 240 km du canal, de Toulouse à l'étang de Thau : où dormir, louer un bateau ou un vélo, manger et visiter.</p>
+                <?php if ($modified !== ''): ?>
+                    <p class="search-results-publisher">Guide édité par L'Officiel du Canal du Midi · mis à jour le <time datetime="<?= esc_attr($modified) ?>"><?= esc_html(date_i18n('j F Y', strtotime($modified))) ?></time></p>
+                <?php endif; ?>
+            </div>
         </aside>
 
         <section class="search-results-column" id="results-list">
             <header class="search-results-toolbar">
                 <div class="search-toolbar-left">
-                    <?php // WP: H1 e introducción (SEO/AEO: la página no tenía H1 y el texto empezaba por los filtros). ?>
-                    <h1 class="search-results-title">Carte des prestataires du Canal du Midi</h1>
-                    <p class="search-results-intro"><?= (int) count($listings) ?> adresses le long des 240 km du canal, de Toulouse à l'étang de Thau : où dormir, louer un bateau ou un vélo, manger et visiter.</p>
-                    <?php if ($modified !== ''): ?>
-                        <p class="search-results-publisher">Guide édité par L'Officiel du Canal du Midi · mis à jour le <time datetime="<?= esc_attr($modified) ?>"><?= esc_html(date_i18n('j F Y', strtotime($modified))) ?></time></p>
-                    <?php endif; ?>
                     <h2 class="search-results-count">
                         <?= $resultsCount ?> résultat<?= $resultsCount > 1 ? 's' : '' ?>
                     </h2>
