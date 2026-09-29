@@ -1,5 +1,10 @@
 /* Ajustes propios de la home WordPress. Fuente: se prefija con .cdm-home en el build. */
 
+/* Las animaciones de entrada laterales (data-reveal="left|right") desplazan elementos fuera
+   de la pantalla hasta que aparecen: sin esto, en móvil la página se arrastra hacia los lados.
+   clip (no hidden) no crea contenedor de scroll; hidden queda de respaldo para Safari < 16. */
+.cdm-home { overflow-x: hidden; overflow-x: clip; }
+
 /* Bootstrap del tema añade padding/max-width a .container */
 .container { padding-left: 0; padding-right: 0; max-width: none; }
 
@@ -163,4 +168,17 @@ p { color: inherit; }
     .stacked-photos .photo-card { position: relative; inset: auto; width: auto; transform: none; }
     .stacked-photos .photo-large { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
     .stacked-photos .photo-small { aspect-ratio: 4 / 3; }
+}
+
+/* Hero en móvil: menos texto y cifras legibles (en PC no cambia). */
+.hero-lead-short { display: none; }
+@media (max-width: 560px) {
+    .hero-lead-full { display: none; }
+    .hero-lead-short { display: inline; }
+    .hero-card-content .eyebrow { font-size: 12px; }
+    .hero-stat { padding: 2px 8px; }
+    .hero-stat span {
+        font-size: 13px; line-height: 1.3; text-transform: none; letter-spacing: 0;
+        white-space: normal;
+    }
 }

@@ -313,6 +313,11 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     scroll-snap de borde a borde en ≤560px, bloque del plan sin caja fija en móvil (estilos en
     línea movidos a CSS; el flex-basis de 480px se volvía 480px de alto en columna), etiquetas
     ≥12px. Página en móvil: 9 845 → 7 095 px.
+  - Hero en móvil (≤560px): párrafo corto (« Hébergements, bateaux, vélos et visites : les
+    meilleures adresses du canal. », 75 car. frente a 161), eyebrow 12px, cifras 2×2 con
+    etiquetas 13px sin mayúsculas en una línea. `.cdm-home { overflow-x: clip }`: las
+    animaciones de entrada laterales dejaban la página arrastrable hacia los lados (422/390)
+    hasta llegar a « Expériences ». Libro del plan recortado al contenido (sin ~25 % de blanco).
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

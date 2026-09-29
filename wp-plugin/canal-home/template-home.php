@@ -29,8 +29,9 @@ get_header();
                     <div class="eyebrow">L'Officiel du Canal du Midi</div>
                     <h1>Explorez le Canal du Midi,<br>de Toulouse à la <em>Méditerranée</em></h1>
                     <p style="color:#fff;">
-                        Hébergements, location de bateaux et de vélos, restaurants, visites : trouvez les meilleures
-                        adresses le long du canal et préparez votre séjour en toute liberté.
+                        <span class="hero-lead-full">Hébergements, location de bateaux et de vélos, restaurants, visites : trouvez les meilleures
+                        adresses le long du canal et préparez votre séjour en toute liberté.</span>
+                        <span class="hero-lead-short">Hébergements, bateaux, vélos et visites : les meilleures adresses du canal.</span>
                     </p>
                     <div class="hero-stats">
                         <div class="hero-stat"><strong>240 km</strong><span>de voie navigable</span></div>
