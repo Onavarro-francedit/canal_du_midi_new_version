@@ -306,6 +306,13 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     `ecluses` (72) y `ports` (21) → 30 de 40 tarjetas eran esclusas. `canal_home_css_url()`
     codifica comillas/paréntesis en los `background-image` en línea (cierra el minor de
     inyección CSS de las tarjetas de destinos).
+  - Revisión móvil con Claude in Chrome + simulador iPhone del usuario (390 px, 2026-09-29) y
+    6 arreglos verificados con sonda a 390 px y regresión a 1440 px: campos a 16px en ≤820px
+    (Safari iOS hacía zoom al enfocar), campos ≥44px de alto, el teclado se cierra al enviar a
+    la IA y la vista baja a los resultados, destinos y séjours en carrusel horizontal con
+    scroll-snap de borde a borde en ≤560px, bloque del plan sin caja fija en móvil (estilos en
+    línea movidos a CSS; el flex-basis de 480px se volvía 480px de alto en columna), etiquetas
+    ≥12px. Página en móvil: 9 845 → 7 095 px.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

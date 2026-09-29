@@ -225,6 +225,8 @@
                 return;
             }
 
+            // Cierra el teclado en móvil: si no, tapa los resultados al llegar.
+            ai.prompt.blur();
             ai.submit.disabled = true;
             if (label) label.textContent = 'Recherche en cours…';
             ai.feedback.textContent = '';
@@ -252,6 +254,7 @@
                     } else {
                         ai.feedback.textContent = 'Voici les adresses qui correspondent le mieux à votre demande :';
                         renderResults(results);
+                        ai.feedback.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
                     }
                 })
                 .catch(function () {

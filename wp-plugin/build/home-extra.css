@@ -120,3 +120,37 @@ p { color: inherit; }
     .tour-card-media { transition: none; }
     .tour-card-link:hover .tour-card-media { transform: none; }
 }
+
+/* ── Móvil (revisión con simulador iPhone, 2026-09-29) ─────────────────────────── */
+/* Bloque del plan: estilos antes en línea; en columna el flex-basis de 480px se volvía alto. */
+.plan-viewer { flex: 0 0 480px; max-width: 100%; }
+.plan-viewer-img {
+    display: block; width: 100%; max-width: 480px; height: 400px; margin: 0 auto;
+    object-fit: contain; background: #fff; border: 0; border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12); cursor: pointer;
+}
+/* Etiquetas pequeñas: mínimo 12px. */
+.hero-stat span, .search-field-label, .tour-category, .btn-pdf__size { font-size: 12px; }
+
+@media (max-width: 820px) {
+    .plan-viewer { flex: none; width: 100%; }
+    .plan-viewer-img { height: auto; }
+    /* iOS Safari amplía la página al enfocar campos con letra < 16px. */
+    .search-field-input, .newsletter-form input, .hero-ai-textarea { font-size: 16px; }
+    /* Zona táctil ≥ 44px. */
+    .search-field-input { min-height: 44px; }
+    .newsletter-form input[type="email"] { min-height: 44px; }
+}
+
+/* Destinos y séjours: carrusel horizontal con scroll-snap (asoma la siguiente tarjeta). */
+@media (max-width: 560px) {
+    .destination-grid, .tour-grid {
+        grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%;
+        gap: 14px; overflow-x: auto; overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory; scrollbar-width: none;
+        /* De borde a borde de la pantalla y con aire para que el scroll no corte las sombras. */
+        margin: 0 -16px; padding: 8px 16px 28px; scroll-padding: 0 16px;
+    }
+    .destination-grid::-webkit-scrollbar, .tour-grid::-webkit-scrollbar { display: none; }
+    .destination-grid > *, .tour-grid > * { scroll-snap-align: start; }
+}

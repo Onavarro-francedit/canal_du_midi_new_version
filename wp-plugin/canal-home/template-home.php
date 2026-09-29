@@ -283,11 +283,11 @@ get_header();
     ?>
     <section id="plan" class="section newsletter-section">
         <div class="container newsletter-box" data-reveal="up">
-            <div class="plan-viewer" style="flex:0 0 480px;max-width:100%;">
+            <div class="plan-viewer">
                 <img src="<?= esc_url(CANAL_HOME_URL . 'assets/plan-canal-du-midi-2026.jpg') ?>"
                      alt="Plan du Canal du Midi 2026 — cliquez pour le feuilleter" role="button" tabindex="0"
                      width="960" height="640" loading="lazy"
-                     style="display:block;width:100%;max-width:480px;height:400px;object-fit:contain;background:#fff;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto;cursor:pointer;"
+                     class="plan-viewer-img"
                      data-open-plan-modal>
             </div>
             <div>
