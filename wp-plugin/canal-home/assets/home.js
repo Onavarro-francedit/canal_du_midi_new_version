@@ -124,7 +124,7 @@
             var btn = form.querySelector('button[type="submit"]');
             if (btn) { btn.disabled = true; btn.textContent = 'Recherche…'; }
         });
-        // Volver atrás desde /carte/ restaura el formulario desde bfcache.
+        // Volver atrás desde la carte restaura el formulario desde bfcache.
         window.addEventListener('pageshow', function () {
             form.querySelectorAll('[disabled]').forEach(function (el) { el.disabled = false; });
             var btn = form.querySelector('button[type="submit"]');

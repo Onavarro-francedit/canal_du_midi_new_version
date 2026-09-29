@@ -52,7 +52,7 @@ const CANAL_HOME_FAQ = [
 ];
 
 // Etapas con su punto kilométrico (PK de la calculadora de distancias del sitio).
-// 'search' = texto que /carte/ busca en commune y dirección (search_location); vacío = sin enlace.
+// 'search' = texto que la carte busca en commune y dirección (search_location); vacío = sin enlace.
 const CANAL_HOME_ETAPES = [
     ['name' => 'Toulouse',        'km' => 0,   'note' => 'Port de l’Embouchure',        'search' => 'Toulouse'],
     ['name' => 'Castelnaudary',   'km' => 66,  'note' => 'Grand Bassin, écluse Saint-Roch', 'search' => 'Castelnaudary'],

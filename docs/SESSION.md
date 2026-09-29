@@ -9,7 +9,7 @@ sesión.
 
 **Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → subagent-driven
 development). **Handoff pendiente:** ninguno.
-**Dónde quedamos:** `/carte/` (página WP **18502**, **privada**) es una copia fiel de `/search`
+**Dónde quedamos:** `/explorer-2026/` (página WP **18502**, **privada**) es una copia fiel de `/search`
 local servida por el plugin `canal-home`, verificada en Chrome y con revisión final aprobada.
 `/explorer/` intacta; los enlaces de la home privada siguen apuntando a `/explorer/`.
 **Git:** todo en `main` (sin push). Sin commitear, ajenos a esta tarea: `header.php`,

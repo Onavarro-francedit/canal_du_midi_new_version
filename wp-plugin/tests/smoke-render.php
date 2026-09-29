@@ -29,7 +29,7 @@ $check(substr_count($html, 'class="destination-card-link"') === 6, 'destinos: 6'
 $check(substr_count($html, 'class="tour-card"') === 8, 'séjours: 8');
 $form = (string) strstr((string) strstr($html, 'id="home-search-form"'), '</form>', true);
 $options = preg_match_all('/<option value="[^"]+"/', $form);
-$check(strpos($form, 'name="search_location"') !== false && strpos($form, 'name="region"') === false, '/carte/ filtra por search_location (texto en commune/dirección), no por region');
+$check(strpos($form, 'name="search_location"') !== false && strpos($form, 'name="region"') === false, 'la carte filtra por search_location (texto en commune/dirección), no por region');
 $check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como nombre legible (Béziers)');
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');

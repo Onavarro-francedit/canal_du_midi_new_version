@@ -93,8 +93,11 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   **7.4**). Esta app PHP local ya no es el sitio: es la **fuente de diseño**. Regla dura:
   **en producción no se modifica nada existente, solo se añade.** Fases: home → `/carte` →
   diseño de la ficha.
+- **Convención de URLs:** toda página nueva lleva el sufijo **`-2026`** (`/accueil-2026/`,
+  `/explorer-2026/`, …) para distinguirla de la actual; al publicar se quita el sufijo y se
+  recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
 - **Último completado:** **TASK-029 — « Carte interactive »**: copia de `/search` local como
-  página nueva **privada** `/carte/` (ID 18502) desde el plugin `canal-home` (fuente en
+  página nueva **privada** `/explorer-2026/` (ID 18502) desde el plugin `canal-home` (fuente en
   `wp-plugin/`). Antes, TASK-027: home « Accueil 2026 » privada (página 18500). Detalle en
   `docs/TASKS.md` 🟢.
 - **Comandos:** `wp-plugin/remote.sh test` (tests + lint 7.4 en el servidor) ·

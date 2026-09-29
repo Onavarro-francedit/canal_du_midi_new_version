@@ -42,7 +42,7 @@ get_header();
                     </div>
                 </div>
 
-                <form class="hero-search" id="home-search-form" action="<?= $link('/carte/') ?>" method="GET">
+                <form class="hero-search" id="home-search-form" action="<?= $link(CANAL_CARTE_PATH) ?>" method="GET">
                     <div class="search-field search-field-primary">
                         <span class="search-field-head">
                             <span class="search-field-icon"><i class="bi bi-search"></i></span>
@@ -59,7 +59,7 @@ get_header();
                             <span class="search-field-copy"><span class="search-field-label">Destination</span></span>
                         </span>
                         <span class="search-field-select-wrap">
-                            <?php // /carte/ filtra search_location por texto en commune y dirección (no por la taxonomía region). ?>
+                            <?php // La carte filtra search_location por texto en commune y dirección (no por la taxonomía region). ?>
                             <select name="search_location" class="search-field-input">
                                 <option value="">Toutes les étapes</option>
                                 <?php foreach ($heroStages as $name): ?>
@@ -148,7 +148,7 @@ get_header();
                 <?php endforeach; ?>
             </div>
             <div class="cdm-center-cta">
-                <a href="<?= $link('/carte/') ?>" class="button"><i class="bi bi-map"></i> Voir tous les prestataires sur la carte</a>
+                <a href="<?= $link(CANAL_CARTE_PATH) ?>" class="button"><i class="bi bi-map"></i> Voir tous les prestataires sur la carte</a>
             </div>
         </div>
     </section>
@@ -230,7 +230,7 @@ get_header();
                     <li class="etape">
                         <span class="etape-km">km <?= (int) $etape['km'] ?></span>
                         <?php if ($etape['search'] !== ''): ?>
-                            <a class="etape-name" href="<?= esc_url(add_query_arg(['search_location' => $etape['search']], home_url('/carte/'))) ?>"><?= esc_html($etape['name']) ?></a>
+                            <a class="etape-name" href="<?= esc_url(add_query_arg(['search_location' => $etape['search']], home_url(CANAL_CARTE_PATH))) ?>"><?= esc_html($etape['name']) ?></a>
                         <?php else: ?>
                             <span class="etape-name"><?= esc_html($etape['name']) ?></span>
                         <?php endif; ?>

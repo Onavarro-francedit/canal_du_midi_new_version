@@ -13,6 +13,8 @@ define('CANAL_HOME_URL', plugin_dir_url(__FILE__));
 define('CANAL_HOME_VERSION', '1.0.0');
 define('CANAL_HOME_TEMPLATE', 'canal-home/template-home.php');
 define('CANAL_CARTE_TEMPLATE', 'canal-home/template-carte.php');
+// Las páginas nuevas llevan el sufijo -2026 (home: /accueil-2026/); al publicar se quita el sufijo.
+const CANAL_CARTE_PATH = '/explorer-2026/';
 const CANAL_HOME_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap';
 
 require_once CANAL_HOME_DIR . 'includes/ai-core.php';
@@ -42,11 +44,11 @@ function canal_carte_is_page(): bool
 }
 
 // El botón « Carte interactive » del menú del tema apunta a /explorer/ en todo el sitio; en nuestras
-// páginas (home y carte) se redirige a /carte/ sin tocar el menú existente.
+// páginas (home y carte) se redirige a la carte nueva sin tocar el menú existente.
 function canal_home_carte_menu_js(): string
 {
     return 'document.querySelectorAll(\'.c27-main-header a[href$="/explorer/"], #main-menu a[href$="/explorer/"]\').forEach(function (a) { a.href = '
-        . wp_json_encode(home_url('/carte/')) . '; });';
+        . wp_json_encode(home_url(CANAL_CARTE_PATH)) . '; });';
 }
 
 add_filter('template_include', function ($template) {
@@ -70,7 +72,7 @@ add_action('wp_enqueue_scripts', function () {
     wp_add_inline_script('canal-home', canal_home_carte_menu_js());
     wp_localize_script('canal-home', 'CDM_HOME', [
         'aiUrl'       => rest_url('canal-home/v1/ai'),
-        'carteUrl'    => home_url('/carte/'),
+        'carteUrl'    => home_url(CANAL_CARTE_PATH),
     ]);
 }, 20);
 
