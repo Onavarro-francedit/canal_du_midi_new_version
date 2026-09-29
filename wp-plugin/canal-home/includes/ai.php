@@ -65,15 +65,29 @@ function canal_home_ai_endpoint(WP_REST_Request $request): WP_REST_Response
     }
 
     $catalog = canal_home_ai_catalog();
-    $response = wp_remote_post(CANAL_HOME_AI_ENDPOINT, [
-        'timeout' => 30,
-        'headers' => canal_home_request_headers($config['key'], $config['model']),
-        'body'    => wp_json_encode(canal_home_build_request(
-            $config['model'],
-            canal_home_build_catalog_text($catalog),
-            $prompt
-        )),
-    ]);
+    $request = canal_home_build_request($config['model'], canal_home_build_catalog_text($catalog), $prompt);
+    $send = function (array $body) use ($config) {
+        return wp_remote_post(CANAL_HOME_AI_ENDPOINT, [
+            'timeout' => 30,
+            'headers' => canal_home_request_headers($config['key'], $config['model']),
+            'body'    => wp_json_encode($body),
+        ]);
+    };
+    // Servicio de json_schema caído en la API: un reintento sin schema (el parser valida igual).
+    // Mientras dure la caída (10 min) se pide directamente sin schema: el 503 tarda 10-17 s en llegar.
+    if (get_transient('canal_home_ai_no_schema')) {
+        $response = $send(canal_home_request_without_schema($request));
+    } else {
+        $response = $send($request);
+        if (!is_wp_error($response) && canal_home_is_grammar_outage(
+            (int) wp_remote_retrieve_response_code($response),
+            (string) wp_remote_retrieve_body($response)
+        )) {
+            error_log('[canal-home] IA: json_schema no disponible, reintento sin schema');
+            set_transient('canal_home_ai_no_schema', 1, 10 * MINUTE_IN_SECONDS);
+            $response = $send(canal_home_request_without_schema($request));
+        }
+    }
     if (is_wp_error($response)) {
         error_log('[canal-home] IA transporte: ' . $response->get_error_message());
         return canal_home_ai_error('unavailable', 502);

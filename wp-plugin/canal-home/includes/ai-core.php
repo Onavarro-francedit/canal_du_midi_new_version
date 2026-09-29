@@ -104,6 +104,25 @@ function canal_home_build_request(string $model, string $catalogText, string $pr
     return $body;
 }
 
+// La API puede tener caído el servicio que compila el json_schema (503 overloaded_error
+// « Grammar compilation is temporarily unavailable ») mientras el resto funciona.
+function canal_home_is_grammar_outage(int $status, string $body): bool
+{
+    return $status === 503 && stripos($body, 'grammar') !== false;
+}
+
+// Misma petición sin json_schema: el formato se pide en las instrucciones y
+// canal_home_parse_response sigue validando JSON, slugs y longitud.
+function canal_home_request_without_schema(array $body): array
+{
+    unset($body['output_config']['format']);
+    if (empty($body['output_config'])) {
+        unset($body['output_config']);
+    }
+    $body['system'][0]['text'] .= "\n- Réponds uniquement avec un objet JSON {\"results\":[{\"slug\":\"…\",\"reason\":\"…\"}]}, sans texte autour ni bloc de code.";
+    return $body;
+}
+
 function canal_home_request_headers(string $apiKey, string $model): array
 {
     $headers = [

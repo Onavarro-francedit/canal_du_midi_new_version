@@ -102,5 +102,17 @@ check(canal_home_parse_response(200, json_encode(['stop_reason' => 'end_turn', '
 $badText = json_encode(['stop_reason' => 'end_turn', 'content' => [['type' => 'text', 'text' => '{"results": "nope"}']]]);
 check(canal_home_parse_response(200, $badText, $valid)['error'] === 'bad_payload', 'parse: payload inválido');
 
+// ── Respaldo sin json_schema (servicio de gramáticas de la API caído) ─────
+$grammar503 = '{"type":"error","error":{"type":"overloaded_error","message":"Grammar compilation is temporarily unavailable. Please try again."}}';
+check(canal_home_is_grammar_outage(503, $grammar503), 'grammar: 503 de compilación de gramática detectado');
+check(!canal_home_is_grammar_outage(529, '{"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}'), 'grammar: sobrecarga general no activa el respaldo');
+check(!canal_home_is_grammar_outage(200, $grammar503), 'grammar: 200 nunca es caída');
+$plain = canal_home_request_without_schema($req);
+check(!isset($plain['output_config']['format']), 'sin schema: se quita output_config.format');
+check(($plain['output_config']['effort'] ?? null) === 'low', 'sin schema: se conserva effort');
+check(strpos($plain['system'][0]['text'], '{"results":') !== false, 'sin schema: instrucciones piden el JSON explícitamente');
+check($plain['system'][1] === $req['system'][1], 'sin schema: catálogo intacto (caché de prompt)');
+check(!array_key_exists('output_config', canal_home_request_without_schema($reqHaiku)), 'sin schema: Haiku sin output_config vacío (se enviaría como [])');
+
 echo $fails === 0 ? "\nTODO OK\n" : "\n$fails FALLO(S)\n";
 exit($fails === 0 ? 0 : 1);

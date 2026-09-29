@@ -275,6 +275,16 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
+- **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is
+  temporarily unavailable »` — cae el servicio que aplica el `json_schema` de la respuesta; las
+  peticiones sin schema funcionan. No era un fallo nuestro.
+- **Arreglo (resiliencia):** `canal_home_is_grammar_outage()` + `canal_home_request_without_schema()`
+  (`ai-core.php`, con tests): ante ese 503 se reintenta una vez sin schema (formato pedido en las
+  instrucciones; `canal_home_parse_response` valida igual) y se recuerda la caída 10 min
+  (transient `canal_home_ai_no_schema`) para no pagar los 10-17 s del 503 en cada petición.
+  Medido: 1ª petición 29 s, siguientes 8,7 s, 5 resultados válidos. Log: `IA: json_schema no disponible`.
+
 ### TASK-029 — « Carte interactive » en el WordPress de producción — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
 - **Qué:** copia fiel de `/search` local como página nueva **privada** `/explorer-2026/` (ID **18502**,
   plantilla `canal-home/template-carte.php`). `/explorer/` intacta. Spec y plan en
