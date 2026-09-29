@@ -185,3 +185,7 @@ p { color: inherit; }
         white-space: normal;
     }
 }
+
+/* Hueco sobre el hero: el padding local estaba pensado para la navbar propia de la app local;
+   aquí la cabecera fija del tema ya reserva su espacio. */
+.hero-section { padding-top: 32px; }

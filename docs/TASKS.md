@@ -318,6 +318,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     etiquetas 13px sin mayúsculas en una línea. `.cdm-home { overflow-x: clip }`: las
     animaciones de entrada laterales dejaban la página arrastrable hacia los lados (422/390)
     hasta llegar a « Expériences ». Libro del plan recortado al contenido (sin ~25 % de blanco).
+  - Cabecera del tema restilizada SOLO en esta página (2026-09-29): `assets/header.css`
+    (escrito a mano, fuera del build) bajo `body.page-template-canal-home` — fondo blanco
+    translúcido con blur y sombra, menú y submenús en Manrope con hover violeta, « Carte
+    interactive » en píldora violeta, en escritorio (≥1201px, corte del tema) menú compacto y
+    zona de usuario reducida al avatar (el nombre pisaba « Manger & Boire »), botón del panel
+    móvil con margen lateral. Hueco sobre el hero 120 → 12px. La home actual y el resto del
+    sitio conservan la cabecera original (verificado). Al rediseñar /carte y las fichas, el
+    mismo CSS puede extenderse a todo el sitio desde el plugin.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**
