@@ -30,7 +30,8 @@ directa con executing-plans).
 `canal_home_ai_daily_YYYYMMDD` (tope diario atómico). **Rollback completo:** desactivar el
 plugin, papelera de la página 18500, borrar transients `canal_home_*` y filas
 `canal_home_ai_daily_%` / `canal_home_plan_daily_%`, borrar `httpdocs/llms.txt` y
-`llms-full.txt`, y restaurar `robots.txt` desde `/var/www/vhosts/plan-canal-du-midi.com/robots.txt.orig`.
+`llms-full.txt`, restaurar `robots.txt` desde `/var/www/vhosts/plan-canal-du-midi.com/robots.txt.orig` y, si se
+quiere, el `.htaccess` desde `htaccess.bak-2026-09-29` (mismo directorio).
 
 **Decisiones que no están en ARCHITECTURE.md:**
 - Producción = WordPress; la app local es solo fuente de diseño.

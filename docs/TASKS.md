@@ -349,7 +349,11 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     `X-Powered-By: PHP`, HSTS (6 meses, sin subdominios) y `nosniff`; `robots.txt` sustituido
     (original guardado en `/var/www/vhosts/plan-canal-du-midi.com/robots.txt.orig`): bots de
     búsqueda IA permitidos, entrenamiento no (`Content-Signal: ai-train=no`), `Sitemap:`.
-    NO tocado: regla del `.htaccess` que da 403 a GPTBot/ClaudeBot/Amazonbot (decisión del sitio).
+    `.htaccess` (autorizado 2026-09-29, copia en `/var/www/vhosts/plan-canal-du-midi.com/htaccess.bak-2026-09-29`):
+    la regla de bloqueo 403 sale del bloque « BEGIN WordPress » (WP podía borrarla al regenerarlo) y
+    `developers.facebook` → `meta-externalagent` (solo el robot de entrenamiento de Meta; quedan
+    permitidos meta-externalfetcher y facebookexternalhit). Verificado: GPTBot/ClaudeBot/Amazonbot/
+    ImagesiftBot/meta-externalagent → 403; buscadores IA, Googlebot y aperçus Facebook → 200.
   - Pendiente del usuario: datos del editor para E-E-A-T (año de inicio del plan, tirada,
     responsable) — no se inventan.
 
