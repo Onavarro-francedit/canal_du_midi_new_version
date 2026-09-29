@@ -56,3 +56,37 @@ p { color: inherit; }
    el contenido debe verse: el ocultado para animar solo aplica si home.js añade .js-reveal. */
 .cdm-home:not(.js-reveal) [data-reveal],
 .cdm-home:not(.js-reveal) [data-reveal-stagger] > * { opacity: 1; transform: none; }
+
+/* « Nos atouts » — iconos con color de acento por tarjeta */
+.feature-card { --accent: var(--primary); position: relative; overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.feature-card--water { --accent: var(--water); }
+.feature-card--terracotta { --accent: var(--terracotta); }
+.feature-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+}
+.feature-card .feature-icon {
+    display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px;
+    background: color-mix(in srgb, var(--accent) 14%, #fff); color: var(--accent);
+    font-size: 26px; transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+.feature-card:hover { transform: translateY(-4px); }
+.feature-card:hover .feature-icon { background: var(--accent); color: #fff; transform: rotate(-6deg); }
+
+/* Tarjetas « En bateau » / « À vélo » — icono de marca de agua */
+.offer-card { position: relative; overflow: hidden; }
+.offer-card > div, .offer-card > .button { position: relative; z-index: 1; }
+.offer-watermark {
+    position: absolute; right: 190px; bottom: -28px; font-size: 130px; line-height: 1;
+    opacity: 0.14; transform: rotate(-12deg); pointer-events: none;
+}
+.offer-card.blue .offer-watermark { color: #1d6fa5; }
+.offer-card.sand .offer-watermark { color: #b3456f; }
+.offer-kicker i { margin-right: 4px; }
+@media (max-width: 560px) {
+    .offer-watermark { right: -10px; font-size: 110px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .feature-card, .feature-card .feature-icon { transition: none; }
+    .feature-card:hover, .feature-card:hover .feature-icon { transform: none; }
+}

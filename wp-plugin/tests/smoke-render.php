@@ -34,5 +34,8 @@ $check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');
 $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
+$check(preg_match_all('/class="feature-icon"[^>]*><i class="bi bi-(shop|map|compass)" aria-hidden="true">/', $html) === 3, 'atouts: 3 iconos (shop, map, compass)');
+$check(preg_match_all('/<i class="bi bi-(water|bicycle) offer-watermark" aria-hidden="true">/', $html) === 2, 'ofertas: 2 iconos de marca de agua');
+
 $check(strpos($html, 'fixedban') !== false || strpos($html, 'googletag') !== false, 'cabecera del tema con pubs');
 WP_CLI::log($fails === 0 ? 'TODO OK' : "$fails FALLO(S)");

@@ -287,6 +287,9 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   - Parallax en la banda inmersiva (petición del usuario, 2026-09-29): la foto se desplaza
     de 0 % a 100 % de `background-position` mientras la banda cruza la pantalla; desactivado
     con `prefers-reduced-motion`.
+  - « Nos atouts » con iconos Bootstrap Icons (shop / map / compass) y color de acento por
+    tarjeta (violeta / agua / terracota), filete superior y hover; tarjetas « En bateau » /
+    « À vélo » con icono de marca de agua (water / bicycle).
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

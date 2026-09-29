@@ -234,33 +234,35 @@ get_header();
                 <h2>Pourquoi « L'Officiel du Canal du Midi » ?</h2>
             </div>
             <div class="feature-grid" data-reveal-stagger>
-                <article class="feature-card">
-                    <div class="feature-icon"></div>
+                <article class="feature-card feature-card--violet">
+                    <div class="feature-icon"><i class="bi bi-shop" aria-hidden="true"></i></div>
                     <h3>Des prestataires locaux</h3>
                     <p>Des professionnels installés le long du canal, de Toulouse à l'étang de Thau.</p>
                 </article>
-                <article class="feature-card">
-                    <div class="feature-icon"></div>
+                <article class="feature-card feature-card--water">
+                    <div class="feature-icon"><i class="bi bi-map" aria-hidden="true"></i></div>
                     <h3>Le plan officiel</h3>
                     <p>Écluses, ports, services et points d'intérêt réunis sur un plan édité chaque année.</p>
                 </article>
-                <article class="feature-card">
-                    <div class="feature-icon"></div>
+                <article class="feature-card feature-card--terracotta">
+                    <div class="feature-icon"><i class="bi bi-compass" aria-hidden="true"></i></div>
                     <h3>Des outils pratiques</h3>
                     <p>Carte interactive, calcul de distance, règles de navigation et météo du canal.</p>
                 </article>
             </div>
             <div class="offer-grid" data-reveal-stagger>
                 <article class="offer-card blue">
+                    <i class="bi bi-water offer-watermark" aria-hidden="true"></i>
                     <div>
-                        <span class="offer-kicker">En bateau</span>
+                        <span class="offer-kicker"><i class="bi bi-water" aria-hidden="true"></i> En bateau</span>
                         <h3>Naviguer sur le canal</h3>
                     </div>
                     <a class="button button-small button-white" href="<?= $link('/navigation/regles-de-navigation/') ?>">Les règles de navigation</a>
                 </article>
                 <article class="offer-card sand">
+                    <i class="bi bi-bicycle offer-watermark" aria-hidden="true"></i>
                     <div>
-                        <span class="offer-kicker">À vélo</span>
+                        <span class="offer-kicker"><i class="bi bi-bicycle" aria-hidden="true"></i> À vélo</span>
                         <h3>Voie verte et véloroute</h3>
                     </div>
                     <a class="button button-small button-white" href="<?= $link('/voie-verte-et-veloroute/') ?>">Préparer ma balade</a>
