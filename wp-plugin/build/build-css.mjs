@@ -50,7 +50,7 @@ if (remDecls.length) {
 }
 
 // Verificación: neutralizar el clearfix de Bootstrap del tema y el color de titulares del tema.
-for (const needle of ['.cdm-home .container::before', '.cdm-home h1']) {
+for (const needle of ['.cdm-home .container::before', '.cdm-home h1', '.cdm-home p', '.cdm-home:not(.js-reveal) [data-reveal]']) {
     if (!result.css.includes(needle)) {
         console.error('Falta el ajuste de compatibilidad con el tema:', needle);
         process.exit(1);

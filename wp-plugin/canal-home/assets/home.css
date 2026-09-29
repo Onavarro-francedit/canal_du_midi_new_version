@@ -1948,3 +1948,11 @@
 /* Los <p> de las tarjetas heredan margin-bottom: 22px (.hero-ai-dialog p). */
 .cdm-home .cdm-ai-results .cdm-ai-card p { margin: 0; line-height: 1.45; }
 .cdm-home .cdm-ai-results .cdm-ai-card .cdm-ai-card-reason { margin-top: 4px; }
+/* El tema también colorea <p> directamente (#242429): heredar, como los titulares. */
+.cdm-home p { color: inherit; }
+.cdm-home .immersive-band p { color: rgba(255, 255, 255, 0.94); font-size: 18px; line-height: 1.6; max-width: 720px; margin: 0 auto; }
+
+/* Sin JS (bloqueado, error, JS combinado por un plugin de caché) o sin IntersectionObserver,
+   el contenido debe verse: el ocultado para animar solo aplica si home.js añade .js-reveal. */
+.cdm-home:not(.js-reveal) [data-reveal],
+.cdm-home:not(.js-reveal) [data-reveal-stagger] > * { opacity: 1; transform: none; }

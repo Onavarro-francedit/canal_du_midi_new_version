@@ -35,6 +35,9 @@
     // ── Scroll reveal ───────────────────────────────────────────────────
     function initReveal() {
         if (reduceMotion || !('IntersectionObserver' in window)) return;
+        // Solo ahora (JS operativo) el CSS oculta los elementos para animarlos.
+        var root = document.querySelector('.cdm-home');
+        if (root) root.classList.add('js-reveal');
         var observe = function (selector, threshold, onShow) {
             var io = new IntersectionObserver(function (entries) {
                 entries.forEach(function (entry) {

@@ -48,3 +48,11 @@ h1, h2, h3, h4, h5, h6 { color: inherit; }
 /* Los <p> de las tarjetas heredan margin-bottom: 22px (.hero-ai-dialog p). */
 .cdm-ai-results .cdm-ai-card p { margin: 0; line-height: 1.45; }
 .cdm-ai-results .cdm-ai-card .cdm-ai-card-reason { margin-top: 4px; }
+/* El tema también colorea <p> directamente (#242429): heredar, como los titulares. */
+p { color: inherit; }
+.immersive-band p { color: rgba(255, 255, 255, 0.94); font-size: 18px; line-height: 1.6; max-width: 720px; margin: 0 auto; }
+
+/* Sin JS (bloqueado, error, JS combinado por un plugin de caché) o sin IntersectionObserver,
+   el contenido debe verse: el ocultado para animar solo aplica si home.js añade .js-reveal. */
+.cdm-home:not(.js-reveal) [data-reveal],
+.cdm-home:not(.js-reveal) [data-reveal-stagger] > * { opacity: 1; transform: none; }
