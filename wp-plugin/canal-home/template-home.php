@@ -271,33 +271,61 @@ get_header();
         </div>
     </section>
 
-    <!-- 7. PLAN -->
+    <!-- 7. PLAN (mismo diseño que la home local) -->
+    <?php
+    $planMessages = [
+        'ok'      => ['#f0fdf4', '#86efac', '#166534', 'Vérifiez votre boîte mail — votre plan est en route !'],
+        'invalid' => ['#fef2f2', '#fca5a5', '#991b1b', 'Adresse e-mail invalide. Veuillez vérifier et réessayer.'],
+        'rate'    => ['#fffbeb', '#fcd34d', '#92400e', 'Trop de demandes pour le moment. Réessayez un peu plus tard ou téléchargez le PDF ci-dessous.'],
+        'error'   => ['#fffbeb', '#fcd34d', '#92400e', 'Une erreur est survenue. Veuillez réessayer dans quelques instants.'],
+    ];
+    $planStatus = isset($_GET['plan']) ? sanitize_key(wp_unslash($_GET['plan'])) : '';
+    $planMsg = $planMessages[$planStatus] ?? null;
+    ?>
     <section id="plan" class="section newsletter-section">
         <div class="container newsletter-box" data-reveal="up">
             <div class="plan-viewer" style="flex:0 0 480px;max-width:100%;">
-                <img src="<?= $upload('2026/05/couv_canal_du_midi_2026.png') ?>"
+                <img src="<?= esc_url(CANAL_HOME_URL . 'assets/plan-canal-du-midi-2026.jpg') ?>"
                      alt="Plan du Canal du Midi 2026 — cliquez pour le feuilleter" role="button" tabindex="0"
-                     style="display:block;width:100%;max-width:480px;height:400px;object-fit:contain;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto;cursor:pointer;"
+                     width="960" height="640" loading="lazy"
+                     style="display:block;width:100%;max-width:480px;height:400px;object-fit:contain;background:#fff;border:0;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);margin:0 auto;cursor:pointer;"
                      data-open-plan-modal>
             </div>
             <div>
-                <div class="eyebrow">Plan officiel 2026</div>
-                <h2>Le plan du Canal du Midi 2026</h2>
-                <p style="color:var(--muted);margin-bottom:1rem;">Toutes les écluses, ports, services et étapes de Toulouse à la Méditerranée.</p>
-                <div class="plan-actions">
-                    <a href="<?= $upload('pdf/Plan-Canal-du-Midi-2026.pdf') ?>" class="btn-pdf" target="_blank" rel="noopener">
-                        <i class="bi bi-file-earmark-arrow-down"></i> Télécharger le plan gratuit (PDF)
-                    </a>
-                    <a href="<?= $link('/recevoir-le-plan-du-canal-du-midi-2/') ?>" class="button button-ghost">
-                        <i class="bi bi-envelope"></i> Recevoir le plan par courrier
+                <div class="eyebrow">Guide officiel</div>
+                <h2>Recevez le plan du Canal du Midi 2026</h2>
+                <p style="color:var(--muted);margin-bottom:24px;">
+                    Toutes les étapes, écluses et points d'intérêt de Toulouse à la Méditerranée —
+                    directement dans votre boîte mail.
+                </p>
+
+                <?php if ($planMsg): ?>
+                    <p role="alert" style="padding:12px 16px;background:<?= esc_attr($planMsg[0]) ?>;border:1px solid <?= esc_attr($planMsg[1]) ?>;border-radius:8px;color:<?= esc_attr($planMsg[2]) ?>;font-size:15.2px;margin-bottom:16px;">
+                        <?= esc_html($planMsg[3]) ?>
+                    </p>
+                <?php endif; ?>
+
+                <form class="newsletter-form" method="POST" action="<?= esc_url(admin_url('admin-post.php')) ?>">
+                    <input type="hidden" name="action" value="canal_home_plan">
+                    <label class="cdm-hp" aria-hidden="true">Ne pas remplir
+                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                    </label>
+                    <input type="email" name="email" required placeholder="Votre adresse e-mail" autocomplete="email">
+                    <button class="button button-small" type="submit">Recevoir le plan par e-mail</button>
+                </form>
+
+                <div style="margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10.4px;flex-wrap:wrap;">
+                    <span style="font-size:13.6px;color:var(--muted);font-weight:bold;">ou</span>
+                    <a href="<?= $upload('pdf/Plan-Canal-du-Midi-2026.pdf') ?>" download class="btn-pdf">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Télécharger le PDF
+                        <span class="btn-pdf__size">32 Mo</span>
                     </a>
                 </div>
             </div>
         </div>
     </section>
-
     <div id="plan-modal" style="display: none;" aria-hidden="true">
-        <div class="plan-modal-content" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title" style="max-width: 58rem;">
+        <div class="plan-modal-content" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title" style="max-width: 928px;">
             <button type="button" class="plan-modal-close" data-close-plan-modal aria-label="Fermer la fenêtre du plan">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -305,7 +333,7 @@ get_header();
             <iframe data-src="https://v.calameo.com/?bkcode=003331405edc35288442a&amp;mode=mini"
                     width="480" height="400" allowfullscreen referrerpolicy="no-referrer"
                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms" scrolling="no"
-                    style="display:block;width:100%;max-width:67rem;height:43rem;border:0;border-radius:12px;margin:0 auto;"
+                    style="display:block;width:100%;max-width:1072px;height:688px;border:0;border-radius:12px;margin:0 auto;"
                     title="Plan du Canal du Midi 2026 — Calaméo" loading="lazy"></iframe>
         </div>
     </div>

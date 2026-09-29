@@ -290,6 +290,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   - « Nos atouts » con iconos Bootstrap Icons (shop / map / compass) y color de acento por
     tarjeta (violeta / agua / terracota), filete superior y hover; tarjetas « En bateau » /
     « À vélo » con icono de marca de agua (water / bicycle).
+  - Bloque del plan idéntico al local (petición del usuario, 2026-09-29): libro en 3D
+    (`assets/plan-canal-du-midi-2026.jpg`, JPEG 960 px desde el PNG local) y formulario
+    « Recevoir le plan par e-mail » real: POST `admin-post.php?action=canal_home_plan` →
+    `wp_mail()` (sale por Easy WP SMTP, `noreply@plan-canal-du-midi.com`) con el HTML fijo
+    generado desde `EmailTemplates::planByEmail()` local (`emails/plan.html`; pie corregido
+    a www.plan-canal-du-midi.com). No guarda e-mails. Honeypot `website`, 3 envíos/h por IP,
+    tope 200/día (contador atómico `canal_home_plan_daily_YYYYMMDD` en `wp_options`).
+    Envío real de prueba a onavarro@francedit.com → `?plan=ok`.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

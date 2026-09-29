@@ -1990,3 +1990,12 @@
     .cdm-home .feature-card, .cdm-home .feature-card .feature-icon { transition: none; }
     .cdm-home .feature-card:hover, .cdm-home .feature-card:hover .feature-icon { transform: none; }
 }
+
+/* Honeypot del formulario del plan: fuera de pantalla, sin display:none (algunos bots lo detectan). */
+.cdm-home .cdm-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* .container.newsletter-box: mi reset de padding de .container anulaba el padding local de la tarjeta. */
+.cdm-home .container.newsletter-box { padding: 34px; }
+@media (max-width: 560px) {
+    .cdm-home .container.newsletter-box { padding: 22px; }
+}

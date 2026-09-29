@@ -15,7 +15,9 @@ define('CANAL_HOME_TEMPLATE', 'canal-home/template-home.php');
 
 require_once CANAL_HOME_DIR . 'includes/ai-core.php';
 require_once CANAL_HOME_DIR . 'includes/data.php';
+require_once CANAL_HOME_DIR . 'includes/limits.php';
 require_once CANAL_HOME_DIR . 'includes/ai.php';
+require_once CANAL_HOME_DIR . 'includes/plan.php';
 
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';

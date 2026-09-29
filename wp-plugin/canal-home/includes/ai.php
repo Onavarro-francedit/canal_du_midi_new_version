@@ -45,43 +45,6 @@ function canal_home_ai_error(string $code, int $status): WP_REST_Response
     ], $status);
 }
 
-// ponytail: límite por IP en transient, no atómico y fail-open si Redis cae; aceptable porque el
-// gasto lo acota el tope diario atómico (canal_home_ai_daily_hit). Exactitud: INCR en Redis + EXPIRE.
-function canal_home_ai_hit(string $key, int $limit, int $ttl): bool
-{
-    $count = (int) get_transient($key);
-    if ($count >= $limit) {
-        return false;
-    }
-    set_transient($key, $count + 1, $ttl);
-    return true;
-}
-
-// Tope diario = único límite del gasto → contador ATÓMICO en wp_options, no en transients:
-// con el drop-in de Redis activo, una caída o expulsión de la clave reiniciaría el tope (fail-open)
-// y get/set pierde incrementos bajo concurrencia. Si la BD falla, se rechaza (fail-closed).
-function canal_home_ai_daily_hit(int $cap): bool
-{
-    global $wpdb;
-    $name = 'canal_home_ai_daily_' . gmdate('Ymd');
-    $ok = $wpdb->query($wpdb->prepare(
-        "INSERT INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, '1', 'off')
-         ON DUPLICATE KEY UPDATE option_value = option_value + 1",
-        $name
-    ));
-    if ($ok === false) {
-        return false;
-    }
-    $count = (int) $wpdb->get_var($wpdb->prepare("SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name));
-    // Limpieza de los días anteriores (filas propias canal_home_ai_daily_*).
-    $wpdb->query($wpdb->prepare(
-        "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name <> %s",
-        $wpdb->esc_like('canal_home_ai_daily_') . '%',
-        $name
-    ));
-    return $count <= $cap;
-}
-
 function canal_home_ai_endpoint(WP_REST_Request $request): WP_REST_Response
 {
     $prompt = canal_home_sanitize_prompt((string) $request->get_param('prompt'));
@@ -94,10 +57,10 @@ function canal_home_ai_endpoint(WP_REST_Request $request): WP_REST_Response
     }
 
     $ip = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : '';
-    if (!canal_home_ai_hit('canal_home_ai_ip_' . md5($ip), CANAL_HOME_AI_IP_LIMIT, CANAL_HOME_AI_IP_WINDOW)) {
+    if (!canal_home_rate_hit('canal_home_ai_ip_' . md5($ip), CANAL_HOME_AI_IP_LIMIT, CANAL_HOME_AI_IP_WINDOW)) {
         return canal_home_ai_error('rate', 429);
     }
-    if (!canal_home_ai_daily_hit($config['daily_cap'])) {
+    if (!canal_home_daily_hit('canal_home_ai_daily_', $config['daily_cap'])) {
         return canal_home_ai_error('daily', 429);
     }
 
