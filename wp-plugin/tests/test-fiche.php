@@ -30,6 +30,9 @@ check(canal_fiche_video_embed('') === '' && canal_fiche_video_embed('pas une url
 check(canal_fiche_tel('04 68 91 59 30') === '0468915930', 'tel: con espacios');
 check(canal_fiche_tel('Tél Atelier : 07 68 13 87 23') === '0768138723', 'tel: con texto delante');
 check(canal_fiche_tel('+33 4.68.91.59.30') === '+33468915930', 'tel: internacional con puntos');
+check(canal_fiche_tel('04 68 12 34 56 - 06 12 34 56 78') === '0468123456', 'tel: dos números → solo el primero');
+check(canal_fiche_tel('0468123456 0612345678') === '0468123456', 'tel: dos números pegados → solo el primero');
+check(canal_fiche_tel('+33 (0)4 68 12 34 56') === '+33468123456', 'tel: +33 (0) conserva el prefijo');
 check(canal_fiche_tel('fermé') === '' && canal_fiche_tel('') === '', 'tel: sin número');
 
 // Redes: _facebook + _links, solo http(s) y dominio exacto.

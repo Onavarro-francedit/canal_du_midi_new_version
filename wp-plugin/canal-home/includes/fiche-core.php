@@ -31,12 +31,15 @@ function canal_fiche_video_embed(string $url): string
 }
 
 // Primer número del texto (« Tél Atelier : 07 68 13 87 23 » → 0768138723), para el href tel:.
+// El separador de dos números (« 04… - 06… ») entra en la clase de caracteres: se corta al primer
+// número completo (10 cifras en nacional, prefijo + 9 en internacional). « (0) » se ignora.
 function canal_fiche_tel(string $raw): string
 {
-    if (!preg_match('/\+?\d[\d .\-]{7,}\d/', $raw, $m)) {
+    if (!preg_match('/\+?\d[\d .\-]{7,}\d/', str_replace('(0)', '', $raw), $m)) {
         return '';
     }
     $num = preg_replace('/[^\d+]/', '', $m[0]);
+    $num = $num[0] === '+' ? substr($num, 0, 12) : substr($num, 0, 10);
     return strlen(ltrim($num, '+')) >= 9 ? $num : '';
 }
 
