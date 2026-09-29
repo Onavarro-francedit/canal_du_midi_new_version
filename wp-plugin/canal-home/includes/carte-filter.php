@@ -9,12 +9,14 @@ const CANAL_CARTE_MAX_TEXT = 100;
 
 function canal_carte_fold(string $s): string
 {
-    return strtr(mb_strtolower($s, 'UTF-8'), [
+    $map = [
         'à' => 'a', 'â' => 'a', 'ä' => 'a', 'á' => 'a', 'ã' => 'a', 'ç' => 'c',
         'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e', 'î' => 'i', 'ï' => 'i', 'í' => 'i',
         'ô' => 'o', 'ö' => 'o', 'ó' => 'o', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ú' => 'u',
-        'ÿ' => 'y', 'ñ' => 'n', 'œ' => 'oe', 'æ' => 'ae', "'" => "'",
-    ]);
+        'ÿ' => 'y', 'ñ' => 'n', 'œ' => 'oe', 'æ' => 'ae',
+    ];
+    $map["\u{2019}"] = "'";
+    return strtr(mb_strtolower($s, 'UTF-8'), $map);
 }
 
 function canal_carte_text($value): string

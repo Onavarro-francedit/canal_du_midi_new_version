@@ -29,7 +29,7 @@ $listings = [
         'description' => 'Chambres face au canal', 'cat_names' => ['Hôtel'], 'cat_slugs' => ['hotel', 'hebergement'], 'lat' => 43.6045, 'lng' => 1.4440]),
     $L(['id' => 3, 'title' => 'Location vélo', 'city' => 'Carcassonne', 'address' => 'Port de Carcassonne',
         'cat_names' => ['Location de vélo'], 'cat_slugs' => ['location-de-velo', 'velo', 'activites-loisirs'], 'lat' => 43.2130, 'lng' => 2.3491]),
-    $L(['id' => 4, 'title' => 'Adresse sin GPS', 'city' => 'Agde', 'cat_slugs' => ['bar', 'restauration']]),
+    $L(['id' => 4, 'title' => 'Adresse sans GPS', 'city' => 'Agde', 'cat_slugs' => ['bar', 'restauration']]),
 ];
 $valid = ['ecluses', 'nautique', 'activites-loisirs', 'hotel', 'hebergement', 'location-de-velo', 'velo', 'bar', 'restauration'];
 $ids = function (array $r): array { return array_column($r, 'id'); };
@@ -39,6 +39,7 @@ $f = function (array $get) use ($listings, $valid): array {
 
 // ── canal_carte_fold ────────────────────────────────────────────────────
 check(canal_carte_fold('Écluse À BÉZIERS œuf') === 'ecluse a beziers oeuf', 'fold: minúsculas sin acentos + ligaduras');
+check(canal_carte_fold("l'Écluse") === "l'ecluse", 'fold: apóstrofo tipográfico → recto');
 
 // ── canal_carte_params ──────────────────────────────────────────────────
 check(canal_carte_params([], $valid) === ['q' => '', 'type' => [], 'location' => '', 'lat' => null, 'lng' => null], 'params: vacío');
