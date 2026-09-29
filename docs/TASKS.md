@@ -4,6 +4,9 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
+- **TASK-030 — Fiche 2026 (`/fiche-2026/<slug>/`)** — diseño aprobado 2026-09-29, spec en
+  `docs/superpowers/specs/2026-09-29-wp-fiche-2026-design.md`; siguiente: plan de implementación.
+
 _(vacío — TASK-029 « Carte interactive » desplegada en privado ✅ (página 18502), ver 🟢.
 Publicar home y carte: SOLO con orden explícita del usuario, TASK-028 / TASK-029b en 🟡.
 Siguiente fase: TASK-030 diseño de la ficha.)_
