@@ -159,6 +159,9 @@ p { color: inherit; }
     }
     .destination-grid::-webkit-scrollbar, .tour-grid::-webkit-scrollbar { display: none; }
     .destination-grid > *, .tour-grid > * { scroll-snap-align: start; }
+    /* Sombra corta: la de 60px la recortaba el contenedor con scroll y dejaba una banda
+       tintada de borde a borde (el botón « Voir tous… » parecía otra sección). 8+18 ≤ 28px. */
+    .destination-grid .destination-card, .tour-grid .tour-card { box-shadow: 0 8px 18px rgba(61, 72, 124, 0.14); }
 }
 
 /* « Expériences » en móvil: foto grande a todo el ancho y las dos pequeñas debajo, lado a
