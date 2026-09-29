@@ -9,7 +9,8 @@ sesión.
 
 **Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → ejecución
 directa con executing-plans).
-**Handoff pendiente:** ninguno. Rama `feat/wp-home-accueil-2026` sin mergear.
+**Handoff pendiente:** ninguno. Rama `feat/wp-home-accueil-2026` **fusionada en `main`**
+(fast-forward, 2026-09-29) y borrada. `main` va por delante de `origin/main` (sin push).
 **Dónde quedamos:** plugin `canal-home` activo en producción, página « Accueil 2026 »
 (ID 18500) **privada** y verificada; la portada sigue siendo la home Elementor (15269).
 
@@ -39,6 +40,15 @@ plugin, papelera de la página 18500, borrar transients `canal_home_*` y filas
 **Observación para el usuario:** `httpdocs/wp-config.php` se reescribió el 29/09 a las
 01:24:47 UTC (usuario del sitio, sin cron propio → tarea de Plesk/WP Toolkit). No fuimos
 nosotros; no se ha tocado.
+
+**Iteraciones de diseño del 29/09 (en producción, página privada):** parallax de la banda,
+iconos en « Nos atouts », bloque del plan como en local con envío real por e-mail, foto vélo,
+tarjetas de séjours rediseñadas (sin esclusas), 6 arreglos móviles + carruseles, hero móvil,
+libro del plan recortado, cabecera del tema restilizada solo en esta página
+(`assets/header.css`). Detalle en `docs/TASKS.md` 🟢 TASK-027.
+
+**Antes de publicar:** revisar `pm.max_children` del pool PHP-FPM (cada llamada IA ocupa un
+worker ~7–10 s).
 
 **Próxima acción (solo con orden explícita del usuario):**
 ```
