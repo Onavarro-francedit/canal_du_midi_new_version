@@ -38,7 +38,9 @@ $activeFilters = array_filter(array_merge(
 ));
 
 // WP: datos para el <head> (título, meta, JSON-LD), que get_header() imprime.
-canal_carte_seo_state(['results' => $results, 'total' => count($listings)]);
+$faq      = $results ? canal_carte_faq($listings) : []; // WP: solo se muestra (y se marca) si hay lista
+$modified = canal_carte_last_modified();
+canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified]);
 
 get_header();
 ?>
@@ -294,6 +296,9 @@ get_header();
                     <?php // WP: H1 e introducción (SEO/AEO: la página no tenía H1 y el texto empezaba por los filtros). ?>
                     <h1 class="search-results-title">Carte des prestataires du Canal du Midi</h1>
                     <p class="search-results-intro"><?= (int) count($listings) ?> adresses le long des 240 km du canal, de Toulouse à l'étang de Thau : où dormir, louer un bateau ou un vélo, manger et visiter.</p>
+                    <?php if ($modified !== ''): ?>
+                        <p class="search-results-publisher">Guide édité par L'Officiel du Canal du Midi · mis à jour le <time datetime="<?= esc_attr($modified) ?>"><?= esc_html(date_i18n('j F Y', strtotime($modified))) ?></time></p>
+                    <?php endif; ?>
                     <h2 class="search-results-count">
                         <?= $resultsCount ?> résultat<?= $resultsCount > 1 ? 's' : '' ?>
                     </h2>
@@ -384,6 +389,17 @@ get_header();
                             </div>
                         </article>
                     <?php endforeach; ?>
+                    <?php // WP: preguntas frecuentes (AEO), dentro de la lista porque es ella la que hace scroll. ?>
+                    <section class="carte-faq" aria-labelledby="carte-faq-title">
+                        <p class="carte-faq-kicker" id="carte-faq-title">Questions fréquentes</p>
+                        <?php foreach ($faq as $item): ?>
+                            <div class="carte-faq-item">
+                                <h2><?= esc_html($item['q']) ?></h2>
+                                <p><?= esc_html($item['a']) ?></p>
+                            </div>
+                        <?php endforeach; ?>
+                        <p class="carte-faq-sources">Le Canal du Midi est inscrit au <a href="https://whc.unesco.org/fr/list/770/" target="_blank" rel="noopener">patrimoine mondial de l'UNESCO</a> depuis 1996. Conditions de navigation et chômages : <a href="https://www.vnf.fr/" target="_blank" rel="noopener">Voies navigables de France</a>.</p>
+                    </section>
                 </div>
             <?php endif; ?>
         </section>
@@ -410,11 +426,11 @@ get_header();
 
             <div class="listing-detail-panel">
                 <div class="listing-detail-media">
-                    <img id="listing-detail-image" src="" alt="">
+                    <img id="listing-detail-image" alt=""><?php // WP: sin src="" (pediría la propia página) ?>
                     <div class="listing-detail-media-overlay"></div>
                     <div class="listing-detail-media-caption">
                         <span id="listing-detail-type" class="listing-detail-type"></span>
-                        <h2 id="listing-detail-title"></h2>
+                        <h2 id="listing-detail-title">Détail de l'adresse</h2><?php // WP: sin encabezado vacío; el JS lo rellena ?>
                     </div>
                 </div>
 

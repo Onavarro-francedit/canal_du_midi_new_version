@@ -3,6 +3,7 @@
 // Uso: php wp-plugin/tests/test-carte-filter.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
 require __DIR__ . '/../canal-home/includes/carte-filter.php';
+require __DIR__ . '/../canal-home/includes/carte-faq.php';
 
 $fails = 0;
 function check(bool $cond, string $label): void
@@ -83,6 +84,24 @@ check(canal_carte_has_filters(['type' => ['hotel']]), 'has_filters: type[]');
 check(canal_carte_has_filters(['search_location' => 'Toulouse']), 'has_filters: alias de /explorer/');
 check(canal_carte_has_filters(['lat' => '43.60', 'lng' => '1.44']), 'has_filters: posición');
 check(!canal_carte_has_filters(['utm_source' => 'newsletter']), 'has_filters: parámetros ajenos no cuentan');
+
+// ── canal_carte_faq (respuestas construidas con los datos reales) ──────
+$F = function (string $city, array $slugs): array { return ['city' => $city, 'cat_slugs' => $slugs]; };
+$faqData = [
+    $F('Castelnaudary', ['location-bateau']), $F('Castelnaudary', ['location-bateau']), $F('Homps', ['location-bateau']),
+    $F('Trèbes', ['location-bateau']), $F('Agde', ['location-bateau']), $F('', ['location-bateau']),
+    $F('Carcassonne', ['location-de-velo', 'velo']), $F('Toulouse', ['hotel', 'hebergement']), $F('Béziers', ['camping', 'hebergement']),
+];
+check(canal_carte_top_cities($faqData, 'location-bateau', 3) === ['Castelnaudary', 'Agde', 'Homps'], 'faq: communes por nº de fichas y luego alfabético, sin vacías');
+check(canal_carte_join_fr(['A', 'B', 'C']) === 'A, B et C' && canal_carte_join_fr(['A']) === 'A' && canal_carte_join_fr([]) === '', 'faq: enumeración en francés');
+$faq = canal_carte_faq($faqData);
+$qs = array_column($faq, 'q');
+check(count($faq) === 4, 'faq: 4 preguntas (' . count($faq) . ')');
+check(strpos($faq[0]['a'], '6 loueurs') !== false && strpos($faq[0]['a'], 'Castelnaudary') !== false, 'faq: bateau con recuento y communes reales');
+check(strpos($faq[2]['a'], '2 hébergements') !== false, 'faq: hébergement cuenta las subcategorías (vía cat_slugs)');
+check(count(canal_carte_faq([$F('Agde', ['bar'])])) === 1, 'faq: categorías sin fichas se omiten (queda la pregunta de uso)');
+check(substr($qs[0], -2) === ' ?', 'faq: puntuación francesa (espacio antes de ?)');
+check(strpos($faq[1]['a'], '1 loueur de vélos est référencé') === 0, 'faq: concordancia en singular');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

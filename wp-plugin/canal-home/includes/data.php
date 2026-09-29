@@ -109,11 +109,21 @@ function canal_home_cover(int $postId): string
     return is_string($cover) ? $cover : '';
 }
 
+// Términos region sin acentos ni guiones en la BD (no se modifican): grafía correcta solo al mostrar.
+const CANAL_HOME_CITY_FIX = [
+    'Beziers' => 'Béziers', 'Montreal' => 'Montréal', 'Avignonet Lauragais' => 'Avignonet-Lauragais',
+    'Nissan-Lez-Enserune' => 'Nissan-lez-Ensérune', "Saint-Nazaire-D'aude" => "Saint-Nazaire-d'Aude",
+];
+
 function canal_home_city(int $postId): string
 {
     $regions = get_the_terms($postId, 'region');
+    if (!$regions || is_wp_error($regions)) {
+        return '';
+    }
     // Los términos region están en MAYÚSCULAS («TOULOUSE») → «Toulouse».
-    return ($regions && !is_wp_error($regions)) ? mb_convert_case(canal_home_plain($regions[0]->name), MB_CASE_TITLE, 'UTF-8') : '';
+    $city = mb_convert_case(canal_home_plain($regions[0]->name), MB_CASE_TITLE, 'UTF-8');
+    return CANAL_HOME_CITY_FIX[$city] ?? $city;
 }
 
 function canal_home_category_label(int $postId, array $preferred = []): string

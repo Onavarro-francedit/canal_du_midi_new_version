@@ -312,7 +312,12 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   visibles con numberOfItems total, `noindex,follow` si hay filtros — `canal_carte_has_filters`,
   con tests); H1 + introducción en la columna de resultados; `seo.php` comparte
   `canal_home_seo_social()`/`canal_home_seo_jsonld()`. Canonical: la emite WordPress al publicar.
-  Pendiente: imágenes solo por `data-src`, `<h2>` vacío del modal.
+  2ª pasada seo-geo (60/100 → ~80): `dateModified` (ficha modificada más reciente), `speakable`
+  (H1 + intro), línea visible « Guide édité par… mis à jour le… », cabecera `Link` a llms.txt, FAQ de 4
+  preguntas construida con los datos reales (`includes/carte-faq.php`, con tests) + `FAQPage` solo
+  si se ve, enlaces a UNESCO y VNF, `<h2>` del modal con texto y sin `src=""`. Grafía de communes
+  corregida al mostrar (`CANAL_HOME_CITY_FIX`: Béziers, Montréal…; la taxonomía region no se toca).
+  Pendiente: orden del HTML (filtros antes que el H1), `sameAs` de la organización (solo FB/IG).
 - **Peso (29/09):** el HTML pesa 1,1 MB pero 123 KB con gzip; el peso real era el del tema y las
   imágenes. Hecho: (1) portadas en `medium_large` 768 px + `srcset` (`canal_carte_resized_images`,
   una sola consulta; 209/253 con versión reducida); (2) `content-visibility: auto` en las tarjetas

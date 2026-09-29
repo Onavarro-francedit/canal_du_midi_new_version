@@ -4313,3 +4313,13 @@
 /* WP: 254 tarjetas en el DOM (SEO) → el navegador no pinta las que están fuera de pantalla.
    contain-intrinsic-size reserva su altura aproximada para que la barra de scroll no salte. */
 .cdm-carte .explore-card { content-visibility: auto; contain-intrinsic-size: auto 420px; }
+
+/* WP: editor + fecha (E-E-A-T) y preguntas frecuentes al final de la lista (AEO). */
+.cdm-carte .search-results-publisher { margin: -4px 0 10px; font-size: 12px; color: #94a3b8; }
+.cdm-carte .carte-faq { grid-column: 1 / -1; padding: 22px 4px 8px; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+.cdm-carte .carte-faq-kicker { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6a63d9; }
+.cdm-carte .carte-faq-item { margin: 0 0 16px; }
+.cdm-carte .carte-faq-item h2 { margin: 0 0 4px; font-size: 15px; font-weight: 700; line-height: 1.35; color: #1a1d26; }
+.cdm-carte .carte-faq-item p, .cdm-carte .carte-faq-sources { margin: 0; font-size: 13px; line-height: 1.55; color: #475569; }
+.cdm-carte .carte-faq-sources { margin-top: 18px; color: #64748b; }
+.cdm-carte .carte-faq-sources a { color: #6a63d9; text-decoration: underline; }

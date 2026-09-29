@@ -26,6 +26,7 @@ require_once CANAL_HOME_DIR . 'includes/plan.php';
 require_once CANAL_HOME_DIR . 'includes/seo.php';
 require_once CANAL_HOME_DIR . 'includes/carte-filter.php';
 require_once CANAL_HOME_DIR . 'includes/carte-data.php';
+require_once CANAL_HOME_DIR . 'includes/carte-faq.php';
 require_once CANAL_HOME_DIR . 'includes/seo-carte.php';
 
 add_filter('theme_page_templates', function ($templates) {
