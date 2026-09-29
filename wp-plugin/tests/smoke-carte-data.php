@@ -27,6 +27,8 @@ $check(count(array_filter($listings, fn($l) => !is_float($l['lat']) || !is_float
 $check(count(array_filter($listings, fn($l) => $l['image'] !== '')) > 200, 'listings: >200 con imagen de portada');
 $check(count(array_filter($listings, fn($l) => strpos($l['title'] . $l['description'], '&#') !== false)) === 0, 'listings: sin entidades HTML');
 $check(count(array_filter($listings, fn($l) => count($l['gallery']) > 8)) === 0, 'listings: galería limitada a 8');
+$resized = count(array_filter($listings, fn($l) => $l['image_srcset'] !== '' && strpos($l['image'], '-768x') !== false));
+$check($resized > 200, "listings: portada en 768 px con srcset ($resized)");
 
 $cats = canal_carte_categories($listings);
 $bySlug = array_column($cats, null, 'slug');

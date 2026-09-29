@@ -77,6 +77,31 @@ add_action('wp_enqueue_scripts', function () {
     ]);
 }, 20);
 
+// Carte: plugins que se cargan en todo el sitio y esta página no usa (0 elementos Elementor, sin
+// formularios, tablas ni tienda; el mini-carrito de WooCommerce del tema está vacío y oculto).
+// Solo se quitan de la cola en esta plantilla; si algo que se mantiene depende de ellos, WordPress
+// los vuelve a imprimir como dependencia.
+const CANAL_CARTE_UNUSED_ASSETS = '/^(elementor|e-animation|swiper|wc-|woocommerce|contact-form-7|wpcf7|tablepress|wp-ecommerce-paypal|wpecpp|cf7pp|sourcebuster)/';
+
+function canal_carte_dequeue_unused(): void
+{
+    if (!canal_carte_is_page()) {
+        return;
+    }
+    foreach ([wp_scripts(), wp_styles()] as $deps) {
+        foreach ($deps->queue as $handle) {
+            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle)) {
+                $deps->dequeue($handle);
+            }
+        }
+    }
+}
+// Varios plugins encolan tarde (en el pie): se limpia justo antes de imprimir cabecera y pie.
+add_action('wp_enqueue_scripts', 'canal_carte_dequeue_unused', 9999);
+add_action('wp_print_styles', 'canal_carte_dequeue_unused', 0);
+add_action('wp_print_scripts', 'canal_carte_dequeue_unused', 0);
+add_action('wp_print_footer_scripts', 'canal_carte_dequeue_unused', 0);
+
 // Carte: Google Maps lo carga ya el tema en todas las páginas (footer, síncrono): no se carga otra vez.
 // Nuestros scripts van en el footer y search-map.js arranca en DOMContentLoaded, cuando Maps ya existe.
 add_action('wp_enqueue_scripts', function () {

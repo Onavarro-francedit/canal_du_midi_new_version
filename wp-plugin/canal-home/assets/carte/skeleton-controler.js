@@ -51,6 +51,7 @@
             markSettled(index);
         }, { once: true });
 
+        if (img.dataset.srcset) img.srcset = img.dataset.srcset; // WP: tamaños reducidos de WordPress
         img.src = src;
     });
 })();

@@ -63,7 +63,50 @@ function canal_carte_listings(): array
             'email'       => sanitize_email((string) get_post_meta($post->ID, '_job_email', true)),
         ];
     }
+    $items = canal_carte_resized_images($items);
     set_transient(CANAL_CARTE_CACHE, $items, 12 * HOUR_IN_SECONDS);
+    return $items;
+}
+
+// Portadas: _job_cover guarda la URL del original (hasta 1024 px) y la tarjeta la muestra a ~360 px.
+// Se sustituye por el tamaño medium_large (768 px) + srcset de WordPress. Una sola consulta para
+// todas (attachment_url_to_postid haría una por imagen: ~5 s al regenerar la caché).
+function canal_carte_resized_images(array $items): array
+{
+    global $wpdb;
+    $base  = set_url_scheme(trailingslashit(wp_get_upload_dir()['baseurl']), 'https');
+    $paths = [];
+    foreach ($items as $i => $item) {
+        $items[$i]['image_srcset'] = '';
+        $url = set_url_scheme($item['image'], 'https');
+        if ($url !== '' && strpos($url, $base) === 0) {
+            $paths[$i] = substr($url, strlen($base));
+        }
+    }
+    if (!$paths) {
+        return $items;
+    }
+    $unique = array_values(array_unique($paths));
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value IN ("
+            . implode(',', array_fill(0, count($unique), '%s')) . ')',
+        $unique
+    ));
+    $ids = [];
+    foreach ($rows as $row) {
+        $ids[$row->meta_value] = (int) $row->post_id;
+    }
+    update_meta_cache('post', array_values($ids));
+    foreach ($paths as $i => $path) {
+        if (!isset($ids[$path])) {
+            continue; // sin adjunto conocido: se queda la URL original
+        }
+        $src = wp_get_attachment_image_url($ids[$path], 'medium_large');
+        if ($src) {
+            $items[$i]['image']        = $src;
+            $items[$i]['image_srcset'] = (string) wp_get_attachment_image_srcset($ids[$path], 'medium_large');
+        }
+    }
     return $items;
 }
 

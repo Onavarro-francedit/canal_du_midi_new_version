@@ -4309,3 +4309,7 @@
 /* WP: H1 e introducción de la columna de resultados (SEO). */
 .cdm-carte .search-results-title { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.25; color: #1a1d26; }
 .cdm-carte .search-results-intro { margin: 4px 0 10px; font-size: 13px; line-height: 1.45; color: #64748b; }
+
+/* WP: 254 tarjetas en el DOM (SEO) → el navegador no pinta las que están fuera de pantalla.
+   contain-intrinsic-size reserva su altura aproximada para que la barra de scroll no salte. */
+.cdm-carte .explore-card { content-visibility: auto; contain-intrinsic-size: auto 420px; }

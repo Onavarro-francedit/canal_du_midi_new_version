@@ -312,7 +312,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   visibles con numberOfItems total, `noindex,follow` si hay filtros — `canal_carte_has_filters`,
   con tests); H1 + introducción en la columna de resultados; `seo.php` comparte
   `canal_home_seo_social()`/`canal_home_seo_jsonld()`. Canonical: la emite WordPress al publicar.
-  Pendiente: peso de la página (1,1 MB de HTML), imágenes solo por `data-src`, `<h2>` vacío del modal.
+  Pendiente: imágenes solo por `data-src`, `<h2>` vacío del modal.
+- **Peso (29/09):** el HTML pesa 1,1 MB pero 123 KB con gzip; el peso real era el del tema y las
+  imágenes. Hecho: (1) portadas en `medium_large` 768 px + `srcset` (`canal_carte_resized_images`,
+  una sola consulta; 209/253 con versión reducida); (2) `content-visibility: auto` en las tarjetas
+  (5.138 nodos en el DOM); (3) fuera Elementor, WooCommerce, CF7, TablePress y PayPal SOLO en esta
+  plantilla (`CANAL_CARTE_UNUSED_ASSETS`; se conservan Font Awesome y select2, que usa el tema).
+  Medido: 107 → 79 peticiones, ~4,2 → ~3,6 MB descomprimidos, imágenes iniciales 811 → 574 KB.
+  Fase 2 posible: cargar Google Maps solo al abrir el mapa en móvil (~830 KB).
 - **Rollback:** `wp-plugin/remote.sh wp post delete 18502 --force` y
   `wp-plugin/remote.sh wp transient delete canal_carte_listings`.
 - **Diferido (menor):** sin invalidación en `edited_region`; sin quitar un solo filtro (solo

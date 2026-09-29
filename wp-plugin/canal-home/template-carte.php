@@ -341,8 +341,10 @@ get_header();
                             <a class="explore-card-link" href="<?= esc_url($ficheUrl) ?>">
                                 <div class="card-image<?= $serviceImage ? '' : ' card-image--placeholder' ?>">
                                     <?php if ($serviceImage): ?>
+                                        <?php // WP: portada en 768 px + srcset (la original llega a 1024 px). ?>
                                         <img
                                             data-src="<?= esc_url($serviceImage) ?>"
+                                            <?php if ($s['image_srcset'] !== ''): ?>data-srcset="<?= esc_attr($s['image_srcset']) ?>" sizes="(max-width: 1180px) 100vw, 360px"<?php endif; ?>
                                             alt="<?= esc_attr($serviceTitle) ?>"
                                             width="400"
                                             height="260"
