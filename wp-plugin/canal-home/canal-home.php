@@ -41,6 +41,14 @@ function canal_carte_is_page(): bool
     return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE;
 }
 
+// El botón « Carte interactive » del menú del tema apunta a /explorer/ en todo el sitio; en nuestras
+// páginas (home y carte) se redirige a /carte/ sin tocar el menú existente.
+function canal_home_carte_menu_js(): string
+{
+    return 'document.querySelectorAll(\'.c27-main-header a[href$="/explorer/"], #main-menu a[href$="/explorer/"]\').forEach(function (a) { a.href = '
+        . wp_json_encode(home_url('/carte/')) . '; });';
+}
+
 add_filter('template_include', function ($template) {
     if (canal_home_is_page()) {
         return CANAL_HOME_DIR . 'template-home.php';
@@ -59,9 +67,10 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.css'));
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/header.css'));
     wp_enqueue_script('canal-home', CANAL_HOME_URL . 'assets/home.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.js'), true);
+    wp_add_inline_script('canal-home', canal_home_carte_menu_js());
     wp_localize_script('canal-home', 'CDM_HOME', [
         'aiUrl'       => rest_url('canal-home/v1/ai'),
-        'explorerUrl' => home_url('/explorer/'),
+        'carteUrl'    => home_url('/carte/'),
     ]);
 }, 20);
 
@@ -83,6 +92,7 @@ add_action('wp_enqueue_scripts', function () {
     foreach (['search-map', 'search-tabs', 'ai-search', 'skeleton-controler'] as $name) {
         wp_enqueue_script("canal-carte-$name", CANAL_HOME_URL . "assets/carte/$name.js", ['canal-carte-clusterer'], $ver("assets/carte/$name.js"), true);
     }
+    wp_add_inline_script('canal-carte-search-tabs', canal_home_carte_menu_js());
     wp_localize_script('canal-carte-ai-search', 'CDM_CARTE', [
         'aiUrl'   => rest_url('canal-home/v1/ai'),
         'pageUrl' => get_permalink(),

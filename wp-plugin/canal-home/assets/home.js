@@ -124,7 +124,7 @@
             var btn = form.querySelector('button[type="submit"]');
             if (btn) { btn.disabled = true; btn.textContent = 'Recherche…'; }
         });
-        // Volver atrás desde /explorer/ restaura el formulario desde bfcache.
+        // Volver atrás desde /carte/ restaura el formulario desde bfcache.
         window.addEventListener('pageshow', function () {
             form.querySelectorAll('[disabled]').forEach(function (el) { el.disabled = false; });
             var btn = form.querySelector('button[type="submit"]');
@@ -170,16 +170,16 @@
     }
 
     // ── Modal IA: envío y resultados ────────────────────────────────────
-    function explorerLink(prompt) {
+    function carteLink(prompt) {
         var a = document.createElement('a');
-        a.href = CDM_HOME.explorerUrl + '?type=prestataires-touristiques&search_keywords=' + encodeURIComponent(prompt);
-        a.textContent = "Voir les résultats dans l'explorateur";
+        a.href = CDM_HOME.carteUrl + '?search_keywords=' + encodeURIComponent(prompt);
+        a.textContent = 'Voir les résultats sur la carte';
         return a;
     }
 
     function showMessage(text, prompt) {
         ai.feedback.textContent = text + ' ';
-        if (prompt) ai.feedback.appendChild(explorerLink(prompt));
+        if (prompt) ai.feedback.appendChild(carteLink(prompt));
     }
 
     function renderResults(results) {

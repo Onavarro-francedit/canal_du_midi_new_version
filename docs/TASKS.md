@@ -16,11 +16,14 @@ Siguiente fase: TASK-030 diseño de la ficha.)_
   Lecture* → página de inicio = « Accueil 2026 » (hoy `page_on_front` = 15269, la home
   Elementor). Publicar y cambiar portada en el mismo momento (al publicarse ya es
   accesible en `/accueil-2026/`). Rollback: volver a poner 15269.
-- **TASK-029b — Publicar la carte (`/carte/`)** — SOLO con orden explícita. Publicar la
-  página 18502, cambiar los enlaces de la home privada de `/explorer/` a `/carte/`
-  (`template-home.php` l.45/152/234, `canal-home.php` `explorerUrl`) y decidir si
-  `/explorer/` redirige a `/carte/`. Antes: noindex/SEO de la página y revisar peso
-  (~0,6–0,8 MB de HTML sin filtros: tarjetas + JSON con galerías).
+- **TASK-029b — Publicar la carte (`/carte/`)** — SOLO con orden explícita. **Publicar JUNTO con
+  TASK-028:** desde el 29/09 la home privada enlaza a `/carte/` (buscador, étapes, CTA, IA,
+  SearchAction del JSON-LD) y, solo en home y carte, el botón « Carte interactive » del menú del
+  tema se reescribe a `/carte/` por JS (`canal_home_carte_menu_js`). Si se publica la home sin la
+  carte, esos enlaces dan 404 a los visitantes. Al publicar: página 18502 → publish; decidir si
+  `/explorer/` redirige a `/carte/` y si el botón del menú del tema pasa a `/carte/` en todo el
+  sitio; cambiar `/explorer/` → `/carte/` en `wp-plugin/llms.txt` y `build/build-llms-full.php`
+  (hoy públicos, se dejaron en `/explorer/`). Revisar noindex/SEO y peso (~0,6–0,8 MB).
 - **TASK-030 — Diseño de la ficha (`/fiche/<slug>/`)** (fase 3 acordada).
 - **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
   (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por

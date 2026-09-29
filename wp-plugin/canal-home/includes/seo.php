@@ -83,7 +83,7 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
                     '@type'       => 'SearchAction',
                     'target'      => [
                         '@type'       => 'EntryPoint',
-                        'urlTemplate' => home_url('/explorer/') . '?type=prestataires-touristiques&search_keywords={search_term_string}',
+                        'urlTemplate' => home_url('/carte/') . '?search_keywords={search_term_string}',
                     ],
                     'query-input' => 'required name=search_term_string',
                 ],
