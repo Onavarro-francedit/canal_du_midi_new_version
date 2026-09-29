@@ -23,7 +23,9 @@ Siguiente fase: TASK-030 diseño de la ficha.)_
   carte, esos enlaces dan 404 a los visitantes. Al publicar: página 18502 → publish; quitar el sufijo -2026 (la página 10154 `/explorer/` actual se retira o renombra antes) y
   `CANAL_CARTE_PATH` → `/explorer/`; con eso el botón del menú del tema ya apunta bien. Revisar `wp-plugin/llms.txt` y `build/build-llms-full.php`
   (hoy públicos, se dejaron en `/explorer/`). Revisar noindex/SEO y peso (~0,6–0,8 MB).
-- **TASK-030 — Diseño de la ficha (`/fiche/<slug>/`)** (fase 3 acordada).
+- **TASK-030 — Nueva versión de la ficha (`/fiche/<slug>/`)** (fase 3 acordada). Mismo enfoque:
+  añadir desde el plugin, sin tocar lo existente, y URL nueva con sufijo `-2026` (convención de
+  CLAUDE.md). Fuente de diseño: la vista de ficha de la app local.
 - **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
   (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por
   anidado; límite por IP eludible rotando IPv6 /64; `replaceChildren` (Safari ≥ 14);

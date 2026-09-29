@@ -5,29 +5,40 @@ sesión.
 
 ---
 
-## CIERRE 2026-09-29 — TASK-029 « Carte interactive » DESPLEGADA EN PRIVADO · Siguiente: TASK-030 ficha
+## CIERRE 2026-09-29 (tarde) — Carte `/explorer-2026/` terminada (privada) · Siguiente: TASK-030 ficha
 
-**Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → subagent-driven
-development). **Handoff pendiente:** ninguno.
-**Dónde quedamos:** `/explorer-2026/` (página WP **18502**, **privada**) es una copia fiel de `/search`
-local servida por el plugin `canal-home`, verificada en Chrome y con revisión final aprobada.
-`/explorer/` intacta; los enlaces de la home privada siguen apuntando a `/explorer/`.
-**Git:** todo en `main` (sin push). Sin commitear, ajenos a esta tarea: `header.php`,
-`styles.css` (solo un comentario) y `.claude/skills/seo-geo/`.
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** la carte (`/explorer-2026/`, página WP **18502**, **privada**) está terminada:
+copia de `/search` local + ajustes del usuario, SEO/GEO/AEO (auditoría seo-geo 32 → **80/100**) y
+rendimiento. La home privada (`/accueil-2026/`, 18500) ya enlaza a la carte. Nada publicado.
+**Git:** todo en `main` y en `origin/main`. Sin commitear, ajenos: `header.php`, `styles.css` (solo
+un comentario) y `.claude/skills/seo-geo/`.
 
-**Archivos de la sesión:** ver `docs/TASKS.md` 🟢 TASK-029 (filtro, datos, plantilla, JS,
-CSS generado, tests, build generalizado).
+**Hecho desde el cierre anterior (detalle en `docs/TASKS.md` 🟢 TASK-029):**
+- Skeleton visible (se oculta el cargador del tema solo en la carte), imágenes de tarjeta a 200 px,
+  sin pestaña « Catégories ».
+- Convención **`-2026`** para páginas nuevas (al publicar se quita el sufijo); ruta en
+  `CANAL_CARTE_PATH`. Home y botón « Carte interactive » del menú (solo en home y carte) → carte.
+- IA: respaldo sin `json_schema` cuando la API devuelve 503 « Grammar compilation… » (se recuerda
+  10 min); estado de espera visible en la home (botón bloqueado, spinner, mensaje).
+- SEO: `includes/seo-carte.php` (título, meta, OG/Twitter, JSON-LD CollectionPage + ItemList +
+  BreadcrumbList + FAQPage, `dateModified`, `speakable`, `Link` llms.txt, `noindex,follow` con
+  filtros), FAQ con datos reales (`includes/carte-faq.php`), H1 + intro + editor al pie de la
+  columna de filtros, enlaces UNESCO/VNF, communes con acentos al mostrar (`CANAL_HOME_CITY_FIX`).
+- Rendimiento: portadas 768 px + `srcset`, `content-visibility` en tarjetas, fuera Elementor/
+  WooCommerce/CF7/TablePress/PayPal solo en la carte (107 → 79 peticiones).
 
 **Decisiones que no están en ARCHITECTURE.md:**
-- La carte filtra por GET en PHP (como local), no en JS; datos en transient de 12 h.
-- Google Maps lo carga el tema en todas las páginas: los plugins no deben cargarlo otra vez.
-- La cabecera fija del tema tapa ~20 px en escritorio: se compensa por JS en la plantilla.
-- `build-css.mjs` genera `home.css` y `carte.css`; `82px` de `search.css` → `--cdm-header-h`.
+- Páginas nuevas con sufijo `-2026`; al publicar, retirar/renombrar antes la página actual.
+- Home y carte se publican JUNTAS (TASK-028 + TASK-029b): la home enlaza a la carte.
+- Límite IA: 10 peticiones/IP cada 10 min (las pruebas desde la oficina lo agotan; se puede
+  resetear borrando el transient `canal_home_ai_ip_<md5(ip)>`).
 
-**Próxima acción:**
+**Próxima acción (nueva sesión):**
 ```
-TASK-030 — diseño de la ficha (/fiche/<slug>/): leer docs/SESSION.md y docs/TASKS.md,
-analizar una ficha de producción (solo lectura) y la vista local de ficha, y proponer enfoque.
+TASK-030 — nueva versión de la ficha (/fiche/<slug>/ → página nueva con sufijo -2026):
+leer docs/SESSION.md y docs/TASKS.md, analizar una ficha de producción (solo lectura) y la vista
+local de ficha (src/Infrastructure/Views/…), y proponer el enfoque (brainstorming) antes de código.
 ```
 (Publicar home/carte = TASK-028 / TASK-029b, SOLO con orden explícita.)
 

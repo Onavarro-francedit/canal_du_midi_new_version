@@ -96,15 +96,15 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Convención de URLs:** toda página nueva lleva el sufijo **`-2026`** (`/accueil-2026/`,
   `/explorer-2026/`, …) para distinguirla de la actual; al publicar se quita el sufijo y se
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
-- **Último completado:** **TASK-029 — « Carte interactive »**: copia de `/search` local como
-  página nueva **privada** `/explorer-2026/` (ID 18502) desde el plugin `canal-home` (fuente en
-  `wp-plugin/`). Antes, TASK-027: home « Accueil 2026 » privada (página 18500). Detalle en
-  `docs/TASKS.md` 🟢.
+- **Último completado:** **TASK-029 — « Carte interactive »** en `/explorer-2026/` (página 18502,
+  **privada**): copia de `/search` local desde el plugin `canal-home` (fuente en `wp-plugin/`), SEO
+  80/100 (seo-geo) y rendimiento optimizado. Antes, TASK-027: home `/accueil-2026/` (18500,
+  privada). Detalle en `docs/TASKS.md` 🟢.
 - **Comandos:** `wp-plugin/remote.sh test` (tests + lint 7.4 en el servidor) ·
   `remote.sh deploy` · `remote.sh run tests/<smoke>.php` (con el plugin desactivado) ·
   `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:
   `node wp-plugin/build/build-css.mjs` (nunca editar `assets/home.css` a mano).
-- **Siguiente:** TASK-030 diseño de la ficha. Publicar home (TASK-028) y carte (TASK-029b)
-  solo con orden explícita.
+- **Siguiente:** TASK-030 nueva versión de la ficha (página nueva con sufijo `-2026`). Publicar
+  home + carte juntas (TASK-028 + TASK-029b) solo con orden explícita.
 - Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
   antes de la captura de página completa: scroll-reveal + lazy-load).
