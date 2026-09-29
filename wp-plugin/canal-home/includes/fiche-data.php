@@ -42,6 +42,8 @@ function canal_fiche_data(WP_Post $post): array
     $lat = canal_fiche_has_coords($lat, $lng) ? (float) $lat : null;
     $lng = $lat !== null ? (float) $lng : null;
     $website = $meta('_job_website');
+    $address = canal_home_plain($meta('_job_location'));
+    $address = canal_fiche_is_coords_text($address) ? '' : $address;
 
     return [
         'id'               => $id,
@@ -51,7 +53,7 @@ function canal_fiche_data(WP_Post $post): array
         'excerpt'          => canal_fiche_excerpt(canal_home_plain(wp_strip_all_tags($desc))),
         'cover'            => canal_fiche_https(canal_home_cover($id)),
         'gallery'          => $gallery,
-        'address'          => canal_home_plain($meta('_job_location')),
+        'address'          => $address,
         'city'             => canal_home_city($id),
         'postcode'         => $meta('_code-postal'),
         'zones'            => $zones,

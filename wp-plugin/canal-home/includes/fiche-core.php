@@ -66,6 +66,12 @@ function canal_fiche_social(string $facebook, $links): array
     return $out;
 }
 
+// Algunas fichas (écluses) guardan « lat, lng » en _job_location en lugar de una dirección.
+function canal_fiche_is_coords_text(string $s): bool
+{
+    return (bool) preg_match('/^\s*-?\d{1,3}\.\d+\s*,\s*-?\d{1,3}\.\d+\s*$/', $s);
+}
+
 // 0,0 = geocodificación fallida (golfo de Guinea), no una posición real.
 function canal_fiche_has_coords($lat, $lng): bool
 {

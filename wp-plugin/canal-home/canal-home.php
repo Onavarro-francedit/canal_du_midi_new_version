@@ -15,6 +15,8 @@ define('CANAL_HOME_TEMPLATE', 'canal-home/template-home.php');
 define('CANAL_CARTE_TEMPLATE', 'canal-home/template-carte.php');
 // Las páginas nuevas llevan el sufijo -2026 (home: /accueil-2026/); al publicar se quita el sufijo.
 const CANAL_CARTE_PATH = '/explorer-2026/';
+// Ficha nueva: /fiche-2026/<slug>/ (regla propia). Al publicar → '/fiche/' (TASK-030b).
+const CANAL_FICHE_PATH = '/fiche-2026/';
 const CANAL_HOME_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap';
 
 require_once CANAL_HOME_DIR . 'includes/ai-core.php';
@@ -30,6 +32,7 @@ require_once CANAL_HOME_DIR . 'includes/carte-faq.php';
 require_once CANAL_HOME_DIR . 'includes/seo-carte.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-core.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-data.php';
+require_once CANAL_HOME_DIR . 'includes/fiche-route.php';
 
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';
@@ -88,7 +91,7 @@ const CANAL_CARTE_UNUSED_ASSETS = '/^(elementor|e-animation|swiper|wc-|woocommer
 
 function canal_carte_dequeue_unused(): void
 {
-    if (!canal_carte_is_page()) {
+    if (!canal_carte_is_page() && !canal_fiche_is_page()) {
         return;
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {

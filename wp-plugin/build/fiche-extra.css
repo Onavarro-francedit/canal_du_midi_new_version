@@ -1,0 +1,25 @@
+/* Ajustes propios de la ficha WordPress. Fuente: se prefija con .cdm-fiche en el build. */
+
+/* Compatibilidad con el tema my-listing (Bootstrap) — mismos ajustes que la home y la carte. */
+.container::before, .container::after { content: none; display: none; }
+h1, h2, h3, h4, h5, h6 { color: inherit; }
+p { color: inherit; }
+
+/* WP: la barra sticky va bajo el borde real de la cabecera del tema (fiche.js), que se esconde al bajar. */
+.action-bar-wrapper { top: var(--fiche-bar-top, 82px); transition: top 0.2s ease; }
+/* WP: en móvil la barra ocupa 3 filas (rejilla 2 columnas de la vista local): sin sticky para no tapar el contenido. */
+@media (max-width: 640px) { .action-bar-wrapper { position: static; } }
+
+/* WP: las categorías son enlaces a la carte filtrada. */
+a.category-tag { text-decoration: none; color: inherit; }
+a.category-tag:hover { border-color: var(--primary); color: var(--primary-deep); }
+
+/* WP: botones del lightbox son <button> (antes <span>): sin estilos del tema. */
+.lightbox-close { background: none; border: 0; cursor: pointer; }
+
+/* WP: la columna lateral ya no tiene tarjeta de reserva. */
+.fiche-back-carte { margin-top: 16px; display: flex; gap: 8px; justify-content: center; }
+
+/* WP: descripción con HTML del editor (wpautop). */
+.description-text p { margin: 0 0 12px; }
+.description-text a { color: var(--primary); text-decoration: underline; }

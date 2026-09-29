@@ -100,3 +100,10 @@ await build({
     plugins: [headerHeight],
     needles: ['.cdm-carte .container::before', '.cdm-carte h1', '.cdm-carte p', 'var(--cdm-header-h, 82px)', '.cdm-carte .search-workspace'],
 });
+
+await build({
+    prefix: '.cdm-fiche',
+    sources: ['../../public/assets/css/styles.css', '../../public/assets/css/service_detail.css', './fiche-extra.css'],
+    out: 'fiche.css',
+    needles: ['.cdm-fiche .container::before', '.cdm-fiche h1', '.cdm-fiche p', '.cdm-fiche .service-hero', '.cdm-fiche a.category-tag'],
+});

@@ -51,6 +51,12 @@ $d = canal_fiche_distance_km(43.6045, 1.4440, 43.2130, 2.3491); // Toulouse → 
 check($d > 80 && $d < 88, "distancia: Toulouse–Carcassonne ≈ 84 km ($d)");
 check(canal_fiche_km_label(0.85) === '850 m' && canal_fiche_km_label(3.24) === '3,2 km', 'km_label: m y km con coma');
 
+// Dirección que en realidad son coordenadas (écluses: _job_location = « lat, lng »).
+check(canal_fiche_is_coords_text('43.265531891736615, 2.109718510697836'), 'coords_text: « lat, lng »');
+check(canal_fiche_is_coords_text(' -1.5,43.2 '), 'coords_text: sin espacio y negativa');
+check(!canal_fiche_is_coords_text('20, rue du Pech 11170 Sainte-Eulalie'), 'coords_text: dirección real');
+check(!canal_fiche_is_coords_text(''), 'coords_text: vacío');
+
 // Cercanas.
 $L = function (int $id, $lat, $lng): array { return ['id' => $id, 'title' => "F$id", 'lat' => $lat, 'lng' => $lng]; };
 $all = [$L(1, 43.60, 1.44), $L(2, 43.61, 1.45), $L(3, 43.21, 2.35), $L(4, null, null), $L(5, 0.0, 0.0), $L(6, 43.605, 1.445)];
