@@ -64,7 +64,6 @@ WP Fastest Cache + redis-cache. Permalinks `/%postname%/`; el CPT usa `fiche/` y
 | `phone`, `mobile`, `fax`, `email`, `website` | `_job_phone`, `_telephone-portable`, `_fax`, `_job_email`, `_job_website` |
 | `social` | `_facebook` + entradas de `_links` cuyo host sea facebook/instagram/youtube |
 | `video` | `_job_video_url` pasado por `canal_fiche_video_embed()` |
-| `hours` | `_work_hours` solo si tiene estructura legible; si no, se omite |
 | `categories[]` | términos `job_listing_category` (nombre + enlace a la carte filtrada) |
 | `nearby[]` | `canal_fiche_nearby()` |
 
@@ -118,7 +117,7 @@ Funciones puras (sin WP, testeables en `tests/test-fiche.php`):
 
 ## Fuera de alcance
 
-Reservas, avis, formulario de contacto, equipamientos, traducciones, publicación (TASK-030b).
+Horarios (`_work_hours` existe en 6 fichas pero sin horas: todo « enter-hours »), reservas, avis, formulario de contacto, equipamientos, traducciones, publicación (TASK-030b).
 
 ## Riesgos
 
