@@ -12,6 +12,8 @@ define('CANAL_HOME_DIR', plugin_dir_path(__FILE__));
 define('CANAL_HOME_URL', plugin_dir_url(__FILE__));
 define('CANAL_HOME_VERSION', '1.0.0');
 define('CANAL_HOME_TEMPLATE', 'canal-home/template-home.php');
+define('CANAL_CARTE_TEMPLATE', 'canal-home/template-carte.php');
+const CANAL_HOME_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap';
 
 require_once CANAL_HOME_DIR . 'includes/ai-core.php';
 require_once CANAL_HOME_DIR . 'includes/data.php';
@@ -25,6 +27,7 @@ require_once CANAL_HOME_DIR . 'includes/carte-data.php';
 
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';
+    $templates[CANAL_CARTE_TEMPLATE] = 'Carte interactive';
     return $templates;
 });
 
@@ -33,8 +36,16 @@ function canal_home_is_page(): bool
     return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_HOME_TEMPLATE;
 }
 
+function canal_carte_is_page(): bool
+{
+    return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE;
+}
+
 add_filter('template_include', function ($template) {
-    return canal_home_is_page() ? CANAL_HOME_DIR . 'template-home.php' : $template;
+    if (canal_home_is_page()) {
+        return CANAL_HOME_DIR . 'template-home.php';
+    }
+    return canal_carte_is_page() ? CANAL_HOME_DIR . 'template-carte.php' : $template;
 });
 
 // Prioridad 20: después de los estilos del tema, para ganar a igual especificidad.
@@ -42,12 +53,7 @@ add_action('wp_enqueue_scripts', function () {
     if (!canal_home_is_page()) {
         return;
     }
-    wp_enqueue_style(
-        'canal-home-fonts',
-        'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap',
-        [],
-        null
-    );
+    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
     wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
     // Versión = fecha del archivo: cada despliegue invalida la caché del navegador.
     wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.css'));
@@ -56,5 +62,27 @@ add_action('wp_enqueue_scripts', function () {
     wp_localize_script('canal-home', 'CDM_HOME', [
         'aiUrl'       => rest_url('canal-home/v1/ai'),
         'explorerUrl' => home_url('/explorer/'),
+    ]);
+}, 20);
+
+// Carte: Google Maps lo carga ya el tema en todas las páginas (footer, síncrono): no se carga otra vez.
+// Nuestros scripts van en el footer y search-map.js arranca en DOMContentLoaded, cuando Maps ya existe.
+add_action('wp_enqueue_scripts', function () {
+    if (!canal_carte_is_page()) {
+        return;
+    }
+    $ver = function (string $rel): string { return (string) filemtime(CANAL_HOME_DIR . $rel); };
+    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
+    wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
+    wp_enqueue_style('canal-carte', CANAL_HOME_URL . 'assets/carte.css', [], $ver('assets/carte.css'));
+    // body.page-template-canal-home también se aplica a esta plantilla (misma carpeta).
+    wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
+    wp_enqueue_script('canal-carte-clusterer', 'https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js', [], '2.5.3', true);
+    foreach (['search-map', 'search-tabs', 'ai-search', 'skeleton-controler'] as $name) {
+        wp_enqueue_script("canal-carte-$name", CANAL_HOME_URL . "assets/carte/$name.js", ['canal-carte-clusterer'], $ver("assets/carte/$name.js"), true);
+    }
+    wp_localize_script('canal-carte-ai-search', 'CDM_CARTE', [
+        'aiUrl'   => rest_url('canal-home/v1/ai'),
+        'pageUrl' => get_permalink(),
     ]);
 }, 20);

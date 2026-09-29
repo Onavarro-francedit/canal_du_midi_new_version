@@ -135,6 +135,7 @@ function canal_home_card(WP_Post $post, array $preferred = []): array
     $cover = canal_home_cover($post->ID);
     return [
         'title'    => canal_home_plain(get_the_title($post)),
+        'slug'     => $post->post_name,
         'url'      => (string) get_permalink($post),
         'image'    => $cover !== '' ? $cover : home_url(CANAL_HOME_HERO_IMAGE),
         'category' => canal_home_category_label($post->ID, $preferred),
