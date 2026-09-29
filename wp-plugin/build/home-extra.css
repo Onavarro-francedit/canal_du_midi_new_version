@@ -11,10 +11,6 @@
 }
 .band-inner .button { margin-top: 8px; }
 
-.photo-credit {
-    position: absolute; right: 10px; bottom: 8px; margin: 0;
-    font-size: 0.7rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
 
 .cdm-center-cta { width: 100%; display: flex; justify-content: center; margin-top: 2rem; }
 .cdm-center-cta .button { background-color: var(--violet); color: #fff; }

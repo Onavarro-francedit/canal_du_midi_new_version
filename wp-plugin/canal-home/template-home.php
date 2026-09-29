@@ -158,7 +158,6 @@ get_header();
             <div class="stacked-photos" data-reveal="left">
                 <figure class="photo-card photo-large">
                     <img src="<?= $upload('2024/04/Dominique_VIET_CRTLOccitanie_0017338_MD_RET3-1.jpg') ?>" alt="Le Canal du Midi bordé d'arbres" loading="lazy">
-                    <figcaption class="photo-credit">© D. Viet / CRTL Occitanie</figcaption>
                 </figure>
                 <figure class="photo-card photo-small top">
                     <img src="<?= $upload('2022/03/peniche_toulouse.jpg') ?>" alt="Péniche amarrée à Toulouse" loading="lazy">

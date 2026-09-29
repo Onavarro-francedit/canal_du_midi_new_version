@@ -1911,10 +1911,6 @@
 }
 .cdm-home .band-inner .button { margin-top: 8px; }
 
-.cdm-home .photo-credit {
-    position: absolute; right: 10px; bottom: 8px; margin: 0;
-    font-size: 11.2px; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
 
 .cdm-home .cdm-center-cta { width: 100%; display: flex; justify-content: center; margin-top: 32px; }
 .cdm-home .cdm-center-cta .button { background-color: var(--violet); color: #fff; }

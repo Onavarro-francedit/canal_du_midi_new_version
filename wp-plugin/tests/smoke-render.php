@@ -34,6 +34,7 @@ $check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');
 $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
+$check(strpos($html, 'CRTL Occitanie') === false && strpos($html, 'photo-credit') === false, 'expériences: sin crédito de foto visible');
 $check(strpos($html, '2020/01/img_8404_1.jpeg') !== false && strpos($html, 'rando-velo_2.webp') === false, 'expériences: foto vélo del canal (no rando-velo_2)');
 preg_match_all('/style="[^"]*\d(\.\d+)?rem[^"]*"/', $html, $remInline);
 $check(count($remInline[0]) === 0, 'sin rem en estilos en línea (el tema fija html{font-size:10px}): ' . count($remInline[0]));
