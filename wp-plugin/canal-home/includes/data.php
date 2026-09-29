@@ -49,13 +49,21 @@ function canal_home_stages(): array
     return array_intersect_key(CANAL_HOME_STAGES, canal_home_terms_by_slugs(array_keys(CANAL_HOME_STAGES), 'region'));
 }
 
+// Selección fija (SEO: la home no debe cambiar de contenido en cada petición ni chocar con la
+// caché de página). Categorías de intención turística alta, todas con imagen.
+const CANAL_HOME_CATEGORY_SLUGS = [
+    'location-bateau', 'croisiere-bateau', 'location-de-velo', 'hotel', 'chambre-dhotes', 'restaurant',
+];
+
 function canal_home_categories(int $limit = 6): array
 {
-    $terms = get_terms(['taxonomy' => 'job_listing_category', 'hide_empty' => true]);
-    if (is_wp_error($terms) || !$terms) {
-        return [];
+    $terms = [];
+    foreach (CANAL_HOME_CATEGORY_SLUGS as $slug) {
+        $term = get_term_by('slug', $slug, 'job_listing_category');
+        if ($term && !is_wp_error($term)) {
+            $terms[] = $term;
+        }
     }
-    shuffle($terms);
     $out = [];
     foreach ($terms as $term) {
         // hide_empty conserva padres sin fichas propias (count 0) si tienen hijas con fichas.
@@ -134,13 +142,17 @@ function canal_home_card(WP_Post $post, array $preferred = []): array
     ];
 }
 
-function canal_home_sejours(int $limit = 4): array
+// 8 fichas deterministas con rotación diaria: estables durante el día (SEO, caché de página)
+// y distintas de un día a otro para repartir la visibilidad entre prestatarios.
+function canal_home_sejours(int $limit = 8): array
 {
-    $query = new WP_Query([
+    $ids = get_posts([
         'post_type'      => 'job_listing',
         'post_status'    => 'publish',
-        'posts_per_page' => $limit,
-        'orderby'        => 'rand',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'orderby'        => 'ID',
+        'order'          => 'ASC',
         'no_found_rows'  => true,
         'tax_query'      => [[
             'taxonomy' => 'job_listing_category',
@@ -149,9 +161,15 @@ function canal_home_sejours(int $limit = 4): array
             'include_children' => false,
         ]],
     ]);
-    return array_map(function ($post) {
-        return canal_home_card($post, CANAL_HOME_SEJOUR_CATS);
-    }, $query->posts);
+    $count = count($ids);
+    if ($count === 0) {
+        return [];
+    }
+    $offset = ((int) gmdate('z') * $limit) % $count;
+    $picked = array_slice(array_merge(array_slice($ids, $offset), array_slice($ids, 0, $offset)), 0, min($limit, $count));
+    return array_map(function ($id) {
+        return canal_home_card(get_post($id), CANAL_HOME_SEJOUR_CATS);
+    }, $picked);
 }
 
 function canal_home_card_by_slug(string $slug): ?array

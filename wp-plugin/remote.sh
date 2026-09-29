@@ -44,6 +44,9 @@ case "${1:-}" in
     deploy)
         run_test
         rsync -a --delete "$SRC/canal-home/" "$REMOTE:$DEST/"
+        # llms.txt: archivo propio y nuevo en la raíz (antes no existía; no pisa nada ajeno).
+        rsync -a "$SRC/llms.txt" "$REMOTE:$SITE/httpdocs/llms.txt"
+        ssh "$REMOTE" "chown ga241453_canal:psacln '$SITE/httpdocs/llms.txt' && chmod 644 '$SITE/httpdocs/llms.txt'"
         ssh "$REMOTE" "chown -R ga241453_canal:psacln '$DEST' \
             && find '$DEST' -type d -exec chmod 755 {} + \
             && find '$DEST' -type f -exec chmod 644 {} + \

@@ -29,7 +29,7 @@ directa con executing-plans).
 `active_plugins`, transients `canal_home_*` y la fila `wp_options`
 `canal_home_ai_daily_YYYYMMDD` (tope diario atómico). **Rollback completo:** desactivar el
 plugin, papelera de la página 18500, borrar transients `canal_home_*` y filas
-`canal_home_ai_daily_%` / `canal_home_plan_daily_%`.
+`canal_home_ai_daily_%` / `canal_home_plan_daily_%`, y borrar `httpdocs/llms.txt`.
 
 **Decisiones que no están en ARCHITECTURE.md:**
 - Producción = WordPress; la app local es solo fuente de diseño.
@@ -46,6 +46,9 @@ iconos en « Nos atouts », bloque del plan como en local con envío real por e-
 tarjetas de séjours rediseñadas (sin esclusas), 6 arreglos móviles + carruseles, hero móvil,
 libro del plan recortado, cabecera del tema restilizada solo en esta página
 (`assets/header.css`). Detalle en `docs/TASKS.md` 🟢 TASK-027.
+
+**SEO/AEO (29/09):** meta/OG/título/JSON-LD, FAQ, étapes, selección determinista, hero
+optimizado y `llms.txt` en la raíz (archivo nuevo). Ver TASKS.md 🟢 TASK-027.
 
 **Antes de publicar:** revisar `pm.max_children` del pool PHP-FPM (cada llamada IA ocupa un
 worker ~7–10 s).

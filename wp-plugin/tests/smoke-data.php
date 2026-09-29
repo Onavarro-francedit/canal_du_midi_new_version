@@ -21,13 +21,16 @@ $check(count($stages) === 9, 'stages: 9 (' . implode(', ', $stages) . ')');
 $check(($stages['beziers'] ?? '') === 'Béziers' && ($stages['argens-minervois'] ?? '') === 'Argens-Minervois', 'stages: etiquetas legibles con acentos');
 
 $cats = canal_home_categories(6);
+$check(array_column($cats, 'name') === array_column(canal_home_categories(6), 'name'), 'categories: deterministas (misma selección y orden)');
+$check(count(array_intersect(array_column($cats, 'url'), array_map(function ($s) { return get_term_link($s, 'job_listing_category'); }, CANAL_HOME_CATEGORY_SLUGS))) === 6, 'categories: la selección curada');
 $check(count($cats) === 6, 'categories: 6');
 foreach ($cats as $c) {
     $check(strpos($c['url'], '/categorie/') !== false && $c['image'] !== '' && $c['count'] > 0, "category {$c['name']}: url+imagen+count");
 }
 
-$sejours = canal_home_sejours(4);
-$check(count($sejours) === 4, 'sejours: 4');
+$sejours = canal_home_sejours();
+$check(count($sejours) === 8, 'sejours: 8');
+$check(array_column($sejours, 'url') === array_column(canal_home_sejours(), 'url'), 'sejours: deterministas en el mismo día');
 foreach ($sejours as $s) {
     $check(strpos($s['url'], '/fiche/') !== false && $s['image'] !== '' && $s['category'] !== '', "sejour {$s['title']}: url+imagen+categoría");
     $check(strpos($s['title'], '&#') === false, "sejour {$s['title']}: título sin entidades");
@@ -36,7 +39,7 @@ foreach ($sejours as $s) {
 // Muestreo amplio: 40 séjours seguidos sin ninguna esclusa ni puerto.
 $bad = 0;
 for ($i = 0; $i < 10; $i++) {
-    foreach (canal_home_sejours(4) as $s) {
+    foreach (canal_home_sejours() as $s) {
         if (in_array($s['category'], ['Ecluses', 'Écluses', 'Ports', 'Ports fluviaux'], true)) {
             $bad++;
         }

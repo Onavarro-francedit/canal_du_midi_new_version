@@ -23,10 +23,10 @@ $check = function (bool $cond, string $label) use (&$fails): void {
     WP_CLI::log(($cond ? 'ok   - ' : 'FAIL - ') . $label);
 };
 $check($errors === [], 'sin warnings/notices del plugin' . ($errors ? ': ' . implode(' | ', $errors) : ''));
-$check(substr_count($html, '<section') === 7, 'secciones: 7 (' . substr_count($html, '<section') . ')');
+$check(substr_count($html, '<section') === 9, 'secciones: 9 (' . substr_count($html, '<section') . ')');
 $check(strpos($html, 'class="cdm-home"') !== false, 'contenedor .cdm-home');
 $check(substr_count($html, 'class="destination-card-link"') === 6, 'destinos: 6');
-$check(substr_count($html, 'class="tour-card"') === 4, 'séjours: 4');
+$check(substr_count($html, 'class="tour-card"') === 8, 'séjours: 8');
 $form = (string) strstr((string) strstr($html, 'id="home-search-form"'), '</form>', true);
 $options = preg_match_all('/<option value="[^"]+"/', $form);
 $check(strpos($form, 'name="search_location"') !== false && strpos($form, 'name="region"') === false, '/explorer/ filtra por search_location (texto geocodificado), no por region');
@@ -34,14 +34,25 @@ $check(strpos($form, '<option value="Béziers">') !== false, 'etapa enviada como
 $check($options === 21, 'selects: 9 etapas + 12 tipos (' . $options . ')');
 $check(strpos($html, 'src=""') === false && strpos($html, "url('')") === false, 'sin imágenes vacías');
 $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
+preg_match('/<section id="etapes".*?<\/section>/s', $html, $etapes);
+$check(isset($etapes[0]) && substr_count($etapes[0], 'class="etape"') === 8 && strpos($etapes[0], 'km 208') !== false, 'étapes: 8 etapas con PK del sitio');
+preg_match('/<section id="faq".*?<\/section>/s', $html, $faqSec);
+$check(isset($faqSec[0]) && substr_count($faqSec[0], '<details') === count(CANAL_HOME_FAQ) && substr_count($faqSec[0], '<h3') === count(CANAL_HOME_FAQ), 'FAQ: preguntas visibles en <details> con <h3>');
+$check(strpos($html, 'Azur Communications') !== false, 'E-E-A-T: editor nombrado');
+$check(preg_match('/<img class="hero-card-img"[^>]*fetchpriority="high"[^>]*>/', $html) === 1 && preg_match('/<img class="hero-card-img"[^>]*width="1898" height="682"[^>]*srcset="[^"]+"/', $html) === 1, 'hero: fetchpriority, dimensiones y srcset');
+$check(strpos($html, '<div class="hero-card" data-reveal') === false, 'hero sin animación de entrada (LCP)');
+$check(strpos($html, 'peniche-toulouse-800.jpg') !== false && strpos($html, 'peniche_toulouse.jpg') === false, 'foto péniche reducida (no la de 2 MB)');
+preg_match_all('/<(div|section) id="(home-ai-modal|plan-modal)".*?<\/div>\s*<\/div>/s', $html, $modals);
+$check(strpos(implode('', $modals[0]), '<h2') === false, 'modales sin <h2> (no ensucian el esquema de encabezados)');
+$check(substr_count($html, 'class="destination-card-media" role="img" aria-label="') === 6, 'destinos: imagen con role=img + aria-label');
 preg_match_all('/<article class="tour-card">(.*?)<\/article>/s', $html, $tourCards);
-$tourOk = count($tourCards[1]) === 4;
+$tourOk = count($tourCards[1]) === 8;
 foreach ($tourCards[1] as $card) {
     $tourOk = $tourOk && strpos($card, '<img') === false
         && preg_match('/class="tour-card-media" role="img" aria-label="[^"]+" style="background-image:url\(&quot;https:[^"]+&quot;\)"/', $card) === 1
         && strpos($card, 'class="tour-category"') !== false && strpos($card, 'class="tour-city"') !== false;
 }
-$check($tourOk, 'séjours: 4 tarjetas con foto de fondo (sin <img>), categoría y ciudad separadas');
+$check($tourOk, 'séjours: 8 tarjetas con foto de fondo (sin <img>), categoría y ciudad separadas');
 $check(strpos($html, 'CRTL Occitanie') === false && strpos($html, 'photo-credit') === false, 'expériences: sin crédito de foto visible');
 $check(strpos($html, '2020/01/img_8404_1.jpeg') !== false && strpos($html, 'rando-velo_2.webp') === false, 'expériences: foto vélo del canal (no rando-velo_2)');
 preg_match_all('/style="[^"]*\d(\.\d+)?rem[^"]*"/', $html, $remInline);

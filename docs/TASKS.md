@@ -326,6 +326,20 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
     móvil con margen lateral. Hueco sobre el hero 120 → 12px. La home actual y el resto del
     sitio conservan la cabecera original (verificado). Al rediseñar /carte y las fichas, el
     mismo CSS puede extenderse a todo el sitio desde el plugin.
+  - SEO/AEO (auditoría con agente 2026-09-29: SEO 5,5/10 · AEO 3,5/10 → implementadas todas
+    las acciones, solo añadiendo): `includes/seo.php` — `<title>` propio, meta description,
+    Open Graph + Twitter, JSON-LD `@graph` (Organization con Azur Communications y Facebook,
+    WebSite + SearchAction, WebPage, TouristDestination, ItemList de séjours, FAQPage) y
+    preconnect a Google Fonts; `includes/content.php` — FAQ (6 Q/R) y étapes (8 con PK de la
+    calculadora del sitio), fuente única para la plantilla y el schema; secciones nuevas
+    « Les étapes du canal » y « Questions fréquentes »; frase E-E-A-T (Azur Communications);
+    categorías curadas (6) y 8 séjours deterministas con rotación diaria (antes al azar); hero
+    con fetchpriority/dimensiones/srcset y sin animación de entrada; péniche 2 MB → 190 KB
+    (copia en el plugin); títulos de modales fuera del esquema de encabezados; `llms.txt` nuevo
+    en la raíz (desplegado por `remote.sh deploy`). Test nuevo `tests/smoke-seo.php`.
+  - **Pendiente del usuario / al publicar:** enviar `wp-sitemap.xml` en Search Console y Bing
+    Webmaster; verificar canonical `/`, redirección de `/accueil-2026/`, ausencia de `noindex`,
+    Rich Results Test y PageSpeed móvil en anónimo.
 
 - **BUG-018 / PRD-010 — Error de validación del modal Photos invisible
   ✅ corregido y verificado (2026-09-03)**

@@ -9,7 +9,8 @@ $heroImage  = home_url(CANAL_HOME_HERO_IMAGE);
 $heroTypes  = canal_home_hero_types();
 $heroStages = canal_home_stages();
 $categories = canal_home_categories(6);
-$sejours    = canal_home_sejours(4);
+$sejours    = canal_home_sejours();
+canal_home_seo_items($sejours); // para el ItemList del JSON-LD (wp_head va en get_header())
 $link   = function (string $path): string { return esc_url(home_url($path)); };
 $upload = function (string $path): string { return esc_url(home_url('/wp-content/uploads/' . $path)); };
 
@@ -20,9 +21,9 @@ get_header();
     <!-- 1. HERO -->
     <section class="hero-section">
         <div class="container">
-            <div class="hero-card" data-reveal="zoom">
+            <div class="hero-card">
                 <div class="hero-card-media">
-                    <img class="hero-card-img" src="<?= esc_url($heroImage) ?>" alt="Le Canal du Midi bordé de platanes" loading="eager">
+                    <img class="hero-card-img" src="<?= esc_url($heroImage) ?>" alt="Le Canal du Midi bordé de platanes" width="1898" height="682" loading="eager" fetchpriority="high" decoding="async"<?= ($heroSrcset = wp_get_attachment_image_srcset(17698, 'full')) ? ' srcset="' . esc_attr($heroSrcset) . '" sizes="(max-width: 1200px) 100vw, 1160px"' : '' ?>>
                     <div class="hero-card-overlay"></div>
                 </div>
                 <div class="hero-card-content">
@@ -108,7 +109,7 @@ get_header();
                         <i class="bi bi-x-lg"></i>
                     </button>
                     <div class="hero-ai-kicker">Assistant IA</div>
-                    <h2 id="home-ai-modal-title">Décrivez votre séjour idéal</h2>
+                    <p id="home-ai-modal-title" class="hero-ai-title">Décrivez votre séjour idéal</p>
                     <p>Expliquez librement ce que vous cherchez : l'assistant sélectionne les adresses du canal qui vous correspondent le mieux.</p>
                     <form id="home-ai-modal-form" class="hero-ai-form">
                         <label class="hero-ai-label" for="home-ai-prompt">Votre demande</label>
@@ -140,7 +141,7 @@ get_header();
                 <?php foreach ($categories as $cat): ?>
                     <a href="<?= esc_url($cat['url']) ?>" class="destination-card-link">
                         <article class="destination-card">
-                            <span class="destination-card-media" style="background-image: linear-gradient(180deg, transparent 40%, rgba(14, 20, 36, 0.88)), <?= canal_home_css_url($cat['image']) ?>;"></span>
+                            <span class="destination-card-media" role="img" aria-label="<?= esc_attr($cat['name'] . ' le long du Canal du Midi') ?>" style="background-image: linear-gradient(180deg, transparent 40%, rgba(14, 20, 36, 0.88)), <?= canal_home_css_url($cat['image']) ?>;"></span>
                             <span class="pill"><?= (int) $cat['count'] ?> adresse<?= $cat['count'] > 1 ? 's' : '' ?></span>
                             <h3><?= esc_html($cat['name']) ?></h3>
                         </article>
@@ -161,7 +162,7 @@ get_header();
                     <img src="<?= $upload('2024/04/Dominique_VIET_CRTLOccitanie_0017338_MD_RET3-1.jpg') ?>" alt="Le Canal du Midi bordé d'arbres" loading="lazy">
                 </figure>
                 <figure class="photo-card photo-small top">
-                    <img src="<?= $upload('2022/03/peniche_toulouse.jpg') ?>" alt="Péniche amarrée à Toulouse" loading="lazy">
+                    <img src="<?= esc_url(CANAL_HOME_URL . 'assets/peniche-toulouse-800.jpg') ?>" alt="Péniche amarrée à Toulouse" width="800" height="450" loading="lazy" decoding="async">
                 </figure>
                 <figure class="photo-card photo-small bottom">
                     <img src="<?= $upload('2020/01/img_8404_1.jpeg') ?>" alt="Balade à vélo sur le chemin de halage du canal" loading="lazy">
@@ -217,6 +218,30 @@ get_header();
     </section>
     <?php endif; ?>
 
+    <!-- ÉTAPES (AEO: itinerario con puntos kilométricos del sitio) -->
+    <section id="etapes" class="section section-tight">
+        <div class="container">
+            <div class="section-heading center" data-reveal="up">
+                <div class="eyebrow">Itinéraire</div>
+                <h2>Les étapes du canal, de Toulouse à la Méditerranée</h2>
+                <p>240 km et 63 écluses entre Toulouse et l'étang de Thau. Distances en points kilométriques (PK) depuis Toulouse.</p>
+            </div>
+            <ol class="etapes-list">
+                <?php foreach (CANAL_HOME_ETAPES as $etape): ?>
+                    <li class="etape">
+                        <span class="etape-km">km <?= (int) $etape['km'] ?></span>
+                        <?php if ($etape['search'] !== ''): ?>
+                            <a class="etape-name" href="<?= esc_url(add_query_arg(['type' => 'prestataires-touristiques', 'search_location' => $etape['search']], home_url('/explorer/'))) ?>"><?= esc_html($etape['name']) ?></a>
+                        <?php else: ?>
+                            <span class="etape-name"><?= esc_html($etape['name']) ?></span>
+                        <?php endif; ?>
+                        <span class="etape-note"><?= esc_html($etape['note']) ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+    </section>
+
     <!-- 5. BANDE IMMERSIVE -->
     <section class="immersive-band">
         <div class="container band-inner" data-reveal="zoom">
@@ -232,6 +257,7 @@ get_header();
             <div class="section-heading center" data-reveal="up">
                 <div class="eyebrow">Nos atouts</div>
                 <h2>Pourquoi « L'Officiel du Canal du Midi » ?</h2>
+                <p>Édité chaque année par Azur Communications, L'Officiel du Canal du Midi réunit le plan-guide du canal et plus de 250 prestataires référencés, de Toulouse à l'étang de Thau.</p>
             </div>
             <div class="feature-grid" data-reveal-stagger>
                 <article class="feature-card feature-card--violet">
@@ -267,6 +293,27 @@ get_header();
                     </div>
                     <a class="button button-small button-white" href="<?= $link('/voie-verte-et-veloroute/') ?>">Préparer ma balade</a>
                 </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ (AEO: preguntas y respuestas; mismo texto que el FAQPage del JSON-LD) -->
+    <section id="faq" class="section">
+        <div class="container">
+            <div class="section-heading center" data-reveal="up">
+                <div class="eyebrow">Questions fréquentes</div>
+                <h2>Tout savoir avant de partir</h2>
+            </div>
+            <div class="faq-list">
+                <?php foreach (CANAL_HOME_FAQ as $i => $item): ?>
+                    <details class="faq-item"<?= $i === 0 ? ' open' : '' ?>>
+                        <summary><h3><?= esc_html($item['q']) ?></h3></summary>
+                        <p><?= esc_html($item['a']) ?></p>
+                        <?php if (!empty($item['url'])): ?>
+                            <a class="faq-link" href="<?= $link($item['url']) ?>"><?= esc_html($item['link']) ?> <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                        <?php endif; ?>
+                    </details>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -329,7 +376,7 @@ get_header();
             <button type="button" class="plan-modal-close" data-close-plan-modal aria-label="Fermer la fenêtre du plan">
                 <i class="bi bi-x-lg"></i>
             </button>
-            <h2 id="plan-modal-title">Plan du Canal du Midi 2026</h2>
+            <p id="plan-modal-title">Plan du Canal du Midi 2026</p>
             <iframe data-src="https://v.calameo.com/?bkcode=003331405edc35288442a&amp;mode=mini"
                     width="480" height="400" allowfullscreen referrerpolicy="no-referrer"
                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms" scrolling="no"
