@@ -5,6 +5,8 @@
 defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 
 const CANAL_FICHE_VIDEO_HOSTS = ['www.youtube.com', 'youtube.com', 'm.youtube.com', 'youtu.be', 'vimeo.com', 'www.vimeo.com', 'player.vimeo.com'];
+const CANAL_FICHE_UNESCO_URL = 'https://whc.unesco.org/fr/list/770/';
+const CANAL_FICHE_VNF_URL = 'https://www.vnf.fr/';
 const CANAL_FICHE_SOCIAL = ['facebook' => 'facebook.com', 'instagram' => 'instagram.com', 'youtube' => 'youtube.com'];
 
 // Allowlist de hosts (como SEC-010 en la app local): nunca un iframe con src arbitrario.
@@ -32,14 +34,15 @@ function canal_fiche_video_embed(string $url): string
 
 // Primer número del texto (« Tél Atelier : 07 68 13 87 23 » → 0768138723), para el href tel:.
 // El separador de dos números (« 04… - 06… ») entra en la clase de caracteres: se corta al primer
-// número completo (10 cifras en nacional, prefijo + 9 en internacional). « (0) » se ignora.
+// número completo (10 cifras en nacional; en internacional, máximo E.164 = 15 cifras, y un segundo
+// « + » ya corta la coincidencia). « (0) » se ignora.
 function canal_fiche_tel(string $raw): string
 {
     if (!preg_match('/\+?\d[\d .\-]{7,}\d/', str_replace('(0)', '', $raw), $m)) {
         return '';
     }
     $num = preg_replace('/[^\d+]/', '', $m[0]);
-    $num = $num[0] === '+' ? substr($num, 0, 12) : substr($num, 0, 10);
+    $num = $num[0] === '+' ? substr($num, 0, 16) : substr($num, 0, 10);
     return strlen(ltrim($num, '+')) >= 9 ? $num : '';
 }
 
@@ -136,6 +139,38 @@ function canal_fiche_faq(array $f): array
     return $faq;
 }
 
+// Tipo schema.org por slug de categoría (job_listing_category de producción, 30/09). El orden del mapa es
+// la prioridad (alojamiento > restauración > comercio > visitas): un camping con bar es un Campground.
+const CANAL_FICHE_SCHEMA_TYPES = [
+    'hotel' => 'Hotel', 'appartement-hotel' => 'Hotel', 'camping' => 'Campground', 'chambre-dhotes' => 'BedAndBreakfast',
+    'gites' => 'LodgingBusiness', 'location-saisonniere' => 'LodgingBusiness', 'appartement-maison-a-louer' => 'LodgingBusiness',
+    'chambre-a-louer' => 'LodgingBusiness', 'roulotte' => 'LodgingBusiness', 'peniche' => 'LodgingBusiness',
+    'auberge-de-jeunesse' => 'Hostel', 'hostel' => 'Hostel', 'auberge-collective' => 'Hostel',
+    'restaurant' => 'Restaurant', 'table-dhote' => 'Restaurant', 'bateau-restaurant' => 'Restaurant', 'brasserie-snack' => 'Restaurant',
+    'bar' => 'BarOrPub', 'boulangerie-patisserie' => 'Bakery', 'supermarche-epicerie' => 'GroceryStore', 'librairie' => 'BookStore',
+    'vente-de-vins' => 'Store', 'produits-regionaux' => 'Store', 'commerce' => 'Store', 'commerce-alimentaire' => 'Store',
+    'artisanat' => 'Store', 'boucherie-charcuterie-traiteur' => 'Store',
+    'musees' => 'Museum', 'lieux-dinformations' => 'TouristInformationCenter',
+    'ecluses' => 'TouristAttraction', 'moulins' => 'TouristAttraction', 'chateaux' => 'TouristAttraction', 'site-et-monument' => 'TouristAttraction',
+];
+
+function canal_fiche_schema_type(array $catSlugs, bool $hasContact): string
+{
+    foreach (CANAL_FICHE_SCHEMA_TYPES as $slug => $type) {
+        if (in_array($slug, $catSlugs, true)) {
+            return $type;
+        }
+    }
+    return $hasContact ? 'LocalBusiness' : 'TouristAttraction';
+}
+
+// Teléfono E.164 para el JSON-LD: 0X XX XX XX XX → +33XXXXXXXXX; los internacionales se dejan igual.
+function canal_fiche_tel_intl(string $raw): string
+{
+    $num = canal_fiche_tel($raw);
+    return (strlen($num) === 10 && $num[0] === '0') ? '+33' . substr($num, 1) : $num;
+}
+
 // 0,0 = geocodificación fallida (golfo de Guinea), no una posición real.
 function canal_fiche_has_coords($lat, $lng): bool
 {
@@ -189,16 +224,24 @@ function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $c
 {
     $notEmpty = function ($v) { return $v !== '' && $v !== []; };
     $hasContact = $f['phone'] !== '' || $f['email'] !== '' || $f['website'] !== '';
+    // El lugar forma parte del Canal du Midi (mismo @id que en la home), anclado en Wikidata / UNESCO.
+    $canal = [
+        '@type'  => 'TouristDestination',
+        '@id'    => $homeUrl . '#canal-du-midi',
+        'name'   => 'Canal du Midi',
+        'sameAs' => ['https://fr.wikipedia.org/wiki/Canal_du_Midi', 'https://www.wikidata.org/wiki/Q202494', CANAL_FICHE_UNESCO_URL],
+    ];
     $place = [
-        '@type'       => $hasContact ? 'LocalBusiness' : 'TouristAttraction',
+        '@type'       => canal_fiche_schema_type(array_column($f['categories'], 'slug'), $hasContact),
         '@id'         => $url . '#place',
         'name'        => $f['title'],
         'url'         => $url,
         'description' => $f['excerpt'],
         'image'       => array_values(array_unique(array_filter(array_merge([$f['cover']], $f['gallery'])))),
-        'telephone'   => $f['phone'],
+        'telephone'   => canal_fiche_tel_intl($f['phone'] !== '' ? $f['phone'] : ($f['mobile'] ?? '')),
         'email'       => $f['email'],
         'sameAs'      => array_values(array_filter(array_merge([$f['website']], array_values($f['social'])))),
+        'containedInPlace' => $canal,
     ];
     if ($f['address'] !== '') {
         $place['address'] = array_filter([
@@ -218,6 +261,7 @@ function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $c
         'isPartOf'     => ['@id' => $homeUrl . '#website'],
         'publisher'    => ['@type' => 'Organization', '@id' => $homeUrl . '#organization', 'name' => $siteName],
         'mainEntity'   => ['@id' => $url . '#place'],
+        'about'        => ['@id' => $canal['@id']],
         'breadcrumb'   => ['@id' => $url . '#breadcrumb'],
         'dateModified' => $f['modified'],
         'speakable'    => ['@type' => 'SpeakableSpecification', 'cssSelector' => array_merge(['.service-hero h1', '.description-text'], $f['faq'] ? ['.fiche-faq'] : [])],

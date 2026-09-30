@@ -299,8 +299,10 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   y editor + línea visible « Fiche éditée par … mise à jour le … »; FAQ de 3 preguntas con datos reales
   (dónde / contacto / alrededores) + FAQPage + speakable; nombres en MAYÚSCULAS mostrados legibles
   (`canal_fiche_display_title`, BD intacta); H2 « À propos de … »; enlace/cabecera llms.txt.
-  Pendiente (menores): tipo de schema por categoría (LodgingBusiness, Campground, Restaurant…);
-  enlace a fuente de referencia (VNF/UNESCO); JSON-LD `telephone` con el texto bruto.
+  Menores hechos (30/09): tipo schema por categoría con prioridad (Hotel, Campground, BedAndBreakfast,
+  LodgingBusiness, Hostel, Restaurant, BarOrPub, Bakery, Museum, TouristInformationCenter,
+  TouristAttraction, Store…); `telephone` E.164 (+33…); `containedInPlace`/`about` = Canal du Midi
+  (Wikidata Q202494, UNESCO); enlaces visibles UNESCO y VNF en « Localisation ».
 
 ### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
 - **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is

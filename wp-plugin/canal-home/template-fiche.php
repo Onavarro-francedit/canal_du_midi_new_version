@@ -141,7 +141,7 @@ get_header();
                     <div class="section-heading-inline location-heading">
                         <span class="section-kicker">Accès</span>
                         <h3>Localisation</h3>
-                        <p class="location-intro">Repérez l'établissement en un coup d'œil et découvrez les prestataires voisins le long du Canal du Midi.</p>
+                        <p class="location-intro">Repérez l'établissement en un coup d'œil et découvrez les prestataires voisins le long du Canal du Midi, <a href="<?= esc_url(CANAL_FICHE_UNESCO_URL) ?>" target="_blank" rel="noopener">inscrit au patrimoine mondial de l'UNESCO</a> et géré par <a href="<?= esc_url(CANAL_FICHE_VNF_URL) ?>" target="_blank" rel="noopener">Voies Navigables de France</a>.</p>
                     </div>
                     <a href="<?= esc_url($routeUrl) ?>" target="_blank" rel="noopener" class="location-route-link"><i class="bi bi-sign-turn-right-fill"></i> Ouvrir l'itinéraire</a>
                 </div>

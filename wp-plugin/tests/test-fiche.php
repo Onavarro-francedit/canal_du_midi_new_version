@@ -99,11 +99,28 @@ $min = canal_fiche_faq(['title' => 'Écluse', 'address' => '', 'city' => 'Bram',
 check(count($min) === 1 && strpos($min[0]['a'], 'Bram') !== false, 'faq: sin contacto ni cercanas → solo « où », con la commune');
 check(canal_fiche_faq(['title' => 'X', 'address' => '', 'city' => '', 'zones' => [], 'phone' => '', 'mobile' => '', 'email' => '', 'website' => '', 'nearby' => []]) === [], 'faq: sin datos → []');
 
+// Tipo de schema según la categoría (gana la prioridad del mapa: alojamiento > restauración > …).
+check(canal_fiche_schema_type(['gites'], true) === 'LodgingBusiness', 'schema_type: gîte → LodgingBusiness');
+check(canal_fiche_schema_type(['hotel'], true) === 'Hotel', 'schema_type: hotel → Hotel');
+check(canal_fiche_schema_type(['camping'], true) === 'Campground', 'schema_type: camping → Campground');
+check(canal_fiche_schema_type(['chambre-dhotes'], true) === 'BedAndBreakfast', "schema_type: chambre d'hôtes → BedAndBreakfast");
+check(canal_fiche_schema_type(['bar', 'restaurant'], true) === 'Restaurant', 'schema_type: prioridad del mapa, no orden alfabético de términos');
+check(canal_fiche_schema_type(['bar', 'camping'], true) === 'Campground', 'schema_type: camping con bar → Campground');
+check(canal_fiche_schema_type(['ecluses'], true) === 'TouristAttraction', 'schema_type: écluse con contacto sigue siendo TouristAttraction');
+check(canal_fiche_schema_type(['location-de-velo'], true) === 'LocalBusiness', 'schema_type: sin mapeo + contacto → LocalBusiness');
+check(canal_fiche_schema_type([], false) === 'TouristAttraction', 'schema_type: sin mapeo ni contacto → TouristAttraction');
+
+// Teléfono internacional para el JSON-LD.
+check(canal_fiche_tel_intl('06 80 88 00 99') === '+33680880099', 'tel_intl: nacional → +33');
+check(canal_fiche_tel_intl('Tél Atelier : 07 68 13 87 23') === '+33768138723', 'tel_intl: con texto');
+check(canal_fiche_tel_intl('+44 20 7946 0958') === '+442079460958', 'tel_intl: extranjero sin cambios');
+check(canal_fiche_tel_intl('fermé') === '', 'tel_intl: sin número');
+
 // Grafo JSON-LD.
 $f = [
     'title' => 'Hôtel de Bordeaux', 'excerpt' => 'Hôtel au bord du canal.', 'cover' => 'https://x/c.jpg', 'gallery' => ['https://x/c.jpg', 'https://x/g.jpg'],
     'address' => '4 Boulevard Bonrepos, 31000 Toulouse, France', 'city' => 'Toulouse', 'postcode' => '31000',
-    'lat' => 43.6, 'lng' => 1.45, 'phone' => '05 61 62 41 09', 'email' => 'a@b.fr', 'website' => 'https://www.hoteldebordeaux31.fr/',
+    'lat' => 43.6, 'lng' => 1.45, 'phone' => 'Tél : 05 61 62 41 09', 'mobile' => '', 'email' => 'a@b.fr', 'categories' => [['name' => 'Hôtel', 'slug' => 'hotel']], 'website' => 'https://www.hoteldebordeaux31.fr/',
     'social' => ['facebook' => 'https://www.facebook.com/h/'],
     'modified' => '2026-09-12T08:00:00+00:00', 'faq' => [['q' => 'Où se trouve H ?', 'a' => 'Ici.']],
 ];
@@ -117,13 +134,16 @@ check(in_array('.fiche-faq', $page['speakable']['cssSelector'], true), 'graph: s
 $faqNode = $g['@graph'][array_search('FAQPage', $types, true)];
 check($faqNode['mainEntity'][0]['name'] === 'Où se trouve H ?' && $faqNode['mainEntity'][0]['acceptedAnswer']['text'] === 'Ici.', 'graph: FAQPage con las preguntas');
 check($g['@context'] === 'https://schema.org', 'graph: @context');
-check($place['@type'] === 'LocalBusiness', 'graph: con contacto → LocalBusiness');
+check($place['@type'] === 'Hotel', 'graph: tipo según categoría (Hotel)');
+check($place['telephone'] === '+33561624109', 'graph: telephone en formato internacional');
+check($place['containedInPlace']['@id'] === 'https://s/#canal-du-midi' && in_array('https://www.wikidata.org/wiki/Q202494', $place['containedInPlace']['sameAs'], true), 'graph: containedInPlace Canal du Midi con Wikidata');
+check($page['about']['@id'] === 'https://s/#canal-du-midi', 'graph: WebPage about Canal du Midi');
 check($place['image'] === ['https://x/c.jpg', 'https://x/g.jpg'], 'graph: imágenes sin duplicar');
 check($place['sameAs'] === ['https://www.hoteldebordeaux31.fr/', 'https://www.facebook.com/h/'], 'graph: sameAs web + redes');
 check($place['address']['postalCode'] === '31000' && $place['geo']['latitude'] === 43.6, 'graph: address y geo');
 check(array_column($g['@graph'][array_search('BreadcrumbList', $types, true)]['itemListElement'], 'position') === [1, 2, 3], 'graph: breadcrumb de 3 niveles');
 $min = canal_fiche_seo_graph(['title' => 'Écluse', 'excerpt' => '', 'cover' => '', 'gallery' => [], 'address' => '', 'city' => '', 'postcode' => '',
-    'lat' => null, 'lng' => null, 'phone' => '', 'email' => '', 'website' => '', 'social' => [], 'modified' => '', 'faq' => []], 'https://s/f/', 'https://s/', 'https://s/c/', 'Site');
+    'lat' => null, 'lng' => null, 'phone' => '', 'mobile' => '', 'email' => '', 'website' => '', 'social' => [], 'modified' => '', 'faq' => [], 'categories' => []], 'https://s/f/', 'https://s/', 'https://s/c/', 'Site');
 $mp = $min['@graph'][0];
 check(!in_array('FAQPage', array_column($min['@graph'], '@type'), true), 'graph: sin FAQ → sin FAQPage');
 check($mp['@type'] === 'TouristAttraction', 'graph: sin contacto → TouristAttraction');

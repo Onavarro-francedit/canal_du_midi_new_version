@@ -33,3 +33,6 @@ a.category-tag:hover { border-color: var(--primary); color: var(--primary-deep);
 .fiche-faq-item:first-of-type { border-top: 0; padding-top: 4px; }
 .fiche-faq-item h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; line-height: 1.35; color: #1a1d26; }
 .fiche-faq-item p { margin: 0; font-size: 15px; line-height: 1.6; color: #475569; }
+
+/* WP: fuentes de referencia (UNESCO, VNF) en la introducción de la localización. */
+.location-intro a { color: var(--primary); text-decoration: underline; }
