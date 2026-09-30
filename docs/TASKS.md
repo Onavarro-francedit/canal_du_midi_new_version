@@ -294,6 +294,13 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   LocalBusiness/TouristAttraction + BreadcrumbList, `noindex,nofollow`.
 - Home y carte enlazan a `CANAL_FICHE_PATH`. Tests: `test-fiche.php` (en `remote.sh test`),
   `smoke-fiche.php`, `smoke-carte-data.php`.
+- **Auditoría seo-geo (30/09): 66/100 → ~82 estimado.** Hecho: precarga del hero + galería y miniaturas
+  en tamaño reducido con srcset y ancho/alto (imágenes 1,67 MB → 178 KB); WebPage con `dateModified`
+  y editor + línea visible « Fiche éditée par … mise à jour le … »; FAQ de 3 preguntas con datos reales
+  (dónde / contacto / alrededores) + FAQPage + speakable; nombres en MAYÚSCULAS mostrados legibles
+  (`canal_fiche_display_title`, BD intacta); H2 « À propos de … »; enlace/cabecera llms.txt.
+  Pendiente (menores): tipo de schema por categoría (LodgingBusiness, Campground, Restaurant…);
+  enlace a fuente de referencia (VNF/UNESCO); JSON-LD `telephone` con el texto bruto.
 
 ### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
 - **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is
