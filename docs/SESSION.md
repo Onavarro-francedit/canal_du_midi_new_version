@@ -5,12 +5,14 @@ sesión.
 
 ---
 
-## CIERRE 2026-09-29 (noche) — Fiche 2026 `/fiche-2026/<slug>/` terminada (privada) · Siguiente: decidir publicación
+## CIERRE 2026-09-30 — Fiche 2026 terminada, optimizada y fusionada (privada) · Siguiente: decidir publicación
 
-**Agente activo al cerrar:** sesión principal (brainstorming → spec → plan → executing-plans).
-**Handoff pendiente:** ninguno. **Git:** rama `feat/wp-fiche-2026` (sin fusionar ni push).
-**Dónde quedamos:** las 254 fichas tienen versión nueva en `/fiche-2026/<slug>/` (solo con sesión;
-sin sesión → 404), enlazadas desde la home y la carte privadas. Nada publicado.
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Git:** todo en `main` y en `origin/main` (69ecd8e + este commit de docs). Rama `feat/wp-fiche-2026` borrada.
+**Dónde quedamos:** las 254 fichas tienen versión nueva en `/fiche-2026/<slug>/` (solo con sesión; sin sesión →
+404), enlazadas desde la home y la carte privadas. Auditoría seo-geo 66 → 84/100. PageSpeed (ficha abierta
+unos minutos con `canal_fiche_public`): móvil 48–69 (antes 44; ficha actual 28), escritorio 84 (antes 64).
+Nada publicado.
 
 **Archivos:** `wp-plugin/canal-home/includes/fiche-core.php` (puras), `fiche-data.php`,
 `fiche-route.php`, `seo-fiche.php`, `template-fiche.php`, `assets/fiche/fiche.js`,
@@ -24,10 +26,14 @@ tests `test-fiche.php`, `smoke-fiche.php`, `smoke-carte-data.php`, `remote.sh`.
 - El tema ya reserva el hueco de su cabecera fija; la barra sticky sigue su borde (`--fiche-bar-top`).
 - En producción hay fichas `expired` (p. ej. Nicols): no se muestran.
 
+**Decisiones de 30/09:** no quitar moment/select2/jquery-ui en la ficha (el JS del tema falla y la cabecera
+no aparece); `<head>` roto por `fb-root` del tema en todo el sitio = TASK-031, para el final; abrir la ficha
+para medir con PageSpeed está autorizado (y cerrarla siempre después).
+
 **Próxima acción:**
 ```
-Revisar /fiche-2026/<slug>/ (con sesión) y decidir: fusionar feat/wp-fiche-2026 en main + push;
-publicar home + carte + ficha juntas = TASK-028 / TASK-029b / TASK-030b, SOLO con orden explícita.
+Publicar home + carte + ficha juntas = TASK-028 / TASK-029b / TASK-030b, SOLO con orden explícita.
+Al final: TASK-031 (<head> del tema en todo el sitio), también solo con orden explícita.
 ```
 
 ---
