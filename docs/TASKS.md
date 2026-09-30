@@ -28,6 +28,13 @@ Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b /
   condición `CANAL_FICHE_PATH !== '/fiche/'` en seo-fiche.php ya lo hace); vaciar
   `canal_carte_listings`. Rollback de TASK-030: quitar los archivos fiche-* del plugin y
   `wp option delete canal_fiche_rewrite && wp rewrite flush`.
+- **TASK-031 — `<head>` roto en TODO el sitio (dejar para el final, decisión del usuario 30/09)** — el
+  `header.php` del tema imprime `<div id="fb-root"></div>` antes de `wp_head()`: el navegador cierra el
+  `<head>` ahí y title/meta description/canonical/robots/OG/JSON-LD de las páginas actuales quedan en el
+  `<body>` (Google puede ignorarlos; PageSpeed: « sin metadescripción »). El sitio NO se cae: solo SEO.
+  Ya corregido en nuestras páginas (`includes/head-fix.php`). Plan: ampliar el mismo buffer primero a
+  `/fiche/…` (comprobar 3-4 fichas + consola + PageSpeed), luego al resto; vaciar WP Fastest Cache.
+  Rollback: quitar la condición/el archivo y vaciar la caché. Toca lo existente → SOLO con orden explícita.
 - **Minors de TASK-027 (diferidos, revisión final):** prompt no-string → llamada facturada
   (falta `args` type=string en la ruta REST); delimitador del prompt reconstruible por
   anidado; límite por IP eludible rotando IPv6 /64; `replaceChildren` (Safari ≥ 14);
