@@ -304,8 +304,12 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 - **UX:** patrón *disclosure* del W3C (botón `aria-expanded`, clic, no hover; Escape devuelve el foco);
   hamburguesa + acordeones ≤1180 px; bajo 1200 px la cabecera va a `top:0` (el tema oculta `#wpadminbar`).
 - **Verificado en navegador** (1440 px y 390 px): home, carte, ficha, paneles, filtros de la carte.
-- **Límites conocidos:** el menú está en un array PHP (si cambia el menú de WP, actualizar a mano); la barra
-  ocupa 1360 px (el contenido 1160); no se marca la sección actual.
+- **Ajustes de diseño (usuario, 30/09):** barra máx. 1360 px; logo + paneles a la izquierda y accesos directos a
+  la derecha (se probó el menú centrado con subgrid y se descartó: hueco grande tras el logo); 100 px logo→menú
+  y « Planifier mon voyage » con icono desde 1440 px; 32 px en 1181–1439; « Planifier » en 1181–1365; Distances
+  y Carte solo icono en 1181–1279. Indicador violeta bajo el panel abierto; sombra al hacer scroll.
+- **Límites conocidos:** el menú está en un array PHP (si cambia el menú de WP, actualizar a mano); no se
+  marca la sección actual.
 
 ### TASK-030 — Fiche 2026 (`/fiche-2026/<slug>/`) — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
 - Spec `docs/superpowers/specs/2026-09-29-wp-fiche-2026-design.md`, plan

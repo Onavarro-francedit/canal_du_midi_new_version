@@ -213,6 +213,7 @@ add_action('mylisting/body/start', function () {
             <span></span><span></span>
         </button>
         <nav id="cdm-header-nav" class="cdm-header__nav" aria-label="Navigation principale">
+            <div class="cdm-header__menu">
             <?php foreach (canal_header_menu() as $label => $panel) : $id = 'cdm-mega-' . (++$i); ?>
             <div class="cdm-mega">
                 <button class="cdm-mega__btn" type="button" aria-expanded="false" aria-controls="<?php echo $id; ?>"><?php echo esc_html($label); ?><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
@@ -242,10 +243,13 @@ add_action('mylisting/body/start', function () {
                 </div>
             </div>
             <?php endforeach; ?>
-            <a class="cdm-header__link" href="<?php echo esc_url(home_url(CANAL_HEADER_DISTANCE_PATH)); ?>"><i class="bi bi-rulers" aria-hidden="true"></i> Distances</a>
-            <a class="cdm-header__link cdm-header__link--carte" href="<?php echo esc_url($carte); ?>"><i class="bi bi-map" aria-hidden="true"></i> Carte</a>
-            <a class="cdm-header__cta" href="<?php echo esc_url($home . '#plan'); ?>"><i class="bi bi-magic" aria-hidden="true"></i> Planifier mon voyage</a>
+            </div>
+            <div class="cdm-header__tools">
+            <a class="cdm-header__link" href="<?php echo esc_url(home_url(CANAL_HEADER_DISTANCE_PATH)); ?>" title="Calcul de distance"><i class="bi bi-rulers" aria-hidden="true"></i><span class="cdm-header__label">Distances</span></a>
+            <a class="cdm-header__link cdm-header__link--carte" href="<?php echo esc_url($carte); ?>" title="Carte interactive"><i class="bi bi-map" aria-hidden="true"></i><span class="cdm-header__label">Carte</span></a>
+            <a class="cdm-header__cta" href="<?php echo esc_url($home . '#plan'); ?>"><i class="bi bi-magic" aria-hidden="true"></i><span>Planifier<span class="cdm-header__cta-more"> mon voyage</span></span></a>
             <a class="cdm-header__account" href="<?php echo esc_url($account); ?>" title="<?php echo is_user_logged_in() ? 'Mon compte' : 'Se connecter'; ?>"><i class="bi bi-person" aria-hidden="true"></i><span><?php echo is_user_logged_in() ? 'Mon compte' : 'Se connecter'; ?></span></a>
+            </div>
         </nav>
     </div>
 </header>
@@ -276,6 +280,10 @@ add_action('mylisting/body/start', function () {
     });
     nav.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
     document.addEventListener('click', function (e) { if (!e.target.closest('.cdm-header')) closeMegas(); });
+    var header = document.querySelector('.cdm-header');
+    var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 8); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
     // Escape cierra y devuelve el foco al botón del panel abierto (patrón disclosure del W3C).
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;

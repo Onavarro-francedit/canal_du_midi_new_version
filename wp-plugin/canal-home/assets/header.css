@@ -19,13 +19,19 @@
     .cdm-header { top: 0; }
 }
 
+/* Escritorio: logo + paneles pegados a la izquierda, accesos directos a la derecha (decisión del usuario:
+   sin centrar el menú, para no dejar un hueco grande tras el logo). */
 .cdm-header__row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    width: min(1360px, calc(100vw - 32px));
-    min-height: 70px;
+    gap: 48px;
+    width: min(1360px, calc(100vw - 48px));
+    min-height: 72px;
     margin: 0 auto;
+}
+.cdm-header.is-scrolled {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px rgba(61, 72, 124, 0.08);
 }
 
 .cdm-header a { text-decoration: none; }
@@ -54,11 +60,18 @@
 }
 
 .cdm-header__nav {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 2px;
-    flex: 1;
+    justify-content: space-between;
+    gap: 16px;
     font-size: 14px;
+}
+.cdm-header__menu { display: flex; align-items: center; gap: 4px; }
+.cdm-header__tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* Entradas de primer nivel: botones del mega-menú y enlaces directos. */
@@ -69,9 +82,11 @@
     gap: 5px;
     min-height: 0;
     margin: 0;
-    padding: 8px 10px;
+    position: relative;
+    height: 40px;
+    padding: 0 12px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: none;
     box-shadow: none;
     color: #4a4f6a;
@@ -91,15 +106,38 @@
 .cdm-mega__btn .bi-chevron-down { font-size: 11px; transition: transform 0.2s; }
 .cdm-mega.is-open > .cdm-mega__btn .bi-chevron-down { transform: rotate(180deg); }
 .cdm-header__link .bi { color: #6a63d9; }
-/* Separa los paneles de los accesos directos (Distances, Carte). */
-.cdm-header .cdm-mega + .cdm-header__link { margin-left: auto; }
+/* Panel abierto: barra violeta bajo la entrada (además del fondo, para no depender solo del color). */
+.cdm-header .cdm-mega__btn::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -16px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: #6a63d9;
+    transform: scaleX(0);
+    transition: transform 0.2s;
+}
+.cdm-header .cdm-mega.is-open > .cdm-mega__btn::after { transform: scaleX(1); }
+/* Separador entre los accesos directos y la píldora. */
+.cdm-header .cdm-header__cta { position: relative; margin-left: 17px; }
+.cdm-header .cdm-header__cta::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: rgba(31, 35, 64, 0.12);
+}
 
 .cdm-header .cdm-header__cta {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-left: 6px;
-    padding: 9px 18px;
+    height: 40px;
+    padding: 0 18px;
     border-radius: 50px;
     background: linear-gradient(135deg, #6a63d9, #8a7ee8);
     box-shadow: 0 4px 16px rgba(106, 99, 217, 0.38);
@@ -124,7 +162,6 @@
     gap: 8px;
     width: 40px;
     height: 40px;
-    margin-left: 4px;
     border-radius: 999px;
     background: #fff;
     box-shadow: inset 0 0 0 1px rgba(31, 35, 64, 0.1);
@@ -155,7 +192,7 @@
     top: 100%;
     left: 0;
     right: 0;
-    padding: 28px max(16px, calc((100vw - 1360px) / 2)) 22px;
+    padding: 28px max(24px, calc((100vw - 1200px) / 2)) 22px;
     border-top: 1px solid rgba(106, 99, 217, 0.08);
     background: #fff;
     box-shadow: 0 30px 60px rgba(61, 72, 124, 0.16);
@@ -231,15 +268,40 @@
 
 .cdm-header__backdrop { display: none; }
 
-/* Escritorio estrecho: la píldora pierde el icono para que quepa todo en una línea. */
-@media (max-width: 1360px) and (min-width: 1181px) {
-    .cdm-header .cdm-mega__btn, .cdm-header .cdm-header__link { padding: 8px 8px; }
-    .cdm-header .cdm-header__cta .bi { display: none; }
+/* Escritorio: 100px entre logo y menú (valor elegido por el usuario) y « Planifier mon voyage » completo.
+   En pantallas más estrechas se reduce el hueco y luego el texto de la píldora para caber en una línea. */
+@media (min-width: 1181px) {
+    .cdm-header__row { gap: 100px; }
+    .cdm-header__menu { gap: 0; }
+    .cdm-header .cdm-mega__btn, .cdm-header .cdm-header__link { padding: 0 9px; }
+    .cdm-header .cdm-mega__btn::after { left: 9px; right: 9px; }
+    .cdm-header .cdm-header__cta { padding: 0 16px; }
+}
+@media (max-width: 1439px) and (min-width: 1181px) {
+    .cdm-header__row { gap: 32px; }
+}
+@media (max-width: 1365px) and (min-width: 1181px) {
+    .cdm-header__cta-more { display: none; }
+}
+/* Portátiles: Distances y Carte solo con icono (el texto sigue para lectores de pantalla y en title). */
+@media (max-width: 1279px) and (min-width: 1181px) {
+    .cdm-header .cdm-header__tools .cdm-header__link { width: 40px; padding: 0; justify-content: center; font-size: 17px; }
+    .cdm-header__tools .cdm-header__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
 }
 
 /* Móvil y tableta: hamburguesa + panel lateral; cada bloque del mega-menú es un acordeón. */
 @media (max-width: 1180px) {
+    .cdm-header__row { display: flex; gap: 12px; width: calc(100vw - 32px); }
     .cdm-header .cdm-header__toggle { display: inline-flex; }
+    .cdm-header__menu, .cdm-header__tools { flex-direction: column; align-items: stretch; gap: 0; }
+    .cdm-header .cdm-mega__btn::after, .cdm-header .cdm-header__cta::before { display: none; }
 
     .cdm-header__nav {
         position: absolute;
@@ -266,13 +328,14 @@
     .cdm-header .cdm-mega__btn,
     .cdm-header .cdm-header__link {
         width: 100%;
+        height: auto;
         justify-content: space-between;
         padding: 14px 12px;
         color: #1f2340;
         font-size: 16px;
     }
     .cdm-header .cdm-header__link { justify-content: flex-start; gap: 10px; }
-    .cdm-header .cdm-mega + .cdm-header__link { margin-left: 0; margin-top: 6px; }
+    .cdm-header__tools { margin-top: 6px; }
 
     .cdm-mega__panel {
         position: static;
