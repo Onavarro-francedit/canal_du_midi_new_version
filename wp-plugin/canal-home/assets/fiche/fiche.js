@@ -78,39 +78,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Mapa ---
+    // --- Mapa (WP: Google Maps en diferido; antes lo cargaba el tema en todas las páginas, ~400 KB) ---
     const el = document.getElementById('map');
-    if (!el || typeof google === 'undefined' || !google.maps) return;
-    const home = { lat: parseFloat(el.dataset.lat), lng: parseFloat(el.dataset.lng) };
-    const map = new google.maps.Map(el, { center: home, zoom: 14, scrollwheel: false });
-    const dot = (color, size) => ({
-        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '"><circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="10" fill="' + color + '" stroke="white" stroke-width="3"/></svg>'),
-        scaledSize: new google.maps.Size(size, size),
-        anchor: new google.maps.Point(size / 2, size / 2),
-    });
-    const label = (text) => { const s = document.createElement('strong'); s.textContent = text; return s; };
-    const main = new google.maps.Marker({ position: home, map, icon: dot('#6a63d9', 26), zIndex: 1000, title: el.dataset.title });
-    const mainInfo = new google.maps.InfoWindow({ content: label(el.dataset.title) });
-    main.addListener('click', () => mainInfo.open({ map, anchor: main }));
+    if (!el) return;
+    const initMap = () => {
+        const home = { lat: parseFloat(el.dataset.lat), lng: parseFloat(el.dataset.lng) };
+        const map = new google.maps.Map(el, { center: home, zoom: 14, scrollwheel: false });
+        const dot = (color, size) => ({
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '"><circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="10" fill="' + color + '" stroke="white" stroke-width="3"/></svg>'),
+            scaledSize: new google.maps.Size(size, size),
+            anchor: new google.maps.Point(size / 2, size / 2),
+        });
+        const label = (text) => { const s = document.createElement('strong'); s.textContent = text; return s; };
+        const main = new google.maps.Marker({ position: home, map, icon: dot('#6a63d9', 26), zIndex: 1000, title: el.dataset.title });
+        const mainInfo = new google.maps.InfoWindow({ content: label(el.dataset.title) });
+        main.addListener('click', () => mainInfo.open({ map, anchor: main }));
 
-    let hover = null;
-    let hoverInfo = null;
-    document.querySelectorAll('.poi-hover-trigger').forEach((t) => {
-        t.addEventListener('mouseenter', () => {
-            const pos = { lat: parseFloat(t.dataset.lat), lng: parseFloat(t.dataset.lng) };
-            if (hover) hover.setMap(null);
-            hover = new google.maps.Marker({ position: pos, map, icon: dot('#ef4444', 30) });
-            hoverInfo = new google.maps.InfoWindow({ content: label(t.dataset.name) });
-            hoverInfo.open({ map, anchor: hover });
-            const bounds = new google.maps.LatLngBounds();
-            bounds.extend(home); bounds.extend(pos);
-            map.fitBounds(bounds, 60);
+        let hover = null;
+        let hoverInfo = null;
+        document.querySelectorAll('.poi-hover-trigger').forEach((t) => {
+            t.addEventListener('mouseenter', () => {
+                const pos = { lat: parseFloat(t.dataset.lat), lng: parseFloat(t.dataset.lng) };
+                if (hover) hover.setMap(null);
+                hover = new google.maps.Marker({ position: pos, map, icon: dot('#ef4444', 30) });
+                hoverInfo = new google.maps.InfoWindow({ content: label(t.dataset.name) });
+                hoverInfo.open({ map, anchor: hover });
+                const bounds = new google.maps.LatLngBounds();
+                bounds.extend(home); bounds.extend(pos);
+                map.fitBounds(bounds, 60);
+            });
+            t.addEventListener('mouseleave', () => {
+                if (hover) { hover.setMap(null); hover = null; }
+                if (hoverInfo) { hoverInfo.close(); hoverInfo = null; }
+                map.panTo(home); map.setZoom(14);
+            });
         });
-        t.addEventListener('mouseleave', () => {
-            if (hover) { hover.setMap(null); hover = null; }
-            if (hoverInfo) { hoverInfo.close(); hoverInfo = null; }
-            map.panTo(home); map.setZoom(14);
-        });
-    });
+    };
+    if (typeof google !== 'undefined' && google.maps) {
+        initMap();
+        return;
+    }
+    const src = (window.CDM_FICHE && CDM_FICHE.mapsSrc) || '';
+    if (!src) return;
+    let requested = false;
+    const load = () => {
+        if (requested) return;
+        requested = true;
+        window.canalFicheMapReady = initMap;
+        const s = document.createElement('script');
+        s.src = src + (src.indexOf('?') === -1 ? '?' : '&') + 'loading=async&callback=canalFicheMapReady';
+        s.async = true;
+        document.head.appendChild(s);
+    };
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+            if (entries.some((e) => e.isIntersecting)) { io.disconnect(); load(); }
+        }, { rootMargin: '400px' });
+        io.observe(el);
+    } else {
+        load();
+    }
 });

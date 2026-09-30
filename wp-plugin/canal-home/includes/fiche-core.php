@@ -178,6 +178,26 @@ function canal_fiche_can_view(bool $canReadPrivate, $publicOption): bool
     return $canReadPrivate || $publicOption === '1';
 }
 
+// Móvil (PageSpeed 30/09): la ficha no tiene pagos (Stripe) y Google Maps se carga en diferido desde
+// fiche.js cuando el mapa se acerca a la pantalla (misma URL/clave que el tema). moment, select2 y jquery-ui
+// NO se quitan: el frontend.js del tema falla sin ellos y la cabecera (hide-until-load) no aparece.
+const CANAL_FICHE_UNUSED_ASSETS = '/^(stripe-js|google-maps|mylisting-maps)$/';
+
+function canal_fiche_is_unused_asset(string $handle): bool
+{
+    return (bool) preg_match(CANAL_FICHE_UNUSED_ASSETS, $handle);
+}
+
+// Hojas propias no críticas (Google Fonts, Bootstrap Icons): se cargan sin bloquear el render.
+function canal_fiche_nonblocking_css(string $tag): string
+{
+    if (strpos($tag, "media='all'") === false) {
+        return $tag;
+    }
+    $async = str_replace("media='all'", "media='print' onload=\"this.media='all'\"", trim($tag));
+    return $async . '<noscript>' . trim($tag) . "</noscript>\n";
+}
+
 // 0,0 = geocodificación fallida (golfo de Guinea), no una posición real.
 function canal_fiche_has_coords($lat, $lng): bool
 {

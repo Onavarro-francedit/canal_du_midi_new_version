@@ -98,7 +98,7 @@ function canal_carte_dequeue_unused(): void
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {
         foreach ($deps->queue as $handle) {
-            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle)) {
+            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle) || (canal_fiche_is_page() && canal_fiche_is_unused_asset($handle))) {
                 $deps->dequeue($handle);
             }
         }

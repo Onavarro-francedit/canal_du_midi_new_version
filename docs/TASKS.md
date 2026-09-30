@@ -318,6 +318,11 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   nuestras páginas (`includes/head-fix.php`, buffer que mueve el div tras `<body>`).
   Pendiente rendimiento móvil (tema/terceros): CSS/JS bloqueantes del tema (~4,4 s), reCAPTCHA, Stripe,
   SDK Facebook, GTM, Google Maps cargado aunque el mapa esté abajo.
+- **Optimización móvil (30/09):** en la ficha fuera Stripe (264 KB); Google Maps (~400 KB) en diferido desde
+  fiche.js al acercarse el mapa (misma URL/clave que el tema, leída en `wp_print_footer_scripts`); Google
+  Fonts y Bootstrap Icons sin bloquear (media=print + onload + noscript). **No quitar** moment, select2 ni
+  jquery-ui: el `frontend.js` del tema falla sin ellos y la cabecera (`hide-until-load`) queda invisible
+  (comprobado). Pendiente medir con PageSpeed (requiere abrir la ficha temporalmente).
 
 ### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
 - **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is

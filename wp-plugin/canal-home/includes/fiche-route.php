@@ -81,7 +81,24 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-fiche', CANAL_HOME_URL . 'assets/fiche.css', [], $ver('assets/fiche.css'));
     wp_add_inline_style('canal-fiche', '.loader-bg.main-loader{display:none!important}');
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
-    // Google Maps lo carga ya el tema (footer, síncrono); fiche.js arranca en DOMContentLoaded.
+    // fiche.js arranca en DOMContentLoaded; el mapa (Google Maps) se carga en diferido desde él.
     wp_enqueue_script('canal-fiche', CANAL_HOME_URL . 'assets/fiche/fiche.js', [], $ver('assets/fiche/fiche.js'), true);
     wp_add_inline_script('canal-fiche', canal_home_carte_menu_js());
 }, 20);
+
+// Google Maps se quita de la cola en la ficha (canal_fiche_is_unused_asset) y fiche.js lo carga en diferido
+// con la misma URL (clave y bibliotecas) que registra el tema. El tema lo registra tarde: se lee justo antes
+// de imprimir los scripts del pie.
+add_action('wp_print_footer_scripts', function () {
+    if (!canal_fiche_is_page()) {
+        return;
+    }
+    $maps = wp_scripts()->registered['google-maps'] ?? null;
+    wp_add_inline_script('canal-fiche', 'window.CDM_FICHE = ' . wp_json_encode(['mapsSrc' => $maps ? (string) $maps->src : '']) . ';', 'before');
+}, 1);
+
+// Móvil: fuentes e iconos propios sin bloquear el render (texto con fuente de sistema hasta que llegan).
+add_filter('style_loader_tag', function ($tag, $handle) {
+    return (canal_fiche_is_page() && in_array($handle, ['canal-home-fonts', 'canal-home-icons'], true))
+        ? canal_fiche_nonblocking_css($tag) : $tag;
+}, 10, 2);

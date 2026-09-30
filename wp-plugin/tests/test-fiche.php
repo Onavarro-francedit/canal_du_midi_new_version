@@ -132,6 +132,23 @@ check(substr_count($fixed, 'fb-root') === 1, 'fix_head: un solo fb-root');
 check(canal_home_fix_head('<html><head><title>T</title></head><body><div id="fb-root"></div></body></html>') === '<html><head><title>T</title></head><body><div id="fb-root"></div></body></html>', 'fix_head: sin cambios si ya está en el body');
 check(canal_home_fix_head('parcial') === 'parcial', 'fix_head: HTML sin </head> intacto');
 
+// Recursos del tema/plugins que la ficha no usa (móvil): se quitan solo en la ficha.
+foreach (['stripe-js', 'google-maps', 'mylisting-maps'] as $h) {
+    check(canal_fiche_is_unused_asset($h), "unused_asset: $h fuera");
+}
+// frontend.js del tema (c27-main) necesita moment, select2 y jquery-ui al cargar: sin ellos la cabecera
+// (hide-until-load) se queda invisible. Se mantienen.
+foreach (['moment', 'moment-locale-fr', 'select2', 'jquery-ui-core', 'jquery-ui-mouse', 'jquery-ui-sortable', 'jquery-core', 'c27-main', 'mylisting-vendor', 'mylisting-frontend', 'font-awesome-5-all', 'canal-fiche', 'google-maps-extra'] as $h) {
+    check(!canal_fiche_is_unused_asset($h), "unused_asset: $h se mantiene");
+}
+
+// CSS no bloqueante (fuentes e iconos propios): media=print + onload + <noscript>.
+$tag = "<link rel='stylesheet' id='canal-home-icons-css' href='https://cdn.jsdelivr.net/x.css?ver=1' media='all' />\n";
+$nb = canal_fiche_nonblocking_css($tag);
+check(strpos($nb, "media='print'") !== false && strpos($nb, "onload=\"this.media='all'\"") !== false, 'nonblocking_css: media print + onload');
+check(strpos($nb, '<noscript>' . trim($tag) . '</noscript>') !== false, 'nonblocking_css: noscript con la etiqueta original');
+check(canal_fiche_nonblocking_css('<link rel="stylesheet" href="x.css">') === '<link rel="stylesheet" href="x.css">', 'nonblocking_css: sin media=all → sin cambios');
+
 // Grafo JSON-LD.
 $f = [
     'title' => 'Hôtel de Bordeaux', 'excerpt' => 'Hôtel au bord du canal.', 'cover' => 'https://x/c.jpg', 'gallery' => ['https://x/c.jpg', 'https://x/g.jpg'],
