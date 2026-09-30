@@ -322,7 +322,9 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   fiche.js al acercarse el mapa (misma URL/clave que el tema, leída en `wp_print_footer_scripts`); Google
   Fonts y Bootstrap Icons sin bloquear (media=print + onload + noscript). **No quitar** moment, select2 ni
   jquery-ui: el `frontend.js` del tema falla sin ellos y la cabecera (`hide-until-load`) queda invisible
-  (comprobado). Pendiente medir con PageSpeed (requiere abrir la ficha temporalmente).
+  (comprobado). **Medido (30/09, 12:19–12:24 UTC abierta):** móvil 48 y 69 en dos pasadas (antes 44),
+  LCP 5,1/5,0 s (antes 7,1 s), FCP ~4,1 s; escritorio 84 (antes 64), LCP 1,4 s, TBT 220 ms (antes 620).
+  El resto del TBT/FCP móvil es del tema y terceros (scripts en línea, consentimiento, GTM, vendor.js).
 
 ### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
 - **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is
