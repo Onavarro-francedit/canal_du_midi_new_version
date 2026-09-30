@@ -57,6 +57,7 @@ add_action('template_redirect', function () {
     }
     nocache_headers();
     status_header(200);
+    header('Link: <' . esc_url_raw(home_url('/llms.txt')) . '>; rel="llms-txt"', false); // como la home y la carte
     include CANAL_HOME_DIR . 'template-fiche.php';
     exit;
 }, 0);

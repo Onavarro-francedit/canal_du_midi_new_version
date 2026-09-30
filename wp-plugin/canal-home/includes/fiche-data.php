@@ -45,14 +45,22 @@ function canal_fiche_data(WP_Post $post): array
     $address = canal_home_plain($meta('_job_location'));
     $address = canal_fiche_is_coords_text($address) ? '' : $address;
 
-    return [
+    $cover = canal_fiche_https(canal_home_cover($id));
+    $nearby = array_map(function ($n) {
+        $n['title'] = canal_fiche_display_title($n['title']);
+        return $n;
+    }, canal_fiche_nearby(canal_carte_listings(), $id, $lat, $lng));
+    $f = [
         'id'               => $id,
         'slug'             => $post->post_name,
-        'title'            => canal_home_plain(get_the_title($post)),
+        'title'            => canal_fiche_display_title(canal_home_plain(get_the_title($post))),
         'description_html' => wpautop(wp_kses_post($desc)),
         'excerpt'          => canal_fiche_excerpt(canal_home_plain(wp_strip_all_tags($desc))),
-        'cover'            => canal_fiche_https(canal_home_cover($id)),
+        'cover'            => $cover,
+        'hero'             => $cover !== '' ? $cover : home_url(CANAL_HOME_HERO_IMAGE),
         'gallery'          => $gallery,
+        // Galería: tamaño medium_large + srcset + ancho/alto (antes, originales de 1024 px sin dimensiones).
+        'gallery_imgs'     => canal_carte_resized_images(array_map(function ($url) { return ['image' => $url]; }, $gallery)),
         'address'          => $address,
         'city'             => canal_home_city($id),
         'postcode'         => $meta('_code-postal'),
@@ -67,6 +75,9 @@ function canal_fiche_data(WP_Post $post): array
         'social'           => canal_fiche_social($meta('_facebook'), get_post_meta($id, '_links', true)),
         'video'            => canal_fiche_video_embed($meta('_job_video_url')),
         'categories'       => $categories,
-        'nearby'           => canal_fiche_nearby(canal_carte_listings(), $id, $lat, $lng),
+        'nearby'           => $nearby,
+        'modified'         => (string) get_post_modified_time('c', true, $post),
     ];
+    $f['faq'] = canal_fiche_faq($f);
+    return $f;
 }

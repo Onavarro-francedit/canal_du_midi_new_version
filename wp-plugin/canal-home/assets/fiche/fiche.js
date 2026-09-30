@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const triggers = Array.from(document.querySelectorAll('.lightbox-trigger'));
     if (lightbox && triggers.length) {
         const img = document.getElementById('lightbox-img');
-        const images = triggers.map((t) => t.src);
+        const images = triggers.map((t) => t.dataset.full || t.currentSrc || t.src); // WP: original en el visor, reducida en la rejilla
         let current = 0;
         let opener = null;
         const show = () => { img.src = images[current]; img.alt = triggers[current].alt; };

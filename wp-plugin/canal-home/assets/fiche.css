@@ -3581,3 +3581,13 @@
 /* WP: descripción con HTML del editor (wpautop). */
 .cdm-fiche .description-text p { margin: 0 0 12px; }
 .cdm-fiche .description-text a { color: var(--primary); text-decoration: underline; }
+
+/* WP: editor + fecha de actualización (E-E-A-T), al pie de la présentation. */
+.cdm-fiche .fiche-publisher { margin: 18px 0 0; font-size: 12px; line-height: 1.4; color: #94a3b8; }
+
+/* WP: preguntas frecuentes con datos reales de la ficha (AEO). */
+.cdm-fiche .fiche-faq .section-heading-inline h2 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.06; }
+.cdm-fiche .fiche-faq-item { padding: 14px 0; border-top: 1px solid rgba(106, 99, 217, 0.1); }
+.cdm-fiche .fiche-faq-item:first-of-type { border-top: 0; padding-top: 4px; }
+.cdm-fiche .fiche-faq-item h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; line-height: 1.35; color: #1a1d26; }
+.cdm-fiche .fiche-faq-item p { margin: 0; font-size: 15px; line-height: 1.6; color: #475569; }

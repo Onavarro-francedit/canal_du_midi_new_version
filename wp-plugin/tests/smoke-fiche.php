@@ -37,6 +37,12 @@ foreach (['maison-rassier', 'ecluse-de-sauzens', 'easyvelocarcassonne'] as $slug
     $check(strpos($f['description_html'], '[') === false || strpos($f['description_html'], '[/') === false, "$slug: sin shortcodes");
     $check(count($f['nearby']) === 6 || !canal_fiche_has_coords($f['lat'], $f['lng']), "$slug: 6 cercanas");
     $check(!in_array($post->ID, array_column($f['nearby'], 'id'), true), "$slug: no es cercana de sí misma");
+    $check($f['title'] === canal_fiche_display_title($f['title']) && (mb_strtoupper($f['title'], 'UTF-8') !== $f['title']), "$slug: título legible (no todo mayúsculas)");
+    $check($f['modified'] !== '' && strtotime($f['modified']) !== false, "$slug: fecha de modificación");
+    $check(count($f['faq']) >= 1 && strpos($f['faq'][0]['q'], 'Où se trouve') === 0, "$slug: FAQ con « où »");
+    $check(count($f['gallery_imgs']) === count($f['gallery']), "$slug: una imagen reducida por foto");
+    $withDims = array_filter($f['gallery_imgs'], fn($g) => !empty($g['image_w']) && !empty($g['image_h']));
+    $check(!$f['gallery'] || count($withDims) > 0, "$slug: galería con ancho/alto");
     if ($slug === 'easyvelocarcassonne') {
         $check(strpos($f['video'], 'https://www.youtube-nocookie.com/embed/') === 0, "$slug: vídeo embebible");
     }

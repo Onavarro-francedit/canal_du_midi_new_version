@@ -101,9 +101,11 @@ function canal_carte_resized_images(array $items): array
         if (!isset($ids[$path])) {
             continue; // sin adjunto conocido: se queda la URL original
         }
-        $src = wp_get_attachment_image_url($ids[$path], 'medium_large');
+        $src = wp_get_attachment_image_src($ids[$path], 'medium_large');
         if ($src) {
-            $items[$i]['image']        = $src;
+            $items[$i]['image']        = $src[0];
+            $items[$i]['image_w']      = (int) $src[1];
+            $items[$i]['image_h']      = (int) $src[2];
             $items[$i]['image_srcset'] = (string) wp_get_attachment_image_srcset($ids[$path], 'medium_large');
         }
     }

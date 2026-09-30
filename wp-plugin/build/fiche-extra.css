@@ -23,3 +23,13 @@ a.category-tag:hover { border-color: var(--primary); color: var(--primary-deep);
 /* WP: descripción con HTML del editor (wpautop). */
 .description-text p { margin: 0 0 12px; }
 .description-text a { color: var(--primary); text-decoration: underline; }
+
+/* WP: editor + fecha de actualización (E-E-A-T), al pie de la présentation. */
+.fiche-publisher { margin: 18px 0 0; font-size: 12px; line-height: 1.4; color: #94a3b8; }
+
+/* WP: preguntas frecuentes con datos reales de la ficha (AEO). */
+.fiche-faq .section-heading-inline h2 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.06; }
+.fiche-faq-item { padding: 14px 0; border-top: 1px solid rgba(106, 99, 217, 0.1); }
+.fiche-faq-item:first-of-type { border-top: 0; padding-top: 4px; }
+.fiche-faq-item h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; line-height: 1.35; color: #1a1d26; }
+.fiche-faq-item p { margin: 0; font-size: 15px; line-height: 1.6; color: #475569; }

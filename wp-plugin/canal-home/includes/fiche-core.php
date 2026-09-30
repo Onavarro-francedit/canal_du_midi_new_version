@@ -75,6 +75,67 @@ function canal_fiche_is_coords_text(string $s): bool
     return (bool) preg_match('/^\s*-?\d{1,3}\.\d+\s*,\s*-?\d{1,3}\.\d+\s*$/', $s);
 }
 
+// Nombres guardados en MAYÚSCULAS (« MAISON RASSIER ») → « Maison Rassier », solo al mostrar.
+// Artículos y preposiciones en minúscula salvo al inicio (« Le Relais de Sully », « Saint-Nazaire-d'Aude »).
+const CANAL_FICHE_LOWER_WORDS = ['de', 'du', 'des', 'la', 'le', 'les', 'et', 'à', 'au', 'aux', 'en', 'sur', 'd', 'l'];
+
+function canal_fiche_display_title(string $s): string
+{
+    if (!preg_match('/\p{Lu}/u', $s) || mb_strtoupper($s, 'UTF-8') !== $s) {
+        return $s;
+    }
+    $first = true;
+    return (string) preg_replace_callback('/\p{L}+/u', function ($m) use (&$first) {
+        $w = mb_strtolower($m[0], 'UTF-8');
+        $keepLower = !$first && in_array($w, CANAL_FICHE_LOWER_WORDS, true);
+        $first = false;
+        return $keepLower ? $w : mb_strtoupper(mb_substr($w, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($w, 1, null, 'UTF-8');
+    }, $s);
+}
+
+// Preguntas frecuentes a partir de datos reales de la ficha (nada inventado): dónde, contacto, alrededores.
+// « de » + nombre con vocal inicial → « d'Écluse… » (elisión francesa).
+function canal_fiche_de(string $name): string
+{
+    return (preg_match('/^[aeiouyàâäéèêëîïôöùûüœæh]/iu', $name) ? "d'" : 'de ') . $name;
+}
+
+function canal_fiche_faq(array $f): array
+{
+    $t = $f['title'];
+    $faq = [];
+    if ($f['address'] !== '' || $f['city'] !== '') {
+        $a = $f['address'] !== '' ? "$t se trouve à l'adresse suivante : {$f['address']}." : "$t se trouve à {$f['city']}.";
+        if ($f['zones']) {
+            $a .= ' Secteur du Canal du Midi : ' . implode(', ', $f['zones']) . '.';
+        }
+        $faq[] = ['q' => "Où se trouve $t ?", 'a' => $a];
+    }
+    $ways = [];
+    $phone = $f['phone'] !== '' ? $f['phone'] : $f['mobile'];
+    if ($phone !== '') {
+        $ways[] = "par téléphone au $phone";
+    }
+    if ($f['email'] !== '') {
+        $ways[] = "par e-mail à {$f['email']}";
+    }
+    if ($f['website'] !== '') {
+        $ways[] = 'via son site ' . (parse_url($f['website'], PHP_URL_HOST) ?: $f['website']);
+    }
+    if ($ways) {
+        $last = array_pop($ways);
+        $faq[] = ['q' => "Comment contacter $t ?", 'a' => "On peut contacter $t " . ($ways ? implode(', ', $ways) . ' ou ' : '') . "$last."];
+    }
+    if ($f['nearby']) {
+        $names = array_map(function ($n) {
+            $detail = array_filter([$n['type'] ?? '', 'à ' . canal_fiche_km_label((float) $n['distance_km'])]);
+            return $n['title'] . ' (' . implode(', ', $detail) . ')';
+        }, array_slice($f['nearby'], 0, 3));
+        $faq[] = ['q' => 'Que trouve-t-on autour ' . canal_fiche_de($t) . ' ?', 'a' => 'À proximité ' . canal_fiche_de($t) . ' : ' . implode(', ', $names) . '.'];
+    }
+    return $faq;
+}
+
 // 0,0 = geocodificación fallida (golfo de Guinea), no una posición real.
 function canal_fiche_has_coords($lat, $lng): bool
 {
@@ -123,9 +184,10 @@ function canal_fiche_excerpt(string $text, int $max = 155): string
     return rtrim($space > $max / 2 ? mb_substr($cut, 0, $space, 'UTF-8') : $cut, " ,;:.") . '…';
 }
 
-// JSON-LD de la ficha: el lugar + migas (Accueil → Carte → Ficha). Campos vacíos omitidos.
-function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $carteUrl): array
+// JSON-LD de la ficha: el lugar, la página (fecha, editor, speakable), migas y FAQ. Campos vacíos omitidos.
+function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $carteUrl, string $siteName): array
 {
+    $notEmpty = function ($v) { return $v !== '' && $v !== []; };
     $hasContact = $f['phone'] !== '' || $f['email'] !== '' || $f['website'] !== '';
     $place = [
         '@type'       => $hasContact ? 'LocalBusiness' : 'TouristAttraction',
@@ -147,13 +209,28 @@ function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $c
     if (canal_fiche_has_coords($f['lat'], $f['lng'])) {
         $place['geo'] = ['@type' => 'GeoCoordinates', 'latitude' => (float) $f['lat'], 'longitude' => (float) $f['lng']];
     }
-    $place = array_filter($place, function ($v) { return $v !== '' && $v !== []; });
+    $page = array_filter([
+        '@type'        => 'WebPage',
+        '@id'          => $url . '#webpage',
+        'url'          => $url,
+        'name'         => $f['title'],
+        'inLanguage'   => 'fr-FR',
+        'isPartOf'     => ['@id' => $homeUrl . '#website'],
+        'publisher'    => ['@type' => 'Organization', '@id' => $homeUrl . '#organization', 'name' => $siteName],
+        'mainEntity'   => ['@id' => $url . '#place'],
+        'breadcrumb'   => ['@id' => $url . '#breadcrumb'],
+        'dateModified' => $f['modified'],
+        'speakable'    => ['@type' => 'SpeakableSpecification', 'cssSelector' => array_merge(['.service-hero h1', '.description-text'], $f['faq'] ? ['.fiche-faq'] : [])],
+    ], $notEmpty);
     $crumbs = [];
     foreach ([[$homeUrl, 'Accueil'], [$carteUrl, 'Carte interactive'], [$url, $f['title']]] as $i => $c) {
         $crumbs[] = ['@type' => 'ListItem', 'position' => $i + 1, 'name' => $c[1], 'item' => $c[0]];
     }
-    return [
-        '@context' => 'https://schema.org',
-        '@graph'   => [$place, ['@type' => 'BreadcrumbList', 'itemListElement' => $crumbs]],
-    ];
+    $graph = [array_filter($place, $notEmpty), $page, ['@type' => 'BreadcrumbList', '@id' => $url . '#breadcrumb', 'itemListElement' => $crumbs]];
+    if ($f['faq']) {
+        $graph[] = ['@type' => 'FAQPage', '@id' => $url . '#faq', 'mainEntity' => array_map(function ($qa) {
+            return ['@type' => 'Question', 'name' => $qa['q'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $qa['a']]];
+        }, $f['faq'])];
+    }
+    return ['@context' => 'https://schema.org', '@graph' => $graph];
 }

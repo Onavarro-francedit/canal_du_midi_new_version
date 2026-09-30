@@ -39,6 +39,14 @@ add_action('wp_head', function () {
     $f   = canal_fiche_state();
     $url = canal_fiche_url($f['slug']);
     echo '<link rel="canonical" href="' . esc_url($url) . '">' . "\n";
+    echo '<link rel="alternate" type="text/markdown" title="llms.txt" href="' . esc_url(home_url('/llms.txt')) . '">' . "\n";
     echo canal_home_seo_social(canal_fiche_seo_title($f), canal_fiche_seo_description($f), $url, $f['title'], $f['cover']); // phpcs:ignore — escapado dentro.
-    echo canal_home_seo_jsonld(canal_fiche_seo_graph($f, $url, home_url('/'), home_url(CANAL_CARTE_PATH))); // phpcs:ignore — JSON_HEX_TAG.
+    echo canal_home_seo_jsonld(canal_fiche_seo_graph($f, $url, home_url('/'), home_url(CANAL_CARTE_PATH), CANAL_HOME_SITE_NAME)); // phpcs:ignore — JSON_HEX_TAG.
 }, 5);
+
+// LCP: la foto de cabecera es un fondo CSS (el navegador la descubre tarde) → precarga con prioridad alta.
+add_action('wp_head', function () {
+    if (canal_fiche_is_page()) {
+        echo '<link rel="preload" as="image" href="' . esc_url(canal_fiche_state()['hero']) . '" fetchpriority="high">' . "\n";
+    }
+}, 1);

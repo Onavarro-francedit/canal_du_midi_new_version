@@ -6,7 +6,7 @@
 defined('ABSPATH') || exit;
 
 $f          = canal_fiche_state();
-$heroImage  = $f['cover'] !== '' ? $f['cover'] : home_url(CANAL_HOME_HERO_IMAGE);
+$heroImage  = $f['hero'];
 $heroSlides = array_values(array_unique(array_filter(array_merge([$heroImage], $f['gallery']))));
 $hasGeo     = $f['lat'] !== null;
 $latLng     = $hasGeo ? sprintf('%.6F,%.6F', $f['lat'], $f['lng']) : '';
@@ -75,10 +75,13 @@ get_header();
             <section class="section-card section-card-intro info-block">
                 <div class="section-heading-inline">
                     <span class="section-kicker">Présentation</span>
-                    <h2><?= esc_html($f['title']) ?></h2>
+                    <h2>À propos de <?= esc_html($f['title']) ?></h2>
                 </div>
                 <?php if (trim(wp_strip_all_tags($f['description_html'])) !== ''): ?>
                     <div class="description-text"><?= $f['description_html'] // WP: ya pasado por wp_kses_post ?></div>
+                <?php endif; ?>
+                <?php if ($f['modified'] !== ''): ?>
+                    <p class="fiche-publisher">Fiche éditée par <?= esc_html(CANAL_HOME_SITE_NAME) ?> · mise à jour le <time datetime="<?= esc_attr($f['modified']) ?>"><?= esc_html(date_i18n('j F Y', strtotime($f['modified']))) ?></time></p>
                 <?php endif; ?>
             </section>
 
@@ -121,9 +124,10 @@ get_header();
                     <h3>Galerie Photos</h3>
                 </div>
                 <div class="masonry-gallery">
-                    <?php foreach ($f['gallery'] as $i => $photo): ?>
+                    <?php foreach ($f['gallery_imgs'] as $i => $photo): ?>
                         <div class="gallery-item">
-                            <img src="<?= esc_url($photo) ?>" alt="<?= esc_attr($f['title'] . ' — photo ' . ($i + 1)) ?>" class="lightbox-trigger" data-index="<?= (int) $i ?>" loading="lazy" decoding="async">
+                            <img src="<?= esc_url($photo['image']) ?>"<?php if ($photo['image_srcset'] !== ''): ?> srcset="<?= esc_attr($photo['image_srcset']) ?>" sizes="(max-width: 640px) 100vw, 460px"<?php endif; ?><?php if (!empty($photo['image_w'])): ?> width="<?= (int) $photo['image_w'] ?>" height="<?= (int) $photo['image_h'] ?>"<?php endif; ?>
+                                alt="<?= esc_attr($f['title'] . ' — photo ' . ($i + 1)) ?>" class="lightbox-trigger" data-index="<?= (int) $i ?>" data-full="<?= esc_url($f['gallery'][$i]) ?>" loading="lazy" decoding="async">
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -162,7 +166,7 @@ get_header();
                                     <div class="poi-item poi-hover-trigger" data-lat="<?= esc_attr(sprintf('%.6F', $n['lat'])) ?>" data-lng="<?= esc_attr(sprintf('%.6F', $n['lng'])) ?>" data-name="<?= esc_attr($n['title']) ?>">
                                         <div class="poi-image-container">
                                             <?php if (($n['image'] ?? '') !== ''): ?>
-                                                <img src="<?= esc_url(canal_fiche_https($n['image'])) ?>" alt="" class="poi-thumb" loading="lazy" decoding="async">
+                                                <img src="<?= esc_url(canal_fiche_https($n['image'])) ?>"<?php if (($n['image_srcset'] ?? '') !== ''): ?> srcset="<?= esc_attr($n['image_srcset']) ?>" sizes="56px"<?php endif; ?> width="56" height="56" alt="" class="poi-thumb" loading="lazy" decoding="async">
                                             <?php else: ?>
                                                 <div class="poi-icon-fallback"><i class="bi bi-geo-alt"></i></div>
                                             <?php endif; ?>
@@ -179,6 +183,22 @@ get_header();
                     </div>
                     <?php endif; ?>
                 </div>
+            </section>
+            <?php endif; ?>
+
+            <!-- 8. QUESTIONS FRÉQUENTES (WP: datos reales de la ficha, AEO + FAQPage) -->
+            <?php if ($f['faq']): ?>
+            <section class="section-card info-block fiche-faq">
+                <div class="section-heading-inline">
+                    <span class="section-kicker">En bref</span>
+                    <h2>Questions fréquentes</h2>
+                </div>
+                <?php foreach ($f['faq'] as $qa): ?>
+                    <div class="fiche-faq-item">
+                        <h3><?= esc_html($qa['q']) ?></h3>
+                        <p><?= esc_html($qa['a']) ?></p>
+                    </div>
+                <?php endforeach; ?>
             </section>
             <?php endif; ?>
         </div>
