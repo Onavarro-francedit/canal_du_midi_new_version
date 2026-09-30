@@ -147,12 +147,22 @@ const CANAL_FICHE_SCHEMA_TYPES = [
     'chambre-a-louer' => 'LodgingBusiness', 'roulotte' => 'LodgingBusiness', 'peniche' => 'LodgingBusiness',
     'auberge-de-jeunesse' => 'Hostel', 'hostel' => 'Hostel', 'auberge-collective' => 'Hostel',
     'restaurant' => 'Restaurant', 'table-dhote' => 'Restaurant', 'bateau-restaurant' => 'Restaurant', 'brasserie-snack' => 'Restaurant',
-    'bar' => 'BarOrPub', 'boulangerie-patisserie' => 'Bakery', 'supermarche-epicerie' => 'GroceryStore', 'librairie' => 'BookStore',
-    'vente-de-vins' => 'Store', 'produits-regionaux' => 'Store', 'commerce' => 'Store', 'commerce-alimentaire' => 'Store',
-    'artisanat' => 'Store', 'boucherie-charcuterie-traiteur' => 'Store',
+    'bar' => 'BarOrPub',
+    // Lugares antes que comercios: una abadía con librería/tienda es un monumento, no una BookStore.
     'musees' => 'Museum', 'lieux-dinformations' => 'TouristInformationCenter',
     'ecluses' => 'TouristAttraction', 'moulins' => 'TouristAttraction', 'chateaux' => 'TouristAttraction', 'site-et-monument' => 'TouristAttraction',
+    'boulangerie-patisserie' => 'Bakery', 'supermarche-epicerie' => 'GroceryStore', 'librairie' => 'BookStore',
+    'vente-de-vins' => 'Store', 'produits-regionaux' => 'Store', 'commerce' => 'Store', 'commerce-alimentaire' => 'Store',
+    'artisanat' => 'Store', 'boucherie-charcuterie-traiteur' => 'Store',
 ];
+
+// <title>: « Nom à Commune — Canal du Midi », sin repetir la commune si el nombre ya la lleva
+// (« Abbaye de Saint-Papoul à Saint-Papoul »). Usa canal_carte_fold (carte-filter.php).
+function canal_fiche_seo_title_text(string $title, string $city): string
+{
+    $withCity = $city !== '' && strpos(canal_carte_fold($title), canal_carte_fold($city)) === false;
+    return $title . ($withCity ? ' à ' . $city : '') . ' — Canal du Midi';
+}
 
 function canal_fiche_schema_type(array $catSlugs, bool $hasContact): string
 {
@@ -178,14 +188,46 @@ function canal_fiche_can_view(bool $canReadPrivate, $publicOption): bool
     return $canReadPrivate || $publicOption === '1';
 }
 
-// Móvil (PageSpeed 30/09): la ficha no tiene pagos (Stripe) y Google Maps se carga en diferido desde
-// fiche.js cuando el mapa se acerca a la pantalla (misma URL/clave que el tema). moment, select2 y jquery-ui
-// NO se quitan: el frontend.js del tema falla sin ellos y la cabecera (hide-until-load) no aparece.
-const CANAL_FICHE_UNUSED_ASSETS = '/^(stripe-js|google-maps|mylisting-maps)$/';
+// Ficha: sin pagos (Stripe); Google Maps en diferido desde fiche.js. Desde que la cabecera es nuestra
+// (TASK-032) tampoco hace falta el CSS/JS del tema (~800 KB CSS + ~540 KB JS, <3 % de reglas usadas):
+// el subconjunto que la ficha usa va en assets/fiche-theme.css (build/extract-theme-css.js).
+const CANAL_FICHE_UNUSED_ASSETS = '/^(stripe-js|google-maps|mylisting-maps|font-awesome-(5-all|4-shim)|mylisting-(icons|material-icons|vendor|frontend|dynamic-styles)|theme-styles-default|select2|c27-main|moment(-locale-fr)?|jquery(-core|-migrate|-ui-core|-ui-mouse|-ui-sortable)?)$/';
 
 function canal_fiche_is_unused_asset(string $handle): bool
 {
     return (bool) preg_match(CANAL_FICHE_UNUSED_ASSETS, $handle);
+}
+
+// <head> del header.php del tema (enlaces fijos, sin handle): en la ficha sobran reCAPTCHA (~830 KB, no hay
+// formularios), el SDK de Facebook (sin widgets) y style-pub.css (0 reglas usadas); Google Fonts sin bloquear.
+function canal_fiche_lighten_head(string $html): string
+{
+    $headEnd = strpos($html, '</head>');
+    if ($headEnd === false) {
+        return $html;
+    }
+    $head = substr($html, 0, $headEnd);
+    $head = (string) preg_replace([
+        '#<script[^>]+recaptcha/api\.js[^>]*></script>\s*#',
+        '#<script[^>]+connect\.facebook\.net/[^>]*></script>\s*#',
+        "#<link[^>]+id=['\"]style-pub['\"][^>]*>\s*#",
+    ], '', $head);
+    $head = (string) preg_replace_callback('#<link href="(https://fonts\.googleapis\.com/[^"]+)" rel="stylesheet">#', function ($m) {
+        return '<link href="' . $m[1] . '" rel="stylesheet" media="print" onload="this.media=\'all\'"><noscript>' . $m[0] . '</noscript>';
+    }, $head);
+    return $head . substr($html, $headEnd);
+}
+
+// Enlaces del menú solo con icono (redes sociales del pie del tema): nombre accesible a partir del dominio.
+function canal_fiche_icon_link_label(string $title, string $url): string
+{
+    // El tema guarda el icono como shortcode en el título: [27-icon icon="fa fa-facebook-f"].
+    if (trim(html_entity_decode(strip_tags((string) preg_replace('/\[[^\]]*\]/', '', $title)))) !== '') {
+        return '';
+    }
+    $host = preg_replace('/^www\./', '', (string) parse_url($url, PHP_URL_HOST));
+    $names = ['facebook.com' => 'Facebook', 'instagram.com' => 'Instagram', 'youtube.com' => 'YouTube', 'twitter.com' => 'X (Twitter)', 'x.com' => 'X (Twitter)', 'linkedin.com' => 'LinkedIn', 'pinterest.com' => 'Pinterest', 'tiktok.com' => 'TikTok'];
+    return $names[$host] ?? $host;
 }
 
 // Hojas propias no críticas (Google Fonts, Bootstrap Icons): se cargan sin bloquear el render.
@@ -246,6 +288,14 @@ function canal_fiche_excerpt(string $text, int $max = 155): string
     return rtrim($space > $max / 2 ? mb_substr($cut, 0, $space, 'UTF-8') : $cut, " ,;:.") . '…';
 }
 
+// streetAddress sin la commune ni el país al final (van en addressLocality / addressCountry).
+function canal_fiche_street(string $address, string $city): string
+{
+    $tail = $city !== '' ? '(,\s*(\d{5}\s+)?' . preg_quote($city, '/') . ')?' : '';
+    $street = trim((string) preg_replace('/' . $tail . '(,\s*France)?\s*$/iu', '', $address), " ,");
+    return $street !== '' ? $street : $address;
+}
+
 // JSON-LD de la ficha: el lugar, la página (fecha, editor, speakable), migas y FAQ. Campos vacíos omitidos.
 function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $carteUrl, string $siteName): array
 {
@@ -258,21 +308,23 @@ function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $c
         'name'   => 'Canal du Midi',
         'sameAs' => ['https://fr.wikipedia.org/wiki/Canal_du_Midi', 'https://www.wikidata.org/wiki/Q202494', CANAL_FICHE_UNESCO_URL],
     ];
+    $type = canal_fiche_schema_type(array_column($f['categories'], 'slug'), $hasContact);
     $place = [
-        '@type'       => canal_fiche_schema_type(array_column($f['categories'], 'slug'), $hasContact),
+        '@type'       => $type,
         '@id'         => $url . '#place',
         'name'        => $f['title'],
         'url'         => $url,
         'description' => $f['excerpt'],
         'image'       => array_values(array_unique(array_filter(array_merge([$f['cover']], $f['gallery'])))),
         'telephone'   => canal_fiche_tel_intl($f['phone'] !== '' ? $f['phone'] : ($f['mobile'] ?? '')),
-        'email'       => $f['email'],
+        // email no existe en Place (TouristAttraction, Museum): solo en los tipos LocalBusiness.
+        'email'       => in_array($type, ['TouristAttraction', 'Museum'], true) ? '' : $f['email'],
         'sameAs'      => array_values(array_filter(array_merge([$f['website']], array_values($f['social'])))),
         'containedInPlace' => $canal,
     ];
     if ($f['address'] !== '') {
         $place['address'] = array_filter([
-            '@type' => 'PostalAddress', 'streetAddress' => $f['address'], 'addressLocality' => $f['city'],
+            '@type' => 'PostalAddress', 'streetAddress' => canal_fiche_street($f['address'], $f['city']), 'addressLocality' => $f['city'],
             'postalCode' => $f['postcode'], 'addressCountry' => 'FR',
         ]);
     }

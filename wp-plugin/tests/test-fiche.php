@@ -2,6 +2,7 @@
 // Tests de fiche-core.php — PHP CLI puro (7.4+), sin WordPress.
 // Uso: php wp-plugin/tests/test-fiche.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
+require __DIR__ . '/../canal-home/includes/carte-filter.php';
 require __DIR__ . '/../canal-home/includes/fiche-core.php';
 require __DIR__ . '/../canal-home/includes/head-fix.php';
 
@@ -108,6 +109,16 @@ check(canal_fiche_schema_type(['chambre-dhotes'], true) === 'BedAndBreakfast', "
 check(canal_fiche_schema_type(['bar', 'restaurant'], true) === 'Restaurant', 'schema_type: prioridad del mapa, no orden alfabético de términos');
 check(canal_fiche_schema_type(['bar', 'camping'], true) === 'Campground', 'schema_type: camping con bar → Campground');
 check(canal_fiche_schema_type(['ecluses'], true) === 'TouristAttraction', 'schema_type: écluse con contacto sigue siendo TouristAttraction');
+check(canal_fiche_schema_type(['commerce', 'librairie', 'site-et-monument'], true) === 'TouristAttraction', 'schema_type: monumento con librería → TouristAttraction');
+check(canal_fiche_schema_type(['librairie'], true) === 'BookStore', 'schema_type: librería sola → BookStore');
+check(canal_fiche_seo_title_text('Abbaye-Cathedrale de Saint-Papoul', 'Saint-Papoul') === 'Abbaye-Cathedrale de Saint-Papoul — Canal du Midi', 'seo_title: sin repetir la commune');
+check(canal_fiche_seo_title_text('Écluse de Béziers', 'BEZIERS') === 'Écluse de Béziers — Canal du Midi', 'seo_title: comparación sin acentos ni mayúsculas');
+check(canal_fiche_seo_title_text('Maison Rassier', 'Sainte-Eulalie') === 'Maison Rassier à Sainte-Eulalie — Canal du Midi', 'seo_title: con commune');
+check(canal_fiche_seo_title_text('Maison Rassier', '') === 'Maison Rassier — Canal du Midi', 'seo_title: sin commune');
+check(canal_fiche_street('5 Pl. Mgr de Langle, Saint-Papoul, France', 'Saint-Papoul') === '5 Pl. Mgr de Langle', 'street: sin commune ni país');
+check(canal_fiche_street('20 rue du Pech, 11170 Sainte-Eulalie', 'Sainte-Eulalie') === '20 rue du Pech', 'street: sin CP + commune');
+check(canal_fiche_street('Saint-Papoul, France', 'Saint-Papoul') === 'Saint-Papoul', 'street: solo commune → sin el país');
+check(canal_fiche_street('Quai du Port', '') === 'Quai du Port', 'street: sin commune');
 check(canal_fiche_schema_type(['location-de-velo'], true) === 'LocalBusiness', 'schema_type: sin mapeo + contacto → LocalBusiness');
 check(canal_fiche_schema_type([], false) === 'TouristAttraction', 'schema_type: sin mapeo ni contacto → TouristAttraction');
 
@@ -136,11 +147,30 @@ check(canal_home_fix_head('parcial') === 'parcial', 'fix_head: HTML sin </head> 
 foreach (['stripe-js', 'google-maps', 'mylisting-maps'] as $h) {
     check(canal_fiche_is_unused_asset($h), "unused_asset: $h fuera");
 }
-// frontend.js del tema (c27-main) necesita moment, select2 y jquery-ui al cargar: sin ellos la cabecera
-// (hide-until-load) se queda invisible. Se mantienen.
-foreach (['moment', 'moment-locale-fr', 'select2', 'jquery-ui-core', 'jquery-ui-mouse', 'jquery-ui-sortable', 'jquery-core', 'c27-main', 'mylisting-vendor', 'mylisting-frontend', 'font-awesome-5-all', 'canal-fiche', 'google-maps-extra'] as $h) {
+// Desde la cabecera propia (TASK-032) el CSS/JS del tema tampoco se carga en la ficha (subconjunto en fiche-theme.css).
+foreach (['moment', 'moment-locale-fr', 'select2', 'jquery', 'jquery-core', 'jquery-migrate', 'jquery-ui-core', 'jquery-ui-sortable', 'c27-main', 'mylisting-vendor', 'mylisting-frontend', 'mylisting-icons', 'mylisting-dynamic-styles', 'font-awesome-5-all', 'font-awesome-4-shim', 'theme-styles-default'] as $h) {
+    check(canal_fiche_is_unused_asset($h), "unused_asset: $h fuera");
+}
+foreach (['canal-fiche', 'canal-fiche-theme', 'canal-home-header', 'google-maps-extra', 'jquery-ui-datepicker', 'mylisting-frontend-extra'] as $h) {
     check(!canal_fiche_is_unused_asset($h), "unused_asset: $h se mantiene");
 }
+
+// <head> del tema aligerado en la ficha.
+$h = "<html><head><script src=\"https://www.google.com/recaptcha/api.js\" async defer></script>\n<script async defer crossorigin=\"anonymous\" src=\"https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v15.0\" nonce=\"x\"></script>\n"
+    . "<link href=\"https://fonts.googleapis.com/css2?family=Quicksand&display=swap\" rel=\"stylesheet\">\n<link rel='stylesheet' id='style-pub'  href='/style-pub.css' type='text/css' />\n<script src=\"https://www.googletagmanager.com/gtag/js\" async></script></head><body><script src=\"https://www.google.com/recaptcha/api.js\"></script></body></html>";
+$l = canal_fiche_lighten_head($h);
+$lh = substr($l, 0, strpos($l, '</head>'));
+check(strpos($lh, 'recaptcha') === false && strpos($lh, 'connect.facebook.net') === false && strpos($lh, 'style-pub') === false, 'lighten_head: sin reCAPTCHA, SDK de Facebook ni style-pub');
+check(strpos($lh, 'media="print" onload="this.media=\'all\'"') !== false && strpos($lh, '<noscript><link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet"></noscript>') !== false, 'lighten_head: Google Fonts sin bloquear + noscript');
+check(strpos($lh, 'googletagmanager') !== false && strpos($l, '<body><script src="https://www.google.com/recaptcha/api.js"></script>') !== false, 'lighten_head: GTM intacto y el <body> sin tocar');
+check(canal_fiche_lighten_head('parcial') === 'parcial', 'lighten_head: HTML sin </head> intacto');
+
+// Nombre accesible de los enlaces-icono del menú.
+check(canal_fiche_icon_link_label('<i class="fa fa-facebook-f"></i>', 'https://www.facebook.com/canaldumidi.officiel/?ref=hl') === 'Facebook', 'icon_link_label: Facebook');
+check(canal_fiche_icon_link_label('<i class="fab fa-instagram"></i>', 'https://www.instagram.com/x/') === 'Instagram', 'icon_link_label: Instagram');
+check(canal_fiche_icon_link_label('', 'https://exemple.fr/') === 'exemple.fr', 'icon_link_label: dominio desconocido');
+check(canal_fiche_icon_link_label('[27-icon icon="fab fa-instagram"]', 'https://www.instagram.com/x/') === 'Instagram', 'icon_link_label: título = shortcode de icono del tema');
+check(canal_fiche_icon_link_label('Contact', 'https://www.facebook.com/') === '', 'icon_link_label: con texto → sin cambios');
 
 // CSS no bloqueante (fuentes e iconos propios): media=print + onload + <noscript>.
 $tag = "<link rel='stylesheet' id='canal-home-icons-css' href='https://cdn.jsdelivr.net/x.css?ver=1' media='all' />\n";
@@ -175,6 +205,9 @@ check($page['about']['@id'] === 'https://s/#canal-du-midi', 'graph: WebPage abou
 check($place['image'] === ['https://x/c.jpg', 'https://x/g.jpg'], 'graph: imágenes sin duplicar');
 check($place['sameAs'] === ['https://www.hoteldebordeaux31.fr/', 'https://www.facebook.com/h/'], 'graph: sameAs web + redes');
 check($place['address']['postalCode'] === '31000' && $place['geo']['latitude'] === 43.6, 'graph: address y geo');
+check($place['address']['streetAddress'] === '4 Boulevard Bonrepos' && $place['email'] === 'a@b.fr', 'graph: streetAddress sin CP/commune/país; email en LocalBusiness');
+$mon = canal_fiche_seo_graph(array_merge($f, ['categories' => [['name' => 'Librairie', 'slug' => 'librairie'], ['name' => 'Site', 'slug' => 'site-et-monument']]]), 'https://s/f/', 'https://s/', 'https://s/c/', 'Site')['@graph'][0];
+check($mon['@type'] === 'TouristAttraction' && !isset($mon['email']) && $mon['telephone'] === '+33561624109', 'graph: monumento sin email (no existe en Place), con teléfono');
 check(array_column($g['@graph'][array_search('BreadcrumbList', $types, true)]['itemListElement'], 'position') === [1, 2, 3], 'graph: breadcrumb de 3 niveles');
 $min = canal_fiche_seo_graph(['title' => 'Écluse', 'excerpt' => '', 'cover' => '', 'gallery' => [], 'address' => '', 'city' => '', 'postcode' => '',
     'lat' => null, 'lng' => null, 'phone' => '', 'mobile' => '', 'email' => '', 'website' => '', 'social' => [], 'modified' => '', 'faq' => [], 'categories' => []], 'https://s/f/', 'https://s/', 'https://s/c/', 'Site');

@@ -19,9 +19,37 @@ document.addEventListener('DOMContentLoaded', () => {
         syncBar();
     }
 
-    // --- Hero: fondo cruzado entre las fotos cada 5 s ---
+    // --- Móvil: « Lire la suite » en la descripción y hueco bajo la barra fija de acciones ---
+    const desc = document.querySelector('.description-text');
+    const more = document.querySelector('.fiche-more');
+    if (desc && more && matchMedia('(max-width: 640px)').matches) {
+        desc.classList.add('is-clamped');
+        if (desc.scrollHeight > desc.clientHeight + 8) {
+            more.hidden = false;
+            more.addEventListener('click', () => {
+                const open = !desc.classList.toggle('is-clamped');
+                more.textContent = open ? 'Réduire' : 'Lire la suite';
+                more.setAttribute('aria-expanded', String(open));
+            });
+        } else {
+            desc.classList.remove('is-clamped');
+        }
+    }
+    const stickyBar = document.querySelector('.fiche-sticky-bar');
+    if (stickyBar && stickyBar.offsetHeight) {
+        document.body.style.paddingBottom = stickyBar.offsetHeight + 'px';
+        // Solo cuando los botones de arriba (Appeler / Itinéraire) ya no se ven.
+        const topActions = document.querySelector('.action-bar');
+        if (topActions && 'IntersectionObserver' in window) {
+            new IntersectionObserver(([e]) => stickyBar.classList.toggle('is-visible', !e.isIntersecting)).observe(topActions);
+        } else {
+            stickyBar.classList.add('is-visible');
+        }
+    }
+
+    // --- Hero: fondo cruzado entre las fotos cada 5 s (no en móvil: hero de 300 px y las fotos ya están en el mosaico) ---
     const hero = document.getElementById('service-hero');
-    if (hero) {
+    if (hero && !matchMedia('(max-width: 640px)').matches) {
         let slides = [];
         try { slides = JSON.parse(hero.dataset.gallery || '[]'); } catch (e) { slides = []; }
         slides = Array.isArray(slides) ? slides.filter((u) => /^https:\/\//.test(u)) : [];

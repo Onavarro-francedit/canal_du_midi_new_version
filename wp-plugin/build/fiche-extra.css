@@ -25,7 +25,7 @@ a.category-tag:hover { border-color: var(--primary); color: var(--primary-deep);
 .description-text a { color: var(--primary); text-decoration: underline; }
 
 /* WP: editor + fecha de actualización (E-E-A-T), al pie de la présentation. */
-.fiche-publisher { margin: 18px 0 0; font-size: 12px; line-height: 1.4; color: #94a3b8; }
+.fiche-publisher { margin: 18px 0 0; font-size: 12px; line-height: 1.4; color: #64748b; }
 
 /* WP: preguntas frecuentes con datos reales de la ficha (AEO). */
 .fiche-faq .section-heading-inline h2 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.06; }
@@ -36,3 +36,121 @@ a.category-tag:hover { border-color: var(--primary); color: var(--primary-deep);
 
 /* WP: fuentes de referencia (UNESCO, VNF) en la introducción de la localización. */
 .location-intro a { color: var(--primary); text-decoration: underline; }
+
+/* WP: barra de acciones fija abajo, solo en móvil. */
+.fiche-sticky-bar, .fiche-more { display: none; }
+
+/* ============================================================
+   MÓVIL (≤640px) — estilo « app » (maqueta maison-rassier-mockup.html):
+   hero foto + tarjeta de identidad que lo solapa, secciones blancas a sangre
+   sobre fondo gris, galería en mosaico, carrusel « Autour », barra fija abajo.
+   ============================================================ */
+@media (max-width: 640px) {
+    .service-page { --fm-bg: #eff0f6; --fm-tile: #f5f6fb; --fm-tint: #ebe9fb; --fm-line: #e3e6ef; background: var(--fm-bg); padding-bottom: 10px; }
+    .container { width: 100%; max-width: none; padding: 0; }
+
+    /* Hero: foto de 300 px + identidad en tarjeta blanca */
+    .service-hero { min-height: 0; padding: 0; display: block; color: var(--text); }
+    .service-hero::before, .service-hero-bg { bottom: auto; height: 300px; }
+    .service-hero::before { background: linear-gradient(180deg, rgba(15, 20, 40, 0.3) 0%, rgba(15, 20, 40, 0) 32%, rgba(15, 20, 40, 0) 70%, rgba(15, 20, 40, 0.4) 100%); }
+    .service-hero-content { margin-top: 272px; padding: 22px 20px 4px; background: #fff; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; gap: 10px; max-width: none; }
+    .service-hero h1 { order: 1; margin: 0; font-size: 30px; line-height: 1.1; color: var(--text); text-shadow: none; }
+    .hero-facts { order: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .hero-fact { padding: 5px 12px; border-radius: 99px; background: var(--fm-tint); box-shadow: none; backdrop-filter: none; color: var(--primary-deep); }
+    .hero-fact i { display: none; }
+    .hero-fact strong { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+    .service-location-row { order: 2; margin: 0; gap: 8px; align-items: flex-start; }
+    .service-location { padding: 0; background: none; backdrop-filter: none; border-radius: 0; color: var(--muted); font-size: 15px; font-weight: 500; gap: 6px; }
+    .service-location i { color: var(--primary); }
+    .service-rating-pill { padding: 5px 12px; background: #e6f4ea; backdrop-filter: none; color: #1f6b3a; font-size: 12px; }
+
+    /* Acciones: 2 CTA grandes + iconos */
+    .action-bar-wrapper { padding: 14px 20px 24px; background: #fff; border: 0; backdrop-filter: none; }
+    .action-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 8px; }
+    .action-link { flex-direction: column; gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font-size: 12px; font-weight: 600; color: #2c3a4f; }
+    .action-link i { width: 54px; height: 54px; border-radius: 16px; background: var(--fm-tile); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 20px; }
+    .action-link--call, .action-link--route { grid-column: span 2; flex-direction: row; gap: 8px; height: 52px; border-radius: 14px; font-size: 16px; font-weight: 700; }
+    .action-bar:not(:has(.action-link--route)) .action-link--call, .action-bar:not(:has(.action-link--call)) .action-link--route { grid-column: 1 / -1; }
+    .action-link--call { background: var(--primary); color: #fff; box-shadow: 0 6px 14px rgba(106, 99, 217, 0.3); }
+    .action-link--route { background: #fff; border: 1.5px solid var(--primary); color: var(--primary); }
+    .action-link--call i, .action-link--route i { width: auto; height: auto; background: none; color: inherit; font-size: 18px; }
+    .action-link--call:hover { color: #fff; }
+
+    /* Secciones blancas a sangre separadas por 10 px de gris */
+    .service-grid { grid-template-columns: minmax(0, 1fr); padding: 10px 0 0; gap: 10px; }
+    .service-main-content { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .section-card, .contact-card { padding: 24px 20px; border: 0; border-radius: 0; box-shadow: none; background: #fff; }
+    .section-card-intro::after, .section-kicker, .sidebar-card-copy, .contact-actions { display: none; }
+    .section-heading-inline { margin-bottom: 14px; }
+    .section-heading-inline h2, .section-heading-inline h3, .fiche-faq .section-heading-inline h2, .sidebar-card-title { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.25; }
+    .sidebar-card-title { margin-bottom: 14px; }
+
+    /* À propos: texto recortado + « Lire la suite » (fiche.js) */
+    .description-text { font-size: 15px; line-height: 1.65; color: #3d4b60; }
+    .description-text.is-clamped { max-height: 9.9em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+    .fiche-more:not([hidden]) { display: inline-block; }
+    .fiche-more { height: 44px; padding: 0; border: 0; background: none; color: var(--primary); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+    /* Catégories: rejilla de 2 columnas */
+    .categories-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .category-tag { padding: 12px; border: 0; border-radius: 14px; background: var(--fm-tile); font-size: 14px; }
+
+    /* Galerie: mosaico 1 grande + 5 pequeñas, la última con « +N » */
+    .masonry-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 116px 116px; grid-auto-rows: 96px; gap: 6px; }
+    .gallery-item { position: relative; min-height: 0; }
+    .gallery-item:first-child { grid-column: span 2; grid-row: span 2; }
+    .gallery-item:nth-child(n+7) { display: none; }
+    .masonry-gallery img { height: 100%; border-radius: 6px; box-shadow: none; }
+    .gallery-item:first-child img { border-radius: 14px 6px 6px 6px; }
+    .gallery-item[data-more]::after { content: attr(data-more); position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: rgba(15, 20, 40, 0.6); color: #fff; font-size: 18px; font-weight: 800; pointer-events: none; }
+
+    /* Localisation: título, mapa + dirección, itinéraire, nota; « Autour » como sección aparte */
+    .map-section { display: flex; flex-direction: column; gap: 14px; background: #fff; }
+    .location-hero, .location-layout, .location-heading { display: contents; }
+    .location-heading h3 { order: 1; }
+    .location-map-shell { order: 2; padding: 0; overflow: hidden; border: 1px solid var(--fm-line); border-radius: 18px; background: #fff; box-shadow: none; }
+    .location-route-link { order: 3; justify-content: center; height: 50px; padding: 0; border-radius: 14px; font-size: 15px; }
+    .location-intro { order: 4; margin: 0; font-size: 13px; line-height: 1.5; }
+    .location-nearby-panel { order: 5; width: auto; margin: 10px -20px -24px; padding: 24px 0; border: 0; border-top: 10px solid var(--fm-bg); border-radius: 0; background: #fff; box-shadow: none; }
+    #map { min-height: 170px; height: 170px; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+    .location-address-card { margin: 0; padding: 14px 16px; border: 0; border-radius: 0; background: none; }
+    .location-address-label { margin-bottom: 2px; font-size: 11px; }
+    .address-footer { margin: 0; font-size: 15px; font-weight: 700; color: var(--text); }
+    .location-nearby-header { padding: 0 20px; margin-bottom: 14px; }
+    .location-nearby-header h4 { margin: 0; font-size: 20px; font-weight: 800; color: var(--text); }
+    .location-nearby-header p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+    .poi-grid { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; padding: 0 20px 4px; scrollbar-width: none; }
+    .poi-link { flex: 0 0 150px; scroll-snap-align: start; }
+    .poi-item, .poi-item:hover { position: relative; display: flex; flex-direction: column; gap: 0; height: 100%; padding: 0; overflow: hidden; border-radius: 16px; background: #fff; transform: none; box-shadow: none; }
+    .poi-image-container { width: 100%; height: 84px; border-radius: 0; box-shadow: none; }
+    .poi-icon-fallback { height: 100%; display: flex; align-items: center; justify-content: center; background: var(--fm-tint); color: var(--primary); font-size: 26px; }
+    .poi-info { padding: 10px 12px 12px; gap: 3px; }
+    .poi-info strong { font-size: 14px; line-height: 1.3; }
+    .poi-info span { font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+    .poi-distance { position: absolute; left: 8px; top: 56px; padding: 3px 8px; background: #fff; color: var(--text); font-size: 12px; }
+
+    /* FAQ: bloques en tarjeta gris */
+    .fiche-faq-item, .fiche-faq-item:first-of-type { margin-top: 8px; padding: 14px 16px; border: 0; border-radius: 14px; background: var(--fm-tile); }
+    .fiche-faq-item h3 { font-size: 15px; }
+    .fiche-faq-item p { font-size: 14px; color: #3d4b60; }
+
+    /* Coordonnées: lista en tarjeta con icono teñido */
+    .service-sidebar { grid-template-columns: minmax(0, 1fr); background: #fff; padding-bottom: 24px; }
+    .contact-list { grid-template-columns: minmax(0, 1fr); margin: 0; gap: 0; border: 1px solid var(--fm-line); border-radius: 16px; }
+    .contact-list li, .contact-list li:first-child { align-items: center; gap: 14px; padding: 14px 16px; border-top: 1px solid #edf0f5; }
+    .contact-list li:first-child { border-top: 0; }
+    .contact-list li > i { flex: 0 0 38px; width: 38px; height: 38px; border-radius: 10px; background: var(--fm-tint); display: flex; align-items: center; justify-content: center; }
+    .contact-list li > div { min-width: 0; }
+    .contact-list li strong { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+    .contact-list li span, .contact-list li a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; color: var(--text); }
+    .contact-list li a { color: var(--primary); }
+    .fiche-back-carte { width: auto; margin: 0 20px; }
+
+    /* Barra fija abajo: Appeler + iconos (76 px a la derecha: botón flotante del consentimiento de cookies) */
+    .fiche-sticky-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; gap: 10px; padding: 12px 76px calc(12px + env(safe-area-inset-bottom)) 16px; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px); box-shadow: 0 -6px 20px rgba(10, 22, 40, 0.1); transform: translateY(110%); visibility: hidden; transition: transform 0.25s ease, visibility 0s 0.25s; }
+    .fiche-sticky-bar.is-visible { transform: none; visibility: visible; transition: transform 0.25s ease; }
+    .fiche-sticky-bar a { height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; text-decoration: none; }
+    .fsb-main { flex: 1; background: var(--primary); color: #fff; box-shadow: 0 6px 14px rgba(106, 99, 217, 0.3); }
+    .fsb-main:hover { color: #fff; }
+    .fsb-icon { flex: 0 0 52px; border: 1.5px solid var(--primary); background: #fff; color: var(--primary); font-size: 20px; }
+}

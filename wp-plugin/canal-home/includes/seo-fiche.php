@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 
 function canal_fiche_seo_title(array $f): string
 {
-    return $f['title'] . ($f['city'] !== '' ? ' à ' . $f['city'] : '') . ' — Canal du Midi';
+    return canal_fiche_seo_title_text($f['title'], $f['city']);
 }
 
 function canal_fiche_seo_description(array $f): string

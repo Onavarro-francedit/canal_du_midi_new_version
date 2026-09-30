@@ -96,14 +96,15 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Convención de URLs:** toda página nueva lleva el sufijo **`-2026`** (`/accueil-2026/`,
   `/explorer-2026/`, …) para distinguirla de la actual; al publicar se quita el sufijo y se
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
-- **Último completado:** **TASK-032 — navbar nuevo** (cabecera propia + mega-menú, estructura por intención
+- **Último completado:** **TASK-033 — ficha 2026: diseño móvil, SEO y aligerado del tema** (PageSpeed móvil 87 /
+  escritorio 98, privada). Antes: **TASK-032 — navbar nuevo** (cabecera propia + mega-menú, estructura por intención
   y vistas GA4) en home, carte y ficha 2026, privadas. Antes: TASK-030 ficha `/fiche-2026/<slug>/`, TASK-029
   carte `/explorer-2026/` (18502), TASK-027 home `/accueil-2026/` (18500). Detalle en `docs/TASKS.md` 🟢.
 - **Comandos:** `wp-plugin/remote.sh test` (tests + lint 7.4 en el servidor) ·
   `remote.sh deploy` · `remote.sh run tests/<smoke>.php` (con el plugin desactivado) ·
   `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:
   `node wp-plugin/build/build-css.mjs` (nunca editar `assets/home.css` a mano).
-- **Siguiente:** decidir la publicación conjunta home + carte + ficha (TASK-028 + TASK-029b +
-  TASK-030b) — SOLO con orden explícita.
+- **Siguiente:** TASK-034 (aligerar el tema en home y carte) o decidir la publicación conjunta home +
+  carte + ficha (TASK-028 + TASK-029b + TASK-030b) — esto último SOLO con orden explícita.
 - Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
   antes de la captura de página completa: scroll-reveal + lazy-load).

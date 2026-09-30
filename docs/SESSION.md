@@ -5,6 +5,30 @@ sesión.
 
 ---
 
+## CIERRE 2026-09-30 (noche) — TASK-033 ficha 2026 móvil + SEO + aligerado del tema (privada) · Siguiente: TASK-034 o publicar
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** la ficha 2026 tiene diseño móvil tipo app, correcciones SEO y ya no carga el CSS/JS del
+tema (PageSpeed móvil 87, escritorio 98); sigue privada (`canal_fiche_public` borrada, 404 sin sesión).
+
+**Archivos:** `template-fiche.php`, `assets/fiche/fiche.js`, `build/fiche-extra.css` (+ `assets/fiche.css`),
+`assets/fiche-theme.css` (nuevo, generado), `build/extract-theme-css.js` (nuevo), `includes/fiche-core.php`,
+`fiche-route.php`, `head-fix.php`, `seo-fiche.php`, `tests/test-fiche.php`.
+
+**Decisiones que no están en ARCHITECTURE.md:** en la ficha el CSS del tema se sustituye por un subconjunto
+estático extraído del DOM (regenerar si cambia el tema); el `<head>` fijo del tema se limpia con el buffer de
+`head-fix.php` solo en la ficha; `remote.sh deploy` lo lanza el usuario (el clasificador lo bloquea).
+
+**Próxima acción:**
+```
+TASK-034 — aligerar el tema en home y carte (mismo método que TASK-033), o bien publicar home + carte + ficha
+(TASK-028 / TASK-029b / TASK-030b) SOLO con orden explícita.
+```
+
+---
+
+### Histórico
+
 ## CIERRE 2026-09-30 (tarde) — TASK-032 navbar nuevo desplegado (privado) · Siguiente: decidir publicación
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
@@ -26,8 +50,6 @@ Al final: TASK-031 (<head> del tema en todo el sitio), también solo con orden e
 ```
 
 ---
-
-### Histórico
 
 ## CIERRE 2026-09-30 — Fiche 2026 terminada, optimizada y fusionada (privada) · Siguiente: decidir publicación
 

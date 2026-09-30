@@ -51,10 +51,10 @@ get_header();
         <div class="container">
             <div class="action-bar">
                 <?php if ($tel !== ''): ?>
-                    <a href="<?= esc_url('tel:' . $tel) ?>" class="action-link"><i class="bi bi-telephone-fill"></i> <span>Appeler</span></a>
+                    <a href="<?= esc_url('tel:' . $tel) ?>" class="action-link action-link--call"><i class="bi bi-telephone-fill"></i> <span>Appeler</span></a>
                 <?php endif; ?>
                 <?php if ($hasGeo): ?>
-                    <a href="<?= esc_url($routeUrl) ?>" target="_blank" rel="noopener" class="action-link"><i class="bi bi-map-fill"></i> <span>Itinéraire</span></a>
+                    <a href="<?= esc_url($routeUrl) ?>" target="_blank" rel="noopener" class="action-link action-link--route"><i class="bi bi-map-fill"></i> <span>Itinéraire</span></a>
                 <?php endif; ?>
                 <?php if ($f['email'] !== ''): ?>
                     <a href="<?= esc_url('mailto:' . $f['email']) ?>" class="action-link"><i class="bi bi-envelope-fill"></i> <span>Email</span></a>
@@ -79,6 +79,7 @@ get_header();
                 </div>
                 <?php if (trim(wp_strip_all_tags($f['description_html'])) !== ''): ?>
                     <div class="description-text"><?= $f['description_html'] // WP: ya pasado por wp_kses_post ?></div>
+                    <button type="button" class="fiche-more" aria-expanded="false" hidden>Lire la suite</button>
                 <?php endif; ?>
                 <?php if ($f['modified'] !== ''): ?>
                     <p class="fiche-publisher">Fiche éditée par <?= esc_html(CANAL_HOME_SITE_NAME) ?> · mise à jour le <time datetime="<?= esc_attr($f['modified']) ?>"><?= esc_html(date_i18n('j F Y', strtotime($f['modified']))) ?></time></p>
@@ -125,7 +126,7 @@ get_header();
                 </div>
                 <div class="masonry-gallery">
                     <?php foreach ($f['gallery_imgs'] as $i => $photo): ?>
-                        <div class="gallery-item">
+                        <div class="gallery-item"<?php if ($i === 5 && count($f['gallery_imgs']) > 6): ?> data-more="+<?= count($f['gallery_imgs']) - 6 ?>"<?php endif; ?>>
                             <img src="<?= esc_url($photo['image']) ?>"<?php if ($photo['image_srcset'] !== ''): ?> srcset="<?= esc_attr($photo['image_srcset']) ?>" sizes="(max-width: 640px) 100vw, 460px"<?php endif; ?><?php if (!empty($photo['image_w'])): ?> width="<?= (int) $photo['image_w'] ?>" height="<?= (int) $photo['image_h'] ?>"<?php endif; ?>
                                 alt="<?= esc_attr($f['title'] . ' — photo ' . ($i + 1)) ?>" class="lightbox-trigger" data-index="<?= (int) $i ?>" data-full="<?= esc_url($f['gallery'][$i]) ?>" loading="lazy" decoding="async">
                         </div>
@@ -166,7 +167,7 @@ get_header();
                                     <div class="poi-item poi-hover-trigger" data-lat="<?= esc_attr(sprintf('%.6F', $n['lat'])) ?>" data-lng="<?= esc_attr(sprintf('%.6F', $n['lng'])) ?>" data-name="<?= esc_attr($n['title']) ?>">
                                         <div class="poi-image-container">
                                             <?php if (($n['image'] ?? '') !== ''): ?>
-                                                <img src="<?= esc_url(canal_fiche_https($n['image'])) ?>"<?php if (($n['image_srcset'] ?? '') !== ''): ?> srcset="<?= esc_attr($n['image_srcset']) ?>" sizes="56px"<?php endif; ?> width="56" height="56" alt="" class="poi-thumb" loading="lazy" decoding="async">
+                                                <img src="<?= esc_url(canal_fiche_https($n['image'])) ?>"<?php if (($n['image_srcset'] ?? '') !== ''): ?> srcset="<?= esc_attr($n['image_srcset']) ?>" sizes="(max-width: 640px) 150px, 56px"<?php endif; ?> width="56" height="56" alt="" class="poi-thumb" loading="lazy" decoding="async">
                                             <?php else: ?>
                                                 <div class="poi-icon-fallback"><i class="bi bi-geo-alt"></i></div>
                                             <?php endif; ?>
@@ -244,6 +245,21 @@ get_header();
             <a class="button button-ghost button-full fiche-back-carte" href="<?= esc_url($carteUrl) ?>"><i class="bi bi-map"></i> Voir tous les prestataires sur la carte</a>
         </aside>
     </div>
+
+    <?php
+    // Móvil: barra de acciones fija abajo (la primera con texto, el resto solo icono).
+    $sticky = array_filter([
+        $tel !== '' ? ['tel:' . $tel, 'bi-telephone-fill', 'Appeler', false] : null,
+        $hasGeo ? [$routeUrl, 'bi-sign-turn-right-fill', 'Itinéraire', true] : null,
+        $f['email'] !== '' ? ['mailto:' . $f['email'], 'bi-envelope-fill', 'Email', false] : null,
+    ]);
+    if ($sticky): ?>
+    <nav class="fiche-sticky-bar" aria-label="Contacter">
+        <?php foreach (array_values($sticky) as $k => [$href, $icon, $label, $ext]): ?>
+            <a href="<?= esc_url($href) ?>"<?= $ext ? ' target="_blank" rel="noopener"' : '' ?> class="<?= $k === 0 ? 'fsb-main' : 'fsb-icon' ?>"<?= $k === 0 ? '' : ' aria-label="' . esc_attr($label) . '"' ?>><i class="bi <?= esc_attr($icon) ?>"></i><?= $k === 0 ? ' ' . esc_html($label) : '' ?></a>
+        <?php endforeach; ?>
+    </nav>
+    <?php endif; ?>
 
     <?php if ($f['gallery']): ?>
     <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Galerie photos">

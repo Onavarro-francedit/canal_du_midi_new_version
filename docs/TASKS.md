@@ -284,7 +284,35 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   newsletter funcional → ver **BUG-003**; bloque inmersivo "Lire la vidéo" →
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
+- **TASK-034 — Aligerar el tema también en home y carte** — mismo método que TASK-033 (subconjunto del CSS del
+  tema + quitar su JS, reCAPTCHA y SDK de Facebook), midiendo antes/después con PageSpeed.
+
 ## 🟢 Completadas
+
+### TASK-033 — Ficha 2026: diseño móvil, auditoría SEO y aligerado del tema — DESPLEGADO EN PRIVADO ✅ — 2026-09-30
+
+- **Diseño móvil (≤640 px, maqueta `maison-rassier-mockup.html`):** hero foto 300 px + tarjeta de identidad
+  que lo solapa (chips, H1, dirección), CTA Appeler/Itinéraire + iconos, secciones blancas a sangre, « Lire la
+  suite », categorías en 2 columnas, galería en mosaico con « +N », mapa compacto, « Autour » en carrusel,
+  FAQ en bloques, coordonnées en lista. Barra fija abajo (Appeler + iconos) que solo aparece cuando los CTA de
+  arriba salen de pantalla (IntersectionObserver) y deja 76 px a la derecha para el botón del CMP. Paleta y
+  tipografía del sitio (violeta/Sora), no el azul de la maqueta. Escritorio sin cambios. Sin carrusel del hero
+  en móvil.
+- **Auditoría seo-geo:** schema « monumento antes que comercio » (la abadía salía `BookStore`), sin `email`
+  en `TouristAttraction`/`Museum` (no existe en Place), `streetAddress` sin commune/país, `<title>` sin repetir
+  la commune (`canal_fiche_seo_title_text`), contraste AA de « Fiche éditée par… » (#64748b).
+- **Tema fuera de la ficha:** `CANAL_FICHE_UNUSED_ASSETS` quita el CSS (vendor/frontend/icons/FA/select2/
+  dynamic-styles…) y el JS (jQuery, jquery-ui, moment, select2, vendor.js, frontend.js) del tema; lo que la
+  ficha usa del CSS del tema (~3 % de las reglas, 32 KB) va en `assets/fiche-theme.css`, generado con
+  `build/extract-theme-css.js` (regenerar si cambia el tema/pie). `canal_fiche_lighten_head` quita del
+  `<head>` fijo del tema reCAPTCHA (~830 KB), SDK de Facebook y style-pub.css, y carga Google Fonts sin
+  bloquear. Pie en flujo normal (`position:static`: sin el JS del tema nadie reserva su hueco) y barra de admin
+  oculta bajo 1200 px como hacía el tema. `aria-label` en los enlaces-icono del menú (título = shortcode
+  `[27-icon …]`) en home, carte y ficha.
+- **PageSpeed (laboratorio, ficha abierta unos minutos y cerrada):** móvil 69 → **87** (LCP 5,6 → 3,8 s,
+  TBT 240 → 80 ms), escritorio 84 → **98**, accesibilidad 93 → 97, navegación agéntica 3/3.
+- **Límites:** `fiche-theme.css` se extrajo de UNA ficha (una con vídeo podría necesitar alguna regla más);
+  el CMP y su botón flotante son de terceros.
 
 ### TASK-032 — Navbar nuevo en home, carte y ficha 2026 — DESPLEGADO EN PRIVADO ✅ — 2026-09-30
 

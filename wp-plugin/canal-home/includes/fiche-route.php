@@ -72,6 +72,13 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-fiche', CANAL_HOME_URL . 'assets/fiche.css', [], $ver('assets/fiche.css'));
     wp_add_inline_style('canal-fiche', '.loader-bg.main-loader{display:none!important}');
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
+    // Lo que la ficha usa del CSS del tema (base Bootstrap, pie, iconos del pie), después de lo nuestro como antes.
+    wp_enqueue_style('canal-fiche-theme', CANAL_HOME_URL . 'assets/fiche-theme.css', ['canal-fiche', 'canal-home-header'], $ver('assets/fiche-theme.css'));
+    // Sin el JS del tema nadie reserva el hueco del pie fijo (« footer reveal »): el pie va en el flujo normal.
+    // Con sesión: el tema ocultaba la barra de admin bajo 1200 px (reglas de frontend.css, que ya no se carga).
+    wp_add_inline_style('canal-fiche-theme', 'footer.footer{position:static}'
+        . '@media only screen and (max-width:1200px){#wpadminbar{display:none!important}}'
+        . '@media only screen and (min-width:1201px){html body.admin-bar{margin-top:32px!important}}');
     // fiche.js arranca en DOMContentLoaded; el mapa (Google Maps) se carga en diferido desde él.
     wp_enqueue_script('canal-fiche', CANAL_HOME_URL . 'assets/fiche/fiche.js', [], $ver('assets/fiche/fiche.js'), true);
 }, 20);
@@ -91,4 +98,15 @@ add_action('wp_print_footer_scripts', function () {
 add_filter('style_loader_tag', function ($tag, $handle) {
     return (canal_fiche_is_page() && in_array($handle, ['canal-home-fonts', 'canal-home-icons'], true))
         ? canal_fiche_nonblocking_css($tag) : $tag;
+}, 10, 2);
+
+// Pie del tema: los enlaces de redes son solo un icono (Lighthouse: « enlaces sin nombre »). Solo en nuestras páginas.
+add_filter('nav_menu_link_attributes', function ($atts, $item) {
+    if (canal_fiche_is_page() || canal_home_is_page() || canal_carte_is_page()) {
+        $label = canal_fiche_icon_link_label((string) $item->title, (string) ($atts['href'] ?? ''));
+        if ($label !== '' && empty($atts['aria-label'])) {
+            $atts['aria-label'] = $label;
+        }
+    }
+    return $atts;
 }, 10, 2);
