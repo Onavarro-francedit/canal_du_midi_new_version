@@ -30,7 +30,13 @@ tests `test-fiche.php`, `smoke-fiche.php`, `smoke-carte-data.php`, `remote.sh`.
 no aparece); `<head>` roto por `fb-root` del tema en todo el sitio = TASK-031, para el final; abrir la ficha
 para medir con PageSpeed está autorizado (y cerrarla siempre después).
 
-**Próxima acción:**
+**Próxima acción (nueva sesión):**
+```
+TASK-032 — rediseño del navbar (docs/TASKS.md): leer docs/SESSION.md y TASKS.md, ver la cabecera actual en
+home/carte/ficha 2026 (con sesión, escritorio y móvil) y wp-plugin/canal-home/assets/header.css, y hacer
+brainstorming con el usuario (qué no le gusta) antes de tocar código.
+```
+Después:
 ```
 Publicar home + carte + ficha juntas = TASK-028 / TASK-029b / TASK-030b, SOLO con orden explícita.
 Al final: TASK-031 (<head> del tema en todo el sitio), también solo con orden explícita.

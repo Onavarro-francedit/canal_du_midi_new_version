@@ -28,6 +28,13 @@ Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b /
   condición `CANAL_FICHE_PATH !== '/fiche/'` en seo-fiche.php ya lo hace); vaciar
   `canal_carte_listings`. Rollback de TASK-030: quitar los archivos fiche-* del plugin y
   `wp option delete canal_fiche_rewrite && wp rewrite flush`.
+- **TASK-032 — Rediseño del navbar (próxima sesión, pedido del usuario 30/09)** — al usuario no le gusta la
+  cabecera actual: « no pega con el sitio ». Hoy es la cabecera del tema my-listing (`.c27-main-header`),
+  restilizada SOLO en nuestras páginas (home, carte, ficha 2026) con `wp-plugin/canal-home/assets/header.css`
+  (`body.page-template-canal-home`), más el botón « Carte interactive » reescrito por JS
+  (`canal_home_carte_menu_js`). Regla: no tocar el tema ni el menú existente; rediseñar añadiendo desde el
+  plugin. Empezar con brainstorming: qué no gusta, referencias (app local `src/Infrastructure/Views/layout/
+  header.php`), escritorio + móvil (menú hamburguesa del tema), y verificar en navegador con captura.
 - **TASK-031 — `<head>` roto en TODO el sitio (dejar para el final, decisión del usuario 30/09)** — el
   `header.php` del tema imprime `<div id="fb-root"></div>` antes de `wp_head()`: el navegador cierra el
   `<head>` ahí y title/meta description/canonical/robots/OG/JSON-LD de las páginas actuales quedan en el
