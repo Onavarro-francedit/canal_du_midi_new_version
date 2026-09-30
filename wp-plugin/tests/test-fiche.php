@@ -3,6 +3,7 @@
 // Uso: php wp-plugin/tests/test-fiche.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
 require __DIR__ . '/../canal-home/includes/fiche-core.php';
+require __DIR__ . '/../canal-home/includes/head-fix.php';
 
 $fails = 0;
 function check(bool $cond, string $label): void
@@ -116,6 +117,21 @@ check(canal_fiche_tel_intl('Tél Atelier : 07 68 13 87 23') === '+33768138723', 
 check(canal_fiche_tel_intl('+44 20 7946 0958') === '+442079460958', 'tel_intl: extranjero sin cambios');
 check(canal_fiche_tel_intl('fermé') === '', 'tel_intl: sin número');
 
+// Acceso: privada salvo sesión con read_private_pages u opción canal_fiche_public = '1' (pruebas públicas).
+check(canal_fiche_can_view(true, false) && canal_fiche_can_view(false, '1'), 'can_view: sesión o apertura temporal');
+check(!canal_fiche_can_view(false, false) && !canal_fiche_can_view(false, '0') && !canal_fiche_can_view(false, 'yes'), 'can_view: sin sesión ni opción exacta → privada');
+
+// <head>: el tema imprime <div id="fb-root"> antes de wp_head(); el parser cierra el <head> ahí y
+// title/meta/canonical/JSON-LD acaban en el <body>. Se mueve el div justo después de <body>.
+$html = "<html><head>\n<script src=x></script>\n<div id=\"fb-root\"></div>\n<title>T</title><meta name=\"description\" content=\"d\">\n</head>\n<body class=\"a\">\n<p>x</p></body></html>";
+$fixed = canal_home_fix_head($html);
+$headPart = substr($fixed, 0, strpos($fixed, '</head>'));
+check(strpos($headPart, 'fb-root') === false && strpos($headPart, '<title>T</title>') !== false, 'fix_head: fb-root fuera del <head>');
+check(strpos($fixed, "<body class=\"a\">\n<div id=\"fb-root\"></div>") !== false, 'fix_head: fb-root justo después de <body>');
+check(substr_count($fixed, 'fb-root') === 1, 'fix_head: un solo fb-root');
+check(canal_home_fix_head('<html><head><title>T</title></head><body><div id="fb-root"></div></body></html>') === '<html><head><title>T</title></head><body><div id="fb-root"></div></body></html>', 'fix_head: sin cambios si ya está en el body');
+check(canal_home_fix_head('parcial') === 'parcial', 'fix_head: HTML sin </head> intacto');
+
 // Grafo JSON-LD.
 $f = [
     'title' => 'Hôtel de Bordeaux', 'excerpt' => 'Hôtel au bord du canal.', 'cover' => 'https://x/c.jpg', 'gallery' => ['https://x/c.jpg', 'https://x/g.jpg'],
@@ -131,6 +147,7 @@ $page = $g['@graph'][array_search('WebPage', $types, true)];
 check($page['dateModified'] === '2026-09-12T08:00:00+00:00' && $page['mainEntity']['@id'] === 'https://s/fiche-2026/h/#place', 'graph: WebPage con dateModified y mainEntity');
 check($page['publisher']['@id'] === 'https://s/#organization' && $page['publisher']['name'] === 'Site', 'graph: publisher = organización del sitio');
 check(in_array('.fiche-faq', $page['speakable']['cssSelector'], true), 'graph: speakable sobre la FAQ');
+check($page['isPartOf']['@type'] === 'WebSite' && $page['isPartOf']['name'] === 'Site' && $page['isPartOf']['url'] === 'https://s/', 'graph: isPartOf WebSite tipado (no CreativeWork vacío en el validador)');
 $faqNode = $g['@graph'][array_search('FAQPage', $types, true)];
 check($faqNode['mainEntity'][0]['name'] === 'Où se trouve H ?' && $faqNode['mainEntity'][0]['acceptedAnswer']['text'] === 'Ici.', 'graph: FAQPage con las preguntas');
 check($g['@context'] === 'https://schema.org', 'graph: @context');

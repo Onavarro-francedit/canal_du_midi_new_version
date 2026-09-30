@@ -303,6 +303,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   LodgingBusiness, Hostel, Restaurant, BarOrPub, Bakery, Museum, TouristInformationCenter,
   TouristAttraction, Store…); `telephone` E.164 (+33…); `containedInPlace`/`about` = Canal du Midi
   (Wikidata Q202494, UNESCO); enlaces visibles UNESCO y VNF en « Localisation ».
+- **Prueba pública (30/09, 10:18–10:32 UTC, opción `canal_fiche_public`, ya borrada):** PageSpeed móvil
+  ficha 2026 44 (LCP 7,1 s, CLS 0) vs ficha actual 28 (LCP 21,5 s, CLS 0,197); escritorio 64 (LCP 1,6 s).
+  Validador schema.org 0 errores; Rich Results: migas, LocalBusiness (solo falta priceRange, facultativo) y
+  Organisation válidos. **Hallazgo:** `header.php` del tema imprime `<div id="fb-root">` antes de
+  `wp_head()` → en TODO el sitio title/meta/canonical/JSON-LD quedan en el `<body>`. Corregido solo en
+  nuestras páginas (`includes/head-fix.php`, buffer que mueve el div tras `<body>`).
+  Pendiente rendimiento móvil (tema/terceros): CSS/JS bloqueantes del tema (~4,4 s), reCAPTCHA, Stripe,
+  SDK Facebook, GTM, Google Maps cargado aunque el mapa esté abajo.
 
 ### BUG — IA « momentanément indisponible » (home y carte) — CORREGIDO ✅ — 2026-09-29
 - **Causa:** incidente de la API de Anthropic: `503 overloaded_error « Grammar compilation is

@@ -34,6 +34,7 @@ require_once CANAL_HOME_DIR . 'includes/fiche-core.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-data.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-route.php';
 require_once CANAL_HOME_DIR . 'includes/seo-fiche.php';
+require_once CANAL_HOME_DIR . 'includes/head-fix.php';
 
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';

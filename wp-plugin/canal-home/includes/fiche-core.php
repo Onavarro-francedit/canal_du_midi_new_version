@@ -171,6 +171,13 @@ function canal_fiche_tel_intl(string $raw): string
     return (strlen($num) === 10 && $num[0] === '0') ? '+33' . substr($num, 1) : $num;
 }
 
+// La ficha 2026 es privada; la opción canal_fiche_public = '1' la abre temporalmente (pruebas PageSpeed,
+// validadores). Abrir: wp option update canal_fiche_public 1 · cerrar: wp option delete canal_fiche_public.
+function canal_fiche_can_view(bool $canReadPrivate, $publicOption): bool
+{
+    return $canReadPrivate || $publicOption === '1';
+}
+
 // 0,0 = geocodificación fallida (golfo de Guinea), no una posición real.
 function canal_fiche_has_coords($lat, $lng): bool
 {
@@ -258,7 +265,7 @@ function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $c
         'url'          => $url,
         'name'         => $f['title'],
         'inLanguage'   => 'fr-FR',
-        'isPartOf'     => ['@id' => $homeUrl . '#website'],
+        'isPartOf'     => ['@type' => 'WebSite', '@id' => $homeUrl . '#website', 'name' => $siteName, 'url' => $homeUrl],
         'publisher'    => ['@type' => 'Organization', '@id' => $homeUrl . '#organization', 'name' => $siteName],
         'mainEntity'   => ['@id' => $url . '#place'],
         'about'        => ['@id' => $canal['@id']],

@@ -43,7 +43,7 @@ add_action('template_redirect', function () {
     global $wp_query;
     $post = canal_fiche_post($slug);
     // Una query var sola deja is_home = true: sin set_404 se vería la portada del blog.
-    if (!$post || !current_user_can('read_private_pages')) {
+    if (!$post || !canal_fiche_can_view(current_user_can('read_private_pages'), get_option('canal_fiche_public'))) {
         $wp_query->set_404();
         status_header(404);
         nocache_headers();
