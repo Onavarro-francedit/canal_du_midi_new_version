@@ -4,7 +4,7 @@
  */
 document.addEventListener('DOMContentLoaded', () => {
     // WP: la cabecera del tema se esconde al bajar (transform): la barra de acciones sticky sigue su borde inferior.
-    const header = document.querySelector('.c27-main-header');
+    const header = document.querySelector('.cdm-header');
     const root = document.querySelector('.cdm-fiche');
     if (header && root) {
         let pending = false;

@@ -1,82 +1,320 @@
 /*
- * Cabecera del tema my-listing restilizada SOLO en la página « Accueil 2026 ».
- * Todo va bajo body.page-template-canal-home: no se modifica ningún archivo del tema y
- * desactivar el plugin la deja como estaba. Escrito a mano (no pasa por el build de home.css,
- * que prefija con .cdm-home). Valores en px: el tema fija html{font-size:10px}.
- * !important solo donde el tema también lo usa o pone estilos en línea.
+ * Cabecera propia (includes/header.php) en home, carte y ficha 2026: estilo de .site-header de la
+ * app local (public/assets/css/styles.css) + mega-menú (patrón « disclosure » del W3C: se abre con
+ * clic, no con hover). Escrito a mano, fuera del build. Valores en px: el tema fija html{font-size:10px}.
  */
 
-/* Fondo: blanco translúcido con desenfoque y sombra suave (antes gris plano #f2f2f2). */
-body.page-template-canal-home .c27-main-header .header-skin {
-    background: rgba(255, 255, 255, 0.82) !important;
-    -webkit-backdrop-filter: saturate(160%) blur(14px);
-    backdrop-filter: saturate(160%) blur(14px);
-    box-shadow: 0 1px 0 rgba(92, 97, 140, 0.10), 0 10px 30px rgba(61, 72, 124, 0.08);
-    border: 0 !important;
+.cdm-header {
+    position: sticky;
+    top: var(--wp-admin--admin-bar--height, 0px);
+    z-index: 3000;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    background: rgba(252, 248, 255, 0.85);
+    border-bottom: 1px solid rgba(106, 99, 217, 0.08);
+    font-family: 'Manrope', sans-serif;
+}
+/* El tema oculta la barra de admin de WP hasta 1200px (#wpadminbar display:none): cabecera arriba del todo. */
+@media (max-width: 1200px) {
+    .cdm-header { top: 0; }
 }
 
-/* Tipografía de la home (Manrope, cargada por el plugin en esta página). */
-body.page-template-canal-home .c27-main-header .main-menu > li > a,
-body.page-template-canal-home .c27-main-header .main-menu .sub-menu a,
-body.page-template-canal-home .c27-main-header .header-search input {
-    font-family: 'Manrope', sans-serif !important;
-    font-weight: 600;
-    font-size: 14px;
+.cdm-header__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(1360px, calc(100vw - 32px));
+    min-height: 70px;
+    margin: 0 auto;
+}
+
+.cdm-header a { text-decoration: none; }
+.cdm-header ul { margin: 0; padding: 0; list-style: none; }
+
+.cdm-header .cdm-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
     color: #1f2340;
 }
-body.page-template-canal-home .c27-main-header .main-menu > li > a:hover,
-body.page-template-canal-home .c27-main-header .main-menu > li:hover > a {
-    color: #6a63d9 !important;
+
+.cdm-header__mark {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #66c7c7, #6a63d9);
+    box-shadow: 0 6px 16px rgba(106, 99, 217, 0.32);
 }
 
-/* « Carte interactive »: botón píldora violeta como los de la home. */
-body.page-template-canal-home .c27-main-header .header-button .buttons {
-    background: linear-gradient(135deg, #6a63d9, #4f48b7) !important;
-    border: 0 !important;
-    border-radius: 999px !important;
-    padding: 12px 22px !important;
-    font-family: 'Manrope', sans-serif !important;
-    font-weight: 700;
+.cdm-header__nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
     font-size: 14px;
-    box-shadow: 0 8px 20px rgba(106, 99, 217, 0.32);
-    transition: filter 0.2s ease, transform 0.2s ease;
 }
-body.page-template-canal-home .c27-main-header .header-button .buttons:hover {
-    filter: brightness(1.06);
+
+/* Entradas de primer nivel: botones del mega-menú y enlaces directos. */
+.cdm-header .cdm-mega__btn,
+.cdm-header .cdm-header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 0;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    box-shadow: none;
+    color: #4a4f6a;
+    font: 600 14px/1.2 'Manrope', sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.18s, background 0.18s;
+}
+.cdm-header .cdm-mega__btn:hover,
+.cdm-header .cdm-header__link:hover,
+.cdm-header .cdm-mega.is-open > .cdm-mega__btn {
+    color: #1f2340;
+    background: rgba(106, 99, 217, 0.08);
+}
+.cdm-mega__btn .bi-chevron-down { font-size: 11px; transition: transform 0.2s; }
+.cdm-mega.is-open > .cdm-mega__btn .bi-chevron-down { transform: rotate(180deg); }
+.cdm-header__link .bi { color: #6a63d9; }
+/* Separa los paneles de los accesos directos (Distances, Carte). */
+.cdm-header .cdm-mega + .cdm-header__link { margin-left: auto; }
+
+.cdm-header .cdm-header__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 6px;
+    padding: 9px 18px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #6a63d9, #8a7ee8);
+    box-shadow: 0 4px 16px rgba(106, 99, 217, 0.38);
+    color: #fff;
+    font-size: 13.6px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.cdm-header .cdm-header__cta:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #7b75e0, #9a8ef0);
+    box-shadow: 0 8px 24px rgba(106, 99, 217, 0.48);
     transform: translateY(-1px);
 }
 
-/* Solo escritorio (el tema pasa al menú móvil a 1200px): menú más compacto y zona de
-   usuario reducida al avatar — el nombre montaba sobre « Manger & Boire ». */
-@media (min-width: 1201px) {
-    body.page-template-canal-home .c27-main-header .main-menu > li {
-        margin: 0 !important;
-        padding: 0 10px !important;
-    }
-    body.page-template-canal-home .c27-main-header .header-search {
-        width: 200px !important;
-    }
-    body.page-template-canal-home .c27-main-header .user-profile-name {
-        font-size: 0 !important;
-        padding-right: 0 !important;
-    }
-    body.page-template-canal-home .c27-main-header .user-profile-name .avatar {
-        margin: 0 !important;
-    }
-    body.page-template-canal-home .c27-main-header .user-profile-name .submenu-toggle i {
-        font-size: 18px !important;
-    }
+/* Cuenta: solo icono en escritorio (el texto queda para lectores de pantalla y para el móvil). */
+.cdm-header .cdm-header__account {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 40px;
+    height: 40px;
+    margin-left: 4px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(31, 35, 64, 0.1);
+    color: #1f2340;
+    font-size: 18px;
+    font-weight: 700;
+}
+.cdm-header .cdm-header__account:hover { box-shadow: inset 0 0 0 1px rgba(106, 99, 217, 0.4); }
+.cdm-header__account span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
 }
 
-/* Menú lateral del móvil: el botón píldora no debe tocar los bordes del panel. */
-@media (max-width: 1200px) {
-    /* Margen solo lateral: el contenedor del botón en el panel tiene altura fija. */
-    body.page-template-canal-home .c27-main-header .mobile-nav-button .buttons {
-        margin: 0 16px !important;
+.cdm-header a:focus-visible,
+.cdm-header button:focus-visible {
+    outline: 2px solid #6a63d9;
+    outline-offset: 2px;
+}
+
+/* Panel del mega-menú: a todo el ancho bajo la cabecera (la cabecera sticky es su contenedor). */
+.cdm-mega__panel {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 28px max(16px, calc((100vw - 1360px) / 2)) 22px;
+    border-top: 1px solid rgba(106, 99, 217, 0.08);
+    background: #fff;
+    box-shadow: 0 30px 60px rgba(61, 72, 124, 0.16);
+}
+.cdm-mega.is-open > .cdm-mega__panel { display: block; }
+
+.cdm-mega__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px 32px;
+}
+.cdm-header .cdm-mega__title {
+    margin: 0 0 10px;
+    color: #6a63d9;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.cdm-header .cdm-mega__col a {
+    display: block;
+    margin: 0 -8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    color: #1f2340;
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+.cdm-header .cdm-mega__col a:hover { color: #4f48b7; background: rgba(106, 99, 217, 0.07); }
+.cdm-mega__col .bi { font-size: 11px; color: #6c718d; }
+
+.cdm-mega__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(31, 35, 64, 0.08);
+}
+.cdm-header .cdm-mega__foot a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #4f48b7;
+    font-size: 14px;
+    font-weight: 700;
+}
+.cdm-header .cdm-mega__foot a:hover { text-decoration: underline; }
+
+.cdm-header .cdm-header__toggle {
+    display: none;
+    width: 48px;
+    height: 48px;
+    min-height: 0;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(61, 72, 124, 0.18);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+}
+.cdm-header__toggle span {
+    width: 18px;
+    height: 2px;
+    background: #1f2340;
+}
+
+.cdm-header__backdrop { display: none; }
+
+/* Escritorio estrecho: la píldora pierde el icono para que quepa todo en una línea. */
+@media (max-width: 1360px) and (min-width: 1181px) {
+    .cdm-header .cdm-mega__btn, .cdm-header .cdm-header__link { padding: 8px 8px; }
+    .cdm-header .cdm-header__cta .bi { display: none; }
+}
+
+/* Móvil y tableta: hamburguesa + panel lateral; cada bloque del mega-menú es un acordeón. */
+@media (max-width: 1180px) {
+    .cdm-header .cdm-header__toggle { display: inline-flex; }
+
+    .cdm-header__nav {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 16px;
+        right: 16px;
+        z-index: 3100;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        max-height: calc(100dvh - 100px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(31, 35, 64, 0.08);
+        background: rgba(255, 255, 255, 0.99);
+        box-shadow: 0 24px 60px rgba(61, 72, 124, 0.18);
     }
+    .cdm-header__nav.is-open { display: flex; }
+
+    .cdm-mega { border-bottom: 1px solid rgba(31, 35, 64, 0.07); }
+    .cdm-header .cdm-mega__btn,
+    .cdm-header .cdm-header__link {
+        width: 100%;
+        justify-content: space-between;
+        padding: 14px 12px;
+        color: #1f2340;
+        font-size: 16px;
+    }
+    .cdm-header .cdm-header__link { justify-content: flex-start; gap: 10px; }
+    .cdm-header .cdm-mega + .cdm-header__link { margin-left: 0; margin-top: 6px; }
+
+    .cdm-mega__panel {
+        position: static;
+        padding: 0 12px 14px;
+        border: 0;
+        box-shadow: none;
+        background: none;
+    }
+    .cdm-mega__cols { grid-template-columns: 1fr; gap: 14px; }
+    .cdm-header .cdm-mega__col a { font-size: 15px; padding: 8px; }
+    .cdm-mega__foot { flex-direction: column; margin-top: 12px; padding-top: 12px; }
+
+    .cdm-header .cdm-header__cta,
+    .cdm-header .cdm-header__account {
+        justify-content: center;
+        width: auto;
+        height: auto;
+        margin: 10px 0 0;
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-size: 15px;
+    }
+    .cdm-header__account span { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+
+    .cdm-header__backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2900;
+        display: block;
+        padding: 0;
+        border: 0;
+        background: rgba(8, 14, 26, 0.48);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+    }
+    body.cdm-nav-open .cdm-header__backdrop { opacity: 1; pointer-events: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body.page-template-canal-home .c27-main-header .header-button .buttons { transition: none; }
-    body.page-template-canal-home .c27-main-header .header-button .buttons:hover { transform: none; }
+    .cdm-header *, .cdm-header__backdrop { transition: none !important; }
+    .cdm-header a:hover { transform: none !important; }
 }

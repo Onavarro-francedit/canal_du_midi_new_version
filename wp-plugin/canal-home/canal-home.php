@@ -15,6 +15,8 @@ define('CANAL_HOME_TEMPLATE', 'canal-home/template-home.php');
 define('CANAL_CARTE_TEMPLATE', 'canal-home/template-carte.php');
 // Las páginas nuevas llevan el sufijo -2026 (home: /accueil-2026/); al publicar se quita el sufijo.
 const CANAL_CARTE_PATH = '/explorer-2026/';
+// Home nueva (página 18500): la cabecera propia enlaza a sus secciones. Al publicar → '/' (TASK-028).
+const CANAL_HOME_PATH = '/accueil-2026/';
 // Ficha nueva: /fiche-2026/<slug>/ (regla propia). Al publicar → '/fiche/' (TASK-030b).
 const CANAL_FICHE_PATH = '/fiche-2026/';
 const CANAL_HOME_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap';
@@ -35,6 +37,7 @@ require_once CANAL_HOME_DIR . 'includes/fiche-data.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-route.php';
 require_once CANAL_HOME_DIR . 'includes/seo-fiche.php';
 require_once CANAL_HOME_DIR . 'includes/head-fix.php';
+require_once CANAL_HOME_DIR . 'includes/header.php';
 
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';
@@ -50,14 +53,6 @@ function canal_home_is_page(): bool
 function canal_carte_is_page(): bool
 {
     return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE;
-}
-
-// El botón « Carte interactive » del menú del tema apunta a /explorer/ en todo el sitio; en nuestras
-// páginas (home y carte) se redirige a la carte nueva sin tocar el menú existente.
-function canal_home_carte_menu_js(): string
-{
-    return 'document.querySelectorAll(\'.c27-main-header a[href$="/explorer/"], #main-menu a[href$="/explorer/"]\').forEach(function (a) { a.href = '
-        . wp_json_encode(home_url(CANAL_CARTE_PATH)) . '; });';
 }
 
 add_filter('template_include', function ($template) {
@@ -78,7 +73,6 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.css'));
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/header.css'));
     wp_enqueue_script('canal-home', CANAL_HOME_URL . 'assets/home.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.js'), true);
-    wp_add_inline_script('canal-home', canal_home_carte_menu_js());
     wp_localize_script('canal-home', 'CDM_HOME', [
         'aiUrl'       => rest_url('canal-home/v1/ai'),
         'carteUrl'    => home_url(CANAL_CARTE_PATH),
@@ -122,13 +116,11 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-carte', CANAL_HOME_URL . 'assets/carte.css', [], $ver('assets/carte.css'));
     // El cargador a pantalla completa del tema tapa el skeleton de la carte hasta window.load: solo en esta plantilla.
     wp_add_inline_style('canal-carte', 'body.page-template-template-carte .loader-bg.main-loader{display:none!important}');
-    // body.page-template-canal-home también se aplica a esta plantilla (misma carpeta).
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
     wp_enqueue_script('canal-carte-clusterer', 'https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js', [], '2.5.3', true);
     foreach (['search-map', 'search-tabs', 'ai-search', 'skeleton-controler'] as $name) {
         wp_enqueue_script("canal-carte-$name", CANAL_HOME_URL . "assets/carte/$name.js", ['canal-carte-clusterer'], $ver("assets/carte/$name.js"), true);
     }
-    wp_add_inline_script('canal-carte-search-tabs', canal_home_carte_menu_js());
     wp_localize_script('canal-carte-ai-search', 'CDM_CARTE', [
         'aiUrl'   => rest_url('canal-home/v1/ai'),
         'pageUrl' => get_permalink(),

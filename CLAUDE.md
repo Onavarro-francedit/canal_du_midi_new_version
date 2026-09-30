@@ -96,10 +96,9 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Convención de URLs:** toda página nueva lleva el sufijo **`-2026`** (`/accueil-2026/`,
   `/explorer-2026/`, …) para distinguirla de la actual; al publicar se quita el sufijo y se
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
-- **Último completado:** **TASK-030 — Fiche 2026** en `/fiche-2026/<slug>/` (regla de reescritura
-  propia, **privada**: sin sesión → 404) para las 254 fichas; home y carte privadas enlazan a ella
-  (`CANAL_FICHE_PATH`). Antes: TASK-029 carte `/explorer-2026/` (18502) y TASK-027 home
-  `/accueil-2026/` (18500), ambas privadas. Detalle en `docs/TASKS.md` 🟢.
+- **Último completado:** **TASK-032 — navbar nuevo** (cabecera propia + mega-menú, estructura por intención
+  y vistas GA4) en home, carte y ficha 2026, privadas. Antes: TASK-030 ficha `/fiche-2026/<slug>/`, TASK-029
+  carte `/explorer-2026/` (18502), TASK-027 home `/accueil-2026/` (18500). Detalle en `docs/TASKS.md` 🟢.
 - **Comandos:** `wp-plugin/remote.sh test` (tests + lint 7.4 en el servidor) ·
   `remote.sh deploy` · `remote.sh run tests/<smoke>.php` (con el plugin desactivado) ·
   `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:

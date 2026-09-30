@@ -28,13 +28,6 @@ Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b /
   condición `CANAL_FICHE_PATH !== '/fiche/'` en seo-fiche.php ya lo hace); vaciar
   `canal_carte_listings`. Rollback de TASK-030: quitar los archivos fiche-* del plugin y
   `wp option delete canal_fiche_rewrite && wp rewrite flush`.
-- **TASK-032 — Rediseño del navbar (próxima sesión, pedido del usuario 30/09)** — al usuario no le gusta la
-  cabecera actual: « no pega con el sitio ». Hoy es la cabecera del tema my-listing (`.c27-main-header`),
-  restilizada SOLO en nuestras páginas (home, carte, ficha 2026) con `wp-plugin/canal-home/assets/header.css`
-  (`body.page-template-canal-home`), más el botón « Carte interactive » reescrito por JS
-  (`canal_home_carte_menu_js`). Regla: no tocar el tema ni el menú existente; rediseñar añadiendo desde el
-  plugin. Empezar con brainstorming: qué no gusta, referencias (app local `src/Infrastructure/Views/layout/
-  header.php`), escritorio + móvil (menú hamburguesa del tema), y verificar en navegador con captura.
 - **TASK-031 — `<head>` roto en TODO el sitio (dejar para el final, decisión del usuario 30/09)** — el
   `header.php` del tema imprime `<div id="fb-root"></div>` antes de `wp_head()`: el navegador cierra el
   `<head>` ahí y title/meta description/canonical/robots/OG/JSON-LD de las páginas actuales quedan en el
@@ -292,6 +285,27 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-032 — Navbar nuevo en home, carte y ficha 2026 — DESPLEGADO EN PRIVADO ✅ — 2026-09-30
+
+- **Qué:** la cabecera del tema my-listing se sustituye, SOLO en nuestras 3 páginas, por una propia con el
+  estilo de la app local + mega-menú. `includes/header.php`: filtro del tema `mylisting/header-config`
+  (prioridad **99**: la integración Elementor del tema lo usa a 10 y vuelve a poner `show=true`) y marcado en
+  `mylisting/body/start`. `assets/header.css` reescrito. Borrado `canal_home_carte_menu_js()` y el
+  `body_class` de la ficha; carte y `fiche.js` miden `.cdm-header`. Nueva constante `CANAL_HOME_PATH`
+  (`/accueil-2026/` → `/` al publicar).
+- **Estructura (investigación NN/g/Baymard/W3C + vistas GA4 oct 2025–sep 2026):** por intención y modo de
+  viaje, ordenada por frecuencia: En bateau · Vélo & balades · Découvrir · Se loger · Manger & Boire ·
+  Préparer + accesos directos « Distances » (calcul de distance = nº 1 del sitio, 14.136 vistas) y « Carte »,
+  CTA « Planifier mon voyage » (→ home `#plan`) e icono de cuenta. 87 URLs únicas del menú WP « Principale »
+  (16) + páginas muy vistas que no estaban (péniches à vendre, /categorie/nautique/, /categorie/velo/…),
+  todas 200. Categorías → páginas actuales `/categorie/…` (decisión del usuario); « Voir sur la carte » →
+  `/explorer-2026/?type=<slug>`. Asociaciones: un solo enlace.
+- **UX:** patrón *disclosure* del W3C (botón `aria-expanded`, clic, no hover; Escape devuelve el foco);
+  hamburguesa + acordeones ≤1180 px; bajo 1200 px la cabecera va a `top:0` (el tema oculta `#wpadminbar`).
+- **Verificado en navegador** (1440 px y 390 px): home, carte, ficha, paneles, filtros de la carte.
+- **Límites conocidos:** el menú está en un array PHP (si cambia el menú de WP, actualizar a mano); la barra
+  ocupa 1360 px (el contenido 1160); no se marca la sección actual.
 
 ### TASK-030 — Fiche 2026 (`/fiche-2026/<slug>/`) — DESPLEGADA EN PRIVADO ✅ — 2026-09-29
 - Spec `docs/superpowers/specs/2026-09-29-wp-fiche-2026-design.md`, plan

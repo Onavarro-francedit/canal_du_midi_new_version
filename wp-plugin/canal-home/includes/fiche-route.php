@@ -62,15 +62,6 @@ add_action('template_redirect', function () {
     exit;
 }, 0);
 
-// header.css se aplica a body.page-template-canal-home (cabecera del tema restilizada, como home y carte).
-add_filter('body_class', function (array $classes) {
-    if (canal_fiche_is_page()) {
-        $classes[] = 'page-template-canal-home';
-        $classes[] = 'cdm-fiche-page';
-    }
-    return $classes;
-});
-
 add_action('wp_enqueue_scripts', function () {
     if (!canal_fiche_is_page()) {
         return;
@@ -83,7 +74,6 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
     // fiche.js arranca en DOMContentLoaded; el mapa (Google Maps) se carga en diferido desde él.
     wp_enqueue_script('canal-fiche', CANAL_HOME_URL . 'assets/fiche/fiche.js', [], $ver('assets/fiche/fiche.js'), true);
-    wp_add_inline_script('canal-fiche', canal_home_carte_menu_js());
 }, 20);
 
 // Google Maps se quita de la cola en la ficha (canal_fiche_is_unused_asset) y fiche.js lo carga en diferido

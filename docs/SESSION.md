@@ -5,6 +5,30 @@ sesión.
 
 ---
 
+## CIERRE 2026-09-30 (tarde) — TASK-032 navbar nuevo desplegado (privado) · Siguiente: decidir publicación
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** home, carte y ficha 2026 (privadas) tienen cabecera propia con mega-menú; el resto del
+sitio sigue con la del tema. Detalle en `docs/TASKS.md` 🟢 TASK-032.
+
+**Archivos:** `wp-plugin/canal-home/includes/header.php` (nuevo), `assets/header.css`, `canal-home.php`,
+`includes/fiche-route.php`, `template-carte.php`, `assets/fiche/fiche.js`.
+
+**Decisiones que no están en ARCHITECTURE.md:** cabecera del tema desactivada con `mylisting/header-config`
+a prioridad 99; menú definido en PHP (no lee el menú WP); `remote.sh deploy` permitido en
+`.claude/settings.local.json` (lanzarlo desde la raíz del proyecto).
+
+**Próxima acción:**
+```
+Publicar home + carte + ficha juntas = TASK-028 / TASK-029b / TASK-030b, SOLO con orden explícita
+(al publicar: CANAL_HOME_PATH → '/', CANAL_CARTE_PATH y CANAL_FICHE_PATH sin -2026).
+Al final: TASK-031 (<head> del tema en todo el sitio), también solo con orden explícita.
+```
+
+---
+
+### Histórico
+
 ## CIERRE 2026-09-30 — Fiche 2026 terminada, optimizada y fusionada (privada) · Siguiente: decidir publicación
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
@@ -41,10 +65,6 @@ Después:
 Publicar home + carte + ficha juntas = TASK-028 / TASK-029b / TASK-030b, SOLO con orden explícita.
 Al final: TASK-031 (<head> del tema en todo el sitio), también solo con orden explícita.
 ```
-
----
-
-### Histórico
 
 ## CIERRE 2026-09-29 (tarde) — Carte `/explorer-2026/` terminada (privada) · Siguiente: TASK-030 ficha
 

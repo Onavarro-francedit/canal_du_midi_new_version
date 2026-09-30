@@ -484,7 +484,7 @@ get_header();
         if (!page) return;
 
         // WP: alto real de la cabecera fija del tema (search.css asumía 82px).
-        const header = document.querySelector('.c27-main-header');
+        const header = document.querySelector('.cdm-header');
         const shell = page.closest('.cdm-carte');
         const setHeaderHeight = () => {
             if (!header || !shell) return;
