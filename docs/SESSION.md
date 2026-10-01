@@ -5,6 +5,34 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-01 (noche) — TASK-044 Planificateur 2026: spec + plan listos · Siguiente: ejecutar el plan en sesión nueva
+
+**Agente activo al cerrar:** sesión principal (brainstorming → spec → writing-plans). **Handoff pendiente:** ejecutar
+el plan `docs/superpowers/plans/2026-10-01-planificateur-2026.md` (6 tareas) en una sesión nueva.
+**Dónde quedamos:** diseño aprobado (mockup v10), spec autorrevisada y commiteada (85c3ac6), plan escrito con código
+completo (tests de las tareas 1–2 ya probados contra el código del plan; resto sin errores de sintaxis). Nada desplegado.
+
+**Archivos:** `docs/mockups/planificateur-2026.html` (mockup aprobado), `docs/superpowers/specs/2026-10-01-planificateur-2026-design.md`,
+`docs/superpowers/plans/2026-10-01-planificateur-2026.md`, `docs/TASKS.md` (TASK-044 en 🟡).
+
+**Decisiones que no están en ARCHITECTURE.md:**
+- UI = asistente conversacional (orbe IA, chat), pantalla única SIN scroll, nada se mueve al actualizar ideas, el orbe
+  nunca cambia la duración de sus animaciones (eso lo hacía « reiniciarse »), título en una línea.
+- Flujo completo como en local, con confirmación por e-mail (POST desde la página: los escáneres abren los enlaces).
+- Fichas sin e-mail (122/254) → mbauwens@francedit.com. Desarrollo: TODO correo → onavarro@francedit.com
+  (el e-mail del usuario; NO vfrance@). Correos reales solo con `CANAL_PLANNER_LIVE = true` en canal-ai-config.php.
+- Sin gestión desde wp-admin (excepción a la regla del usuario). Fase 2 fuera: « Comment venir » (Omio).
+- Para no tener scroll se oculta `.hit-billboard` solo en el planificador: confirmar con el usuario antes de publicar.
+
+**Próxima acción (sesión nueva):**
+```
+Ejecuta el plan docs/superpowers/plans/2026-10-01-planificateur-2026.md (modo nativo recomendado:
+superpowers:executing-plans; o subagent-driven-development). Lee antes la spec
+docs/superpowers/specs/2026-10-01-planificateur-2026-design.md.
+```
+
+---
+
 ## CIERRE 2026-10-01 (tarde) — TASK-037…042 navbar + footer 2026 desplegados y verificados (privados) · Siguiente: decidir publicación
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
