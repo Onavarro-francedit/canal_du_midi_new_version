@@ -111,15 +111,17 @@ function canal_home_is_grammar_outage(int $status, string $body): bool
     return $status === 503 && stripos($body, 'grammar') !== false;
 }
 
-// Misma petición sin json_schema: el formato se pide en las instrucciones y
-// canal_home_parse_response sigue validando JSON, slugs y longitud.
-function canal_home_request_without_schema(array $body): array
+const CANAL_HOME_AI_JSON_HINT = "\n- Réponds uniquement avec un objet JSON {\"results\":[{\"slug\":\"…\",\"reason\":\"…\"}]}, sans texte autour ni bloc de code.";
+
+// Misma petición sin json_schema: el formato se pide en las instrucciones ($hint) y
+// el parser de cada uso sigue validando JSON, slugs y longitudes.
+function canal_home_request_without_schema(array $body, string $hint = CANAL_HOME_AI_JSON_HINT): array
 {
     unset($body['output_config']['format']);
     if (empty($body['output_config'])) {
         unset($body['output_config']);
     }
-    $body['system'][0]['text'] .= "\n- Réponds uniquement avec un objet JSON {\"results\":[{\"slug\":\"…\",\"reason\":\"…\"}]}, sans texte autour ni bloc de code.";
+    $body['system'][0]['text'] .= $hint;
     return $body;
 }
 
@@ -141,36 +143,40 @@ function canal_home_ai_fail(string $error): array
     return ['ok' => false, 'error' => $error, 'results' => []];
 }
 
-function canal_home_parse_response(int $status, string $body, array $validSlugs): array
+// Estado HTTP, stop_reason y primer bloque de texto de una respuesta de /v1/messages.
+function canal_home_response_text(int $status, string $body): array
 {
+    $fail = function (string $error): array { return ['ok' => false, 'error' => $error, 'text' => '']; };
     if ($status !== 200) {
-        return canal_home_ai_fail('http_' . $status);
+        return $fail('http_' . $status);
     }
     $data = json_decode($body, true);
     if (!is_array($data)) {
-        return canal_home_ai_fail('bad_json');
+        return $fail('bad_json');
     }
     $stop = (string) ($data['stop_reason'] ?? '');
     if ($stop === 'refusal') {
-        return canal_home_ai_fail('refusal');
+        return $fail('refusal');
     }
     if ($stop === 'max_tokens') {
-        return canal_home_ai_fail('truncated');
+        return $fail('truncated');
     }
-
     // Puede haber bloques thinking antes: se toma el primer bloque text.
-    $text = null;
     foreach ((array) ($data['content'] ?? []) as $block) {
         if (is_array($block) && ($block['type'] ?? '') === 'text') {
-            $text = (string) ($block['text'] ?? '');
-            break;
+            return ['ok' => true, 'error' => '', 'text' => (string) ($block['text'] ?? '')];
         }
     }
-    if ($text === null) {
-        return canal_home_ai_fail('no_text');
-    }
+    return $fail('no_text');
+}
 
-    $payload = json_decode($text, true);
+function canal_home_parse_response(int $status, string $body, array $validSlugs): array
+{
+    $res = canal_home_response_text($status, $body);
+    if (!$res['ok']) {
+        return canal_home_ai_fail($res['error']);
+    }
+    $payload = json_decode($res['text'], true);
     if (!is_array($payload) || !isset($payload['results']) || !is_array($payload['results'])) {
         return canal_home_ai_fail('bad_payload');
     }
