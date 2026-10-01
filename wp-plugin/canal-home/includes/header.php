@@ -318,7 +318,7 @@ add_action('mylisting/body/start', function () {
             <div class="cdm-header__tools">
             <a class="cdm-header__link" href="<?php echo esc_url(home_url(CANAL_HEADER_DISTANCE_PATH)); ?>" title="Calcul de distance"><i class="bi bi-rulers" aria-hidden="true"></i><span class="cdm-header__label">Distances</span></a>
             <a class="cdm-header__link cdm-header__link--carte" href="<?php echo esc_url($carte); ?>" title="Carte interactive"<?php echo $here($isCarte); ?>><i class="bi bi-map" aria-hidden="true"></i><span class="cdm-header__label">Carte</span></a>
-            <a class="cdm-header__cta" href="<?php echo esc_url($home . '#plan'); ?>"><i class="bi bi-magic" aria-hidden="true"></i><span>Planifier<span class="cdm-header__cta-more"> mon voyage</span></span></a>
+            <a class="cdm-header__cta" href="<?php echo esc_url(home_url(CANAL_PLANNER_PATH)); ?>"><i class="bi bi-magic" aria-hidden="true"></i><span>Planifier<span class="cdm-header__cta-more"> mon voyage</span></span></a>
             <a class="cdm-header__account" href="<?php echo esc_url($account); ?>" title="<?php echo is_user_logged_in() ? 'Mon compte' : 'Se connecter'; ?>"><i class="bi bi-person" aria-hidden="true"></i><span><?php echo is_user_logged_in() ? 'Mon compte' : 'Se connecter'; ?></span></a>
             </div>
         </nav>
