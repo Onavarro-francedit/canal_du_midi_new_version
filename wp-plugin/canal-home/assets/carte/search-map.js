@@ -280,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notice.textContent = 'Carte indisponible';
             mapElement.appendChild(notice);
         }
+        mapElement?.classList.add('is-map-ready');
         signalMapReady();
         return;
     }
@@ -313,9 +314,11 @@ document.addEventListener('DOMContentLoaded', () => {
         streetViewControl: true,
         streetViewControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
         fullscreenControl: true,
+        backgroundColor: 'transparent', // WP: deja ver el skeleton (#explore-map) hasta que llegan las teselas
     });
 
     google.maps.event.addListenerOnce(map, 'idle', maybeSignalMapReady);
+    google.maps.event.addListenerOnce(map, 'tilesloaded', () => mapElement.classList.add('is-map-ready'));
 
     const infoWindow = new google.maps.InfoWindow({ maxWidth: 320 });
     let activeCarouselDestroy = null;

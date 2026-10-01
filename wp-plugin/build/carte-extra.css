@@ -39,3 +39,12 @@ p { color: inherit; }
 .carte-faq-item p, .carte-faq-sources { margin: 0; font-size: 13px; line-height: 1.55; color: #475569; }
 .carte-faq-sources { margin-top: 18px; color: #64748b; }
 .carte-faq-sources a { color: #6a63d9; text-decoration: underline; }
+
+/* WP: skeleton del mapa mientras Google Maps carga (TASK-035): el mapa va con fondo transparente
+   (backgroundColor en search-map.js) y el shimmer se apaga con .is-map-ready al primer tilesloaded. */
+#explore-map {
+    background: linear-gradient(90deg, #e8edf6 25%, #f5f8fd 50%, #e8edf6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+}
+#explore-map.is-map-ready { animation: none; background: #e8edf6; }

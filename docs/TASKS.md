@@ -296,7 +296,8 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   tras el skeleton hasta el `idle` del mapa. El HTML (1,2 MB) pesa 130 KB en gzip: no era el problema.
 - `src`/`srcset` en el HTML, `fetchpriority="high"` en la 1.ª, las 6 primeras sin fundido
   (`CANAL_CARTE_EAGER_IMAGES`), el resto `loading="lazy"` nativo; se revela al cargar las 6 primeras (respaldo
-  5 s), el mapa aparece después en su panel; clusterer y JS de la carte en `defer`, `skeleton-controler.js` sin
+  5 s), el mapa aparece después en su panel con skeleton (shimmer en `#explore-map`, Maps con
+  `backgroundColor: 'transparent'`, se apaga en `tilesloaded`); clusterer y JS de la carte en `defer`, `skeleton-controler.js` sin
   dependencias.
 - **Lighthouse móvil:** 48 → **63** (FCP 6,8 → 2,6 s, LCP 13,4 → 7,1 s, TBT 440 → 320 ms); escritorio **83**
   (LCP 2,7 s). Verificado con sesión en escritorio: lista, imágenes diferidas, mapa con clusters, filtro `?q=`.
