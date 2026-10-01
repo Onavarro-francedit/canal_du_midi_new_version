@@ -72,6 +72,9 @@ add_action('wp_enqueue_scripts', function () {
     // Versión = fecha del archivo: cada despliegue invalida la caché del navegador.
     wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.css'));
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/header.css'));
+    // Lo que la home usa del CSS del tema y de los plugins (TASK-034), después de lo nuestro como antes.
+    wp_enqueue_style('canal-home-theme', CANAL_HOME_URL . 'assets/home-theme.css', ['canal-home', 'canal-home-header'], (string) filemtime(CANAL_HOME_DIR . 'assets/home-theme.css'));
+    wp_add_inline_style('canal-home-theme', CANAL_THEME_FIX_CSS);
     wp_enqueue_script('canal-home', CANAL_HOME_URL . 'assets/home.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.js'), true);
     wp_localize_script('canal-home', 'CDM_HOME', [
         'aiUrl'       => rest_url('canal-home/v1/ai'),
@@ -79,20 +82,21 @@ add_action('wp_enqueue_scripts', function () {
     ]);
 }, 20);
 
-// Carte: plugins que se cargan en todo el sitio y esta página no usa (0 elementos Elementor, sin
-// formularios, tablas ni tienda; el mini-carrito de WooCommerce del tema está vacío y oculto).
+// Carte, ficha y home: plugins que se cargan en todo el sitio y estas páginas no usan (0 elementos Elementor,
+// sin formularios de CF7, tablas ni tienda; el mini-carrito de WooCommerce del tema está vacío y oculto).
 // Solo se quitan de la cola en esta plantilla; si algo que se mantiene depende de ellos, WordPress
 // los vuelve a imprimir como dependencia.
 const CANAL_CARTE_UNUSED_ASSETS = '/^(elementor|e-animation|swiper|wc-|woocommerce|contact-form-7|wpcf7|tablepress|wp-ecommerce-paypal|wpecpp|cf7pp|sourcebuster)/';
 
 function canal_carte_dequeue_unused(): void
 {
-    if (!canal_carte_is_page() && !canal_fiche_is_page()) {
+    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page()) {
         return;
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {
         foreach ($deps->queue as $handle) {
-            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle) || (canal_fiche_is_page() && canal_fiche_is_unused_asset($handle))) {
+            // Carte: conserva Google Maps; ficha y home (sin mapa propio del tema): fuera.
+            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle) || (canal_carte_is_page() ? canal_theme_is_unused_asset($handle) : canal_fiche_is_unused_asset($handle))) {
                 $deps->dequeue($handle);
             }
         }
@@ -117,6 +121,9 @@ add_action('wp_enqueue_scripts', function () {
     // El cargador a pantalla completa del tema tapa el skeleton de la carte hasta window.load: solo en esta plantilla.
     wp_add_inline_style('canal-carte', 'body.page-template-template-carte .loader-bg.main-loader{display:none!important}');
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
+    // Lo que la carte usa del CSS del tema (TASK-034), después de lo nuestro como antes.
+    wp_enqueue_style('canal-carte-theme', CANAL_HOME_URL . 'assets/carte-theme.css', ['canal-carte', 'canal-home-header'], $ver('assets/carte-theme.css'));
+    wp_add_inline_style('canal-carte-theme', CANAL_THEME_FIX_CSS);
     wp_enqueue_script('canal-carte-clusterer', 'https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js', [], '2.5.3', true);
     foreach (['search-map', 'search-tabs', 'ai-search', 'skeleton-controler'] as $name) {
         wp_enqueue_script("canal-carte-$name", CANAL_HOME_URL . "assets/carte/$name.js", ['canal-carte-clusterer'], $ver("assets/carte/$name.js"), true);

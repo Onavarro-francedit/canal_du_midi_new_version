@@ -5,6 +5,27 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-01 — TASK-034 home y carte sin CSS/JS del tema (privadas) · Siguiente: TASK-035 o publicar
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** home, carte y ficha 2026 ya no cargan el CSS/JS del tema ni los plugins que no usan
+(PageSpeed móvil: home 78, ficha 87, carte 36); las tres privadas (404 sin sesión).
+
+**Archivos:** `assets/carte-theme.css`, `assets/home-theme.css` (nuevos, generados), `canal-home.php`,
+`includes/fiche-core.php` (`CANAL_THEME_UNUSED_ASSETS`, `CANAL_THEME_FIX_CSS`), `fiche-route.php`,
+`head-fix.php`, `build/extract-theme-css.js`, `tests/test-fiche.php`.
+
+**Decisiones que no están en ARCHITECTURE.md:** carte y home se miden publicando la página unos minutos
+(`wp post update 1850x --post_status=publish` → medir → `private`), autorizado por el usuario.
+
+**Próxima acción:**
+```
+TASK-035 — aligerar el peso propio de la carte (tarjetas, datos incrustados, mapa), o publicar home + carte + ficha
+(TASK-028 / TASK-029b / TASK-030b) SOLO con orden explícita.
+```
+
+---
+
 ## CIERRE 2026-09-30 (noche) — TASK-033 ficha 2026 móvil + SEO + aligerado del tema (privada) · Siguiente: TASK-034 o publicar
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.

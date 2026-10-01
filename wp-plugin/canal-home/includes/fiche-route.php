@@ -74,11 +74,7 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
     // Lo que la ficha usa del CSS del tema (base Bootstrap, pie, iconos del pie), después de lo nuestro como antes.
     wp_enqueue_style('canal-fiche-theme', CANAL_HOME_URL . 'assets/fiche-theme.css', ['canal-fiche', 'canal-home-header'], $ver('assets/fiche-theme.css'));
-    // Sin el JS del tema nadie reserva el hueco del pie fijo (« footer reveal »): el pie va en el flujo normal.
-    // Con sesión: el tema ocultaba la barra de admin bajo 1200 px (reglas de frontend.css, que ya no se carga).
-    wp_add_inline_style('canal-fiche-theme', 'footer.footer{position:static}'
-        . '@media only screen and (max-width:1200px){#wpadminbar{display:none!important}}'
-        . '@media only screen and (min-width:1201px){html body.admin-bar{margin-top:32px!important}}');
+    wp_add_inline_style('canal-fiche-theme', CANAL_THEME_FIX_CSS);
     // fiche.js arranca en DOMContentLoaded; el mapa (Google Maps) se carga en diferido desde él.
     wp_enqueue_script('canal-fiche', CANAL_HOME_URL . 'assets/fiche/fiche.js', [], $ver('assets/fiche/fiche.js'), true);
 }, 20);

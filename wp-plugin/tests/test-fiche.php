@@ -155,6 +155,13 @@ foreach (['canal-fiche', 'canal-fiche-theme', 'canal-home-header', 'google-maps-
     check(!canal_fiche_is_unused_asset($h), "unused_asset: $h se mantiene");
 }
 
+// Carte: mismo tema fuera, pero conserva Google Maps (search-map.js).
+check(!canal_theme_is_unused_asset('google-maps') && canal_fiche_is_unused_asset('google-maps'), 'theme_unused: google-maps solo fuera en la ficha');
+check(canal_theme_is_unused_asset('mylisting-frontend') && canal_theme_is_unused_asset('stripe-js') && !canal_theme_is_unused_asset('canal-carte-theme'), 'theme_unused: tema y Stripe fuera, lo nuestro no');
+check(canal_theme_is_unused_asset('google-fonts-1') && !canal_theme_is_unused_asset('canal-home-fonts'), 'theme_unused: Roboto de Elementor fuera, nuestras fuentes no');
+check(strpos(CANAL_THEME_FIX_CSS, 'footer.footer{position:static}') === 0, 'theme_fix_css: pie estático');
+check(strpos(CANAL_THEME_FIX_CSS, '.loader-bg.main-loader{display:none!important}') !== false, 'theme_fix_css: sin el cargador del tema (lo quitaba frontend.js)');
+
 // <head> del tema aligerado en la ficha.
 $h = "<html><head><script src=\"https://www.google.com/recaptcha/api.js\" async defer></script>\n<script async defer crossorigin=\"anonymous\" src=\"https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v15.0\" nonce=\"x\"></script>\n"
     . "<link href=\"https://fonts.googleapis.com/css2?family=Quicksand&display=swap\" rel=\"stylesheet\">\n<link rel='stylesheet' id='style-pub'  href='/style-pub.css' type='text/css' />\n<script src=\"https://www.googletagmanager.com/gtag/js\" async></script></head><body><script src=\"https://www.google.com/recaptcha/api.js\"></script></body></html>";

@@ -190,13 +190,28 @@ function canal_fiche_can_view(bool $canReadPrivate, $publicOption): bool
 
 // Ficha: sin pagos (Stripe); Google Maps en diferido desde fiche.js. Desde que la cabecera es nuestra
 // (TASK-032) tampoco hace falta el CSS/JS del tema (~800 KB CSS + ~540 KB JS, <3 % de reglas usadas):
-// el subconjunto que la ficha usa va en assets/fiche-theme.css (build/extract-theme-css.js).
-const CANAL_FICHE_UNUSED_ASSETS = '/^(stripe-js|google-maps|mylisting-maps|font-awesome-(5-all|4-shim)|mylisting-(icons|material-icons|vendor|frontend|dynamic-styles)|theme-styles-default|select2|c27-main|moment(-locale-fr)?|jquery(-core|-migrate|-ui-core|-ui-mouse|-ui-sortable)?)$/';
+// el subconjunto que cada página usa va en assets/<página>-theme.css (build/extract-theme-css.js).
+// Ficha y carte (TASK-034): mismo CSS/JS del tema fuera; la carte conserva Google Maps (lo usa search-map.js).
+// google-fonts-1 = Roboto de Elementor (0 elementos Elementor en estas páginas).
+const CANAL_THEME_UNUSED_ASSETS = '/^(stripe-js|google-fonts-1|mylisting-maps|font-awesome-(5-all|4-shim)|mylisting-(icons|material-icons|vendor|frontend|dynamic-styles)|theme-styles-default|select2|c27-main|moment(-locale-fr)?|jquery(-core|-migrate|-ui-core|-ui-mouse|-ui-sortable)?)$/';
+
+function canal_theme_is_unused_asset(string $handle): bool
+{
+    return (bool) preg_match(CANAL_THEME_UNUSED_ASSETS, $handle);
+}
 
 function canal_fiche_is_unused_asset(string $handle): bool
 {
-    return (bool) preg_match(CANAL_FICHE_UNUSED_ASSETS, $handle);
+    return $handle === 'google-maps' || canal_theme_is_unused_asset($handle);
 }
+
+// Lo que el JS/CSS del tema hacía y que nuestras páginas siguen necesitando sin él: el pie fijo (« footer
+// reveal », su hueco lo reservaba el JS) va en el flujo normal, el cargador a pantalla completa (lo quitaba
+// frontend.js al cargar) no se muestra y, con sesión, la barra de admin se oculta bajo 1200 px (frontend.css).
+const CANAL_THEME_FIX_CSS = 'footer.footer{position:static}'
+    . '.loader-bg.main-loader{display:none!important}'
+    . '@media only screen and (max-width:1200px){#wpadminbar{display:none!important}}'
+    . '@media only screen and (min-width:1201px){html body.admin-bar{margin-top:32px!important}}';
 
 // <head> del header.php del tema (enlaces fijos, sin handle): en la ficha sobran reCAPTCHA (~830 KB, no hay
 // formularios), el SDK de Facebook (sin widgets) y style-pub.css (0 reglas usadas); Google Fonts sin bloquear.

@@ -22,10 +22,8 @@ function canal_home_fix_head(string $html): string
 if (function_exists('add_action')) {
     // Prioridad -1: antes del template_redirect de la ficha (prioridad 0, que incluye la plantilla y sale).
     add_action('template_redirect', function () {
-        if (get_query_var('canal_fiche') !== '') {
+        if (get_query_var('canal_fiche') !== '' || canal_carte_is_page() || canal_home_is_page()) {
             ob_start(function (string $html): string { return canal_fiche_lighten_head(canal_home_fix_head($html)); });
-        } elseif (canal_home_is_page() || canal_carte_is_page()) {
-            ob_start('canal_home_fix_head');
         }
     }, -1);
 }

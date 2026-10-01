@@ -284,10 +284,27 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   newsletter funcional → ver **BUG-003**; bloque inmersivo "Lire la vidéo" →
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
-- **TASK-034 — Aligerar el tema también en home y carte** — mismo método que TASK-033 (subconjunto del CSS del
-  tema + quitar su JS, reCAPTCHA y SDK de Facebook), midiendo antes/después con PageSpeed.
+- **TASK-035 — Carte: aligerar su propio peso** — lo que la frena no es el tema (TASK-034): 1,2 MB de HTML con
+  los datos incrustados, 254 tarjetas pintadas de golpe, Google Maps + clusterer, ~8,5 s de hilo principal en
+  móvil. Ideas: pintar las primeras ~20 tarjetas y el resto al hacer scroll, adelgazar los datos incrustados,
+  revisar el JS del mapa. Medir antes/después (publicar 18502 unos minutos y volver a private).
 
 ## 🟢 Completadas
+
+### TASK-034 — Home y carte 2026 sin CSS/JS del tema — DESPLEGADO EN PRIVADO ✅ — 2026-10-01
+
+- Mismo método que TASK-033: `assets/carte-theme.css` y `assets/home-theme.css` (subconjunto extraído con
+  `build/extract-theme-css.js`), `CANAL_THEME_UNUSED_ASSETS` (tema + Stripe + Roboto de Elementor; la carte
+  conserva Google Maps, ficha y home no), `CANAL_THEME_FIX_CSS` común (pie estático, sin el cargador del tema,
+  barra de admin oculta < 1200 px), `canal_fiche_lighten_head` en las tres páginas. En la home además fuera
+  WooCommerce, CF7 (+ PayPal), Elementor, TablePress, medidor de contraseñas (`canal_carte_dequeue_unused`).
+- **PageSpeed (laboratorio, páginas publicadas unos minutos y vueltas a private):** home móvil 43 → **78**,
+  escritorio 55 → **92** (TBT 1000 → 140 ms); carte móvil 39 → 36, escritorio 49 → 58 (su cuello de botella es
+  propio → TASK-035).
+- **Verificado con sesión:** carte (búsqueda, IA, filtros, mapa, móvil) y home (buscador → carte, modal IA, móvil).
+  Newsletter no enviada (alta real).
+- **Lección:** el cargador a pantalla completa del tema lo quitaba frontend.js; sin él tapaba la home (solo con
+  sesión). Al quitar el JS del tema, revisar en navegador real con captura, no solo posiciones en Playwright.
 
 ### TASK-033 — Ficha 2026: diseño móvil, auditoría SEO y aligerado del tema — DESPLEGADO EN PRIVADO ✅ — 2026-09-30
 

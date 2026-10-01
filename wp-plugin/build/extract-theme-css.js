@@ -1,8 +1,9 @@
-// Genera canal-home/assets/fiche-theme.css: las reglas del CSS del tema que usa la ficha 2026.
-// Uso: abrir una ficha 2026 con el CSS del tema cargado (antes de quitarlo: comentar 'canal-fiche-theme' y
-// quitar del regex CANAL_FICHE_UNUSED_ASSETS los handles de estilos del tema), pegar esta función en la consola
-// (o en Playwright browser_evaluate) y guardar el resultado con la cabecera « GENERADO » del archivo actual.
-// ponytail: selección por DOM de UNA ficha; si una ficha con otras secciones (vídeo…) necesita reglas del tema, regenerar sobre ella.
+// Genera canal-home/assets/{fiche,carte,home}-theme.css: las reglas del CSS del tema que usa cada página 2026.
+// Uso: cargar la página con el CSS del tema (p. ej. su HTML de antes del cambio servido con Playwright
+// page.route, o quitando temporalmente los estilos del tema de CANAL_THEME_UNUSED_ASSETS), esperar a que el JS
+// termine, ejecutar esta función (consola o Playwright browser_evaluate) y guardar el resultado con la cabecera
+// « GENERADO » del archivo actual.
+// ponytail: selección por DOM de UNA página; si otra variante (ficha con vídeo…) necesita reglas del tema, regenerar sobre ella.
 () => {
     const own = /^canal-/;
     const strip = (s) => s.replace(/::?(before|after|placeholder|selection|marker|backdrop|-webkit-[\w-]+|-moz-[\w-]+|-ms-[\w-]+)(\([^)]*\))?/g, '')
