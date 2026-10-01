@@ -27,6 +27,11 @@ solo en las 3 páginas; botones del menú 9→7 px para que quepa la lupa sin to
 - **TASK-042** — Lupa en la cabecera → `/explorer-2026/?search_keywords=` (coherente con el `SearchAction`). Media · S.
 
 ### Migración visual del WordPress de producción (nuevo rumbo, 2026-09-28)
+- **TASK-044 — Planificateur de séjour 2026 (`/planificateur-2026/`, privada)** — spec
+  `docs/superpowers/specs/2026-10-01-planificateur-2026-design.md`, mockup aprobado `docs/mockups/planificateur-2026.html`.
+  Asistente conversacional (orbe IA, chat) + demanda a prestatarios con confirmación por e-mail; sin e-mail →
+  mbauwens@francedit.com; en desarrollo todo → onavarro@francedit.com. Siguiente: revisión de la spec → writing-plans.
+  Fase 2 (fuera): « Comment venir » con enlaces Omio.
 - **TASK-043 — Contenido de las páginas 2026 gestionable desde el backoffice de WP** — SOLO tras la aprobación del
   diseño 2026 por el cliente (decisión del usuario 2026-10-01: no invertir antes). Navbar y pie → menús nativos nuevos
   (`register_nav_menus` « Navbar 2026 » / « Pie 2026 »; 3 niveles: panel → título de columna → enlace; pie de panel con
