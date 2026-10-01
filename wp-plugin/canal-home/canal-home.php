@@ -19,6 +19,9 @@ const CANAL_CARTE_PATH = '/explorer-2026/';
 const CANAL_HOME_PATH = '/accueil-2026/';
 // Ficha nueva: /fiche-2026/<slug>/ (regla propia). Al publicar → '/fiche/' (TASK-030b).
 const CANAL_FICHE_PATH = '/fiche-2026/';
+// Planificateur 2026 (TASK-044): página privada. Al publicar → '/planificateur/' o la que se decida.
+const CANAL_PLANNER_PATH = '/planificateur-2026/';
+define('CANAL_PLANNER_TEMPLATE', 'canal-home/template-planner.php');
 const CANAL_HOME_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap';
 
 require_once CANAL_HOME_DIR . 'includes/ai-core.php';
@@ -27,6 +30,8 @@ require_once CANAL_HOME_DIR . 'includes/content.php';
 require_once CANAL_HOME_DIR . 'includes/limits.php';
 require_once CANAL_HOME_DIR . 'includes/ai.php';
 require_once CANAL_HOME_DIR . 'includes/plan.php';
+require_once CANAL_HOME_DIR . 'includes/planner-core.php';
+require_once CANAL_HOME_DIR . 'includes/planner.php';
 require_once CANAL_HOME_DIR . 'includes/seo.php';
 require_once CANAL_HOME_DIR . 'includes/carte-filter.php';
 require_once CANAL_HOME_DIR . 'includes/carte-data.php';
