@@ -1,5 +1,5 @@
 /*
- * Cabecera propia (includes/header.php) en home, carte y ficha 2026: estilo de .site-header de la
+ * Cabecera y pie propios (includes/header.php) en home, carte y ficha 2026: estilo de .site-header de la
  * app local (public/assets/css/styles.css) + mega-menú (patrón « disclosure » del W3C: se abre con
  * clic, no con hover). Escrito a mano, fuera del build. Valores en px: el tema fija html{font-size:10px}.
  */
@@ -37,7 +37,8 @@
 .cdm-header a { text-decoration: none; }
 .cdm-header ul { margin: 0; padding: 0; list-style: none; }
 
-.cdm-header .cdm-header__brand {
+.cdm-header .cdm-header__brand,
+.cdm-footer .cdm-header__brand {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -180,9 +181,108 @@
 }
 
 .cdm-header a:focus-visible,
-.cdm-header button:focus-visible {
+.cdm-header button:focus-visible,
+.cdm-footer a:focus-visible {
     outline: 2px solid #6a63d9;
     outline-offset: 2px;
+}
+
+/* Solo para lectores de pantalla. */
+.cdm-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+/* Sección actual (TASK-039): barra violeta tenue bajo el panel de la ficha o del ?type= de la carte, y
+   enlace de la página actual (aria-current). Ni solo color ni solo forma: texto oculto « rubrique actuelle ». */
+.cdm-header .cdm-mega.is-current > .cdm-mega__btn { color: #1f2340; }
+.cdm-header .cdm-mega.is-current > .cdm-mega__btn::after { transform: scaleX(1); opacity: 0.4; }
+.cdm-header .cdm-mega.is-open > .cdm-mega__btn::after { opacity: 1; }
+.cdm-header .cdm-header__link[aria-current="page"],
+.cdm-header .cdm-header__icon[aria-current="page"] {
+    color: #1f2340;
+    background: rgba(106, 99, 217, 0.12);
+}
+
+/* Accesos rápidos a la derecha (TASK-038/042): la lupa siempre, Distances y Carte solo en móvil. */
+.cdm-header__quick { display: flex; align-items: center; gap: 2px; margin-left: 6px; }
+.cdm-header .cdm-header__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    box-shadow: none;
+    color: #4a4f6a;
+    font-size: 17px;
+    cursor: pointer;
+    transition: color 0.18s, background 0.18s;
+}
+.cdm-header .cdm-header__icon:hover,
+.cdm-header .cdm-search.is-open > .cdm-header__icon {
+    color: #1f2340;
+    background: rgba(106, 99, 217, 0.08);
+}
+.cdm-header .cdm-header__icon--m { display: none; }
+
+/* Búsqueda: panel bajo la cabecera, como el mega-menú; envía a la carte (?search_keywords=, el mismo
+   destino que el SearchAction del JSON-LD). */
+.cdm-search__panel {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 20px max(24px, calc((100vw - 760px) / 2));
+    border-top: 1px solid rgba(106, 99, 217, 0.08);
+    background: #fff;
+    box-shadow: 0 30px 60px rgba(61, 72, 124, 0.16);
+}
+.cdm-search.is-open > .cdm-search__panel { display: block; }
+.cdm-search__form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 6px 6px 6px 18px;
+    border-radius: 999px;
+    background: #f6f3ff;
+    box-shadow: inset 0 0 0 1px rgba(106, 99, 217, 0.18);
+}
+.cdm-search__form:focus-within { box-shadow: inset 0 0 0 2px #6a63d9; }
+.cdm-search__form .bi { color: #6a63d9; font-size: 16px; }
+.cdm-header .cdm-search__form input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: #1f2340;
+    font: 500 16px/1.2 'Manrope', sans-serif;
+    outline: none;
+}
+.cdm-header .cdm-search__form button {
+    height: 44px;
+    margin: 0;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6a63d9, #8a7ee8);
+    color: #fff;
+    font: 700 14px/1 'Manrope', sans-serif;
+    cursor: pointer;
 }
 
 /* Panel del mega-menú: a todo el ancho bajo la cabecera (la cabecera sticky es su contenedor). */
@@ -271,20 +371,23 @@
 /* Escritorio: 100px entre logo y menú (valor elegido por el usuario) y « Planifier mon voyage » completo.
    En pantallas más estrechas se reduce el hueco y luego el texto de la píldora para caber en una línea. */
 @media (min-width: 1181px) {
-    .cdm-header__row { gap: 100px; }
+    .cdm-header__row { gap: 0; }
+    .cdm-header .cdm-header__brand { margin-right: 100px; }
     .cdm-header__menu { gap: 0; }
-    .cdm-header .cdm-mega__btn, .cdm-header .cdm-header__link { padding: 0 9px; }
-    .cdm-header .cdm-mega__btn::after { left: 9px; right: 9px; }
+    .cdm-header .cdm-mega__btn, .cdm-header .cdm-header__link { padding: 0 7px; }
+    .cdm-header .cdm-mega__btn::after { left: 7px; right: 7px; }
+    .cdm-header__quick { margin-left: 2px; }
     .cdm-header .cdm-header__cta { padding: 0 16px; }
 }
 @media (max-width: 1439px) and (min-width: 1181px) {
-    .cdm-header__row { gap: 32px; }
+    .cdm-header .cdm-header__brand { margin-right: 32px; }
 }
 @media (max-width: 1365px) and (min-width: 1181px) {
     .cdm-header__cta-more { display: none; }
 }
 /* Portátiles: Distances y Carte solo con icono (el texto sigue para lectores de pantalla y en title). */
 @media (max-width: 1279px) and (min-width: 1181px) {
+    .cdm-header .cdm-header__brand { margin-right: 16px; }
     .cdm-header .cdm-header__tools .cdm-header__link { width: 40px; padding: 0; justify-content: center; font-size: 17px; }
     .cdm-header__tools .cdm-header__label {
         position: absolute;
@@ -298,8 +401,18 @@
 
 /* Móvil y tableta: hamburguesa + panel lateral; cada bloque del mega-menú es un acordeón. */
 @media (max-width: 1180px) {
-    .cdm-header__row { display: flex; gap: 12px; width: calc(100vw - 32px); }
-    .cdm-header .cdm-header__toggle { display: inline-flex; }
+    .cdm-header__row { display: flex; gap: 8px; width: calc(100vw - 32px); }
+    .cdm-header .cdm-header__toggle { display: inline-flex; order: 2; margin: 0; }
+    /* Carte y Distances a un toque, junto a la hamburguesa; dentro del cajón, el CTA y la cuenta arriba. */
+    .cdm-header__quick { order: 1; margin-left: auto; gap: 0; }
+    .cdm-header .cdm-header__icon--m { display: inline-flex; }
+    .cdm-header .cdm-header__icon { width: 36px; }
+    .cdm-header .cdm-header__toggle { width: 44px; height: 44px; }
+    .cdm-header__tools .cdm-header__link { display: none; }
+    .cdm-header__tools { order: -1; }
+    .cdm-header .cdm-mega.is-current > .cdm-mega__btn { box-shadow: inset 3px 0 0 #6a63d9; }
+    .cdm-search__panel { padding: 12px 16px; }
+    .cdm-header .cdm-search__form button { padding: 0 16px; }
     .cdm-header__menu, .cdm-header__tools { flex-direction: column; align-items: stretch; gap: 0; }
     .cdm-header .cdm-mega__btn::after, .cdm-header .cdm-header__cta::before { display: none; }
 
@@ -335,7 +448,7 @@
         font-size: 16px;
     }
     .cdm-header .cdm-header__link { justify-content: flex-start; gap: 10px; }
-    .cdm-header__tools { margin-top: 6px; }
+    .cdm-header__tools { margin-bottom: 8px; }
 
     .cdm-mega__panel {
         position: static;
@@ -353,7 +466,7 @@
         justify-content: center;
         width: auto;
         height: auto;
-        margin: 10px 0 0;
+        margin: 0 0 8px;
         padding: 12px 16px;
         border-radius: 14px;
         font-size: 15px;
@@ -375,6 +488,81 @@
         transition: opacity 0.22s ease;
     }
     body.cdm-nav-open .cdm-header__backdrop { opacity: 1; pointer-events: auto; }
+}
+
+/* Móvil estrecho (<360 px): el nombre solo para lectores de pantalla, para que quepan los 3 iconos. */
+@media (max-width: 359px) {
+    .cdm-header__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+}
+
+/* Pie propio (TASK-041). El pie mínimo del tema se oculta: sus enlaces (boutique, redes, contacto,
+   mentions) están en este. */
+footer.footer { display: none; }
+.cdm-footer {
+    padding: 64px 0 28px;
+    background:
+        radial-gradient(circle at top left, rgba(106, 99, 217, 0.16), transparent 30%),
+        #f6f1ff;
+    color: #4a4f6a;
+    font: 500 14.5px/1.5 'Manrope', sans-serif;
+}
+.cdm-footer__grid,
+.cdm-footer__bottom { width: min(1200px, calc(100vw - 48px)); margin: 0 auto; }
+.cdm-footer__grid {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(4, 1fr);
+    gap: 32px;
+}
+/* El CSS del tema da a todo <p> Quicksand (con !important), 16px y su color: aquí manda el del bloque
+   (también en el mega-menú). El !important solo gana al del tema por ser más específico. */
+.cdm-footer p,
+.cdm-header p { margin: 0; color: inherit; font-family: 'Manrope', sans-serif !important; font-size: inherit; }
+.cdm-footer__about p { margin: 14px 0 18px; line-height: 1.7; }
+.cdm-footer .cdm-footer__title {
+    margin-bottom: 12px;
+    color: #1f2340;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.cdm-footer ul { margin: 0; padding: 0; list-style: none; }
+.cdm-footer li { margin: 0 0 9px; }
+.cdm-footer a { color: #4a4f6a; text-decoration: none; }
+.cdm-footer a:hover { color: #4f48b7; text-decoration: underline; }
+.cdm-footer .cdm-header__brand:hover { color: #1f2340; text-decoration: none; }
+.cdm-footer__social { display: flex; gap: 8px; }
+.cdm-footer .cdm-footer__social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(31, 35, 64, 0.1);
+    color: #1f2340;
+    font-size: 16px;
+}
+.cdm-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(31, 35, 64, 0.08);
+    font-size: 13px;
+}
+@media (max-width: 1023px) {
+    .cdm-footer__grid { grid-template-columns: 1fr 1fr; gap: 28px 24px; }
+    .cdm-footer__about { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+    .cdm-footer { padding-top: 48px; }
+    .cdm-footer__grid, .cdm-footer__bottom { width: calc(100vw - 32px); }
+    .cdm-footer li { margin-bottom: 4px; }
+    .cdm-footer li a { display: inline-block; padding: 6px 0; } /* objetivo táctil */
 }
 
 @media (prefers-reduced-motion: reduce) {

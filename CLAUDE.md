@@ -96,6 +96,8 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Convención de URLs:** toda página nueva lleva el sufijo **`-2026`** (`/accueil-2026/`,
   `/explorer-2026/`, …) para distinguirla de la actual; al publicar se quita el sufijo y se
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
+- **Último desplegado (privado):** **TASK-037…042 — navbar + footer 2026** (análisis SEO/AEO/GEO en
+  `docs/navbar-analisis-2026-10-01.md`); verificado en producción.
 - **Último completado:** **TASK-036 — carte: mapa bajo demanda en móvil** (Lighthouse móvil 66–69).
   Antes: **TASK-035 — carte: LCP sin esperar a Google Maps** (Lighthouse móvil 48 → 63,
   escritorio 83). Antes: **TASK-034 — home y carte sin CSS/JS del tema** (PageSpeed móvil home 43 → 78, carte

@@ -9,7 +9,29 @@ Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b /
 
 ## 🟡 Pendiente
 
+### Navbar 2026 — mejoras SEO/AEO/GEO (aprobadas 2026-10-01, ver `docs/navbar-analisis-2026-10-01.md`)
+**Estado 2026-10-01: TASK-037 a 042 DESPLEGADAS (privadas) Y VERIFICADAS EN PRODUCCIÓN** (carte `?type=hebergement`,
+ficha, home; 1876 / 390 / 360 px). Fuente Manrope en los `<p>` del pie y del mega-menú (el tema fuerza Quicksand con
+!important) corregida y verificada en producción. Archivos: `canal-home/includes/header.php` (menú §7, Avisbat,
+`canal_header_section()`, accesos rápidos + lupa, `canal_footer_menu()` y pie en `mylisting/get-footer`),
+`canal-home/assets/header.css` (sección actual, iconos móvil, panel de búsqueda, pie; oculta `footer.footer` del tema
+solo en las 3 páginas; botones del menú 9→7 px para que quepa la lupa sin tocar los 100 px ni los 1360 px),
+`tests/test-header.php` (nuevo, 14 checks). Pendiente: añadir `test-header.php` a `remote.sh test` y redesplegar.
+- **TASK-037** — Sustituir el enlace « Calcul d'itinéraire fluvial (VNF) » (CIFL cerrado, redirige a la nota de
+  cierre) por Avisbat `https://avisbat.vnf.fr/`. Alta · 5 min.
+- **TASK-038** — Móvil (≤1180 px): Carte y Distances como iconos en la barra; CTA y tools arriba del cajón. Alta · S.
+- **TASK-039** — `aria-current="page"` + marca visual de la sección activa (PHP + CSS). Alta · S.
+- **TASK-040** — Etiquetas: renombrar solapes (écluses, ports, restaurant), Shopping → Préparer, reubicar
+  Associations, separar guías de listados en Bateau/Vélo (§7 del informe). Media · S.
+- **TASK-041** — Footer rico propio en las páginas 2026 (aditivo, sin tocar el del tema). Media · M.
+- **TASK-042** — Lupa en la cabecera → `/explorer-2026/?search_keywords=` (coherente con el `SearchAction`). Media · S.
+
 ### Migración visual del WordPress de producción (nuevo rumbo, 2026-09-28)
+- **TASK-043 — Contenido de las páginas 2026 gestionable desde el backoffice de WP** — SOLO tras la aprobación del
+  diseño 2026 por el cliente (decisión del usuario 2026-10-01: no invertir antes). Navbar y pie → menús nativos nuevos
+  (`register_nav_menus` « Navbar 2026 » / « Pie 2026 »; 3 niveles: panel → título de columna → enlace; pie de panel con
+  clase CSS `cdm-foot`), sin tocar « Principale »; sustituye `canal_header_menu()` / `canal_footer_menu()`. Después:
+  `CANAL_HOME_FAQ`, `CANAL_HOME_ETAPES`, `CANAL_HOME_STAGES`, `CANAL_HOME_SEJOUR_CATS` → campos de la página.
 - **TASK-028 — Publicar « Accueil 2026 » como portada** — SOLO con orden explícita del
   usuario. **Decisión 2026-09-29: se deja privada por ahora.** `wp-plugin/remote.sh wp post update 18500 --post_status=publish` y *Réglages →
   Lecture* → página de inicio = « Accueil 2026 » (hoy `page_on_front` = 15269, la home

@@ -5,6 +5,33 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-01 (tarde) — TASK-037…042 navbar + footer 2026 desplegados y verificados (privados) · Siguiente: decidir publicación
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** las 6 mejoras del análisis `docs/navbar-analisis-2026-10-01.md` están implementadas,
+con tests en verde y verificadas en una vista previa local (WP simulado) a 1181–1920, 390, 360 y 320 px;
+desplegadas por el usuario y verificadas en producción. Fuente de los `<p>` del pie y del mega-menú corregida
+(el tema fuerza Quicksand con !important) y verificada.
+
+**Archivos:** `canal-home/includes/header.php`, `canal-home/assets/header.css`, `tests/test-header.php` (nuevo).
+
+**Decisiones que no están en ARCHITECTURE.md:** el pie del tema (`footer.footer`, 6 enlaces) se oculta en las 3
+páginas y el nuestro va en `mylisting/get-footer`, después del bloque de publicidad `hit-billboard` que se mantiene;
+aria-current solo en logo (home) y Carte (carte): ninguna página 2026 es destino del menú; la sección actual sale de
+la categoría de la ficha o de `?type=` de la carte.
+
+**Nueva regla del usuario (01/10):** todo desarrollo nuevo debe poder gestionarse desde el backoffice de WP (menús,
+textos); lo ya hecho (menú y pie en arrays PHP, FAQ, étapes) espera a la aprobación del cliente → TASK-043.
+**Sin commit:** header.php, header.css, tests/test-header.php, docs/navbar-analisis-2026-10-01.md y docs.
+
+**Próxima acción:**
+```
+1. Añadir `$PHP74 $TMP/tests/test-header.php` a run_test() en wp-plugin/remote.sh
+2. Después: publicar home + carte + ficha (TASK-028 / 029b / 030b) SOLO con orden explícita
+```
+
+---
+
 ## CIERRE 2026-10-01 (mediodía) — TASK-036 mapa bajo demanda en móvil (privada) · Siguiente: decidir
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
