@@ -286,3 +286,176 @@ function canal_planner_parse_response(int $status, string $body, array $catalog)
     }
     return canal_planner_validate($payload, $catalog);
 }
+
+// ── Demandas: destinatarios, correos, token ─────────────────────────────
+
+const CANAL_PLANNER_TOKEN_TTL = 172800; // 48 h
+
+function canal_planner_email_ok(string $email): bool
+{
+    return strpbrk($email, "\r\n") === false && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function canal_planner_route_recipients(array $items): array
+{
+    $routes = ['provider' => [], 'fe' => []];
+    foreach ($items as $item) {
+        $routes[canal_planner_email_ok((string) $item['email']) ? 'provider' : 'fe'][] = $item;
+    }
+    return $routes;
+}
+
+function canal_planner_e(string $s): string
+{
+    return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+}
+
+// Maqueta común de los correos (estilos en línea, marca 2026).
+function canal_planner_mail_layout(string $title, string $inner): string
+{
+    return '<!doctype html><html lang="fr"><body style="margin:0;background:#fcf8ff;font-family:Arial,Helvetica,sans-serif;color:#1f2340">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">'
+        . '<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:18px;border:1px solid #eceaf6">'
+        . '<tr><td style="padding:28px 28px 8px"><p style="margin:0 0 6px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#4f48b7;font-weight:bold">Canal du Midi · Planificateur</p>'
+        . '<h1 style="margin:0;font-size:22px;line-height:1.3;color:#1f2340">' . canal_planner_e($title) . '</h1></td></tr>'
+        . '<tr><td style="padding:12px 28px 28px;font-size:15px;line-height:1.6">' . $inner . '</td></tr>'
+        . '</table><p style="font-size:12px;color:#6c718d;margin:16px 0 0">L\'Officiel du Canal du Midi · plan-canal-du-midi.com</p>'
+        . '</td></tr></table></body></html>';
+}
+
+function canal_planner_button(string $url, string $label): string
+{
+    return '<p style="margin:22px 0"><a href="' . canal_planner_e($url) . '" style="display:inline-block;background:#6a63d9;color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:99px">' . canal_planner_e($label) . '</a></p>';
+}
+
+function canal_planner_days_html(array $days): string
+{
+    $rows = '';
+    foreach ($days as $d) {
+        $km = $d['km'] === null ? '' : ' · km ' . (int) $d['km'];
+        $rows .= '<li style="margin:0 0 8px"><strong>' . canal_planner_e($d['label'] . ' · ' . $d['place']) . '</strong>'
+            . canal_planner_e($km) . '<br>' . canal_planner_e($d['text']) . '</li>';
+    }
+    return '<ul style="padding-left:18px;margin:12px 0">' . $rows . '</ul>';
+}
+
+function canal_planner_details(array $req): string
+{
+    return canal_planner_text(trim($req['when'] . ' · ' . $req['people'], ' ·'), 160);
+}
+
+function canal_planner_mail_confirm(array $plan, string $confirmUrl, array $names): array
+{
+    $list = '';
+    foreach ($names as $n) {
+        $list .= '<li>' . canal_planner_e((string) $n) . '</li>';
+    }
+    return [
+        'subject' => 'Confirmez votre demande · Canal du Midi',
+        'html' => canal_planner_mail_layout('Confirmez votre demande', '<p>Vous avez préparé le séjour <strong>' . canal_planner_e($plan['title']) . '</strong>. '
+            . 'Confirmez pour que nous transmettions votre demande de disponibilité à :</p><ul>' . $list . '</ul>'
+            . canal_planner_button($confirmUrl, 'Confirmer ma demande')
+            . '<p style="font-size:13px;color:#6c718d">Ce lien est valable 48 heures. Si vous n\'êtes pas à l\'origine de cette demande, ignorez cet e-mail : rien ne sera envoyé.</p>'
+            . canal_planner_days_html($plan['days'])),
+    ];
+}
+
+function canal_planner_mail_provider(array $req, array $item): array
+{
+    $details = canal_planner_details($req);
+    $days = '';
+    foreach ($item['days'] as $line) {
+        $days .= '<li>' . canal_planner_e((string) $line) . '</li>';
+    }
+    return [
+        'to' => (string) $item['email'],
+        'reply_to' => (string) $req['email'],
+        'subject' => 'Demande de disponibilité' . ($details !== '' ? ' · ' . $details : ''),
+        'html' => canal_planner_mail_layout('Demande de disponibilité', '<p>Bonjour,</p><p>Un visiteur de plan-canal-du-midi.com prépare un séjour et souhaite connaître vos disponibilités pour <strong>'
+            . canal_planner_e((string) $item['title']) . '</strong> :</p><ul>' . $days . '</ul>'
+            . '<p><strong>Dates :</strong> ' . canal_planner_e((string) $req['when']) . '<br><strong>Personnes :</strong> ' . canal_planner_e((string) $req['people']) . '</p>'
+            . '<p>Répondez directement à cet e-mail pour lui écrire (' . canal_planner_e((string) $req['email']) . ').</p>'),
+    ];
+}
+
+function canal_planner_mail_fe(array $req, array $items, string $inbox): array
+{
+    $rows = '';
+    foreach ($items as $it) {
+        $rows .= '<li style="margin:0 0 10px"><strong>' . canal_planner_e((string) $it['title']) . '</strong> · tél. ' . canal_planner_e((string) $it['phone'])
+            . '<br><a href="' . canal_planner_e((string) $it['url']) . '">' . canal_planner_e((string) $it['url']) . '</a><br>'
+            . canal_planner_e(implode(' / ', (array) $it['days'])) . '</li>';
+    }
+    return [
+        'to' => $inbox,
+        'reply_to' => (string) $req['email'],
+        'subject' => 'Planificateur : demande à transmettre · ' . canal_planner_details($req),
+        'html' => canal_planner_mail_layout('Demande pour des prestataires sans e-mail', '<p>Visiteur : <strong>' . canal_planner_e((string) $req['email'])
+            . '</strong><br>Dates : ' . canal_planner_e((string) $req['when']) . '<br>Personnes : ' . canal_planner_e((string) $req['people'])
+            . '</p><p>Prestataires à contacter :</p><ul>' . $rows . '</ul>'),
+    ];
+}
+
+function canal_planner_mail_summary(array $req, array $plan, array $items): array
+{
+    $links = '';
+    foreach ($items as $it) {
+        $links .= '<li><a href="' . canal_planner_e((string) $it['url']) . '">' . canal_planner_e((string) $it['title']) . '</a></li>';
+    }
+    return [
+        'to' => (string) $req['email'],
+        'subject' => 'Votre séjour sur le Canal du Midi',
+        'html' => canal_planner_mail_layout((string) $plan['title'], '<p>Vos demandes de disponibilité sont parties. Les prestataires vous répondent directement par e-mail.</p>'
+            . canal_planner_days_html($plan['days']) . '<p>Les adresses de votre séjour :</p><ul>' . $links . '</ul>'),
+    ];
+}
+
+function canal_planner_mail_followup(array $req, string $plannerUrl): array
+{
+    return [
+        'to' => (string) $req['email'],
+        'subject' => 'Avez-vous reçu des réponses ?',
+        'html' => canal_planner_mail_layout('Avez-vous reçu des réponses ?', '<p>Il y a trois jours, vous avez envoyé une demande de disponibilité pour votre séjour <strong>'
+            . canal_planner_e((string) $req['title']) . '</strong>.</p><p>Sans réponse d\'un prestataire, vous pouvez le relancer par téléphone depuis sa fiche, ou préparer une nouvelle demande.</p>'
+            . canal_planner_button($plannerUrl, 'Préparer une nouvelle demande')),
+    ];
+}
+
+// Último paso antes de wp_mail: asunto y cabeceras sin CRLF; sin $live, todo va a $devTo.
+function canal_planner_finalize_mail(array $mail, bool $live, string $devTo): array
+{
+    $to = (string) $mail['to'];
+    $subject = canal_planner_text($mail['subject'], 180);
+    if (!$live) {
+        $subject = canal_planner_text('[TEST → ' . $to . '] ' . $subject, 240);
+        $to = $devTo;
+    }
+    $headers = ['Content-Type: text/html; charset=UTF-8'];
+    $reply = (string) ($mail['reply_to'] ?? '');
+    if ($reply !== '' && canal_planner_email_ok($reply)) {
+        $headers[] = 'Reply-To: ' . $reply;
+    }
+    return ['to' => $to, 'subject' => $subject, 'html' => (string) $mail['html'], 'headers' => $headers];
+}
+
+function canal_planner_token_hash(string $token): string
+{
+    return hash('sha256', $token);
+}
+
+function canal_planner_new_token(): array
+{
+    $token = bin2hex(random_bytes(32));
+    return [$token, canal_planner_token_hash($token)];
+}
+
+function canal_planner_token_state(?array $row, int $now): string
+{
+    if ($row === null) {
+        return 'unknown';
+    }
+    if ($row['status'] !== 'pending') {
+        return $row['status'] === 'sent' ? 'used' : 'expired';
+    }
+    return $now - (int) $row['created_at'] > CANAL_PLANNER_TOKEN_TTL ? 'expired' : 'ok';
+}

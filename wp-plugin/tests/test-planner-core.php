@@ -121,5 +121,58 @@ check(canal_planner_parse_response(503, '', $catalog)['error'] === 'http_503', '
 check(canal_planner_parse_response(200, json_encode(['content' => [['type' => 'text', 'text' => 'pas du json']]]), $catalog)['error'] === 'bad_payload', 'parse: texto no JSON');
 check(canal_planner_parse_response(200, json_encode(['stop_reason' => 'refusal', 'content' => []]), $catalog)['error'] === 'refusal', 'parse: refusal');
 
+// ── correos ─────────────────────────────────────────────────────────────
+check(canal_planner_email_ok('marie@exemple.fr'), 'email_ok: válido');
+check(!canal_planner_email_ok("a@b.fr\r\nBcc: x@y.z"), 'email_ok: rechaza CRLF');
+check(!canal_planner_email_ok('pas-un-email'), 'email_ok: rechaza inválido');
+
+$items = [
+    ['slug' => 'a', 'title' => 'Vélos <A>', 'email' => 'contact@velos.fr', 'phone' => '04 00', 'url' => 'https://x/fiche-2026/a/', 'days' => ['Jour 1 · Castelnaudary : départ']],
+    ['slug' => 'b', 'title' => 'Hôtel B', 'email' => '', 'phone' => '04 11', 'url' => 'https://x/fiche-2026/b/', 'days' => ['Jour 3 · Carcassonne : nuit']],
+];
+$routes = canal_planner_route_recipients($items);
+check(count($routes['provider']) === 1 && $routes['provider'][0]['slug'] === 'a', 'route: con e-mail → prestatario');
+check(count($routes['fe']) === 1 && $routes['fe'][0]['slug'] === 'b', 'route: sin e-mail → buzón FE');
+
+$plan = ['title' => 'Séjour <script>x</script>', 'mode' => 'velo', 'when' => '14-17 mai', 'people' => '4', 'missing' => [], 'days' => [['label' => 'Jour 1', 'place' => 'Castelnaudary', 'km' => 66, 'text' => 'Départ', 'slug' => 'a']], 'providers' => ['a', 'b']];
+$req = ['email' => 'marie@exemple.fr', 'when' => '14-17 mai', 'people' => "2 adultes\r\nBcc: x@y.z", 'title' => 'Séjour vélo'];
+
+$c = canal_planner_mail_confirm($plan, 'https://x/planificateur-2026/?confirmer=abc', ['Vélos <A>', 'Hôtel B']);
+check(strpos($c['html'], 'https://x/planificateur-2026/?confirmer=abc') !== false, 'confirm: contiene el enlace');
+check(strpos($c['html'], '<script>') === false && strpos($c['html'], 'Vélos &lt;A&gt;') !== false, 'confirm: escapa HTML');
+
+$pm = canal_planner_mail_provider($req, $items[0]);
+check($pm['to'] === 'contact@velos.fr' && $pm['reply_to'] === 'marie@exemple.fr', 'provider: destinatario y Reply-To');
+check(strpos($pm['html'], 'Jour 1 · Castelnaudary') !== false, 'provider: su día');
+
+$fe = canal_planner_mail_fe($req, [$items[1]], 'mbauwens@francedit.com');
+check($fe['to'] === 'mbauwens@francedit.com' && strpos($fe['html'], '04 11') !== false && strpos($fe['html'], 'https://x/fiche-2026/b/') !== false, 'fe: buzón con teléfono y enlace');
+
+$s = canal_planner_mail_summary($req, $plan, $items);
+check($s['to'] === 'marie@exemple.fr' && strpos($s['html'], 'Castelnaudary') !== false, 'summary: al usuario con el plan');
+$f = canal_planner_mail_followup($req, 'https://x/planificateur-2026/');
+check($f['to'] === 'marie@exemple.fr', 'followup: al usuario');
+
+$dev = canal_planner_finalize_mail($pm, false, 'onavarro@francedit.com');
+check($dev['to'] === 'onavarro@francedit.com', 'finalize sin live → DEV_TO');
+check(strpos($dev['subject'], '[TEST → contact@velos.fr]') === 0, 'finalize sin live: destinatario real en el asunto');
+$live = canal_planner_finalize_mail($pm, true, 'onavarro@francedit.com');
+check($live['to'] === 'contact@velos.fr', 'finalize live → destinatario real');
+check(in_array('Reply-To: marie@exemple.fr', $live['headers'], true), 'finalize: cabecera Reply-To');
+$evil = canal_planner_finalize_mail(['to' => 'a@b.fr', 'subject' => "Hola\r\nBcc: x@y.z", 'html' => 'x', 'reply_to' => "m@e.fr\r\nBcc: x@y.z"], true, 'd@e.fr');
+check(strpos($evil['subject'], "\n") === false && strpos($evil['subject'], "\r") === false, 'finalize: asunto sin CRLF');
+check(count($evil['headers']) === 1, 'finalize: Reply-To inválido descartado');
+check(strpos($pm['subject'], "\n") === false, 'provider: asunto sin CRLF aunque people lo traiga');
+
+// ── token ───────────────────────────────────────────────────────────────
+[$token, $hash] = canal_planner_new_token();
+check((bool) preg_match('/^[a-f0-9]{64}$/', $token) && $hash === hash('sha256', $token) && $hash === canal_planner_token_hash($token), 'token: 64 hex y hash SHA-256');
+check(canal_planner_new_token()[0] !== $token, 'token: aleatorio');
+$now = 1_800_000_000;
+check(canal_planner_token_state(null, $now) === 'unknown', 'token: desconocido');
+check(canal_planner_token_state(['status' => 'pending', 'created_at' => $now - 3600], $now) === 'ok', 'token: válido');
+check(canal_planner_token_state(['status' => 'sent', 'created_at' => $now - 3600], $now) === 'used', 'token: ya usado');
+check(canal_planner_token_state(['status' => 'pending', 'created_at' => $now - CANAL_PLANNER_TOKEN_TTL - 1], $now) === 'expired', 'token: caducado');
+
 echo $fails ? "\n$fails FALLOS\n" : "\nTodo OK\n";
 exit($fails ? 1 : 0);
