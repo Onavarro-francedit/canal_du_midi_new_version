@@ -96,7 +96,8 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Convención de URLs:** toda página nueva lleva el sufijo **`-2026`** (`/accueil-2026/`,
   `/explorer-2026/`, …) para distinguirla de la actual; al publicar se quita el sufijo y se
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
-- **Último completado:** **TASK-035 — carte: LCP sin esperar a Google Maps** (Lighthouse móvil 48 → 63,
+- **Último completado:** **TASK-036 — carte: mapa bajo demanda en móvil** (Lighthouse móvil 66–69).
+  Antes: **TASK-035 — carte: LCP sin esperar a Google Maps** (Lighthouse móvil 48 → 63,
   escritorio 83). Antes: **TASK-034 — home y carte sin CSS/JS del tema** (PageSpeed móvil home 43 → 78, carte
   sin mejora: su peso es propio → TASK-035). Antes: **TASK-033 — ficha 2026: diseño móvil, SEO y aligerado del
   tema** (móvil 87 / escritorio 98). Antes: **TASK-032 — navbar nuevo** (cabecera propia + mega-menú, estructura por intención
@@ -106,7 +107,7 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   `remote.sh deploy` · `remote.sh run tests/<smoke>.php` (con el plugin desactivado) ·
   `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:
   `node wp-plugin/build/build-css.mjs` (nunca editar `assets/home.css` a mano).
-- **Siguiente:** TASK-036 (mapa de la carte bajo demanda en móvil) o decidir la publicación conjunta home +
+- **Siguiente:** decidir la publicación conjunta home +
   carte + ficha (TASK-028 + TASK-029b + TASK-030b) — esto último SOLO con orden explícita.
 - Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
   antes de la captura de página completa: scroll-reveal + lazy-load).

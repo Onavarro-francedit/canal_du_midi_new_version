@@ -5,6 +5,25 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-01 (mediodía) — TASK-036 mapa bajo demanda en móvil (privada) · Siguiente: decidir
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** la carte en ≤1180 px no crea el mapa hasta abrir la vista Mapa (Lighthouse móvil 66–69,
+escritorio 83) y el panel del mapa muestra skeleton mientras carga; desplegada y privada (404 sin sesión).
+
+**Archivos:** `assets/carte/search-map.js` (`ensureMap`, skeleton), `build/carte-extra.css` + `assets/carte.css`.
+
+**Decisiones que no están en ARCHITECTURE.md:** medir con `npx lighthouse@12` (la API de PageSpeed agota la
+cuota); el Chrome de Claude puede no pintar Google Maps → verificar el mapa con Chrome limpio.
+
+**Próxima acción:**
+```
+Opcional: CANAL_CARTE_EAGER_IMAGES 6 → 3 (en pantalla caben ~2 tarjetas; menos competencia en 4G lento).
+Si no: publicar home + carte + ficha (TASK-028 / TASK-029b / TASK-030b) SOLO con orden explícita.
+```
+
+---
+
 ## CIERRE 2026-10-01 (mañana) — TASK-035 carte: LCP sin esperar a Maps (privada) · Siguiente: TASK-036 o publicar
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.

@@ -304,28 +304,38 @@ document.addEventListener('DOMContentLoaded', () => {
         window.dispatchEvent(new CustomEvent('search:map-ready'));
     };
 
-    map = new google.maps.Map(mapElement, {
-        center: { lat: 43.6, lng: 1.44 },
-        zoom: 10,
-        zoomControl: true,
-        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
-        mapTypeControl: true,
-        mapTypeControlOptions: { position: google.maps.ControlPosition.TOP_LEFT },
-        streetViewControl: true,
-        streetViewControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
-        fullscreenControl: true,
-        backgroundColor: 'transparent', // WP: deja ver el skeleton (#explore-map) hasta que llegan las teselas
-    });
-
-    google.maps.event.addListenerOnce(map, 'idle', maybeSignalMapReady);
-    google.maps.event.addListenerOnce(map, 'tilesloaded', () => mapElement.classList.add('is-map-ready'));
-
-    const infoWindow = new google.maps.InfoWindow({ maxWidth: 320 });
+    // WP (TASK-036): en pantallas ≤1180 px el mapa está oculto (vista lista) → se crea al abrir la vista
+    // Mapa; hasta entonces setSearchMapResults solo guarda los resultados.
+    let infoWindow = null;
+    let mapItems = validResults;
     let activeCarouselDestroy = null;
-    infoWindow.addListener('closeclick', () => {
-        if (typeof activeCarouselDestroy === 'function') activeCarouselDestroy();
-        activeCarouselDestroy = null;
-    });
+
+    const ensureMap = () => {
+        if (map) return;
+        map = new google.maps.Map(mapElement, {
+            center: { lat: 43.6, lng: 1.44 },
+            zoom: 10,
+            zoomControl: true,
+            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+            mapTypeControl: true,
+            mapTypeControlOptions: { position: google.maps.ControlPosition.TOP_LEFT },
+            streetViewControl: true,
+            streetViewControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+            fullscreenControl: true,
+            backgroundColor: 'transparent', // WP: deja ver el skeleton (#explore-map) hasta que llegan las teselas
+        });
+
+        google.maps.event.addListenerOnce(map, 'idle', maybeSignalMapReady);
+        google.maps.event.addListenerOnce(map, 'tilesloaded', () => mapElement.classList.add('is-map-ready'));
+
+        infoWindow = new google.maps.InfoWindow({ maxWidth: 320 });
+        infoWindow.addListener('closeclick', () => {
+            if (typeof activeCarouselDestroy === 'function') activeCarouselDestroy();
+            activeCarouselDestroy = null;
+        });
+
+        renderMapResults(mapItems);
+    };
 
     // 2. Añadir Marcadores con clustering
     let clusterer = null;
@@ -429,6 +439,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ? items.filter((item) => item && Number(item.lat) !== 0 && Number(item.lng) !== 0)
             : [];
 
+        mapItems = normalizedItems;
+        if (!map) return normalizedItems;
+
         if (clusterer) {
             clusterer.clearMarkers();
         }
@@ -453,11 +466,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.setSearchMapResults = renderMapResults;
 
-    renderMapResults(validResults);
+    if (!compactMedia.matches) ensureMap();
 
     /* ── Vista móvil ── */
 
     const refreshMapSize = () => {
+        if (!map) return;
         const center = map.getCenter();
         google.maps.event.trigger(map, 'resize');
         if (center) map.setCenter(center);
@@ -480,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = pageShell.dataset.filtersOpen === 'true' ? 'hidden' : '';
 
         if (pageShell.dataset.mobileView === 'map') {
+            ensureMap();
             window.setTimeout(refreshMapSize, 180);
         }
     };
@@ -513,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileTriggers.forEach((button) => {
                 button.classList.toggle('is-active', button.dataset.mobileTarget === 'list');
             });
+            ensureMap();
             refreshMapSize();
         } else {
             setMobileView(pageShell?.dataset.mobileView || 'list');

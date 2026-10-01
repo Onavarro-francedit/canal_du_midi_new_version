@@ -284,10 +284,18 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   newsletter funcional → ver **BUG-003**; bloque inmersivo "Lire la vidéo" →
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
-- **TASK-036 — Carte móvil: mapa bajo demanda** — en móvil el mapa está oculto (vista lista) pero se inicia
-  igual (Maps + 254 marcadores + clusterer). Iniciarlo al abrir la pestaña Mapa. Medir antes/después.
-
 ## 🟢 Completadas
+
+### TASK-036 — Carte: mapa bajo demanda en ≤1180 px — DESPLEGADO EN PRIVADO ✅ — 2026-10-01
+
+- `search-map.js`: `ensureMap()` crea el mapa al abrir la vista Mapa (o al pasar a ≥1181 px); antes de eso
+  `setSearchMapResults` (IA) solo guarda los resultados. Escritorio sin cambios.
+- **Lighthouse móvil:** 63 → **69 / 66** (TBT 320 → 230–300 ms, hilo principal 4,5 → 3,4 s, arranque de Maps
+  745 → 275 ms); 0 teselas pedidas en móvil. Escritorio 83, mapa con clusters (Chrome limpio). Una tercera pasada
+  móvil dio 44 con todo el JS (también el de terceros) al doble: ruido de CPU local.
+- **Lección:** en la pestaña del Chrome de Claude, Google Maps puede no pintar (tampoco la /explorer/ del tema);
+  verificar el mapa con un Chrome limpio (captura final de Lighthouse) antes de buscar un bug.
+
 
 ### TASK-035 — Carte: LCP sin esperar a Google Maps — DESPLEGADO EN PRIVADO ✅ — 2026-10-01
 
