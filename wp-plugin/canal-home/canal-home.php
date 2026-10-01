@@ -47,6 +47,7 @@ require_once CANAL_HOME_DIR . 'includes/header.php';
 add_filter('theme_page_templates', function ($templates) {
     $templates[CANAL_HOME_TEMPLATE] = 'Accueil 2026';
     $templates[CANAL_CARTE_TEMPLATE] = 'Carte interactive';
+    $templates[CANAL_PLANNER_TEMPLATE] = 'Planificateur 2026';
     return $templates;
 });
 
@@ -60,9 +61,17 @@ function canal_carte_is_page(): bool
     return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE;
 }
 
+function canal_planner_is_page(): bool
+{
+    return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_PLANNER_TEMPLATE;
+}
+
 add_filter('template_include', function ($template) {
     if (canal_home_is_page()) {
         return CANAL_HOME_DIR . 'template-home.php';
+    }
+    if (canal_planner_is_page()) {
+        return CANAL_HOME_DIR . 'template-planner.php';
     }
     return canal_carte_is_page() ? CANAL_HOME_DIR . 'template-carte.php' : $template;
 });
@@ -95,7 +104,7 @@ const CANAL_CARTE_UNUSED_ASSETS = '/^(elementor|e-animation|swiper|wc-|woocommer
 
 function canal_carte_dequeue_unused(): void
 {
-    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page()) {
+    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page() && !canal_planner_is_page()) {
         return;
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {
@@ -139,5 +148,37 @@ add_action('wp_enqueue_scripts', function () {
     wp_localize_script('canal-carte-ai-search', 'CDM_CARTE', [
         'aiUrl'   => rest_url('canal-home/v1/ai'),
         'pageUrl' => get_permalink(),
+    ]);
+}, 20);
+
+// Planificateur 2026: pantalla única (sin pie ni bloque publicitario), CSS/JS propios.
+add_filter('body_class', function ($classes) {
+    if (canal_planner_is_page()) {
+        $classes[] = 'cdm-planner-page';
+    }
+    return $classes;
+});
+
+add_action('wp_enqueue_scripts', function () {
+    if (!canal_planner_is_page()) {
+        return;
+    }
+    $ver = function (string $rel): string { return (string) filemtime(CANAL_HOME_DIR . $rel); };
+    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
+    wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
+    wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
+    // Base del tema que usa la cabecera (mismo subconjunto que la home, TASK-034).
+    wp_enqueue_style('canal-home-theme', CANAL_HOME_URL . 'assets/home-theme.css', ['canal-home-header'], $ver('assets/home-theme.css'));
+    wp_add_inline_style('canal-home-theme', CANAL_THEME_FIX_CSS);
+    wp_enqueue_style('canal-planner', CANAL_HOME_URL . 'assets/planner.css', ['canal-home-theme'], $ver('assets/planner.css'));
+    wp_enqueue_script('canal-planner', CANAL_HOME_URL . 'assets/planner.js', [], $ver('assets/planner.js'), ['in_footer' => true, 'strategy' => 'defer']);
+    $token = isset($_GET['confirmer']) && is_string($_GET['confirmer']) ? sanitize_key(wp_unslash($_GET['confirmer'])) : '';
+    wp_localize_script('canal-planner', 'CDM_PLANNER', [
+        'planUrl'    => rest_url('canal-home/v1/plan'),
+        'requestUrl' => rest_url('canal-home/v1/plan/request'),
+        'confirmUrl' => rest_url('canal-home/v1/plan/confirm'),
+        'carteUrl'   => home_url(CANAL_CARTE_PATH),
+        'themes'     => CANAL_PLANNER_THEMES,
+        'confirm'    => $token !== '' ? canal_planner_confirm_preview($token) : null,
     ]);
 }, 20);

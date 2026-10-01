@@ -1,0 +1,159 @@
+/* Planificateur 2026 (TASK-044) — mockup docs/mockups/planificateur-2026.html (v10).
+   Pantalla única: fija bajo la cabecera (--planner-top lo calcula planner.js); el pie, el pie del tema y el
+   bloque publicitario se ocultan SOLO en esta página. Las animaciones del orbe nunca cambian de duración. */
+html body.cdm-planner-page{overflow:hidden}
+body.cdm-planner-page .cdm-footer,
+body.cdm-planner-page footer.footer,
+body.cdm-planner-page .hit-billboard{display:none!important}
+
+.cdm-planner{
+  --accent:#6a63d9; --accent-ink:#4f48b7; --accent-soft:#ebe9fb;
+  --ink:#1f2340; --ink-2:#3a3e5c; --muted:#6c718d;
+  --line:#eceaf6; --line-2:#e0def0; --bg:#fcf8ff; --card:#ffffff; --chip:#f5f6fb;
+  --o1:#8a7ee8; --o2:#2BB6C4; --o3:#f1c7bc; --o4:#bcdff7; --dark:#0E1424;
+  position:fixed; left:0; right:0; bottom:0; top:var(--planner-top,72px); z-index:1;
+  display:flex; justify-content:center; overflow:hidden;
+  padding:clamp(8px,2vh,20px) 16px clamp(12px,2.4vh,24px);
+  background:var(--bg); color:var(--ink); font-family:'Manrope',system-ui,sans-serif; font-size:16px; line-height:1.5;
+}
+.cdm-planner *{box-sizing:border-box}
+.cdm-planner h1,.cdm-planner strong{font-family:'Sora',system-ui,sans-serif}
+.cdm-planner button{font-family:inherit;cursor:pointer}
+.cdm-planner svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cdm-planner :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cdm-planner [hidden]{display:none!important}
+.pl-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.cdm-planner .screen-reader-text{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.pl-wrap{width:100%;max-width:860px;height:100%;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2.4vh,24px)}
+.pl-wrap.is-chatting{justify-content:flex-start}
+.pl-hero{display:flex;flex-direction:column;align-items:center;text-align:center}
+.pl-hello{margin:0;font:600 clamp(16px,2.2vh,19px) 'Sora',system-ui,sans-serif;color:var(--accent-ink)}
+.pl-title{margin:4px 0 0;white-space:nowrap;font-size:clamp(19px,min(6.2vw,5vh),42px);font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--ink)}
+
+/* ── Orbe ── */
+.pl-orb{position:relative;width:var(--size,140px);height:var(--size,140px);flex-shrink:0;transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .8s ease}
+.pl-orb--hero{--size:clamp(96px,19vh,200px);margin:0 0 clamp(14px,2.6vh,26px)}
+.pl-orb--sm{--size:38px}.pl-orb--xs{--size:32px}
+.pl-orb__glow{position:absolute;inset:-35%;border-radius:50%;background:radial-gradient(circle,rgba(138,126,232,.45) 0%,rgba(43,182,196,.18) 40%,transparent 70%);filter:blur(18px);animation:plPulse 4s ease-in-out infinite}
+.pl-orb__core{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:radial-gradient(circle,#EDE9FF 0%,#C9C0FA 60%,#A99BF5 100%);animation:plBreath 5s ease-in-out infinite}
+.pl-orb__blob{position:absolute;width:70%;height:70%;border-radius:50%;filter:blur(calc(var(--size,140px)*.14));mix-blend-mode:multiply;opacity:.9}
+.pl-b1{background:var(--o1);top:-10%;left:-10%;animation:plDrift1 7s ease-in-out infinite}
+.pl-b2{background:var(--o2);bottom:-15%;right:-10%;animation:plDrift2 9s ease-in-out infinite}
+.pl-b3{background:var(--o3);bottom:-5%;left:-5%;width:55%;height:55%;animation:plDrift3 8s ease-in-out infinite}
+.pl-b4{background:var(--o4);top:5%;right:0;width:50%;height:50%;mix-blend-mode:screen;animation:plDrift1 11s ease-in-out infinite reverse}
+.pl-orb__swirl{position:absolute;inset:-20%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.55) 30%,transparent 45% 70%,rgba(255,255,255,.35) 80%,transparent 90%);filter:blur(10px);mix-blend-mode:soft-light;animation:plSpin 6s linear infinite;transition:opacity .8s ease}
+.pl-orb__shine{position:absolute;top:9%;left:18%;width:42%;height:26%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);filter:blur(2px);transform:rotate(-20deg)}
+.pl-orb--hero .pl-orb__core{overflow:visible;background:radial-gradient(circle,rgba(237,233,255,.9) 0%,rgba(201,192,250,.55) 45%,transparent 70%);filter:blur(calc(var(--size)*.045)) saturate(1.3);animation:plBreath 5s ease-in-out infinite,plSpin 18s linear infinite}
+.pl-orb--hero .pl-orb__blob{width:62%;height:62%;filter:blur(calc(var(--size)*.09));mix-blend-mode:normal;opacity:.85}
+.pl-orb--hero .pl-b1{top:4%;left:4%}.pl-orb--hero .pl-b2{bottom:4%;right:4%}
+.pl-orb--hero .pl-b3{bottom:8%;left:10%;width:50%;height:50%}
+.pl-orb--hero .pl-b4{top:10%;right:12%;width:45%;height:45%;mix-blend-mode:screen;opacity:.9}
+.pl-orb--hero .pl-orb__swirl{inset:0;border-radius:50%;filter:blur(calc(var(--size)*.07));opacity:.6}
+.pl-orb--hero .pl-orb__shine{top:22%;left:28%;width:34%;height:22%;filter:blur(calc(var(--size)*.05));opacity:.7}
+.pl-orb--hero .pl-orb__glow{inset:-18%;filter:blur(calc(var(--size)*.12))}
+/* « Pensando »: solo transiciones; cambiar la duración de una animación en curso la haría saltar. */
+.pl-orb.is-thinking{transform:scale(1.07);filter:saturate(1.35) brightness(1.06)}
+.pl-orb.is-thinking .pl-orb__swirl{opacity:1}
+@keyframes plBreath{0%,100%{scale:1}50%{scale:1.05}}
+@keyframes plPulse{0%,100%{opacity:.7;scale:1}50%{opacity:1;scale:1.08}}
+@keyframes plSpin{to{transform:rotate(360deg)}}
+@keyframes plDrift1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(35%,20%) scale(1.15)}66%{transform:translate(10%,40%) scale(.9)}}
+@keyframes plDrift2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-30%,-25%) scale(.9)}66%{transform:translate(-45%,5%) scale(1.2)}}
+@keyframes plDrift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40%,-40%) scale(1.25)}}
+
+/* ── Composer ── */
+.pl-composer{position:relative;flex:none;display:flex;align-items:flex-end;gap:12px;padding:18px 14px 14px 22px;border-radius:24px;background:var(--card);border:1px solid var(--line-2);box-shadow:0 18px 50px rgba(61,72,124,.12);transition:box-shadow .2s,border-color .2s;margin:0}
+.pl-composer:focus-within{border-color:#cfc8f7;box-shadow:0 18px 50px rgba(61,72,124,.18)}
+.pl-composer textarea{flex:1;border:none;resize:none;outline:none;font:inherit;font-size:18px;line-height:1.5;color:var(--ink);background:transparent;min-height:52px;padding:2px 0;box-shadow:none}
+.pl-composer textarea::placeholder{color:var(--muted)}
+.pl-send{width:50px;height:50px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:grid;place-items:center;flex-shrink:0;box-shadow:0 6px 18px rgba(106,99,217,.4);transition:transform .15s,opacity .15s;padding:0}
+.pl-send:hover{transform:translateY(-1px)}
+.pl-send:disabled{opacity:.45;cursor:default;transform:none}
+.pl-send svg{width:20px;height:20px;stroke-width:2.2}
+
+/* ── Ideas: altura fija → nada se mueve al cambiar de tema ── */
+.pl-ideas{display:flex;flex-direction:column;gap:clamp(8px,1.6vh,14px);flex:none}
+.pl-ideas-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink-2)}
+.pl-ideas-head svg{width:16px;height:16px;color:var(--accent)}
+.pl-cur{background:linear-gradient(90deg,#6a63d9,#2BB6C4,#c16b9c,#6a63d9);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:plShimmer 4s linear infinite}
+@keyframes plShimmer{to{background-position:-300% 0}}
+.pl-cats{display:flex;gap:8px;flex-wrap:wrap}
+.pl-cat{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);font-size:14px;font-weight:600;transition:all .25s}
+.pl-cat svg{width:17px;height:17px}
+.pl-cat:hover{border-color:#cfc8f7}
+.pl-cat.is-active{background:var(--dark);border-color:var(--dark);color:#fff;box-shadow:0 6px 18px rgba(14,20,36,.18)}
+.pl-cards{--cards-h:184px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;height:var(--cards-h);flex:none}
+.pl-cards>*{height:100%;min-height:0;overflow:hidden}
+.pl-card{position:relative;text-align:left;display:flex;flex-direction:column;gap:8px;padding:clamp(12px,1.8vh,16px);border-radius:18px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:13.5px;line-height:1.45;transition:border-color .2s,box-shadow .2s,transform .2s;animation:plCardIn .5s cubic-bezier(.2,.7,.2,1) both}
+.pl-card:hover{border-color:#cfc8f7;box-shadow:0 10px 28px rgba(61,72,124,.12);transform:translateY(-3px)}
+.pl-card strong{font-size:15.5px;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-card .pl-desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pl-card-top{display:flex;align-items:center;justify-content:space-between}
+.pl-ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.pl-ico svg{width:20px;height:20px}
+.pl-go{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2);background:var(--chip);transition:background .2s,color .2s}
+.pl-card:hover .pl-go{background:var(--accent);color:#fff}
+.pl-go svg{width:16px;height:16px}
+.pl-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.pl-meta span{padding:4px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-2)}
+.pl-card.is-out{animation:plCardOut .3s ease-in both}
+@keyframes plCardIn{from{opacity:0;transform:translateY(12px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes plCardOut{to{opacity:0;transform:translateY(-8px);filter:blur(6px)}}
+.pl-skel{border-radius:18px;border:1px solid var(--line);background:var(--card);padding:18px;display:flex;flex-direction:column;gap:12px}
+.pl-skel i{display:block;border-radius:8px;background:linear-gradient(90deg,var(--chip) 0%,var(--accent-soft) 50%,var(--chip) 100%);background-size:200% 100%;animation:plSk 1.1s linear infinite}
+.pl-skel i:nth-child(1){width:40px;height:40px;border-radius:12px}.pl-skel i:nth-child(2){width:80%;height:16px}.pl-skel i:nth-child(3){width:95%;height:12px}.pl-skel i:nth-child(4){width:60%;height:12px}
+@keyframes plSk{to{background-position:-200% 0}}
+.pl-t-boat{background:#e6f6f8;color:#13606b}.pl-t-bike{background:#eaf6ee;color:#1d6b3f}
+.pl-t-family{background:#fdf1e6;color:#8a4510}.pl-t-food{background:#fbecf1;color:#8e2a5b}.pl-t-love{background:#ebe9fb;color:#4f48b7}
+
+/* ── Chat: solo se desplaza la conversación ── */
+.pl-chat{flex:1;min-height:0;display:flex;flex-direction:column}
+.pl-chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pl-chat-id{display:flex;align-items:center;gap:12px}
+.pl-chat-id div:last-child{display:flex;flex-direction:column}
+.pl-chat-id span{font-size:13px;color:var(--muted)}
+.pl-ghost{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font-weight:600;font-size:14px}
+.pl-log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding:16px 4px 8px 0;overscroll-behavior:contain}
+.pl-msg{display:flex;gap:12px;align-items:flex-start;animation:plMsgIn .35s ease-out}
+.pl-msg--user{justify-content:flex-end}
+.pl-bu{max-width:72%;padding:14px 18px;border-radius:18px 18px 4px 18px;background:var(--accent);color:#fff;font-size:15px;line-height:1.5}
+.pl-ba{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;padding:18px 20px;border-radius:4px 18px 18px 18px;background:var(--card);border:1px solid var(--line);font-size:15px;line-height:1.55}
+.pl-typing{display:inline-flex;gap:5px;padding:14px 18px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.pl-typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:plDot 1.2s infinite}
+.pl-typing i:nth-child(2){animation-delay:.2s}.pl-typing i:nth-child(3){animation-delay:.4s}
+.pl-pills{display:flex;gap:8px;flex-wrap:wrap}
+.pl-pill{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600}
+.pl-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pl-day{padding:14px;border-radius:12px;background:var(--chip);border:1px solid var(--line);display:flex;flex-direction:column;gap:4px;animation:plMsgIn .4s ease-out both}
+.pl-day b{font:700 11.5px 'Sora',system-ui,sans-serif;color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between;gap:8px}
+.pl-day b em{font-style:normal;color:var(--muted);font-weight:600}
+.pl-day strong{font-weight:600;font-size:15px}
+.pl-day span{font-size:13px;color:var(--muted)}
+.pl-day a{font-size:13px;font-weight:700;color:var(--accent-ink);text-decoration:none;margin-top:2px}
+.pl-day a:hover{text-decoration:underline}
+.pl-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pl-actions button{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font-size:14px;font-weight:600}
+.pl-actions button.is-primary{background:var(--dark);color:#fff;border-color:var(--dark)}
+.pl-actions button:disabled{opacity:.5;cursor:default}
+.pl-who{display:flex;flex-wrap:wrap;gap:6px}
+.pl-who span{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:var(--chip);border:1px solid var(--line);font-size:13px;font-weight:600}
+.pl-fine{font-size:12.5px;color:var(--muted);margin:0}
+.pl-ba a{color:var(--accent-ink);font-weight:700}
+@keyframes plMsgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes plDot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+@media (max-height:740px){.pl-card .pl-desc{display:none}.pl-cards{--cards-h:136px}.pl-skel i:nth-child(4){display:none}}
+@media (max-height:600px){.pl-orb--hero{display:none}}
+@media (max-width:760px){
+  .pl-days{grid-template-columns:1fr}
+  .pl-cats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .pl-cat{flex:none;min-height:40px}
+  .pl-cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;--cards-h:136px}
+  .pl-cards>*{flex:0 0 78%;scroll-snap-align:start}
+  .pl-card .pl-desc{display:none}
+  .pl-skel i:nth-child(4){display:none}
+  .pl-bu{max-width:85%}
+  .pl-composer textarea{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){.cdm-planner *,.cdm-planner *::before,.cdm-planner *::after{animation:none!important;transition:none!important}}
