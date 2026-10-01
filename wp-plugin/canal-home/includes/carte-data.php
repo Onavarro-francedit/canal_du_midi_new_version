@@ -7,6 +7,7 @@ defined('ABSPATH') || exit;
 
 const CANAL_CARTE_CACHE = 'canal_carte_listings';
 const CANAL_CARTE_GALLERY_MAX = 8;
+const CANAL_CARTE_EAGER_IMAGES = 6; // tarjetas cuya imagen se pide sin lazy (las visibles al cargar)
 
 function canal_carte_listings(): array
 {

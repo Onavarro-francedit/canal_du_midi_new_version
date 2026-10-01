@@ -5,6 +5,26 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-01 (mañana) — TASK-035 carte: LCP sin esperar a Maps (privada) · Siguiente: TASK-036 o publicar
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** la carte pinta lista e imágenes sin esperar a Google Maps (Lighthouse móvil 48 → 63,
+LCP 13,4 → 7,1 s; escritorio 83); desplegada y privada (404 sin sesión).
+
+**Archivos:** `template-carte.php` (imágenes en el HTML, revelado sin mapa), `assets/carte/skeleton-controler.js`
+(reescrito), `canal-home.php` (scripts en defer), `includes/carte-data.php` (`CANAL_CARTE_EAGER_IMAGES`).
+
+**Decisiones que no están en ARCHITECTURE.md:** la API anónima de PageSpeed agota la cuota diaria → medir con
+`npx lighthouse@12 <url> --only-categories=performance` (móvil por defecto, `--preset=desktop`).
+
+**Próxima acción:**
+```
+TASK-036 — en móvil iniciar el mapa solo al abrir la pestaña Mapa, o publicar home + carte + ficha
+(TASK-028 / TASK-029b / TASK-030b) SOLO con orden explícita.
+```
+
+---
+
 ## CIERRE 2026-10-01 — TASK-034 home y carte sin CSS/JS del tema (privadas) · Siguiente: TASK-035 o publicar
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.

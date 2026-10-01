@@ -124,9 +124,12 @@ add_action('wp_enqueue_scripts', function () {
     // Lo que la carte usa del CSS del tema (TASK-034), después de lo nuestro como antes.
     wp_enqueue_style('canal-carte-theme', CANAL_HOME_URL . 'assets/carte-theme.css', ['canal-carte', 'canal-home-header'], $ver('assets/carte-theme.css'));
     wp_add_inline_style('canal-carte-theme', CANAL_THEME_FIX_CSS);
-    wp_enqueue_script('canal-carte-clusterer', 'https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js', [], '2.5.3', true);
-    foreach (['search-map', 'search-tabs', 'ai-search', 'skeleton-controler'] as $name) {
-        wp_enqueue_script("canal-carte-$name", CANAL_HOME_URL . "assets/carte/$name.js", ['canal-carte-clusterer'], $ver("assets/carte/$name.js"), true);
+    // TASK-035: skeleton-controler sin dependencias (corre en cuanto se lee: muestra la lista); el resto en
+    // defer para no bloquear el análisis (search-map arranca en DOMContentLoaded, tras el Maps síncrono del tema).
+    wp_enqueue_script('canal-carte-skeleton-controler', CANAL_HOME_URL . 'assets/carte/skeleton-controler.js', [], $ver('assets/carte/skeleton-controler.js'), true);
+    wp_enqueue_script('canal-carte-clusterer', 'https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js', [], '2.5.3', ['in_footer' => true, 'strategy' => 'defer']);
+    foreach (['search-map', 'search-tabs', 'ai-search'] as $name) {
+        wp_enqueue_script("canal-carte-$name", CANAL_HOME_URL . "assets/carte/$name.js", ['canal-carte-clusterer'], $ver("assets/carte/$name.js"), ['in_footer' => true, 'strategy' => 'defer']);
     }
     wp_localize_script('canal-carte-ai-search', 'CDM_CARTE', [
         'aiUrl'   => rest_url('canal-home/v1/ai'),

@@ -284,12 +284,23 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   newsletter funcional → ver **BUG-003**; bloque inmersivo "Lire la vidéo" →
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
-- **TASK-035 — Carte: aligerar su propio peso** — lo que la frena no es el tema (TASK-034): 1,2 MB de HTML con
-  los datos incrustados, 254 tarjetas pintadas de golpe, Google Maps + clusterer, ~8,5 s de hilo principal en
-  móvil. Ideas: pintar las primeras ~20 tarjetas y el resto al hacer scroll, adelgazar los datos incrustados,
-  revisar el JS del mapa. Medir antes/después (publicar 18502 unos minutos y volver a private).
+- **TASK-036 — Carte móvil: mapa bajo demanda** — en móvil el mapa está oculto (vista lista) pero se inicia
+  igual (Maps + 254 marcadores + clusterer). Iniciarlo al abrir la pestaña Mapa. Medir antes/después.
 
 ## 🟢 Completadas
+
+### TASK-035 — Carte: LCP sin esperar a Google Maps — DESPLEGADO EN PRIVADO ✅ — 2026-10-01
+
+- Diagnóstico (Lighthouse local, la API de PageSpeed sin cuota): el LCP era la imagen de la 1.ª tarjeta, que
+  no estaba en el HTML (`data-src` puesto por JS tras el Maps síncrono del tema) y la página entera quedaba oculta
+  tras el skeleton hasta el `idle` del mapa. El HTML (1,2 MB) pesa 130 KB en gzip: no era el problema.
+- `src`/`srcset` en el HTML, `fetchpriority="high"` en la 1.ª, las 6 primeras sin fundido
+  (`CANAL_CARTE_EAGER_IMAGES`), el resto `loading="lazy"` nativo; se revela al cargar las 6 primeras (respaldo
+  5 s), el mapa aparece después en su panel; clusterer y JS de la carte en `defer`, `skeleton-controler.js` sin
+  dependencias.
+- **Lighthouse móvil:** 48 → **63** (FCP 6,8 → 2,6 s, LCP 13,4 → 7,1 s, TBT 440 → 320 ms); escritorio **83**
+  (LCP 2,7 s). Verificado con sesión en escritorio: lista, imágenes diferidas, mapa con clusters, filtro `?q=`.
+
 
 ### TASK-034 — Home y carte 2026 sin CSS/JS del tema — DESPLEGADO EN PRIVADO ✅ — 2026-10-01
 

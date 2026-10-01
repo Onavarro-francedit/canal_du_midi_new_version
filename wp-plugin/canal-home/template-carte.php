@@ -329,7 +329,7 @@ get_header();
                 </div>
             <?php else: ?>
                 <div class="explore-list">
-                    <?php foreach ($results as $s): ?>
+                    <?php foreach (array_values($results) as $i => $s): ?>
                         <?php
                         // WP: $s es un array de canal_carte_listings() (antes, un objeto Service).
                         $serviceTitle = $s['title'] !== '' ? $s['title'] : 'Adresse Canal du Midi';
@@ -346,12 +346,14 @@ get_header();
                             onmouseleave="window.resetMarker && window.resetMarker(<?= (int) $s['id'] ?>)"
                         >
                             <a class="explore-card-link" href="<?= esc_url($ficheUrl) ?>">
-                                <div class="card-image<?= $serviceImage ? '' : ' card-image--placeholder' ?>">
+                                <?php // WP: las primeras imágenes van en el HTML sin fundido (LCP); el resto con lazy nativo. ?>
+                                <div class="card-image<?= $serviceImage ? ($i < CANAL_CARTE_EAGER_IMAGES ? ' is-loaded' : '') : ' card-image--placeholder' ?>">
                                     <?php if ($serviceImage): ?>
                                         <?php // WP: portada en 768 px + srcset (la original llega a 1024 px). ?>
                                         <img
-                                            data-src="<?= esc_url($serviceImage) ?>"
-                                            <?php if ($s['image_srcset'] !== ''): ?>data-srcset="<?= esc_attr($s['image_srcset']) ?>" sizes="(max-width: 1180px) 100vw, 360px"<?php endif; ?>
+                                            src="<?= esc_url($serviceImage) ?>"
+                                            <?php if ($s['image_srcset'] !== ''): ?>srcset="<?= esc_attr($s['image_srcset']) ?>" sizes="(max-width: 1180px) 100vw, 360px"<?php endif; ?>
+                                            <?= $i === 0 ? 'fetchpriority="high"' : ($i >= CANAL_CARTE_EAGER_IMAGES ? 'loading="lazy"' : '') ?>
                                             alt="<?= esc_attr($serviceTitle) ?>"
                                             width="400"
                                             height="260"
@@ -503,37 +505,19 @@ get_header();
 
         document.body.classList.add('search-page-loading');
 
-        const state = {
-            mapReady: false,
-            imagesReady: <?= $resultsCount === 0 ? 'true' : 'false' ?>,
-        };
-
-        const revealIfReady = () => {
-            if (!state.mapReady || !state.imagesReady) {
-                return;
-            }
-
+        // WP: se muestra en cuanto cargan las primeras imágenes, sin esperar a Google Maps (TASK-035: el mapa
+        // retrasaba el LCP); el mapa aparece en su panel cuando esté listo. Respaldo a los 5 s.
+        let revealed = false;
+        const reveal = () => {
+            if (revealed) return;
+            revealed = true;
             page.classList.remove('is-loading');
             page.classList.add('is-ready');
             document.body.classList.remove('search-page-loading');
         };
-
-        window.addEventListener('search:map-ready', () => {
-            state.mapReady = true;
-            revealIfReady();
-        }, { once: true });
-
-        window.addEventListener('search:images-ready', () => {
-            state.imagesReady = true;
-            revealIfReady();
-        }, { once: true });
-
-        // WP: si Maps o las imágenes no avisan (JS combinado por la caché, red lenta), se muestra igual a los 5 s.
-        window.setTimeout(() => {
-            state.mapReady = true;
-            state.imagesReady = true;
-            revealIfReady();
-        }, 5000);
+        <?php if ($resultsCount === 0): ?>reveal();<?php endif; ?>
+        window.addEventListener('search:images-ready', reveal, { once: true });
+        window.setTimeout(reveal, 5000);
     })();
 </script>
 </div>
