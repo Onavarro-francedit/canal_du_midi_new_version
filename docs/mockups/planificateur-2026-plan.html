@@ -228,6 +228,32 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
   .dlg-foot small{display:none}.dlg-foot .btn{flex:1;min-width:0}
 }
 
+/* ---------- Tarjeta de preguntas con opciones (paso 2, como claude.ai) ---------- */
+.qc{flex:1;max-width:560px;display:flex;flex-direction:column;gap:12px;padding:16px 18px;border-radius:4px 18px 18px 18px;background:var(--card);border:1px solid var(--line-2);box-shadow:0 10px 30px rgba(61,72,124,.08);animation:in .3s ease-out}
+.main.split .qc{background:var(--chip);box-shadow:none}
+.qc-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qc-intro{margin:0;font-size:15px;line-height:1.5;color:var(--ink)}
+.qc-step{flex:none;display:flex;align-items:center;gap:8px;font:700 12px var(--f-head);color:var(--muted)}
+.qc-dots{display:flex;gap:4px}.qc-dots i{width:18px;height:4px;border-radius:2px;background:var(--line-2)}.qc-dots i.on{background:var(--accent)}
+.qc-q{margin:0;font:700 17px/1.35 var(--f-head);color:var(--ink)}
+.qc-opts{display:flex;flex-direction:column;gap:8px}
+.qc-opt{display:flex;align-items:center;gap:12px;min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;text-align:left;transition:border-color .15s,background .15s}
+.qc-opt:hover{border-color:#cfc8f7;background:var(--accent-soft)}
+.qc-opt kbd{flex:none;width:24px;height:24px;border-radius:7px;border:1px solid var(--line-2);display:grid;place-items:center;font:700 12px var(--f-head);color:var(--muted);background:var(--chip)}
+.qc-opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.qc-opt.sel kbd{background:var(--accent);border-color:var(--accent);color:#fff}
+.qc-other{display:flex;gap:8px;align-items:center;padding:6px 6px 6px 14px;border-radius:12px;border:1px solid var(--accent);background:var(--card)}
+.qc-other input{flex:1;min-width:0;border:none;outline:none;font:inherit;font-size:15px;color:var(--ink);background:transparent;min-height:34px}
+.qc-other .send{width:36px;height:36px}
+.qc-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qc-skip{border:none;background:none;color:var(--muted);font-weight:600;font-size:14px;padding:8px 4px}
+.qc-next{min-height:40px;padding:0 16px;border-radius:10px;border:1px solid var(--dark);background:var(--dark);color:#fff;font-weight:700;font-size:14px}
+.qc-next:disabled{opacity:.4;cursor:default}
+.qc-done{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.qc-done li{display:flex;gap:8px;font-size:14px;color:var(--ink-2)}
+.qc-done li b{font-weight:700;color:var(--ink);font-family:var(--f-body)}
+.qc-done svg{width:16px;height:16px;color:#1d6b3f;flex:none;margin-top:2px}
+
 /* Pilote du mockup */
 .demo{position:fixed;left:16px;bottom:16px;z-index:40;display:flex;gap:6px;padding:8px;border-radius:14px;background:var(--dark);color:#fff;font-size:12.5px;align-items:center;box-shadow:0 10px 30px rgba(14,20,36,.3)}
 .demo button{border:none;border-radius:9px;padding:7px 10px;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:12.5px}
@@ -277,7 +303,7 @@ const PLAN_B={...PLAN_A, km:'19 km au total', days:[
 const main=document.getElementById('main');
 let msgs=[], plan=null, sheetOpen=false;
 
-const row=(m)=> m.role==='u' ? `<div class="row u"><div class="msg">${m.t}</div></div>`
+const row=(m)=> m.role==='qcard' ? `<div class="row a">${ORB('orb--xs')}${qcardHTML(m.st)}</div>` : m.role==='u' ? `<div class="row u"><div class="msg">${m.t}</div></div>`
   : m.role==='typing' ? `<div class="row a">${ORB('orb--xs thinking')}<div class="typing"><i></i><i></i><i></i></div></div>`
   : `<div class="row a">${ORB('orb--xs')}<div class="msg${m.ok?' ok':''}">${m.ok?'<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>':''}<span>${m.t}</span></div></div>`;
 
@@ -316,16 +342,75 @@ function render(step){
   if(split){document.getElementById('open').onclick=()=>sheet(true);document.getElementById('conv').onclick=()=>sheet(true);document.getElementById('scrim').onclick=()=>sheet(false);}
   const c=document.getElementById('close'); if(c) c.onclick=()=>sheet(false);
 }
+/* ---------- Paso 2: preguntas con opciones (la IA las devuelve en el idioma del visitante) ---------- */
+const QS={
+  intro:'¡Qué buena idea! Tres preguntas rápidas para proponerte algo a medida:',
+  labels:{other:'Otra respuesta…',skip:'Saltar',next:'Continuar',ph:'Escribe tu respuesta'},
+  qs:[
+    {k:'Cuándo',q:'¿Cuándo queréis ir?',o:['Este fin de semana','En noviembre','En primavera','Aún no lo sé'],multi:false},
+    {k:'Quiénes',q:'¿Quiénes viajáis?',o:['Solo yo','En pareja','En familia con niños','Con amigos'],multi:false},
+    {k:'Ganas',q:'¿Qué os apetece? (varias respuestas)',o:['Barco por el canal','Bici','Gastronomía y vino','Patrimonio','Naturaleza y paseos'],multi:true},
+  ]};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function qcardHTML(st){
+  const L=QS.labels;
+  if(st.done){
+    return `<div class="qc"><p class="qc-intro">${esc(QS.intro)}</p><ul class="qc-done">${QS.qs.map((q,i)=>`<li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span>${esc(q.k)} : <b>${esc(st.ans[i]||'—')}</b></span></li>`).join('')}</ul></div>`;
+  }
+  const q=QS.qs[st.i];
+  return `<div class="qc" data-qc>
+    <div class="qc-top"><p class="qc-intro">${st.i===0?esc(QS.intro):''}</p><span class="qc-step"><span class="qc-dots">${QS.qs.map((_,k)=>`<i class="${k<=st.i?'on':''}"></i>`).join('')}</span>${st.i+1}/${QS.qs.length}</span></div>
+    <p class="qc-q">${esc(q.q)}</p>
+    <div class="qc-opts">${q.o.map((o,k)=>`<button type="button" class="qc-opt${st.sel.includes(o)?' sel':''}" data-opt="${esc(o)}"><kbd>${k+1}</kbd>${esc(o)}</button>`).join('')}
+      ${st.other?`<div class="qc-other"><input id="qc-in" placeholder="${esc(L.ph)}" maxlength="120"><button type="button" class="send" data-other-send aria-label="OK">${SEND}</button></div>`
+        :`<button type="button" class="qc-opt" data-other><kbd>✎</kbd>${esc(L.other)}</button>`}</div>
+    <div class="qc-foot"><button type="button" class="qc-skip" data-skip>${esc(L.skip)} →</button>${q.multi?`<button type="button" class="qc-next" data-next ${st.sel.length?'':'disabled'}>${esc(L.next)}</button>`:''}</div>
+  </div>`;
+}
+let qstate=null;
+function qcAnswer(val){
+  qstate.ans[qstate.i]=val; qstate.sel=[]; qstate.other=false;
+  if(qstate.i<QS.qs.length-1){ qstate.i++; render(2); return; }
+  qstate.done=true; qcFinish();
+}
+async function qcFinish(){
+  const me=run;
+  const summary=QS.qs.map((q,i)=>`${q.k}: ${qstate.ans[i]||'—'}`).join(' · ');
+  msgs=[msgs[0],{role:'qcard',st:qstate},{role:'u',t:summary},{role:'typing'}]; render(2);
+  await sleep(1800); if(me!==run) return;
+  plan=PLAN_A; msgs=[...msgs.slice(0,-1),{role:'a',t:'¡Perfecto! Aquí tienes una propuesta; el plan está a la derecha. Dime qué quieres cambiar.'}]; render(3);
+}
+document.addEventListener('click',e=>{
+  if(!qstate||qstate.done||!e.target.closest('[data-qc]')) return;
+  const q=QS.qs[qstate.i];
+  const opt=e.target.closest('[data-opt]');
+  if(opt){ const v=opt.dataset.opt;
+    if(q.multi){ qstate.sel=qstate.sel.includes(v)?qstate.sel.filter(x=>x!==v):[...qstate.sel,v]; render(2); }
+    else qcAnswer(v);
+    return; }
+  if(e.target.closest('[data-other]')){ qstate.other=true; render(2); setTimeout(()=>document.getElementById('qc-in')?.focus(),30); return; }
+  if(e.target.closest('[data-other-send]')){ const v=document.getElementById('qc-in').value.trim(); if(v) qcAnswer(q.multi?[...qstate.sel,v].join(', '):v); return; }
+  if(e.target.closest('[data-next]')){ qcAnswer(qstate.sel.join(', ')); return; }
+  if(e.target.closest('[data-skip]')){ qcAnswer(''); }
+});
+document.addEventListener('keydown',e=>{
+  if(!qstate||qstate.done) return;
+  if(e.target.id==='qc-in'){ if(e.key==='Enter'){ e.preventDefault(); document.querySelector('[data-other-send]')?.click(); } return; }
+  const n=+e.key; const btns=[...document.querySelectorAll('[data-qc] [data-opt]')];
+  if(n>=1&&n<=btns.length){ btns[n-1].click(); }
+});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let run=0;
 async function go(step){
   const me=++run; sheetOpen=false;
   closeModal();
-  if(step===1){msgs=[];plan=null;render(1);return;}
+  if(step===1){msgs=[];plan=null;qstate=null;render(1);return;}
+  if(step!==2) qstate=null;
   if(step===2){
-    plan=null; msgs=[{role:'u',t:'Une balade à vélo en famille, plutôt facile'},{role:'typing'}]; render(2);
+    plan=null; qstate=null; msgs=[{role:'u',t:'Busco pasar un fin de semana en Carcassonne'},{role:'typing'}]; render(2);
     await sleep(1400); if(me!==run) return;
-    msgs=[msgs[0],{role:'a',t:"Avec plaisir ! Pour vous proposer un séjour adapté : combien de jours, à quelles dates, et quel âge ont les enfants ?"}]; render(2); return;
+    qstate={i:0,ans:[],sel:[],other:false,done:false};
+    msgs=[msgs[0],{role:'qcard',st:qstate}]; render(2); return;
   }
   const base=[{role:'u',t:'Une balade à vélo en famille, plutôt facile'},{role:'a',t:"Avec plaisir ! Pour vous proposer un séjour adapté : combien de jours, à quelles dates, et quel âge ont les enfants ?"},{role:'u',t:'3 jours, du 14 au 17 mai, 2 adultes et 2 enfants de 8 et 11 ans'}];
   if(step===3){
