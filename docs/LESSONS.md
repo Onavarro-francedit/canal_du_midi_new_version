@@ -109,6 +109,14 @@ _(sin lecciones todavía)_
 
 ## Producto / UX (PRD-NNN)
 
+- **PRD-016: en páginas servidas desde caché (TTFB ~0,1 s) Lighthouse simulado (lantern) puede dar LCP absurdos y bimodales — no concluir sin navegador real.**
+  TASK-050: /accueil-2026/ cacheada dio en Lighthouse local LCP 9–12 s (a veces 3,3 s) y en DataForSEO móvil 47, con HTML
+  idéntico a la versión PHP (3,3–3,7 s); en navegador real con PerformanceObserver la caché da LCP 0,24 s (0,57 s con throttling
+  móvil CDP) frente a 0,9 s / 1,15 s en PHP. Regla: ante un resultado de laboratorio que contradice la física (menos TTFB → más
+  LCP), medir en navegador real con y sin throttling (PerformanceObserver `largest-contentful-paint`), mirar el LCP « observado »
+  de la traza y, cuando la página sea pública, los datos de campo (CrUX/PSI). Un umbral de decisión (« si LCP > 3,5 s → 8b ») no
+  se dispara con una sola fuente de laboratorio.
+
 - **PRD-015: una animación de entrada que RE-OCULTA contenido ya pintado (tras window.load) mueve el LCP al final de la animación.**
   TASK-048: el hero de la home se pintaba visible (PRD-001 bien aplicado) pero `html.hero-ready`, añadido tras `load`,
   volvía a poner `opacity:0` al H1/texto/buscador y los revelaba con `hero-rise` (hasta 1,25 s + 0,9 s): Lighthouse

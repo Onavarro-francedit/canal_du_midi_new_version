@@ -4,33 +4,7 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-### TASK-050 — Caché de página (WP Fastest Cache 1.4.9) en todo el sitio de producción — IMPLEMENTADA Y ACTIVA EN PRODUCCIÓN (coder, 2026-10-02) — pendiente security + verificación visual
-> **Excepción autorizada por el usuario (2026-10-02)** a « en producción solo se añade »: cambia la configuración de
-> todo el sitio (opción `WpFastestCache` + bloque en `httpdocs/.htaccess`). Reversible en 1 comando (ver rollback).
-- **Hallazgos:** WPFC activo pero sin configurar (no hay opción ni reglas). « Submit » en wp-admin NO funciona: las
-  comprobaciones de Elementor de WPFC dan falso positivo con Elementor 3.0.16 (sin opción `elementor_element_cache_ttl`
-  → « Element Caching activo »; `elementor_css_print_method = external`). Se activa con un script WP-CLI que reutiliza
-  `getHtaccess()` del plugin. WPFC **ignora `DONOTCACHEPAGE`** (solo lo respeta en 403/503): la ficha 2026 abierta con
-  `canal_fiche_public` se cachearía y seguiría servida tras cerrarla → purga al cambiar la opción. Nonces de anónimo en
-  TODAS las páginas (`c27_ajax_nonce` del explorador de listados — sin él no cargan —, `woocommerce-login-nonce` del
-  modal, `wpecpp`) → caché ≤ 6 h. CF7 no verifica nonce a anónimos; planificador/plan sin nonce (honeypot + límites).
-  HTML idéntico móvil/escritorio (solo aleatoriedad) → caché única. nginx ya comprime (gzip). Sin mod_expires.
-- **Ajustes:** Status on · LoggedInUser on · Mobile off · NewPost on (all) · UpdatePost on (post) · Preload, Minify,
-  Combine, Gzip, LBC, Emojis off · timeout « everysixhours » (all) · exclusiones por cookie `wp_woocommerce_session_` y
-  `woocommerce_items_in_cart` · bloque `canal-headers` (nosniff + HSTS) porque la página estática no pasa por PHP.
-- **Código (coder):** `wp-plugin/ops/wpfc-enable.php` (nuevo, idempotente) · `canal-home/includes/fiche-route.php`
-  (purga al añadir/cambiar/borrar `canal_fiche_public`; comentario DONOTCACHEPAGE corregido).
-- **Decisiones del usuario (por defecto: aceptar):** pubs 250×250 del tema (`ORDER BY RAND()` + fechas en PHP) y
-  listados aleatorios de `/` quedan fijos hasta 6 h; las visitas internas de MyListing (`wp_mylisting_visits`) dejan
-  de contar las vistas servidas desde caché (Matomo sigue siendo la referencia).
-- Rollback 1 paso: restaurar `.htaccess.bak-<fecha>-wpfc`, borrar opción `WpFastestCache`, evento `wp_fastest_cache_0`
-  y `wp-content/cache/all`. Desbloquea TASK-049. Alta · M.
-- **Resultado (coder, 2026-10-02):** `ops/wpfc-enable.php` ejecutado en prod (copia `.htaccess.bak-2026-10-02-wpfc`; bloques
-  WPFC + canal-headers antes de « # BEGIN WordPress »; cron `wp_fastest_cache_0` everysixhours). TTFB anónimo (3 pasadas, caliente):
-  `/` 0,106-0,124 · `/navigation/` 0,104-0,109 · `/explorer/` 0,109-0,126 · `/fiche/maison-rassier/` 0,107-0,119 s (antes 1,04-1,19 /
-  0,52-0,57 / 0,60-0,62 / 1,03-1,10). Cookies logged_in / items_in_cart / wp_woocommerce_session → sin caché; GPTBot 403;
-  nosniff y HSTS una sola vez; nonce `c27_ajax_nonce` de `/explorer/` cacheado → `int(1)`. `fiche-route.php`: purga al cambiar
-  `canal_fiche_public`. Pendiente: security, verificación visual (CMP/pubs en `/`, `/histoire/`, listados `/explorer/`).
+_(Nada en curso: TASK-050 cerrada ⚠️ → seguimiento TASK-050b en 🟡.)_
 
 _(TASK-048 cerrada ⚠️ → seguimiento TASK-049 en 🟡.)_
 
@@ -38,14 +12,26 @@ _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b
 
 ## 🟡 Pendiente
 
-- **Medición previa (2026-10-02, TTFB anónimo, 3 pasadas):** `/` 1,13 · 1,19 · 1,04 s · `/navigation/` 0,55 · 0,57 · 0,52 s · `/explorer/` 0,60 · 0,60 · 0,62 s · `/fiche/maison-rassier/` 1,03 · 1,10 · 1,07 s.
-- **Bloqueo:** el modo automático denegó lanzar la implementación (cambia el `.htaccess` de producción). Pendiente: salir del modo automático o que el usuario lance la ejecución.
+### TASK-050b — Caché WPFC: comprobación a +6 h y avisos (seguimiento de TASK-050)
+- Tras el primer vaciado programado (`wp_fastest_cache_0`, ~20:40 CEST del 02/10; WP-Cron depende de peticiones no cacheadas,
+  sin `DISABLE_WP_CRON`): `remote.sh wp cron event list` muestra la siguiente ejecución en ~6 h; `/explorer/` en ventana
+  anónima carga listados (nonce `c27` fresco); `wp-content/cache/all` regenerada.
+- `wp_mylisting_visits`: comparar el recuento de visitas por hora antes (10–12 UTC: 12/33/35) y después de la activación. Si los
+  prestatarios ven estadísticas de visitas en su panel MyListing, preparar respuesta para el comercial (« baisse des vues »
+  = artefacto de caché; la referencia es Matomo) o tarea para contar la visita por AJAX.
+- Recordatorio operativo (añadir donde lo vea quien edite en wp-admin): tras « Regenerate CSS » de Elementor o un cambio de
+  anuncios urgente → WP Fastest Cache → « Delete Cache ». Opcional: excluir la cookie `wp-postpass_` (security). Baja · XS.
 
 ### TASK-049 — Rendimiento 2026: re-medir tras publicar (seguimiento de TASK-048)
 - Tras publicar home/carte/ficha (TASK-028/029b/030b) y con WP Fastest Cache activo: 3 pasadas móvil + escritorio
   (mediana) en DataForSEO y PageSpeed. Si LCP móvil > 3,5 s o Perf < 85 → 8b (hero WebP + preload, entrada animada
   del hero también fuera en 769–1024 px). Comprobar en GA4 Tiempo real page_view con consentimiento (Sirdata) en las
   páginas 2026 vs /. Avisar al usuario: conversión Ads AW-986499205 sin config en ningún contenedor (preexistente). Media · S.
+- **Product 2026-10-02 (TASK-050):** la caché YA está activa → la condición que queda es solo publicar. Con caché, Lighthouse
+  simulado/DataForSEO dan LCP absurdos y bimodales (9–12 s, móvil 47) mientras el navegador real mide 0,24 s (0,57 s con
+  throttling móvil) — PRD-016. Criterio nuevo para decidir 8b: navegador real con throttling (PerformanceObserver) + PSI de
+  campo (CrUX) a las ~4 semanas de publicar; Lighthouse/DataForSEO solo como apoyo (mediana de 3, ignorar pasadas con TBT
+  anómalo).
 
 ### TASK-047 — accueil-2026: revisión anual de fechas (enero) (PRD-014)
 - Fechas de temporada y horarios de écluses de la FAQ n.º 4 contra `/navigation/periode-de-navigation/` y VNF;
@@ -355,6 +341,41 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-050 — Caché de página (WP Fastest Cache 1.4.9) en todo el sitio de producción — ACTIVA EN PRODUCCIÓN ⚠️ (listo con mejoras menores) — 2026-10-02
+> **Product 2026-10-02 ⚠️:** criterios cumplidos (TTFB 1,0–1,2 s → 0,10–0,13 s en `/`, `/navigation/`, `/explorer/`, ficha;
+> sin datos de usuario cacheados; sesión real sin caché; `/` con CMP/GAM/pubs; `/explorer/` 254 listados; `/le-canal/histoire/`
+> cacheada; rollback documentado; purga al cerrar páginas 2026). Pendiente: comprobación a +6 h (TASK-050b). Lección PRD-016
+> (Lighthouse simulado en página cacheada). Purga: los cambios de un prestatario en su ficha (publish→publish) vacían SU página;
+> anuncios con fechas, fichas caducadas y cambios solo de meta/opciones tardan hasta 6 h.
+> **Excepción autorizada por el usuario (2026-10-02)** a « en producción solo se añade »: cambia la configuración de
+> todo el sitio (opción `WpFastestCache` + bloque en `httpdocs/.htaccess`). Reversible en 1 comando (ver rollback).
+- **Hallazgos:** WPFC activo pero sin configurar (no hay opción ni reglas). « Submit » en wp-admin NO funciona: las
+  comprobaciones de Elementor de WPFC dan falso positivo con Elementor 3.0.16 (sin opción `elementor_element_cache_ttl`
+  → « Element Caching activo »; `elementor_css_print_method = external`). Se activa con un script WP-CLI que reutiliza
+  `getHtaccess()` del plugin. WPFC **ignora `DONOTCACHEPAGE`** (solo lo respeta en 403/503): la ficha 2026 abierta con
+  `canal_fiche_public` se cachearía y seguiría servida tras cerrarla → purga al cambiar la opción. Nonces de anónimo en
+  TODAS las páginas (`c27_ajax_nonce` del explorador de listados — sin él no cargan —, `woocommerce-login-nonce` del
+  modal, `wpecpp`) → caché ≤ 6 h. CF7 no verifica nonce a anónimos; planificador/plan sin nonce (honeypot + límites).
+  HTML idéntico móvil/escritorio (solo aleatoriedad) → caché única. nginx ya comprime (gzip). Sin mod_expires.
+- **Ajustes:** Status on · LoggedInUser on · Mobile off · NewPost on (all) · UpdatePost on (post) · Preload, Minify,
+  Combine, Gzip, LBC, Emojis off · timeout « everysixhours » (all) · exclusiones por cookie `wp_woocommerce_session_` y
+  `woocommerce_items_in_cart` · bloque `canal-headers` (nosniff + HSTS) porque la página estática no pasa por PHP.
+- **Código (coder):** `wp-plugin/ops/wpfc-enable.php` (nuevo, idempotente) · `canal-home/includes/fiche-route.php`
+  (purga al añadir/cambiar/borrar `canal_fiche_public`; comentario DONOTCACHEPAGE corregido).
+- **Decisiones del usuario (por defecto: aceptar):** pubs 250×250 del tema (`ORDER BY RAND()` + fechas en PHP) y
+  listados aleatorios de `/` quedan fijos hasta 6 h; las visitas internas de MyListing (`wp_mylisting_visits`) dejan
+  de contar las vistas servidas desde caché (Matomo sigue siendo la referencia).
+- Rollback 1 paso: restaurar `.htaccess.bak-<fecha>-wpfc`, borrar opción `WpFastestCache`, evento `wp_fastest_cache_0`
+  y `wp-content/cache/all`. Desbloquea TASK-049. Alta · M.
+- **Resultado (coder, 2026-10-02):** `ops/wpfc-enable.php` ejecutado en prod (copia `.htaccess.bak-2026-10-02-wpfc`; bloques
+  WPFC + canal-headers antes de « # BEGIN WordPress »; cron `wp_fastest_cache_0` everysixhours). TTFB anónimo (3 pasadas, caliente):
+  `/` 0,106-0,124 · `/navigation/` 0,104-0,109 · `/explorer/` 0,109-0,126 · `/fiche/maison-rassier/` 0,107-0,119 s (antes 1,04-1,19 /
+  0,52-0,57 / 0,60-0,62 / 1,03-1,10). Cookies logged_in / items_in_cart / wp_woocommerce_session → sin caché; GPTBot 403;
+  nosniff y HSTS una sola vez; nonce `c27_ajax_nonce` de `/explorer/` cacheado → `int(1)`. `fiche-route.php`: purga al cambiar
+  `canal_fiche_public`. Pendiente: security, verificación visual (CMP/pubs en `/`, `/histoire/`, listados `/explorer/`).
+- **Security (2026-10-02) ⚠️:** diff del .htaccess = solo 2 bloques añadidos; idempotente; 404/301/?s=/utm/POST/mon-compte/panier/2026 no se cachean; cookies login/WC excluidas;
+  sin datos personales en el HTML cacheado. Observaciones: `wp-postpass` no excluida (hoy 0 posts con contraseña); Cache-Control del HTML cacheado = no-store (correcto, pero sin caché de navegador/CDN).
 
 ### TASK-044 — Planificateur de séjour 2026 (`/planificateur-2026/`, página 18505) — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
 - Spec `docs/superpowers/specs/2026-10-01-planificateur-2026-design.md`, plan `docs/superpowers/plans/2026-10-01-planificateur-2026.md`,

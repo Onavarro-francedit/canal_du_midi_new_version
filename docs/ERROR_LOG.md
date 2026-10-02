@@ -429,3 +429,13 @@ Formato de entrada:
 - Corrección aplicada (8a): en ≤ 768 px el contenido del hero queda visible y sin animación; escritorio sin cambios.
   Móvil 70 → 76–81 (DataForSEO), Lighthouse local 79–90. Escritorio y tablet (769–1024 px) siguen con el parpadeo.
 - Prevención: LESSONS.md PRD-015.
+
+### [PRD-016] Lighthouse simulado da un LCP absurdo y bimodal en la página servida desde caché — 2026-10-02 (product TASK-050)
+- Síntoma: /accueil-2026/ cacheada por WPFC (TTFB ~0,1 s) → Lighthouse 12 local (lantern) LCP 9–12 s (a veces 3,3 s) frente a
+  3,3–3,7 s en la versión PHP con HTML idéntico; DataForSEO 1 pasada móvil 47 (TBT 2.360 ms, todo el hilo principal ×3).
+- Realidad medida en navegador (PerformanceObserver): caché LCP 0,24–0,26 s (sin throttling) y 0,57 s (throttling móvil CDP)
+  frente a 0,82–0,98 s y 1,14–1,18 s en PHP. Los usuarios ven el LCP a la mitad.
+- Causa raíz: no aislada; artefacto de laboratorio (modelo lantern con red casi instantánea + probable carrera con el CMP
+  Sirdata). Se estuvo a punto de concluir que la caché empeoraba el LCP.
+- Corrección aplicada: ninguna en código; TASK-049 cambia de criterio (navegador real + CrUX/PSI de campo, no solo lantern).
+- Prevención: LESSONS.md PRD-016.
