@@ -8,16 +8,10 @@ _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b
 
 ## 🟡 Pendiente
 
-### TASK-047 — accueil-2026: mejoras de copy de la FAQ + revisión anual de fechas (product TASK-046, PRD-014)
-- Precio (n.º 1): sin cifras, añadir lo que el cliente necesita para comparar devis: « Vérifiez ce que comprend le
-  devis : carburant, dépôt de garantie (caution), frais d’aller simple, options (vélos, annexe) ». Opcional y solo si
-  el usuario lo valida: « Les tarifs sont affichés sur la fiche de chaque loueur » cuando las fichas los tengan.
-- Écluses (n.º 4): empezar por « En été (haute saison, du 2 mai au 30 septembre)… » (consulta real: « … en été ? ») y
-  añadir el caso límite: « Des fermetures (chômages d’hiver, travaux, sécheresse) peuvent interrompre la navigation :
-  consultez les avis à la batellerie avant de partir. » Indicar el año (« en 2026 ») en las fechas.
-- **Revisión anual (enero):** fechas de temporada y horarios de écluses de la n.º 4 contra
-  `/navigation/periode-de-navigation/` y VNF; PDF del plan (`CANAL_HOME_PLAN_PDF`, año en el nombre); regenerar
-  llms-full.txt (PRD-013). Baja · XS.
+### TASK-047 — accueil-2026: revisión anual de fechas (enero) (PRD-014)
+- Fechas de temporada y horarios de écluses de la FAQ n.º 4 contra `/navigation/periode-de-navigation/` y VNF;
+  PDF del plan (`CANAL_HOME_PLAN_PDF`, año en el nombre); regenerar llms-full.txt (PRD-013). Baja · XS.
+- (Las mejoras de copy de product se aplicaron en TASK-046, commit afaef53.)
 
 ### Navbar 2026 — mejoras SEO/AEO/GEO (aprobadas 2026-10-01, ver `docs/navbar-analisis-2026-10-01.md`)
 **Estado 2026-10-01: TASK-037 a 042 DESPLEGADAS (privadas) Y VERIFICADAS EN PRODUCCIÓN** (carte `?type=hebergement`,
@@ -323,12 +317,12 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
-### TASK-046 — accueil-2026: FAQ alineada con las búsquedas reales — DESPLEGADO EN PRIVADO ⚠️ (product: listo con mejoras menores) — 2026-10-02
+### TASK-046 — accueil-2026: FAQ alineada con las búsquedas reales — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
 FAQ de 8 preguntas en `CANAL_HOME_FAQ` (precio sin cifras abierta por defecto, permis, días, horaires des écluses,
 péage, vélo, longitud, carte); « ouvrages » eliminada. Commit b2642e1 (sin push). Security ✅; verificación visual
-1440/390 ✅. **Pendiente del usuario:** smoke-render y smoke-seo (plugin desactivado, paso agrupado). Al publicar:
+1440/390 ✅. smoke-render y smoke-seo TODO OK (2026-10-02). Al publicar:
 regenerar y subir `llms-full.txt` con categorías (PRD-013: hoy aún contiene « Quels ouvrages ne pas manquer »).
-Mejoras de copy propuestas → TASK-047.
+Mejoras de copy de product (qué comprobar en el devis; « En été… » y cierres por chômages/sécheresse en esclusas) aplicadas, commit afaef53. Revisión anual → TASK-047.
 
 ### TASK-045 — accueil-2026: intención « carte / plan / tracé » — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
 
