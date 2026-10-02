@@ -191,5 +191,12 @@ $fe2 = canal_planner_mail_fe($req2, [$items[1]], 'mbauwens@francedit.com');
 check(strpos($fe2['html'], 'Nous avons un chien merci') !== false, 'fe: mensaje del visitante');
 check(strpos(canal_planner_mail_provider($req, $items[0])['html'], 'Message du visiteur') === false, 'provider: sin mensaje → sin bloque');
 
+
+// ── instrucciones: idioma del visitante y preguntas antes de la primera propuesta ──
+check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'Réponds en français') === false, 'instrucciones: ya no fuerzan el francés');
+check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'langue du dernier message du visiteur') !== false, 'instrucciones: idioma del visitante');
+check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'pose toutes les questions manquantes en une seule fois') !== false, 'instrucciones: preguntas antes de la primera propuesta');
+check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'propose quand même un séjour raisonnable') === false || strpos(CANAL_PLANNER_INSTRUCTIONS, 'Ne pose ces questions qu') !== false, 'instrucciones: preguntar una sola vez');
+
 echo $fails ? "\n$fails FALLOS\n" : "\nTodo OK\n";
 exit($fails ? 1 : 0);
