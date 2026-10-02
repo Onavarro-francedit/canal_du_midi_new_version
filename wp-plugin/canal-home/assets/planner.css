@@ -118,16 +118,6 @@ body.cdm-planner-page .hit-billboard{display:none!important}
 .pl-typing{display:inline-flex;gap:5px;padding:14px 18px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
 .pl-typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:plDot 1.2s infinite}
 .pl-typing i:nth-child(2){animation-delay:.2s}.pl-typing i:nth-child(3){animation-delay:.4s}
-.pl-pills{display:flex;gap:8px;flex-wrap:wrap}
-.pl-pill{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600}
-.pl-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.pl-day{padding:14px;border-radius:12px;background:var(--chip);border:1px solid var(--line);display:flex;flex-direction:column;gap:4px;animation:plMsgIn .4s ease-out both}
-.pl-day b{font:700 11.5px 'Sora',system-ui,sans-serif;color:var(--accent-ink);text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between;gap:8px}
-.pl-day b em{font-style:normal;color:var(--muted);font-weight:600}
-.pl-day strong{font-weight:600;font-size:15px}
-.pl-day span{font-size:13px;color:var(--muted)}
-.pl-day a{font-size:13px;font-weight:700;color:var(--accent-ink);text-decoration:none;margin-top:2px}
-.pl-day a:hover{text-decoration:underline}
 .pl-actions{display:flex;gap:8px;flex-wrap:wrap}
 .pl-actions button{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font-size:14px;font-weight:600}
 .pl-actions button.is-primary{background:var(--dark);color:#fff;border-color:var(--dark)}
@@ -142,7 +132,6 @@ body.cdm-planner-page .hit-billboard{display:none!important}
 @media (max-height:740px){.pl-card .pl-desc{display:none}.pl-cards{--cards-h:136px}.pl-skel i:nth-child(4){display:none}}
 @media (max-height:600px){.pl-orb--hero{display:none}}
 @media (max-width:760px){
-  .pl-days{grid-template-columns:1fr}
   .pl-cats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
   .pl-cat{flex:none;min-height:40px}
   .pl-cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;--cards-h:136px}
@@ -162,7 +151,7 @@ body.cdm-planner-page .hit-billboard{display:none!important}
 .is-split .pl-stage{display:grid;grid-template-columns:400px minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:20px}
 .is-split .pl-wrap{max-width:none;gap:0;justify-content:flex-start;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden}
 .is-split .pl-chat-head{padding:12px 16px;border-bottom:1px solid var(--line)}
-.is-split .pl-chat-id strong{font-size:14.5px}
+.is-split .pl-chat-id strong{font-size:14px;white-space:nowrap}
 .is-split .pl-ghost{white-space:nowrap;min-height:40px;padding:0 14px;font-size:13.5px}
 .is-split .pl-log{padding:16px;gap:14px}
 .is-split .pl-msg{gap:10px}
