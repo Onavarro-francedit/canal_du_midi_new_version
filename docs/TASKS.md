@@ -4,15 +4,20 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-### TASK-046 — accueil-2026: FAQ alineada con las búsquedas reales — IMPLEMENTADO Y DESPLEGADO (coder) 2026-10-02, pendiente security + smokes/visual
-Sustituye la FAQ n.º 5 (« ouvrages », sin demanda) por « Combien coûte la location d’un bateau… » (sin cifras) y
-añade « horaires des écluses » (= /navigation/periode-de-navigation/) y « combien de jours ». 8 preguntas.
-Solo `wp-plugin/canal-home/includes/content.php` (+ aserción en `tests/smoke-render.php`). Página 18500 PRIVADA.
-Al publicar: regenerar y subir `llms-full.txt` con categorías (PRD-013). Coder: `remote.sh test` Todo OK, deploy hecho; smoke-render/smoke-seo y visual los hace la sesión principal. Siguiente: security.
-
 _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente
+
+### TASK-047 — accueil-2026: mejoras de copy de la FAQ + revisión anual de fechas (product TASK-046, PRD-014)
+- Precio (n.º 1): sin cifras, añadir lo que el cliente necesita para comparar devis: « Vérifiez ce que comprend le
+  devis : carburant, dépôt de garantie (caution), frais d’aller simple, options (vélos, annexe) ». Opcional y solo si
+  el usuario lo valida: « Les tarifs sont affichés sur la fiche de chaque loueur » cuando las fichas los tengan.
+- Écluses (n.º 4): empezar por « En été (haute saison, du 2 mai au 30 septembre)… » (consulta real: « … en été ? ») y
+  añadir el caso límite: « Des fermetures (chômages d’hiver, travaux, sécheresse) peuvent interrompre la navigation :
+  consultez les avis à la batellerie avant de partir. » Indicar el año (« en 2026 ») en las fechas.
+- **Revisión anual (enero):** fechas de temporada y horarios de écluses de la n.º 4 contra
+  `/navigation/periode-de-navigation/` y VNF; PDF del plan (`CANAL_HOME_PLAN_PDF`, año en el nombre); regenerar
+  llms-full.txt (PRD-013). Baja · XS.
 
 ### Navbar 2026 — mejoras SEO/AEO/GEO (aprobadas 2026-10-01, ver `docs/navbar-analisis-2026-10-01.md`)
 **Estado 2026-10-01: TASK-037 a 042 DESPLEGADAS (privadas) Y VERIFICADAS EN PRODUCCIÓN** (carte `?type=hebergement`,
@@ -317,6 +322,13 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-046 — accueil-2026: FAQ alineada con las búsquedas reales — DESPLEGADO EN PRIVADO ⚠️ (product: listo con mejoras menores) — 2026-10-02
+FAQ de 8 preguntas en `CANAL_HOME_FAQ` (precio sin cifras abierta por defecto, permis, días, horaires des écluses,
+péage, vélo, longitud, carte); « ouvrages » eliminada. Commit b2642e1 (sin push). Security ✅; verificación visual
+1440/390 ✅. **Pendiente del usuario:** smoke-render y smoke-seo (plugin desactivado, paso agrupado). Al publicar:
+regenerar y subir `llms-full.txt` con categorías (PRD-013: hoy aún contiene « Quels ouvrages ne pas manquer »).
+Mejoras de copy propuestas → TASK-047.
 
 ### TASK-045 — accueil-2026: intención « carte / plan / tracé » — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
 

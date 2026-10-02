@@ -412,3 +412,11 @@ Formato de entrada:
 - Corrección aplicada: ninguna (la home sigue privada). Al regenerar con `php wp-plugin/build/build-llms-full.php`
   SIN argumento se pierde la sección « Prestataires par catégorie » (probado y revertido).
 - Prevención: LESSONS.md PRD-013; anotado como paso de TASK-028/029b.
+
+
+### [PRD-014] Fechas de temporada en la FAQ sin año ni revisión programada — 2026-10-02 (product TASK-046)
+- Síntoma: la FAQ n.º 4 de accueil-2026 (y su FAQPage JSON-LD) da fechas y horarios de écluses sin año; ninguna
+  tarea recuerda revisarlos. Tampoco menciona los cierres (chômages, sécheresse).
+- Causa raíz: el plan trató el dato como contenido estático; security lo señaló (« caducan ») pero no generó tarea.
+- Corrección aplicada: TASK-047 en 🟡 (copy + revisión anual en enero). Código sin cambios.
+- Prevención: LESSONS.md PRD-014.

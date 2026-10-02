@@ -15,7 +15,7 @@ const CANAL_HOME_PLAN_PDF = 'pdf/Plan-Canal-du-Midi-2026.pdf';
 const CANAL_HOME_FAQ = [
     [
         'q'    => 'Combien coûte la location d’un bateau sur le Canal du Midi ?',
-        'a'    => "Le prix varie selon le loueur, la durée (semaine, week-end ou journée), la saison et la taille du bateau : les tarifs sont plus élevés en été, surtout de mi-juillet à mi-août. Le carburant est souvent facturé en plus, au forfait par heure de navigation. Le plus simple est de demander un devis à plusieurs loueurs.",
+        'a'    => "Le prix varie selon le loueur, la durée (semaine, week-end ou journée), la saison et la taille du bateau : les tarifs sont plus élevés en été, surtout de mi-juillet à mi-août. Demandez un devis à plusieurs loueurs et vérifiez ce qu'il comprend : carburant (souvent au forfait par heure de navigation), caution, frais d'aller simple et options comme les vélos.",
         'url'  => '/categorie/location-bateau/',
         'link' => 'Voir les loueurs de bateaux',
     ],
@@ -33,7 +33,7 @@ const CANAL_HOME_FAQ = [
     ],
     [
         'q'    => 'Quels sont les horaires des écluses sur le Canal du Midi ?',
-        'a'    => "En haute saison, du 2 mai au 30 septembre, les plaisanciers passent les écluses de 9h à 12h30 et de 13h30 à 19h. En moyenne saison (du 17 mars au 30 avril et en octobre), de 9h à 12h30 et de 13h30 à 18h. En basse saison, le passage se fait sur demande, de 8h30 à 12h30 et de 13h30 à 16h30.",
+        'a'    => "En été (haute saison, du 2 mai au 30 septembre), les plaisanciers passent les écluses de 9h à 12h30 et de 13h30 à 19h. En moyenne saison (du 17 mars au 30 avril et en octobre), de 9h à 12h30 et de 13h30 à 18h ; en basse saison, sur demande, de 8h30 à 12h30 et de 13h30 à 16h30. Des fermetures (chômages d'hiver, travaux, sécheresse) peuvent interrompre la navigation : consultez les avis à la batellerie avant de partir.",
         'url'  => '/navigation/periode-de-navigation/',
         'link' => 'Voir la période de navigation',
         'source' => ['Avis à la batellerie de VNF (chômages, fermetures)', 'https://avisbat.vnf.fr/'],

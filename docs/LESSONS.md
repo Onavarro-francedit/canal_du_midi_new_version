@@ -109,6 +109,13 @@ _(sin lecciones todavía)_
 
 ## Producto / UX (PRD-NNN)
 
+- **PRD-014: un dato con fecha de caducidad (temporadas, horarios, año del plan) no está terminado sin su recordatorio de revisión y su año visible.**
+  TASK-046 puso en la FAQ de la home las fechas de temporada de las écluses (2 mai–30 sept…) sin año ni tarea de
+  revisión: el año siguiente la respuesta (y el FAQPage JSON-LD que citan los buscadores/IA) sería falsa sin que nadie
+  lo note. Regla: todo contenido fechado lleva el año en el texto o en la fuente, y una entrada recurrente en TASKS.md
+  (revisión anual) en el mismo cierre. Corolario: en respuestas fechadas, mencionar el caso límite (cierres por
+  chômage, travaux, sécheresse) y enlazar la fuente oficial viva.
+
 - **PRD-013: un texto que también vive en un archivo DERIVADO (llms-full.txt, sitemap, feed) no está cambiado hasta regenerar y subir el derivado.**
   TASK-045 cambió la FAQ n.º 6 en `content.php` pero `wp-plugin/llms-full.txt` (generado por
   `build/build-llms-full.php` y ya público en httpdocs) sigue con la pregunta antigua: los motores IA leen otra
