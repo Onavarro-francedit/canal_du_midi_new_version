@@ -281,6 +281,19 @@
         });
     }
 
+    // ── Fondos de tarjetas diferidos: las fotos (data-bg) se aplican al acercarse a la pantalla. Como fondo CSS
+    // no admiten loading="lazy" y competían con la imagen del hero (Lighthouse: imágenes fuera de pantalla). ──
+    function initLazyBg() {
+        var els = document.querySelectorAll('.cdm-home [data-bg]');
+        var show = function (el) { el.style.backgroundImage = el.getAttribute('data-bg'); el.removeAttribute('data-bg'); };
+        if (!('IntersectionObserver' in window)) { Array.prototype.forEach.call(els, show); return; }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); show(e.target); } });
+        }, { rootMargin: '300px' });
+        Array.prototype.forEach.call(els, function (el) { io.observe(el); });
+    }
+
+    initLazyBg();
     initHero();
     initBandParallax();
     initReveal();
