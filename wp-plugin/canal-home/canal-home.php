@@ -221,11 +221,3 @@ add_action('wp_print_footer_scripts', function () {
     wp_add_inline_script('canal-planner', 'window.CDM_PLANNER_MAPS = ' . wp_json_encode($maps ? (string) $maps->src : '') . ';', 'before');
 }, 1);
 
-// GA4 (gtag diferido a load, TASK-048): conexión adelantada a sus dominios en las páginas 2026 (Lighthouse ~340 ms).
-add_filter('wp_resource_hints', function ($urls, $relation) {
-    if ($relation === 'preconnect' && (canal_home_is_page() || canal_carte_is_page() || canal_fiche_is_page())) {
-        $urls[] = 'https://www.googletagmanager.com';
-        $urls[] = 'https://region1.google-analytics.com';
-    }
-    return $urls;
-}, 10, 2);
