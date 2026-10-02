@@ -213,6 +213,22 @@ const CANAL_THEME_FIX_CSS = 'footer.footer{position:static}'
     . '@media only screen and (max-width:1200px){#wpadminbar{display:none!important}}'
     . '@media only screen and (min-width:1201px){html body.admin-bar{margin-top:32px!important}}';
 
+// TASK-048: el header.php del tema carga gtag.js con el contenedor UA-641851-4 (síncrono en el <head>) y GA4
+// (G-R0M81JSWP0) llega como destino enlazado de ese contenedor. En NUESTRAS páginas se sustituye por GA4 directo,
+// cargado en `load`; el stub de gtag() queda síncrono porque gtag_report_conversion (Ads) lo llama. Sin
+// coincidencia (el tema cambió) el head queda intacto. El resto del sitio sigue con UA.
+function canal_home_swap_gtag(string $head): string
+{
+    $stub = "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-R0M81JSWP0');"
+        . "window.addEventListener('load',function(){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R0M81JSWP0';document.head.appendChild(s);});</script>";
+    return (string) preg_replace(
+        '#<script[^>]+googletagmanager\.com/gtag/js\?id=UA-641851-4[^>]*></script>\s*<script>[^<]*gtag\(\'config\',\s*\'UA-641851-4\'\)[^<]*</script>#',
+        $stub,
+        $head,
+        1
+    ) ?: $head;
+}
+
 // <head> del header.php del tema (enlaces fijos, sin handle): en la ficha sobran reCAPTCHA (~830 KB, no hay
 // formularios), el SDK de Facebook (sin widgets) y style-pub.css (0 reglas usadas); Google Fonts sin bloquear.
 function canal_fiche_lighten_head(string $html): string
@@ -227,6 +243,7 @@ function canal_fiche_lighten_head(string $html): string
         '#<script[^>]+connect\.facebook\.net/[^>]*></script>\s*#',
         "#<link[^>]+id=['\"]style-pub['\"][^>]*>\s*#",
     ], '', $head);
+    $head = canal_home_swap_gtag($head);
     $head = (string) preg_replace_callback('#<link href="(https://fonts\.googleapis\.com/[^"]+)" rel="stylesheet">#', function ($m) {
         return '<link href="' . $m[1] . '" rel="stylesheet" media="print" onload="this.media=\'all\'"><noscript>' . $m[0] . '</noscript>';
     }, $head);
@@ -243,16 +260,6 @@ function canal_fiche_icon_link_label(string $title, string $url): string
     $host = preg_replace('/^www\./', '', (string) parse_url($url, PHP_URL_HOST));
     $names = ['facebook.com' => 'Facebook', 'instagram.com' => 'Instagram', 'youtube.com' => 'YouTube', 'twitter.com' => 'X (Twitter)', 'x.com' => 'X (Twitter)', 'linkedin.com' => 'LinkedIn', 'pinterest.com' => 'Pinterest', 'tiktok.com' => 'TikTok'];
     return $names[$host] ?? $host;
-}
-
-// Hojas propias no críticas (Google Fonts, Bootstrap Icons): se cargan sin bloquear el render.
-function canal_fiche_nonblocking_css(string $tag): string
-{
-    if (strpos($tag, "media='all'") === false) {
-        return $tag;
-    }
-    $async = str_replace("media='all'", "media='print' onload=\"this.media='all'\"", trim($tag));
-    return $async . '<noscript>' . trim($tag) . "</noscript>\n";
 }
 
 // 0,0 = geocodificación fallida (golfo de Guinea), no una posición real.

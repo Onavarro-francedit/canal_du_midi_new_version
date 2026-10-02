@@ -22,7 +22,37 @@ const CANAL_FICHE_PATH = '/fiche-2026/';
 // Planificateur 2026 (TASK-044): página privada. Al publicar → '/planificateur/' o la que se decida.
 const CANAL_PLANNER_PATH = '/planificateur-2026/';
 define('CANAL_PLANNER_TEMPLATE', 'canal-home/template-planner.php');
-const CANAL_HOME_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap';
+
+// TASK-048: fuentes e iconos propios, sin CDN ni hojas externas. Fuentes woff2 latin autoalojadas (Sora y Manrope
+// variables; Playfair Display solo 700 normal e itálica: es el h1 de la home) + máscaras SVG de icons.css
+// (generado por build-css.mjs). Todo en línea: cero peticiones antes del primer render.
+function canal_home_base_css(): string
+{
+    $font = function (string $family, string $file, string $weight, string $style = 'normal'): string {
+        return '@font-face{font-family:"' . $family . '";font-style:' . $style . ';font-weight:' . $weight . ';font-display:swap;'
+            . 'src:url("' . esc_url_raw(CANAL_HOME_URL . 'assets/fonts/' . $file) . '") format("woff2");'
+            . 'unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}';
+    };
+    return $font('Sora', 'sora.woff2', '100 800')
+        . $font('Manrope', 'manrope.woff2', '200 800')
+        . $font('Playfair Display', 'playfair-display-700.woff2', '700')
+        . $font('Playfair Display', 'playfair-display-700-italic.woff2', '700', 'italic')
+        . (string) file_get_contents(CANAL_HOME_DIR . 'assets/icons.css');
+}
+
+// Hoja en línea (sin petición): handle + dependencias como una hoja normal, así se conserva el orden de impresión.
+// Los archivos son nuestros (build), sin « </style> »: lo comprueba tests/test-fiche.php.
+function canal_home_inline_style(string $handle, string $css, array $deps = []): void
+{
+    wp_register_style($handle, false, $deps);
+    wp_enqueue_style($handle);
+    wp_add_inline_style($handle, $css);
+}
+
+function canal_home_inline_file(string $handle, string $rel, array $deps = []): void
+{
+    canal_home_inline_style($handle, (string) file_get_contents(CANAL_HOME_DIR . $rel), $deps);
+}
 
 require_once CANAL_HOME_DIR . 'includes/ai-core.php';
 require_once CANAL_HOME_DIR . 'includes/data.php';
@@ -81,13 +111,13 @@ add_action('wp_enqueue_scripts', function () {
     if (!canal_home_is_page()) {
         return;
     }
-    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
-    wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
-    // Versión = fecha del archivo: cada despliegue invalida la caché del navegador.
-    wp_enqueue_style('canal-home', CANAL_HOME_URL . 'assets/home.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.css'));
-    wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], (string) filemtime(CANAL_HOME_DIR . 'assets/header.css'));
+    canal_home_inline_style('canal-home-base', canal_home_base_css());
+    // CSS de la home en línea (TASK-048): sin la petición que bloqueaba el primer render. Carte y ficha no:
+    // su CSS (~0,2 MB) pesaría más en cada HTML que lo que ahorra.
+    canal_home_inline_file('canal-home', 'assets/home.css', ['canal-home-base']);
+    canal_home_inline_file('canal-home-header', 'assets/header.css', ['canal-home-base']);
     // Lo que la home usa del CSS del tema y de los plugins (TASK-034), después de lo nuestro como antes.
-    wp_enqueue_style('canal-home-theme', CANAL_HOME_URL . 'assets/home-theme.css', ['canal-home', 'canal-home-header'], (string) filemtime(CANAL_HOME_DIR . 'assets/home-theme.css'));
+    canal_home_inline_file('canal-home-theme', 'assets/home-theme.css', ['canal-home', 'canal-home-header']);
     wp_add_inline_style('canal-home-theme', CANAL_THEME_FIX_CSS);
     wp_enqueue_script('canal-home', CANAL_HOME_URL . 'assets/home.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/home.js'), true);
     wp_localize_script('canal-home', 'CDM_HOME', [
@@ -129,8 +159,7 @@ add_action('wp_enqueue_scripts', function () {
         return;
     }
     $ver = function (string $rel): string { return (string) filemtime(CANAL_HOME_DIR . $rel); };
-    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
-    wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
+    canal_home_inline_style('canal-home-base', canal_home_base_css());
     wp_enqueue_style('canal-carte', CANAL_HOME_URL . 'assets/carte.css', [], $ver('assets/carte.css'));
     // El cargador a pantalla completa del tema tapa el skeleton de la carte hasta window.load: solo en esta plantilla.
     wp_add_inline_style('canal-carte', 'body.page-template-template-carte .loader-bg.main-loader{display:none!important}');
@@ -164,8 +193,7 @@ add_action('wp_enqueue_scripts', function () {
         return;
     }
     $ver = function (string $rel): string { return (string) filemtime(CANAL_HOME_DIR . $rel); };
-    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
-    wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
+    canal_home_inline_style('canal-home-base', canal_home_base_css());
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
     // Base del tema que usa la cabecera (mismo subconjunto que la home, TASK-034).
     wp_enqueue_style('canal-home-theme', CANAL_HOME_URL . 'assets/home-theme.css', ['canal-home-header'], $ver('assets/home-theme.css'));

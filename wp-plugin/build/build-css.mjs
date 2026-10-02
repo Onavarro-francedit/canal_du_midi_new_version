@@ -1,6 +1,8 @@
-// Genera canal-home/assets/home.css (.cdm-home) y canal-home/assets/carte.css (.cdm-carte)
+// Genera canal-home/assets/home.css (.cdm-home), carte.css (.cdm-carte), fiche.css (.cdm-fiche) e icons.css
 // a partir del CSS de la app local. Uso: node wp-plugin/build/build-css.mjs
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import postcss from 'postcss';
 import prefixer from 'postcss-prefix-selector';
 
@@ -107,3 +109,49 @@ await build({
     out: 'fiche.css',
     needles: ['.cdm-fiche .container::before', '.cdm-fiche h1', '.cdm-fiche p', '.cdm-fiche .service-hero', '.cdm-fiche a.category-tag'],
 });
+
+// Iconos: máscaras SVG en ::before (sin fuente ni CDN: TASK-048). Se generan solo los bi-* que usan el marcado y
+// el JS del plugin; si falta el SVG de alguno, el build falla (no hay icono invisible en producción).
+// ponytail: un icono que solo exista en la BD (no en el código) no entra solo — añadirlo a EXTRA_ICONS.
+const EXTRA_ICONS = [];
+
+function* walk(dir) {
+    for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) yield* walk(full);
+        else if (/\.(php|js)$/.test(name)) yield full;
+    }
+}
+
+function buildIcons() {
+    const pluginDir = fileURLToPath(new URL('../canal-home/', import.meta.url));
+    const svgDir = fileURLToPath(new URL('./node_modules/bootstrap-icons/icons/', import.meta.url));
+    const names = new Set(EXTRA_ICONS);
+    for (const file of walk(pluginDir)) {
+        for (const m of readFileSync(file, 'utf8').matchAll(/\bbi-([a-z0-9]+(?:-[a-z0-9]+)*)/g)) names.add(m[1]);
+    }
+    const missing = [];
+    let css = '/* GENERADO por wp-plugin/build/build-css.mjs — no editar a mano */\n'
+        + '[class^="bi-"]::before,[class*=" bi-"]::before{content:"";display:inline-block;width:1em;height:1em;vertical-align:-.125em;'
+        + 'background-color:currentColor;-webkit-mask:var(--bi) center/contain no-repeat;mask:var(--bi) center/contain no-repeat}\n';
+    for (const name of [...names].sort()) {
+        let svg;
+        try {
+            svg = readFileSync(join(svgDir, `${name}.svg`), 'utf8').trim();
+        } catch {
+            missing.push(name);
+            continue;
+        }
+        // < > # codificados: el data-URI nunca contiene « </style> » ni rompe el CSS en línea.
+        const uri = svg.replace(/"/g, "'").replace(/</g, '%3C').replace(/>/g, '%3E').replace(/#/g, '%23').replace(/\s+/g, ' ');
+        css += `.bi-${name}{--bi:url("data:image/svg+xml,${uri}")}\n`;
+    }
+    if (missing.length) {
+        console.error('icons.css: faltan SVG de bootstrap-icons:', missing);
+        process.exit(1);
+    }
+    writeFileSync(new URL('../canal-home/assets/icons.css', import.meta.url), css);
+    console.log(`icons.css OK (${names.size} iconos)`);
+}
+
+buildIcons();

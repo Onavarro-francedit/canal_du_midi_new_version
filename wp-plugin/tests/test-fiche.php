@@ -158,7 +158,7 @@ foreach (['canal-fiche', 'canal-fiche-theme', 'canal-home-header', 'google-maps-
 // Carte: mismo tema fuera, pero conserva Google Maps (search-map.js).
 check(!canal_theme_is_unused_asset('google-maps') && canal_fiche_is_unused_asset('google-maps'), 'theme_unused: google-maps solo fuera en la ficha');
 check(canal_theme_is_unused_asset('mylisting-frontend') && canal_theme_is_unused_asset('stripe-js') && !canal_theme_is_unused_asset('canal-carte-theme'), 'theme_unused: tema y Stripe fuera, lo nuestro no');
-check(canal_theme_is_unused_asset('google-fonts-1') && !canal_theme_is_unused_asset('canal-home-fonts'), 'theme_unused: Roboto de Elementor fuera, nuestras fuentes no');
+check(canal_theme_is_unused_asset('google-fonts-1') && !canal_theme_is_unused_asset('canal-home-base'), 'theme_unused: Roboto de Elementor fuera, nuestra base (fuentes e iconos) no');
 check(strpos(CANAL_THEME_FIX_CSS, 'footer.footer{position:static}') === 0, 'theme_fix_css: pie estático');
 check(strpos(CANAL_THEME_FIX_CSS, '.loader-bg.main-loader{display:none!important}') !== false, 'theme_fix_css: sin el cargador del tema (lo quitaba frontend.js)');
 
@@ -179,12 +179,24 @@ check(canal_fiche_icon_link_label('', 'https://exemple.fr/') === 'exemple.fr', '
 check(canal_fiche_icon_link_label('[27-icon icon="fab fa-instagram"]', 'https://www.instagram.com/x/') === 'Instagram', 'icon_link_label: título = shortcode de icono del tema');
 check(canal_fiche_icon_link_label('Contact', 'https://www.facebook.com/') === '', 'icon_link_label: con texto → sin cambios');
 
-// CSS no bloqueante (fuentes e iconos propios): media=print + onload + <noscript>.
-$tag = "<link rel='stylesheet' id='canal-home-icons-css' href='https://cdn.jsdelivr.net/x.css?ver=1' media='all' />\n";
-$nb = canal_fiche_nonblocking_css($tag);
-check(strpos($nb, "media='print'") !== false && strpos($nb, "onload=\"this.media='all'\"") !== false, 'nonblocking_css: media print + onload');
-check(strpos($nb, '<noscript>' . trim($tag) . '</noscript>') !== false, 'nonblocking_css: noscript con la etiqueta original');
-check(canal_fiche_nonblocking_css('<link rel="stylesheet" href="x.css">') === '<link rel="stylesheet" href="x.css">', 'nonblocking_css: sin media=all → sin cambios');
+// TASK-048: GA4 directo y diferido en lugar del contenedor UA (snippet real del header.php del tema).
+$ua = "<!-- Global site tag (gtag.js) - Google Analytics -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=UA-641851-4\"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n\n  gtag('config', 'UA-641851-4');\n</script>\n"
+    . "\t<title>x</title>\n<script>\nfunction gtag_report_conversion(url) { gtag('event', 'conversion', {'send_to': 'AW-986499205/uiW5CPDUq9kCEIWRs9YD'}); return false; }\n</script>\n";
+$g = canal_home_swap_gtag($ua);
+check(strpos($g, 'UA-641851-4') === false, 'gtag: el contenedor UA desaparece');
+check(substr_count($g, "gtag('config','G-R0M81JSWP0')") === 1 && substr_count($g, 'gtag/js?id=G-R0M81JSWP0') === 1, 'gtag: GA4 configurado una vez y cargado una vez');
+check(strpos($g, 'addEventListener(\'load\'') !== false && strpos($g, '<script async src') === false, 'gtag: el loader va en load, sin <script async> en el head');
+check(strpos($g, 'function gtag()') !== false && strpos($g, 'function gtag()') < strpos($g, 'function gtag_report_conversion'), 'gtag: el stub va antes de gtag_report_conversion');
+check(strpos($g, 'AW-986499205/uiW5CPDUq9kCEIWRs9YD') !== false && strpos($g, '<title>x</title>') !== false, 'gtag: la conversión de Ads y el resto del head intactos');
+$noSnippet = "<head><title>x</title></head>";
+check(canal_home_swap_gtag($noSnippet) === $noSnippet, 'gtag: head sin el snippet UA → intacto');
+
+// Hojas en línea: un « </style> » dentro de un archivo cerraría la etiqueta antes de tiempo (wp_add_inline_style lo recorta).
+foreach (['home.css', 'header.css', 'home-theme.css', 'icons.css'] as $css) {
+    $src = (string) file_get_contents(__DIR__ . '/../canal-home/assets/' . $css);
+    check($src !== '' && stripos($src, '</style') === false, "inline css: $css sin </style>");
+}
+check(strpos((string) file_get_contents(__DIR__ . '/../canal-home/assets/icons.css'), 'cdn.jsdelivr') === false, 'icons.css: sin CDN');
 
 // Grafo JSON-LD.
 $f = [

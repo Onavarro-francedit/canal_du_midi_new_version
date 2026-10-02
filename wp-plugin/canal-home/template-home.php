@@ -157,7 +157,7 @@ get_header();
         <div class="container split-layout">
             <div class="stacked-photos" data-reveal="left">
                 <figure class="photo-card photo-large">
-                    <img src="<?= $upload('2024/04/Dominique_VIET_CRTLOccitanie_0017338_MD_RET3-1.jpg') ?>" alt="Le Canal du Midi bordé d'arbres" loading="lazy">
+                    <img src="<?= $upload('2024/04/Dominique_VIET_CRTLOccitanie_0017338_MD_RET3-1.jpg') ?>" alt="Le Canal du Midi bordé d'arbres" width="1200" height="507" loading="lazy" decoding="async"<?= ($expSrcset = wp_get_attachment_image_srcset(17010, 'full')) ? ' srcset="' . esc_attr($expSrcset) . '" sizes="(max-width: 560px) calc(100vw - 32px), (max-width: 820px) calc(100vw - 72px), (max-width: 1080px) calc(100vw - 122px), 463px"' : '' ?>>
                 </figure>
                 <figure class="photo-card photo-small top">
                     <img src="<?= esc_url(CANAL_HOME_URL . 'assets/peniche-toulouse-800.jpg') ?>" alt="Péniche amarrée à Toulouse" width="800" height="450" loading="lazy" decoding="async">

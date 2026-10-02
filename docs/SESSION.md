@@ -5,7 +5,22 @@ sesión.
 
 ---
 
-## CIERRE 2026-10-02 — TASK-046 FAQ accueil-2026 ⚠️ (listo con mejoras menores, privada) · Siguiente: decidir
+## CODER 2026-10-02 — TASK-048 rendimiento móvil: pasos 1–6 hechos y desplegados (privadas) · Siguiente: security
+
+**Agente activo al cerrar:** coder. **Handoff pendiente:** coder → security (luego la sesión principal hace pasos 0, 7, 8).
+**Dónde quedamos:** fuentes autoalojadas, iconos como máscaras SVG, CSS base/home en línea, GA4 directo y diferido, srcset de
+la foto « Expériences »; `build-css.mjs` ejecutado, `remote.sh test` y `deploy` en verde, commit local (sin push).
+
+**Archivos:** `wp-plugin/build/package.json` + lock (bootstrap-icons 1.11.1) · `build/build-css.mjs` (buildIcons) ·
+`canal-home/assets/icons.css` (generado) · `assets/fonts/*.woff2` (4) · `canal-home/canal-home.php` (base_css, inline_style/file,
+hojas en línea) · `includes/fiche-route.php`, `fiche-core.php` (swap_gtag; fuera nonblocking_css) · `includes/seo.php`
+(preload Playfair, sin preconnect) · `template-home.php` (srcset 17010) · `tests/test-fiche.php`, `tests/smoke-render.php`.
+
+**Próxima acción:** `/agent security TASK-048`; después la sesión principal: diagnóstico LCP, ventana pública, medición, 8a/8b.
+
+---
+
+## (anterior) CIERRE 2026-10-02 — TASK-046 FAQ accueil-2026 ⚠️ (listo con mejoras menores, privada) · Siguiente: decidir
 
 **Agente activo al cerrar:** product (pipeline architect → coder → security → product cerrado). **Handoff pendiente:** ninguno.
 **Dónde quedamos:** la FAQ de la home 2026 (página 18500, PRIVADA) tiene 8 preguntas alineadas con Search Console

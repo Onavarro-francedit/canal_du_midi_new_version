@@ -12,6 +12,7 @@
   "type": "module",
   "private": "true",
   "devDependencies": {
+    "bootstrap-icons": "1.11.1",
     "postcss": "^8.5.28",
     "postcss-prefix-selector": "^2.2.1"
   }

@@ -67,8 +67,7 @@ add_action('wp_enqueue_scripts', function () {
         return;
     }
     $ver = function (string $rel): string { return (string) filemtime(CANAL_HOME_DIR . $rel); };
-    wp_enqueue_style('canal-home-fonts', CANAL_HOME_FONTS_URL, [], null);
-    wp_enqueue_style('canal-home-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', [], '1.11.1');
+    canal_home_inline_style('canal-home-base', canal_home_base_css());
     wp_enqueue_style('canal-fiche', CANAL_HOME_URL . 'assets/fiche.css', [], $ver('assets/fiche.css'));
     wp_add_inline_style('canal-fiche', '.loader-bg.main-loader{display:none!important}');
     wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
@@ -89,12 +88,6 @@ add_action('wp_print_footer_scripts', function () {
     $maps = wp_scripts()->registered['google-maps'] ?? null;
     wp_add_inline_script('canal-fiche', 'window.CDM_FICHE = ' . wp_json_encode(['mapsSrc' => $maps ? (string) $maps->src : '']) . ';', 'before');
 }, 1);
-
-// Móvil: fuentes e iconos propios sin bloquear el render (texto con fuente de sistema hasta que llegan).
-add_filter('style_loader_tag', function ($tag, $handle) {
-    return (canal_fiche_is_page() && in_array($handle, ['canal-home-fonts', 'canal-home-icons'], true))
-        ? canal_fiche_nonblocking_css($tag) : $tag;
-}, 10, 2);
 
 // Pie del tema: los enlaces de redes son solo un icono (Lighthouse: « enlaces sin nombre »). Solo en nuestras páginas.
 add_filter('nav_menu_link_attributes', function ($atts, $item) {

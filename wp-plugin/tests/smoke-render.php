@@ -48,6 +48,8 @@ $check(isset($faqSec[0]) && substr_count($faqSec[0], '<details') === count(CANAL
 $check(count(CANAL_HOME_FAQ) === 8 && strpos($faqSec[0] ?? '', '€') === false && strpos($faqSec[0] ?? '', 'periode-de-navigation') !== false, 'FAQ: 8 preguntas, sin precios, enlace a horarios');
 $check(strpos($html, 'Azur Communications') !== false, 'E-E-A-T: editor nombrado');
 $check(preg_match('/<img class="hero-card-img"[^>]*fetchpriority="high"[^>]*>/', $html) === 1 && preg_match('/<img class="hero-card-img"[^>]*width="1898" height="682"[^>]*srcset="[^"]+"/', $html) === 1, 'hero: fetchpriority, dimensiones y srcset');
+$check(preg_match('/<img src="[^"]*Dominique_VIET[^"]*"[^>]*width="1200" height="507"[^>]*srcset="[^"]+"[^>]*sizes="[^"]+"/', $html) === 1, 'Expériences: foto 17010 con srcset, sizes y dimensiones (TASK-048)');
+$check(strpos($html, 'bootstrap-icons') === false && strpos($html, 'family=Sora') === false, 'TASK-048: sin CDN de iconos ni css2 de Sora en el HTML');
 $check(strpos($html, '<div class="hero-card" data-reveal') === false, 'hero sin animación de entrada (LCP)');
 $check(strpos($html, 'peniche-toulouse-800.jpg') !== false && strpos($html, 'peniche_toulouse.jpg') === false, 'foto péniche reducida (no la de 2 MB)');
 preg_match_all('/<(div|section) id="(home-ai-modal|plan-modal)".*?<\/div>\s*<\/div>/s', $html, $modals);

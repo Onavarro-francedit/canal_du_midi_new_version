@@ -198,14 +198,13 @@ add_action('wp_head', function () {
     echo canal_home_seo_head($url, canal_home_seo_items(), (string) get_the_modified_date('c', get_queried_object_id())); // phpcs:ignore — escapado dentro.
 }, 5);
 
-// Rendimiento: conexión anticipada a Google Fonts (solo en esta página).
-add_filter('wp_resource_hints', function ($urls, $relation) {
-    if ($relation === 'preconnect' && canal_home_is_page()) {
-        $urls[] = ['href' => 'https://fonts.gstatic.com', 'crossorigin'];
-        $urls[] = 'https://fonts.googleapis.com';
+// Rendimiento (TASK-048): precarga de la fuente del h1 (LCP candidato), solo en la home. crossorigin es obligatorio
+// en las fuentes (aunque sean del mismo origen) o el navegador la descarga dos veces.
+add_action('wp_head', function () {
+    if (canal_home_is_page()) {
+        echo '<link rel="preload" href="' . esc_url(CANAL_HOME_URL . 'assets/fonts/playfair-display-700.woff2') . '" as="font" type="font/woff2" crossorigin>' . "\n";
     }
-    return $urls;
-}, 10, 2);
+}, 1);
 
 // Cabecera Link hacia llms.txt en la home (descubrimiento por agentes de IA).
 add_action('template_redirect', function () {
