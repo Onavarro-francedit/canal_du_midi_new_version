@@ -56,6 +56,8 @@ $res = $rest('/plan', ['messages' => [['role' => 'user', 'text' => 'deux jours e
 $data = $res->get_data();
 $check($res->get_status() === 200 && $data['reply'] === 'Voici un séjour.', '/plan: 200 con reply');
 $check(isset($data['plan']['days'][0]['url']) && strpos($data['plan']['days'][0]['url'], CANAL_FICHE_PATH) !== false, '/plan: enlace a la ficha 2026');
+$check(strpos((string) ($data['plan']['days'][0]['image'] ?? ''), 'https://') === 0, '/plan: imagen de la ficha en cada día');
+$check(($data['plan']['days'][0]['cat'] ?? '') === (string) ($a['categories'][0] ?? ''), '/plan: categoría de la ficha en cada día');
 $check($rest('/plan', ['messages' => []])->get_status() === 400, '/plan: sin mensajes → 400');
 
 // /plan/request

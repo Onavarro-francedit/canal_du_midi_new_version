@@ -159,13 +159,18 @@ function canal_planner_items(array $plan, array $catalog): array
     return $items;
 }
 
-// Plan para el navegador: cada día con el enlace y el nombre de su ficha.
+// Plan para el navegador: cada día con el enlace, el nombre, la categoría y la foto de su ficha.
 function canal_planner_public_plan(array $plan, array $catalog): array
 {
     foreach ($plan['days'] as $i => $d) {
-        $plan['days'][$i]['url'] = $d['slug'] !== '' ? canal_fiche_url($d['slug']) : '';
-        $plan['days'][$i]['name'] = $d['slug'] !== '' ? $catalog[$d['slug']]['title'] : '';
+        $slug = $d['slug'];
+        $card = $slug !== '' ? canal_home_card_by_slug($slug) : null;
+        $plan['days'][$i]['url'] = $slug !== '' ? canal_fiche_url($slug) : '';
+        $plan['days'][$i]['name'] = $slug !== '' ? $catalog[$slug]['title'] : '';
+        $plan['days'][$i]['cat'] = $slug !== '' ? (string) ($catalog[$slug]['categories'][0] ?? '') : '';
+        $plan['days'][$i]['image'] = $card ? (string) $card['image'] : '';
     }
+    $plan['days'] = canal_carte_resized_images($plan['days']); // 768 px + srcset, como la carte
     $plan['names'] = array_map(function ($s) use ($catalog) { return $catalog[$s]['title']; }, $plan['providers']);
     return $plan;
 }

@@ -153,47 +153,96 @@
   }
 
   const MODE = { bateau: 'En bateau', velo: 'À vélo', pied: 'À pied', voiture: 'En voiture' };
-  let history = [], plan = null, stage = 'plan', busy = false;
+  const SPEED = { bateau: 6, velo: 12, pied: 4 }; // km/h para « environ … » entre etapas
+  const CHIPS = ['Plus calme', 'Un jour de plus', 'Avec un bateau'];
+  const mobile = matchMedia('(max-width: 860px)');
+  const planEl = $('#pl-plan'), chipsEl = $('#pl-chips'), countEl = $('#pl-mbar-count');
+  let history = [], plan = null, stage = 'plan', busy = false, askBtn = null;
 
-  function addPlan(reply, p) {
-    plan = p;
-    const b = el('div', 'pl-ba');
-    b.append(el('div', null, reply));
-    if (!p.days.length) { aiRow(b); return; }
-    const pills = el('div', 'pl-pills');
-    pills.append(el('span', 'pl-pill pl-t-love', p.title), el('span', 'pl-pill pl-t-boat', MODE[p.mode] || ''));
-    if (p.when) pills.append(el('span', 'pl-pill pl-t-family', p.when));
-    if (p.people) pills.append(el('span', 'pl-pill pl-t-bike', p.people));
-    b.append(pills);
+  /* ── Vista plan: desde la primera propuesta, chat a la izquierda y plan a la derecha (hoja en móvil) ── */
+  const setSplit = (on) => { root.classList.toggle('is-split', on); planEl.hidden = !on; if (!on) sheet(false); };
+  const sheet = (on) => root.classList.toggle('is-sheet', on && mobile.matches);
+  const countMsgs = () => { countEl.textContent = String(log.querySelectorAll('.pl-msg').length); };
+  const duration = (km, mode) => {
+    const v = SPEED[mode]; if (!v) return '';
+    const min = Math.max(10, Math.round(km / v * 60 / 5) * 5);
+    return ' · environ ' + (min < 60 ? min + ' min' : Math.floor(min / 60) + ' h' + (min % 60 ? ' ' + String(min % 60).padStart(2, '0') : ''));
+  };
+  const same = (a, b) => a && b && a.slug === b.slug && a.place === b.place && a.text === b.text;
+
+  function renderPlan(p, prev) {
+    planEl.textContent = '';
+    const head = el('div', 'pl-plan-head');
+    const info = el('div');
+    const title = el('h2', null, p.title); title.id = 'pl-plan-title';
+    const pills = el('div', 'pl-plan-pills');
+    let total = 0;
+    p.days.forEach((d, i) => { const n = p.days[i + 1]; if (n && d.km !== null && n.km !== null) total += Math.abs(n.km - d.km); });
+    [MODE[p.mode], p.when, p.people, total ? total + ' km au total' : ''].forEach((t) => { if (t) pills.append(el('span', null, t)); });
+    info.append(el('p', 'pl-eyebrow', 'Votre séjour'), title, pills);
+    head.append(info);
+    askBtn = null;
+    if (p.providers.length) {
+      const cta = el('div', 'pl-plan-cta');
+      askBtn = el('button', null, 'Demander les disponibilités'); askBtn.type = 'button';
+      askBtn.disabled = stage !== 'plan';
+      askBtn.addEventListener('click', () => { askBtn.disabled = true; sheet(true); askProviders(); });
+      const n = p.providers.length;
+      cta.append(askBtn, el('small', null, n + (n > 1 ? ' prestataires' : ' prestataire') + ' · réponse par e-mail'));
+      head.append(cta);
+    }
     const days = el('div', 'pl-days');
     p.days.forEach((d, i) => {
-      const c = el('div', 'pl-day'); c.style.animationDelay = (i * 90) + 'ms';
-      const head = el('b', null, d.label);
-      head.append(el('em', null, d.km === null ? '' : 'km ' + d.km));
-      c.append(head, el('strong', null, d.place), el('span', null, d.text));
-      if (d.url) { const a = el('a', null, d.name + ' →'); a.href = d.url; a.target = '_blank'; a.rel = 'noopener'; c.append(a); }
-      days.append(c);
+      const stop = el('div', 'pl-stop');
+      if (prev && !same(d, prev.days[i])) stop.classList.add('is-changed');
+      const when = el('div', 'pl-when'); when.append(el('b', null, d.label), el('em', null, d.km === null ? '' : 'km ' + d.km));
+      const rail = el('div', 'pl-rail'); rail.append(el('span', 'pl-dot'));
+      const card = el(d.url ? 'a' : 'div', 'pl-card-stop');
+      if (d.url) { card.href = d.url; card.target = '_blank'; card.rel = 'noopener'; }
+      if (d.image) {
+        const img = el('img'); img.src = d.image; img.alt = d.name || d.place; img.loading = 'lazy'; img.decoding = 'async';
+        if (d.image_srcset) { img.srcset = d.image_srcset; img.sizes = '(max-width: 860px) 100vw, 168px'; }
+        card.append(img);
+      } else card.classList.add('is-plain');
+      const txt = el('div', 'pl-txt'); txt.append(el('h3', null, d.place), el('p', null, d.text));
+      if (d.name) { const f = el('div', 'pl-fiche', d.name + ' '); if (d.cat) f.append(el('span', null, '· ' + d.cat)); f.append(' →'); txt.append(f); }
+      card.append(txt);
+      stop.append(when, rail, card);
+      days.append(stop);
+      const n = p.days[i + 1];
+      if (n && d.km !== null && n.km !== null) days.append(el('div', 'pl-leg', '↓ ' + Math.abs(n.km - d.km) + ' km' + duration(Math.abs(n.km - d.km), p.mode)));
     });
-    b.append(days);
-    if (p.providers.length) {
-      const acts = el('div', 'pl-actions');
-      const ask = el('button', 'is-primary', 'Demander les disponibilités');
-      const adj = el('button', null, 'Ajuster le séjour');
-      [ask, adj].forEach((x) => (x.type = 'button'));
-      ask.addEventListener('click', () => { acts.querySelectorAll('button').forEach((x) => (x.disabled = true)); askProviders(); });
-      adj.addEventListener('click', () => input.focus());
-      acts.append(ask, adj);
-      b.append(acts);
+    planEl.append(head, days);
+  }
+
+  function showChips(on) {
+    chipsEl.textContent = '';
+    chipsEl.hidden = !on;
+    if (on) CHIPS.forEach((t) => { const b = el('button', null, t); b.type = 'button'; b.addEventListener('click', () => send(t)); chipsEl.append(b); });
+  }
+
+  function addPlan(reply, p) {
+    if (p.days.length) {
+      const prev = plan;
+      plan = p;
+      renderPlan(p, prev);
+      setSplit(true);
+      showChips(stage === 'plan');
+      if (reply) addText(reply);
+    } else {
+      // La IA solo pregunta: se queda el chat; el plan anterior (si lo hay) no cambia.
+      if (plan) plan = Object.assign({}, plan, { when: p.when || plan.when, people: p.people || plan.people, missing: p.missing });
+      addText(reply || 'Pouvez-vous préciser votre envie ?');
     }
-    aiRow(b);
+    countMsgs();
   }
 
   function askProviders() {
     if (plan.missing.length) {
       addText('Pour quelles dates et combien de personnes ? Écrivez-le ci-dessous, je mets votre séjour à jour.');
-      stage = 'plan';
+      stage = 'plan'; if (askBtn) askBtn.disabled = false;
       input.placeholder = 'Ex. du 14 au 17 mai, 2 adultes et 2 enfants';
-      input.focus();
+      input.focus(); countMsgs();
       return;
     }
     const b = el('div', 'pl-ba');
@@ -202,7 +251,7 @@
     b.append(el('div', null, 'Quelle est votre adresse e-mail ? Écrivez-la ci-dessous.'));
     b.append(el('p', 'pl-fine', "Elle ne sera transmise qu'à ces prestataires, après confirmation de votre part. Conservée 12 mois."));
     aiRow(b);
-    stage = 'email'; input.placeholder = 'votre@adresse.fr'; input.focus();
+    stage = 'email'; showChips(false); input.placeholder = 'votre@adresse.fr'; input.focus(); countMsgs();
   }
 
   async function send(text) {
@@ -214,6 +263,7 @@
     busy = true; sendBtn.disabled = true;
     const typing = addTyping();
     setThinking(true);
+    const daysEl = planEl.querySelector('.pl-days');
     if (stage === 'email') {
       const r = await post(C.requestUrl, { plan, email: t, website: website.value });
       typing.remove();
@@ -226,13 +276,15 @@
       }
     } else {
       history.push({ role: 'user', text: t });
+      if (daysEl) daysEl.classList.add('is-updating');
       const r = await post(C.planUrl, { messages: history.slice(-8), plan });
       typing.remove();
+      if (daysEl) daysEl.classList.remove('is-updating');
       if (r.ok) {
         history.push({ role: 'assistant', text: r.data.reply });
         addPlan(r.data.reply, r.data.plan);
-        ga('planner_plan', { days: r.data.plan.days.length });
-        input.placeholder = 'Ajustez : « plus calme », « un jour de plus »…';
+        if (r.data.plan.days.length) ga('planner_plan', { days: r.data.plan.days.length });
+        input.placeholder = plan ? 'Ajustez votre séjour…' : 'Répondez à l’assistant…';
       } else {
         history.pop();
         const b = addText(r.data.message || "L'assistant est momentanément indisponible.");
@@ -241,6 +293,7 @@
         }
       }
     }
+    countMsgs();
     busy = false; sendBtn.disabled = false;
     setThinking(false);
     input.focus();
@@ -248,14 +301,19 @@
 
   function reset() {
     history = []; plan = null; stage = 'plan'; busy = false; sendBtn.disabled = false;
-    log.innerHTML = '';
+    log.innerHTML = ''; planEl.textContent = ''; showChips(false); setSplit(false);
     chat.hidden = true; hero.hidden = false; ideas.hidden = false; wrap.classList.remove('is-chatting');
-    setThinking(false); input.value = '';
+    setThinking(false); input.value = ''; input.placeholder = 'Décrivez votre séjour idéal…';
   }
 
   form.addEventListener('submit', (e) => { e.preventDefault(); send(input.value); });
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input.value); } });
   $('#pl-reset').addEventListener('click', reset);
+  $('#pl-close').addEventListener('click', () => sheet(false));
+  $('#pl-scrim').addEventListener('click', () => sheet(false));
+  $('#pl-mbar-ask').addEventListener('click', () => { sheet(true); setTimeout(() => input.focus(), 300); });
+  $('#pl-mbar-conv').addEventListener('click', () => sheet(true));
+  mobile.addEventListener('change', () => sheet(false));
 
   /* ── Llegada desde el enlace del e-mail: resumen + botón (abrir el enlace no envía nada) ── */
   const cf = C.confirm;
