@@ -226,7 +226,7 @@ function canal_planner_validate(array $payload, array $catalog): array
     if (!is_array($p)) {
         return canal_planner_fail('bad_payload');
     }
-    $mode = isset(CANAL_PLANNER_MAX_KM[$p['mode'] ?? '']) ? (string) $p['mode'] : 'velo';
+    $mode = is_string($p['mode'] ?? null) && isset(CANAL_PLANNER_MAX_KM[$p['mode']]) ? $p['mode'] : 'velo';
     $days = [];
     $providers = [];
     foreach (array_slice(is_array($p['days'] ?? null) ? $p['days'] : [], 0, CANAL_PLANNER_MAX_DAYS) as $d) {
@@ -321,6 +321,19 @@ function canal_planner_message_html(array $req): string
 {
     $msg = canal_planner_text($req['message'] ?? '', 500);
     return $msg === '' ? '' : '<p><strong>Message du visiteur :</strong><br>' . canal_planner_e($msg) . '</p>';
+}
+
+// Clave del límite por e-mail: minúsculas y sin alias « +etiqueta » (a+1@x y a+2@x cuentan como a@x).
+function canal_planner_email_key(string $email): string
+{
+    $email = strtolower(trim($email));
+    $at = strrpos($email, '@');
+    if ($at === false) {
+        return $email;
+    }
+    $local = substr($email, 0, $at);
+    $plus = strpos($local, '+');
+    return ($plus === false ? $local : substr($local, 0, $plus)) . substr($email, $at);
 }
 
 function canal_planner_route_recipients(array $items): array

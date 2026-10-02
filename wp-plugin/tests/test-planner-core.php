@@ -207,5 +207,14 @@ $cs = canal_planner_mail_confirm($spamPlan, 'https://x/planificateur-2026/?confi
 check(strpos($cs['html'], 'spam.example') === false, 'confirm: sin título ni textos libres del cliente');
 check(strpos($cs['html'], 'Vélos &lt;A&gt;') !== false, 'confirm: conserva los nombres del catálogo');
 
+
+// ── menores de la revisión final ──
+$arr = $payload;
+$arr['plan']['mode'] = ['velo'];
+$va = canal_planner_validate($arr, $catalog);
+check($va['ok'] && $va['plan']['mode'] === 'velo', 'validate: mode como array → velo (sin TypeError en PHP 8)');
+check(canal_planner_email_key('Marie+test1@Exemple.fr') === canal_planner_email_key('marie@exemple.fr'), 'email_key: sin alias + ni mayúsculas');
+check(canal_planner_email_key('jean@exemple.fr') !== canal_planner_email_key('marie@exemple.fr'), 'email_key: direcciones distintas → claves distintas');
+
 echo $fails ? "\n$fails FALLOS\n" : "\nTodo OK\n";
 exit($fails ? 1 : 0);

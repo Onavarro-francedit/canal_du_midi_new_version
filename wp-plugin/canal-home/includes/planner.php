@@ -191,6 +191,7 @@ function canal_planner_error(string $code, int $status): WP_REST_Response
         'incoherent'  => "Je n'ai pas trouvé de séjour cohérent, précisez votre envie.",
         'email'       => "Il me faut une adresse e-mail valide, par exemple marie@exemple.fr.",
         'plan'        => "Ce séjour ne contient aucune adresse à contacter.",
+        'invalid'     => "Ce séjour n'est plus valide : demandez une nouvelle proposition à l'assistant.",
         'details'     => 'Indiquez vos dates et le nombre de personnes.',
         'expired'     => 'Ce lien a expiré ou a déjà été utilisé.',
         'link'        => "Ce lien n'est pas valide.",
@@ -261,7 +262,10 @@ function canal_planner_request_endpoint(WP_REST_Request $request): WP_REST_Respo
     }
     $catalog = canal_planner_catalog();
     $v = canal_planner_validate(['plan' => (array) $request->get_param('plan')], $catalog);
-    if (!$v['ok'] || !$v['plan']['providers']) {
+    if (!$v['ok']) {
+        return canal_planner_error('invalid', 400); // p. ej. etapas demasiado largas: el plan ya no es coherente
+    }
+    if (!$v['plan']['providers']) {
         return canal_planner_error('plan', 400);
     }
     // Fechas y personas del formulario del modal (texto plano, sin saltos de línea); missing se recalcula.
@@ -271,7 +275,7 @@ function canal_planner_request_endpoint(WP_REST_Request $request): WP_REST_Respo
         return canal_planner_error('details', 400);
     }
     if (!canal_home_rate_hit('canal_planner_req_ip_' . md5(canal_planner_ip()), CANAL_PLANNER_REQ_IP_LIMIT, HOUR_IN_SECONDS)
-        || !canal_home_rate_hit('canal_planner_req_mail_' . md5(strtolower($email)), CANAL_PLANNER_REQ_EMAIL_LIMIT, DAY_IN_SECONDS)
+        || !canal_home_rate_hit('canal_planner_req_mail_' . md5(canal_planner_email_key($email)), CANAL_PLANNER_REQ_EMAIL_LIMIT, DAY_IN_SECONDS)
         || !canal_home_daily_hit('canal_planner_req_daily_', CANAL_PLANNER_REQ_DAILY_CAP)) {
         return canal_planner_error('rate', 429);
     }
@@ -296,7 +300,12 @@ function canal_planner_request_endpoint(WP_REST_Request $request): WP_REST_Respo
     }
     $items = canal_planner_items($v['plan'], $catalog);
     $url = add_query_arg('confirmer', $token, home_url(CANAL_PLANNER_PATH));
-    canal_planner_send(array_merge(canal_planner_mail_confirm($v['plan'], $url, array_column($items, 'title')), ['to' => $email]));
+    if (!canal_planner_send(array_merge(canal_planner_mail_confirm($v['plan'], $url, array_column($items, 'title')), ['to' => $email]))) {
+        // Sin correo no hay enlace: no se deja una fila pendiente ni se le dice « vérifiez votre boîte mail ».
+        $wpdb->delete(canal_planner_table(), ['token_hash' => $hash]);
+        error_log('[canal-home] planificateur: wp_mail de confirmación falló');
+        return canal_planner_error('unavailable', 500);
+    }
     return new WP_REST_Response(['ok' => true], 200);
 }
 

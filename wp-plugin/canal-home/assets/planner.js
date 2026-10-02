@@ -5,7 +5,7 @@
   if (!C || !root) return;
   const $ = (s) => root.querySelector(s);
   const hero = $('#pl-hero'), chat = $('#pl-chat'), ideas = $('#pl-ideas'), wrap = $('#pl-wrap');
-  const log = $('#pl-log'), form = $('#pl-composer'), input = $('#pl-input'), website = $('#pl-website');
+  const log = $('#pl-log'), form = $('#pl-composer'), input = $('#pl-input');
   const mainOrb = $('#pl-main-orb'), statusText = $('#pl-status');
   const catsEl = $('#pl-cats'), cardsEl = $('#pl-cards'), curCat = $('#pl-cur');
   const sendBtn = form.querySelector('.pl-send');
@@ -290,6 +290,8 @@
       const sc = document.createElement('script');
       sc.src = MAPS_SRC + (MAPS_SRC.indexOf('?') === -1 ? '?' : '&') + 'loading=async&callback=canalPlannerMapReady';
       sc.async = true; sc.onerror = () => resolve(false);
+      setTimeout(() => resolve(false), 8000); // carga colgada: el mapa se oculta en vez de quedarse en gris
+      window.gm_authFailure = () => root.ownerDocument.querySelectorAll('.pl-map').forEach((m) => { m.hidden = true; }); // clave rechazada
       document.head.appendChild(sc);
     });
     return mapsReady;
@@ -326,6 +328,7 @@
   function closeRequest() {
     if (!modal) return;
     modal.remove(); modal = null; document.removeEventListener('keydown', onKey);
+    [...document.body.children].forEach((n) => { if (n.dataset.plInert) { n.inert = false; delete n.dataset.plInert; } });
     if (askBtn) askBtn.focus();
   }
   const onKey = (e) => { if (e.key === 'Escape') closeRequest(); };
@@ -374,6 +377,8 @@
     modal.addEventListener('click', (e) => { if (e.target === modal) closeRequest(); });
     document.addEventListener('keydown', onKey);
     document.body.append(modal);
+    // Foco retenido en el modal: el resto de la página no recibe Tab ni clics mientras está abierto.
+    [...document.body.children].forEach((n) => { if (n !== modal && !n.inert && n.tagName !== 'SCRIPT') { n.inert = true; n.dataset.plInert = '1'; } });
     drawRoute(map, stops, list);
     if (!mobile.matches) setTimeout(() => (iWhen.value ? iMail : iWhen).focus(), 250); // en móvil el teclado taparía el resumen
     else if (document.activeElement) document.activeElement.blur(); // el composer del chat no debe dejar el teclado abierto
@@ -412,6 +417,8 @@
 
   /* ── Llegada desde el enlace del e-mail: resumen + botón (abrir el enlace no envía nada) ── */
   const cf = C.confirm;
+  // El token no debe quedar en la URL que lee GA (page_location): se quita antes de que cargue gtag (en load).
+  if (cf && /[?&]confirmer=/.test(location.search)) history.replaceState(null, '', location.pathname);
   if (cf) {
     openChat();
     form.hidden = true;

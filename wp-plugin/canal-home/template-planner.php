@@ -36,7 +36,6 @@ get_header();
     <form id="pl-composer" class="pl-composer">
       <label for="pl-input" class="screen-reader-text">Décrivez votre séjour</label>
       <textarea id="pl-input" rows="2" maxlength="500" placeholder="Décrivez votre séjour idéal…"></textarea>
-      <input type="text" name="website" id="pl-website" tabindex="-1" autocomplete="off" aria-hidden="true" class="pl-hp">
       <button type="submit" class="pl-send" aria-label="Envoyer"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
     </form>
 

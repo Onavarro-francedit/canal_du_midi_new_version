@@ -91,6 +91,21 @@ $mails = [];
 $check($token2 !== '' && $rest('/plan/confirm', ['token' => $token])->get_status() === 410 && !$mails, 'request: la 2.ª demanda anula el enlace de la 1.ª');
 $token = $token2;
 
+// Menores de la revisión: correo 1 fallido → error y sin fila; plan con etapas demasiado largas → mensaje claro.
+$failMail = 'smoke-planner-fail@example.com';
+$failMails = function () { return false; };
+add_filter('pre_wp_mail', $failMails, 20);
+$rf = $rest('/plan/request', ['plan' => $data['plan'], 'email' => $failMail]);
+remove_filter('pre_wp_mail', $failMails, 20);
+$check($rf->get_status() === 500 && !$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table WHERE email = %s", $failMail)), 'request: correo de confirmación fallido → 500 y sin fila pendiente');
+usort($withKm, function ($x, $y) { return $x['km'] - $y['km']; });
+$far = ['title' => 'Trop loin', 'mode' => 'velo', 'when' => 'juin', 'people' => '2', 'missing' => [], 'days' => [
+    ['label' => 'J1', 'place' => 'x', 'km' => 0, 'text' => 'x', 'slug' => $withKm[0]['slug']],
+    ['label' => 'J2', 'place' => 'x', 'km' => 0, 'text' => 'x', 'slug' => end($withKm)['slug']],
+]];
+$rfar = $rest('/plan/request', ['plan' => $far, 'email' => $email]);
+$check($rfar->get_status() === 400 && ($rfar->get_data()['error'] ?? '') === 'invalid', 'request: plan con etapas demasiado largas → error « invalid »');
+
 // /plan/confirm
 $mails = [];
 $res = $rest('/plan/confirm', ['token' => $token]);
@@ -112,6 +127,9 @@ foreach ($ids as $id) {
     wp_clear_scheduled_hook('canal_planner_followup', [(int) $id]);
 }
 $wpdb->delete($table, ['email' => $email]);
-delete_transient('canal_planner_req_mail_' . md5($email));
+$mailKey = function (string $e): string { return function_exists('canal_planner_email_key') ? canal_planner_email_key($e) : strtolower($e); };
+delete_transient('canal_planner_req_mail_' . md5($mailKey($email)));
+delete_transient('canal_planner_req_mail_' . md5($mailKey($failMail)));
+$wpdb->delete($table, ['email' => $failMail]);
 
 $fails ? WP_CLI::error("$fails FALLOS") : WP_CLI::success('smoke-planner OK');
