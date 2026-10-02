@@ -109,6 +109,12 @@ _(sin lecciones todavía)_
 
 ## Producto / UX (PRD-NNN)
 
+- **PRD-013: un texto que también vive en un archivo DERIVADO (llms-full.txt, sitemap, feed) no está cambiado hasta regenerar y subir el derivado.**
+  TASK-045 cambió la FAQ n.º 6 en `content.php` pero `wp-plugin/llms-full.txt` (generado por
+  `build/build-llms-full.php` y ya público en httpdocs) sigue con la pregunta antigua: los motores IA leen otra
+  versión que la página. Ojo: el script sin el argumento `<categorias.md>` vacía la lista de categorías. Regla: al
+  tocar `CANAL_HOME_FAQ`/`CANAL_HOME_ETAPES`, añadir al plan « regenerar llms-full.txt (con categorías) y subirlo ».
+
 - **PRD-009: al localizar strings NUEVOS en una página cuyo "chrome" ya está hardcodeado en un idioma, verificar la coherencia de idioma de TODA la pantalla, no solo del string nuevo.**
   TASK-019 añadió `DATE_I18N` (fr/es/en) para el hint de fecha aproximada y los 3
   errores de fecha del planner, y quedaron CORRECTOS en los 3 idiomas (verificado

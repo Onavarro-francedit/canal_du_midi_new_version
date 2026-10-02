@@ -98,7 +98,8 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
 - **Último desplegado (privado):** **TASK-037…042 — navbar + footer 2026** (análisis SEO/AEO/GEO en
   `docs/navbar-analisis-2026-10-01.md`); verificado en producción.
-- **Último completado:** **TASK-036 — carte: mapa bajo demanda en móvil** (Lighthouse móvil 66–69).
+- **Último completado:** **TASK-045 — accueil-2026 recupera « carte / plan / tracé »** (title, H1, #etapes, FAQ 6,
+  JSON-LD Map; privada, 2026-10-02). Antes: **TASK-036 — carte: mapa bajo demanda en móvil** (Lighthouse móvil 66–69).
   Antes: **TASK-035 — carte: LCP sin esperar a Google Maps** (Lighthouse móvil 48 → 63,
   escritorio 83). Antes: **TASK-034 — home y carte sin CSS/JS del tema** (PageSpeed móvil home 43 → 78, carte
   sin mejora: su peso es propio → TASK-035). Antes: **TASK-033 — ficha 2026: diseño móvil, SEO y aligerado del
@@ -110,6 +111,7 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   `remote.sh wp <args>` (WP-CLI como el usuario del sitio) · CSS:
   `node wp-plugin/build/build-css.mjs` (nunca editar `assets/home.css` a mano).
 - **Siguiente:** decidir la publicación conjunta home +
-  carte + ficha (TASK-028 + TASK-029b + TASK-030b) — esto último SOLO con orden explícita.
+  carte + ficha (TASK-028 + TASK-029b + TASK-030b) — esto último SOLO con orden explícita; al publicar,
+  regenerar y subir `llms-full.txt` (PRD-013).
 - Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
   antes de la captura de página completa: scroll-reveal + lazy-load).

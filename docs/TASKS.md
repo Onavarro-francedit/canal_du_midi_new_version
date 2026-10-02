@@ -4,15 +4,6 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-- **TASK-045 — accueil-2026: recuperar la intención « carte / plan / tracé »** (CODE HECHO y commiteado en local, 2026-10-02;
-  PENDIENTE: smoke-render/smoke-seo en servidor (exige desactivar el plugin: el clasificador lo denegó, lo decide el usuario),
-  `remote.sh deploy` y verificación visual 1440/390/320 → luego security). Plan: Origen: hallazgo ALTO de `docs/auditoria-accueil-2026-2026-10-02.md` (~19.000 impr./90 d de búsquedas de
-  mapa en `/`). Alcance: title + meta (`includes/seo.php`), H1 + lead del hero, sección `#etapes` reconvertida en
-  « Quel est le tracé du Canal du Midi ? » con CTA a la carte interactive y al plan (`template-home.php`), FAQ n.º 6
-  reescrita (`includes/content.php`), nodo `Map` + `TouristDestination.hasMap` en el JSON-LD, CSS mínimo en
-  `build/home-extra.css`, tests `smoke-render.php` / `smoke-seo.php`. Página sigue PRIVADA. Canonical/og:url → `/`
-  ya resuelto por el código al hacerla portada (TASK-028): solo verificar.
-
 _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente
@@ -320,6 +311,17 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-045 — accueil-2026: intención « carte / plan / tracé » — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
+
+- Title « Canal du Midi : carte, tracé, bateaux et vélos | L'Officiel » (59), meta 153 car., H1 « Canal du Midi : carte
+  et tracé / de Toulouse à la Méditerranée » (2 líneas a 1440, no tapa las cifras), `#etapes` → « Quel est le tracé du
+  Canal du Midi ? » + CTA carte interactive / plan (#plan), FAQ n.º 6 « Où trouver une carte détaillée et gratuite… »,
+  JSON-LD `Map` + `hasMap`. Página 18500 sigue PRIVADA. Commits dec61a1, f561d01 (sin push).
+- Pipeline: security ✅ sin hallazgos; product ✅ (2026-10-02). Visual 1440/390/320 OK (sesión principal).
+- **Pendiente al publicar (TASK-028/029b):** regenerar `wp-plugin/llms-full.txt` (FAQ n.º 6 aún con la pregunta
+  antigua; `build-llms-full.php` necesita el .md de categorías como argumento, si no borra la lista → PRD-013) y
+  subirlo a httpdocs. Opcional: enlace a la carte en la respuesta de la FAQ n.º 6; check `</script` en smoke-seo.
 
 ### TASK-036 — Carte: mapa bajo demanda en ≤1180 px — DESPLEGADO EN PRIVADO ✅ — 2026-10-01
 

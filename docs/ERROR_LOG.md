@@ -403,3 +403,12 @@ Formato de entrada:
   `getBoundingClientRect()` — es `document.elementFromPoint()` en su centro devolviendo el
   propio mensaje, más la captura del viewport. Un rect "dentro del contenedor" es compatible
   con estar tapado por un sticky/overlay.
+
+
+### [PRD-013] llms-full.txt desfasado respecto a la FAQ de la home — 2026-10-02 (product TASK-045)
+- Síntoma: FAQ n.º 6 de la home 2026 = « Où trouver une carte détaillée et gratuite du Canal du Midi ? », pero
+  `wp-plugin/llms-full.txt` (público en producción) sigue con « Comment obtenir le plan du Canal du Midi 2026 ? ».
+- Causa raíz: el archivo es un derivado de `content.php` que nadie regenera; el plan no lo incluía.
+- Corrección aplicada: ninguna (la home sigue privada). Al regenerar con `php wp-plugin/build/build-llms-full.php`
+  SIN argumento se pierde la sección « Prestataires par catégorie » (probado y revertido).
+- Prevención: LESSONS.md PRD-013; anotado como paso de TASK-028/029b.
