@@ -376,6 +376,7 @@
     document.body.append(modal);
     drawRoute(map, stops, list);
     if (!mobile.matches) setTimeout(() => (iWhen.value ? iMail : iWhen).focus(), 250); // en móvil el teclado taparía el resumen
+    else if (document.activeElement) document.activeElement.blur(); // el composer del chat no debe dejar el teclado abierto
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       err.textContent = '';
