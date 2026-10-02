@@ -14,12 +14,12 @@ const CANAL_HOME_OG_IMAGE  = 'assets/og-canal-du-midi-1200x630.jpg';
 
 function canal_home_seo_title(): string
 {
-    return "Canal du Midi : bateaux, vélos, hébergements | L'Officiel"; // ≤ 60 car.
+    return "Canal du Midi : carte, tracé, bateaux et vélos | L'Officiel"; // ≤ 60 car.
 }
 
 function canal_home_seo_description(): string
 {
-    return 'Préparez votre séjour sur le Canal du Midi : bateaux sans permis, vélos, hébergements, restaurants et visites de Toulouse à Sète. Plan officiel 2026 gratuit.';
+    return 'Canal du Midi : carte détaillée et tracé de Toulouse à Sète (240 km, 63 écluses). Plan officiel 2026 gratuit, bateaux sans permis, vélos et hébergements.';
 }
 
 /** Séjours mostrados en la plantilla (la plantilla los registra antes de get_header()). */
@@ -116,6 +116,19 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
                     'https://whc.unesco.org/fr/list/770/',
                 ],
                 'touristType' => ['Tourisme fluvial', 'Cyclotourisme', 'Tourisme culturel'],
+                'hasMap'      => ['@id' => $home . '#plan-2026'],
+            ],
+            [
+                '@type'               => 'Map',
+                '@id'                 => $home . '#plan-2026',
+                'name'                => 'Plan du Canal du Midi 2026',
+                'description'         => "Carte détaillée et gratuite du Canal du Midi, de Toulouse à l'étang de Thau : écluses, ports, services et points d'intérêt.",
+                'url'                 => home_url('/wp-content/uploads/' . CANAL_HOME_PLAN_PDF),
+                'encodingFormat'      => 'application/pdf',
+                'isAccessibleForFree' => true,
+                'inLanguage'          => 'fr-FR',
+                'publisher'           => ['@id' => $org],
+                'about'               => ['@id' => $canal],
             ],
             [
                 '@type'           => 'ItemList',

@@ -28,11 +28,10 @@ get_header();
                 </div>
                 <div class="hero-card-content">
                     <div class="eyebrow">L'Officiel du Canal du Midi</div>
-                    <h1>Explorez le Canal du Midi,<br>de Toulouse à la <em>Méditerranée</em></h1>
+                    <h1>Explorez le Canal du Midi : carte et tracé<br>de Toulouse à la <em>Méditerranée</em></h1>
                     <p style="color:#fff;">
-                        <span class="hero-lead-full">Hébergements, location de bateaux et de vélos, restaurants, visites : trouvez les meilleures
-                        adresses le long du canal et préparez votre séjour en toute liberté.</span>
-                        <span class="hero-lead-short">Hébergements, bateaux, vélos et visites : les meilleures adresses du canal.</span>
+                        <span class="hero-lead-full">Carte interactive, plan détaillé gratuit, hébergements, location de bateaux et de vélos, restaurants, visites : préparez votre séjour le long du canal en toute liberté.</span>
+                        <span class="hero-lead-short">Carte, plan gratuit, bateaux, vélos et hébergements du canal.</span>
                     </p>
                     <div class="hero-stats">
                         <div class="hero-stat"><strong>240 km</strong><span>de voie navigable</span></div>
@@ -221,9 +220,9 @@ get_header();
     <section id="etapes" class="section section-tight">
         <div class="container">
             <div class="section-heading center" data-reveal="up">
-                <div class="eyebrow">Itinéraire</div>
-                <h2>Quelles sont les étapes du Canal du Midi ?</h2>
-                <p>240 km et 63 écluses entre Toulouse et l'étang de Thau. Distances en points kilométriques (PK) depuis Toulouse.</p>
+                <div class="eyebrow">Carte et tracé</div>
+                <h2>Quel est le tracé du Canal du Midi ?</h2>
+                <p>Le Canal du Midi part de Toulouse, au port de l'Embouchure, et rejoint l'étang de Thau aux Onglous, près de Sète : 240 km et 63 écluses à travers le Lauragais, Carcassonne, le Minervois et Béziers. Distances en points kilométriques (PK) depuis Toulouse.</p>
             </div>
             <ol class="etapes-list">
                 <?php foreach (CANAL_HOME_ETAPES as $etape): ?>
@@ -238,6 +237,11 @@ get_header();
                     </li>
                 <?php endforeach; ?>
             </ol>
+            <p class="etapes-more">Pour suivre le parcours écluse par écluse, ouvrez la carte interactive ou le plan officiel 2026, une carte détaillée gratuite en PDF.</p>
+            <div class="cdm-center-cta etapes-cta">
+                <a class="button" href="<?= $link(CANAL_CARTE_PATH) ?>"><i class="bi bi-map" aria-hidden="true"></i> Ouvrir la carte interactive</a>
+                <a class="button button-soft" href="#plan"><i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i> Plan détaillé gratuit</a>
+            </div>
         </div>
     </section>
 
@@ -344,8 +348,7 @@ get_header();
                 <div class="eyebrow">Guide officiel</div>
                 <h2>Recevez le plan du Canal du Midi 2026</h2>
                 <p style="color:var(--muted);margin-bottom:24px;">
-                    Toutes les étapes, écluses et points d'intérêt de Toulouse à la Méditerranée —
-                    directement dans votre boîte mail.
+                    La carte détaillée et gratuite du canal : toutes les étapes, écluses et points d'intérêt de Toulouse à la Méditerranée, directement dans votre boîte mail.
                 </p>
 
                 <?php if ($planMsg): ?>
@@ -365,7 +368,7 @@ get_header();
 
                 <div style="margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10.4px;flex-wrap:wrap;">
                     <span style="font-size:13.6px;color:var(--muted);font-weight:bold;">ou</span>
-                    <a href="<?= $upload('pdf/Plan-Canal-du-Midi-2026.pdf') ?>" download class="btn-pdf">
+                    <a href="<?= $upload(CANAL_HOME_PLAN_PDF) ?>" download class="btn-pdf">
                         <i class="bi bi-file-earmark-arrow-down"></i> Télécharger le PDF
                         <span class="btn-pdf__size">32 Mo</span>
                     </a>

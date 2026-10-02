@@ -1919,6 +1919,9 @@
 
 .cdm-home .cdm-center-cta { width: 100%; display: flex; justify-content: center; margin-top: 32px; }
 .cdm-home .cdm-center-cta .button { background-color: var(--violet); color: #fff; }
+.cdm-home .etapes-more { text-align: center; max-width: 640px; margin: 28px auto 0; color: var(--muted); }
+.cdm-home .etapes-cta { flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.cdm-home .cdm-center-cta .button.button-soft { background-color: #fff; color: var(--violet); border: 1px solid currentColor; }
 
 .cdm-home .plan-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 20px; }
 

@@ -5,6 +5,17 @@ sesión.
 
 ---
 
+## 2026-10-02 — coder: TASK-045 implementado en local · Siguiente: smoke + deploy + visual
+
+**Agente:** coder. **Dónde quedamos:** código y tests escritos, `remote.sh test` OK; smoke-render/smoke-seo NO ejecutados
+(requieren `wp plugin deactivate canal-home` en prod; denegado por el clasificador). Nada desplegado.
+**Archivos (wp-plugin/):** `canal-home/includes/content.php` (CANAL_HOME_PLAN_PDF + FAQ 6), `includes/seo.php` (title, meta, Map + hasMap),
+`template-home.php` (H1, leads, #etapes reconvertida + CTA, lead #plan, PDF vía constante), `build/home-extra.css` + `assets/home.css` (build),
+`tests/smoke-render.php`, `tests/smoke-seo.php`.
+**Próxima acción:** desactivar plugin → `remote.sh run tests/smoke-render.php` y `smoke-seo.php` → `remote.sh deploy` → reactivar → visual 1440/390/320.
+
+---
+
 ## CIERRE 2026-10-01 (noche) — TASK-044 Planificateur 2026: spec + plan listos · Siguiente: ejecutar el plan en sesión nueva
 
 **Agente activo al cerrar:** sesión principal (brainstorming → spec → writing-plans). **Handoff pendiente:** ejecutar

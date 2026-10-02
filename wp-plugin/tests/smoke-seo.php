@@ -13,8 +13,9 @@ $check = function (bool $cond, string $label) use (&$fails): void {
 };
 
 $title = canal_home_seo_title();
-$check(mb_strlen($title) >= 40 && mb_strlen($title) <= 60 && strpos($title, 'Canal du Midi') !== false, "título ($title)");
+$check(mb_strlen($title) >= 40 && mb_strlen($title) <= 60 && strpos($title, 'Canal du Midi') !== false && stripos($title, 'carte') !== false && stripos($title, 'tracé') !== false, "título ($title)");
 $desc = canal_home_seo_description();
+$check(stripos($desc, 'carte détaillée') !== false, 'meta con « carte détaillée »');
 $check(mb_strlen($desc) >= 120 && mb_strlen($desc) <= 160, 'meta description 120–160 car. (' . mb_strlen($desc) . ')');
 
 $sejours = canal_home_sejours();
@@ -36,6 +37,9 @@ foreach (($data['@graph'] ?? []) as $node) {
 foreach (['Organization', 'WebSite', 'WebPage', 'TouristDestination', 'ItemList', 'FAQPage'] as $t) {
     $check(isset($types[$t]), "schema $t");
 }
+$map = $types['Map'] ?? [];
+$check(($map['isAccessibleForFree'] ?? null) === true && substr((string) ($map['url'] ?? ''), -strlen('Plan-Canal-du-Midi-2026.pdf')) === 'Plan-Canal-du-Midi-2026.pdf', 'schema Map: gratuito + url al PDF');
+$check(!empty($map['@id']) && ($types['TouristDestination']['hasMap']['@id'] ?? '') === ($map['@id'] ?? 'x'), 'hasMap.@id == Map.@id');
 $org = $types['Organization'] ?? [];
 $check(($org['parentOrganization']['name'] ?? '') === 'Azur Communications' && in_array('https://www.facebook.com/canaldumidi.officiel/', (array) ($org['sameAs'] ?? []), true), 'Organization: editor Azur Communications + sameAs Facebook');
 $target = $types['WebSite']['potentialAction']['target']['urlTemplate'] ?? '';

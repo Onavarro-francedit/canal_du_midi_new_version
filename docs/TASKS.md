@@ -4,8 +4,16 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(vacío — TASK-030 « Fiche 2026 » desplegada en privado ✅ (`/fiche-2026/<slug>/`), ver 🟢.
-Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
+- **TASK-045 — accueil-2026: recuperar la intención « carte / plan / tracé »** (CODE HECHO y commiteado en local, 2026-10-02;
+  PENDIENTE: smoke-render/smoke-seo en servidor (exige desactivar el plugin: el clasificador lo denegó, lo decide el usuario),
+  `remote.sh deploy` y verificación visual 1440/390/320 → luego security). Plan: Origen: hallazgo ALTO de `docs/auditoria-accueil-2026-2026-10-02.md` (~19.000 impr./90 d de búsquedas de
+  mapa en `/`). Alcance: title + meta (`includes/seo.php`), H1 + lead del hero, sección `#etapes` reconvertida en
+  « Quel est le tracé du Canal du Midi ? » con CTA a la carte interactive y al plan (`template-home.php`), FAQ n.º 6
+  reescrita (`includes/content.php`), nodo `Map` + `TouristDestination.hasMap` en el JSON-LD, CSS mínimo en
+  `build/home-extra.css`, tests `smoke-render.php` / `smoke-seo.php`. Página sigue PRIVADA. Canonical/og:url → `/`
+  ya resuelto por el código al hacerla portada (TASK-028): solo verificar.
+
+_(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente
 

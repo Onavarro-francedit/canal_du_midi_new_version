@@ -7,6 +7,9 @@
  */
 defined('ABSPATH') || exit;
 
+// PDF del plan oficial (relativo a uploads): lo usan la plantilla y el schema Map.
+const CANAL_HOME_PLAN_PDF = 'pdf/Plan-Canal-du-Midi-2026.pdf';
+
 // Preguntas frecuentes: respuesta en texto plano + enlace interno opcional + fuente externa
 // de autoridad opcional ('source' => [etiqueta, url]).
 const CANAL_HOME_FAQ = [
@@ -44,8 +47,8 @@ const CANAL_HOME_FAQ = [
         'link' => 'Les ouvrages du canal',
     ],
     [
-        'q'    => 'Comment obtenir le plan du Canal du Midi 2026 ?',
-        'a'    => "Téléchargez gratuitement le plan officiel 2026 en PDF, recevez-le par e-mail depuis cette page, ou commandez la version papier par courrier.",
+        'q'    => 'Où trouver une carte détaillée et gratuite du Canal du Midi ?',
+        'a'    => "Le plan officiel 2026 du Canal du Midi est gratuit : il détaille tout le tracé, de Toulouse à l'étang de Thau, avec les écluses, les ports et les services. Téléchargez-le en PDF ou recevez-le par e-mail depuis cette page, ou commandez la version papier par courrier. Pour chercher une adresse sur le parcours, utilisez la carte interactive.",
         'url'  => '/recevoir-le-plan-du-canal-du-midi-2/',
         'link' => 'Recevoir le plan par courrier',
     ],
