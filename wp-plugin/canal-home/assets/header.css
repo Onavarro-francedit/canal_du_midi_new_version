@@ -569,3 +569,12 @@ footer.footer { display: none; }
     .cdm-header *, .cdm-header__backdrop { transition: none !important; }
     .cdm-header a:hover { transform: none !important; }
 }
+
+/* Banner de cookies Sirdata (consentframework, cabecera del tema): sus colores vienen en variables en línea sobre
+   #sd-cmp; --text-color #999 sobre blanco da 2,8:1 (WCAG pide 4,5:1) y Lighthouse baja la accesibilidad.
+   Solo se oscurecen los colores; nada más del banner cambia. Solo en páginas 2026 (header.css). */
+#sd-cmp {
+    --text-color: #5c5c5c !important;
+    --main-color: #24598a !important;
+    --title-color: #24598a !important;
+}

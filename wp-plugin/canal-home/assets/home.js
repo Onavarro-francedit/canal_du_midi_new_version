@@ -29,7 +29,7 @@
         var onScroll = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
-        update();
+        requestAnimationFrame(update); // en el siguiente frame: leer el layout ahora forzaría un recálculo (Lighthouse)
     }
 
     // ── Banda inmersiva: parallax de la foto (muestra otra parte según el scroll) ──
@@ -51,7 +51,7 @@
         var onScroll = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
-        update();
+        requestAnimationFrame(update); // en el siguiente frame: leer el layout ahora forzaría un recálculo (Lighthouse)
     }
 
     // ── Scroll reveal ───────────────────────────────────────────────────

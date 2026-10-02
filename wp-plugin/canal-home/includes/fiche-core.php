@@ -379,3 +379,17 @@ function canal_fiche_seo_graph(array $f, string $url, string $homeUrl, string $c
     }
     return ['@context' => 'https://schema.org', '@graph' => $graph];
 }
+
+// Minificado prudente del CSS en línea: quita comentarios, colapsa espacios y los que rodean { } ;
+// Las cadenas entre comillas no se tocan; tampoco « : » ni combinadores (un espacio puede ser significativo).
+function canal_home_minify_css(string $css): string
+{
+    $out = preg_replace_callback('#("(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')|/\*.*?\*/|\s+#s', function (array $m): string {
+        if (($m[1] ?? '') !== '') {
+            return $m[1];
+        }
+        return $m[0][0] === '/' ? '' : ' ';
+    }, $css);
+    $out = preg_replace('#\s*([{};])\s*#', '$1', (string) $out);
+    return trim(str_replace(';}', '}', (string) $out));
+}

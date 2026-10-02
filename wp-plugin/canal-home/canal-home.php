@@ -46,7 +46,7 @@ function canal_home_inline_style(string $handle, string $css, array $deps = []):
 {
     wp_register_style($handle, false, $deps);
     wp_enqueue_style($handle);
-    wp_add_inline_style($handle, $css);
+    wp_add_inline_style($handle, canal_home_minify_css($css));
 }
 
 function canal_home_inline_file(string $handle, string $rel, array $deps = []): void

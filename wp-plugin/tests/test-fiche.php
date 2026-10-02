@@ -235,5 +235,36 @@ check(!in_array('FAQPage', array_column($min['@graph'], '@type'), true), 'graph:
 check($mp['@type'] === 'TouristAttraction', 'graph: sin contacto → TouristAttraction');
 check(!isset($mp['geo']) && !isset($mp['address']) && !isset($mp['image']) && !isset($mp['telephone']) && !isset($mp['description']), 'graph: campos vacíos omitidos');
 
+
+// ── WebP en el <body> de las páginas 2026 ──
+$H = 'https://www.plan-canal-du-midi.com';
+$page = '<html><head><meta property="og:image" content="' . $H . '/wp-content/uploads/a/og.jpg"></head><body>'
+    . '<img src="' . $H . '/wp-content/uploads/2020/01/img_8404_1.jpeg" srcset="' . $H . '/wp-content/uploads/x-300x200.jpg 300w, ' . $H . '/wp-content/uploads/x.jpg 708w">'
+    . '<span style="background-image:url(\'' . $H . '/wp-content/uploads/2024/b.JPG\')"></span>'
+    . '<img src="' . $H . '/wp-content/plugins/canal-home/assets/peniche-toulouse-800.jpg?ver=12">'
+    . '<img src="' . $H . '/wp-content/uploads/sin-webp.png">'
+    . '<img src="https://otro.example/wp-content/uploads/z.jpg">'
+    . '</body></html>';
+$exists = function (string $rel): bool { return strpos($rel, 'sin-webp') === false; };
+$w = canal_home_webp_html($page, $exists);
+check(strpos($w, 'img_8404_1.jpeg.webp"') !== false, 'webp: src de uploads');
+check(strpos($w, 'x-300x200.jpg.webp 300w') !== false && strpos($w, 'x.jpg.webp 708w') !== false, 'webp: cada candidato del srcset');
+check(strpos($w, "b.JPG.webp')") !== false, 'webp: url() de un style, extensión en mayúsculas');
+check(strpos($w, 'peniche-toulouse-800.jpg.webp?ver=12') !== false, 'webp: assets del plugin, conserva ?ver');
+check(strpos($w, 'sin-webp.png"') !== false && strpos($w, 'sin-webp.png.webp') === false, 'webp: sin archivo .webp → original');
+check(strpos($w, 'otro.example/wp-content/uploads/z.jpg"') !== false, 'webp: otro dominio intacto');
+check(strpos($w, 'og.jpg"') !== false && strpos($w, 'og.jpg.webp') === false, 'webp: el <head> (og:image) no se toca');
+check(canal_home_webp_html('<p>sin body</p>', $exists) === '<p>sin body</p>', 'webp: HTML sin <body> intacto');
+
+
+// ── CSS en línea minificado ──
+$css = "/* GENERADO */\n.cdm-home .a :hover {\n    color: red;\n    content: \"a  /* b */  c\";\n}\n\n@media (max-width: 760px) {\n  .b > .c { margin : 0 }\n}\n";
+$min = canal_home_minify_css($css);
+check(strpos($min, 'GENERADO') === false, 'minify: sin comentarios');
+check(strpos($min, '.cdm-home .a :hover{') !== false, 'minify: conserva el espacio descendiente antes de :hover');
+check(strpos($min, '"a  /* b */  c"') !== false, 'minify: cadenas intactas');
+check(strpos($min, "\n") === false && strlen($min) < strlen($css) * 0.8, 'minify: sin saltos y más corto');
+check(strpos($min, '@media (max-width: 760px){.b > .c{margin : 0}}') !== false, 'minify: llaves y bloques @media');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

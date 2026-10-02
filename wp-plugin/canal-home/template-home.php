@@ -160,10 +160,10 @@ get_header();
                     <img src="<?= $upload('2024/04/Dominique_VIET_CRTLOccitanie_0017338_MD_RET3-1.jpg') ?>" alt="Le Canal du Midi bordé d'arbres" width="1200" height="507" loading="lazy" decoding="async"<?= ($expSrcset = wp_get_attachment_image_srcset(17010, 'full')) ? ' srcset="' . esc_attr($expSrcset) . '" sizes="(max-width: 560px) calc(100vw - 32px), (max-width: 820px) calc(100vw - 72px), (max-width: 1080px) calc(100vw - 122px), 463px"' : '' ?>>
                 </figure>
                 <figure class="photo-card photo-small top">
-                    <img src="<?= esc_url(CANAL_HOME_URL . 'assets/peniche-toulouse-800.jpg') ?>" alt="Péniche amarrée à Toulouse" width="800" height="450" loading="lazy" decoding="async">
+                    <img src="<?= esc_url(CANAL_HOME_URL . 'assets/peniche-toulouse-480.jpg') ?>" srcset="<?= esc_url(CANAL_HOME_URL . 'assets/peniche-toulouse-480.jpg') ?> 480w, <?= esc_url(CANAL_HOME_URL . 'assets/peniche-toulouse-800.jpg') ?> 800w" sizes="(max-width: 760px) 130px, (max-width: 1080px) 160px, 220px" alt="Péniche amarrée à Toulouse" width="800" height="450" loading="lazy" decoding="async">
                 </figure>
                 <figure class="photo-card photo-small bottom">
-                    <img src="<?= $upload('2020/01/img_8404_1.jpeg') ?>" alt="Balade à vélo sur le chemin de halage du canal" loading="lazy">
+                    <img src="<?= $upload('2020/01/img_8404_1-300x200.jpeg') ?>" alt="Balade à vélo sur le chemin de halage du canal" width="300" height="200" loading="lazy" decoding="async"<?= ($bikeSrcset = wp_get_attachment_image_srcset(10263, 'medium')) ? ' srcset="' . esc_attr($bikeSrcset) . '" sizes="(max-width: 760px) 130px, (max-width: 1080px) 160px, 220px"' : '' ?>>
                 </figure>
             </div>
             <div class="split-copy" data-reveal="right">
