@@ -70,11 +70,11 @@ solo en las 3 páginas; botones del menú 9→7 px para que quepa la lupa sin to
 - **TASK-042** — Lupa en la cabecera → `/explorer-2026/?search_keywords=` (coherente con el `SearchAction`). Media · S.
 
 ### Migración visual del WordPress de producción (nuevo rumbo, 2026-09-28)
-- **TASK-044 — Planificateur de séjour 2026 (`/planificateur-2026/`, privada)** — spec
-  `docs/superpowers/specs/2026-10-01-planificateur-2026-design.md`, mockup aprobado `docs/mockups/planificateur-2026.html`.
-  Asistente conversacional (orbe IA, chat) + demanda a prestatarios con confirmación por e-mail; sin e-mail →
-  mbauwens@francedit.com; en desarrollo todo → onavarro@francedit.com. Siguiente: revisión de la spec → writing-plans.
-  Fase 2 (fuera): « Comment venir » con enlaces Omio.
+- **TASK-044b — Publicar el planificador** — SOLO con orden explícita, JUNTO con TASK-028/029b/030b: página 18505 →
+  publish, `CANAL_PLANNER_PATH` sin `-2026`, `CANAL_PLANNER_LIVE = true` en `canal-ai-config.php` (correos reales),
+  decidir el destino de `/organiser-votre-sejour/`, confirmar con el usuario que `hit-billboard` puede ocultarse aquí,
+  revisar `pm.max_children`. Pendiente aparte: interfaz fija en el idioma del visitante (hoy francés; la IA ya responde
+  en su idioma). Fase 2 (fuera): « Comment venir » con enlaces Omio.
 - **TASK-043 — Contenido de las páginas 2026 gestionable desde el backoffice de WP** — SOLO tras la aprobación del
   diseño 2026 por el cliente (decisión del usuario 2026-10-01: no invertir antes). Navbar y pie → menús nativos nuevos
   (`register_nav_menus` « Navbar 2026 » / « Pie 2026 »; 3 niveles: panel → título de columna → enlace; pie de panel con
@@ -355,6 +355,29 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-044 — Planificateur de séjour 2026 (`/planificateur-2026/`, página 18505) — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
+- Spec `docs/superpowers/specs/2026-10-01-planificateur-2026-design.md`, plan `docs/superpowers/plans/2026-10-01-planificateur-2026.md`,
+  mockups `docs/mockups/planificateur-2026.html` (inicio y chat) y `planificateur-2026-plan.html` (vista plan + modal;
+  la tarjeta de preguntas con opciones de su paso 2 la DESCARTÓ el usuario).
+- Rama `feat/wp-planner-2026`. Núcleo puro `includes/planner-core.php` (km del canal, prompt, validación, correos,
+  token) + `includes/planner.php` (tabla `{prefix}canal_plan_requests` v2, catálogo con km/coords `canal_planner_catalog_v2`,
+  REST `canal-home/v1/plan`, `/plan/request`, `/plan/confirm`, WP-Cron J+3 y purga) + `template-planner.php`,
+  `assets/planner.css`, `assets/planner.js`.
+- Cambios pedidos por el usuario sobre la spec (02/10): desde la 1.ª propuesta, chat a la izquierda y plan a la
+  derecha con foto de cada ficha (768 px); orbe igual en todos los tamaños; « Demander les disponibilités » abre un
+  modal (resumen, Google Maps con el recorrido, fechas/personas/mensaje, e-mail); la IA responde en el idioma del
+  visitante y pregunta fechas, personas y envies antes de la 1.ª propuesta; « Planifier mon voyage » de la cabecera
+  2026 → planificador.
+- Verificado: `remote.sh test` (lint 7.4 + tests puros), `smoke-planner.php` 25/25, 404 sin sesión, navegador
+  escritorio y móvil (390/320 px, sin scroll de página), flujo real: demanda → confirmación por enlace → correos
+  `[TEST → …]` a onavarro@ (prestatario + buzón FE + resumen), enlace reutilizado → « Ce lien a expiré », J+3 programado.
+- Seguridad por defecto: sin `CANAL_PLANNER_LIVE` TODO correo va a onavarro@ con `[TEST → destinatario]`.
+- Limitaciones conocidas: Google Maps no pinta en el Chrome de Claude (verificar en Chrome normal); textos fijos de
+  la interfaz en francés.
+- Rollback: retirar archivos `planner*` y `template-planner.php`, papelera de la página 18505, `DROP TABLE
+  {prefix}canal_plan_requests`, `wp option delete canal_planner_db_version`, transients `canal_planner_*`,
+  desprogramar `canal_planner_followup` y `canal_planner_purge`.
 
 ### TASK-048 — Páginas 2026: rendimiento móvil — DESPLEGADO EN PRIVADO ⚠️ (listo con mejoras menores) — 2026-10-02
 > **Product 2026-10-02 ⚠️:** objetivo LCP ≤ 2,5 s NO alcanzado; mínimo (LCP ≤ 3,5 s, Perf ≥ 85, SI ≤ 3,5 s) alcanzado en 2/4

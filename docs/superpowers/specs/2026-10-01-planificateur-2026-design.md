@@ -44,7 +44,7 @@ Mismo patrón que carte y ficha (`CANAL_CARTE_PATH`, `CANAL_FICHE_PATH`).
 | `canal-home/assets/planner.js` | Composer, ideas, chat, llamadas REST; vanilla, `defer` |
 | `canal-home/includes/planner-core.php` | **Funciones puras** (testeables sin WP): prompt, validación del plan, reparto de destinatarios, plantillas de correo, token, desvío de pruebas |
 | `canal-home/includes/planner.php` | Ruta privada, endpoints REST, tabla, `wp_mail`, WP-Cron J+3 |
-| `canal-home/emails/planner-*.html` | Plantillas HTML de los 4 correos |
+| (en `planner-core.php`) | Plantillas de los 4 correos (`canal_planner_mail_*`) |
 | `tests/test-planner-core.php`, `tests/smoke-planner.php` | Tests (§6) |
 
 Se reutiliza: `ai-core.php` (petición a Claude, catálogo, respaldo sin `json_schema` ante 503 « Grammar
@@ -117,9 +117,9 @@ activación no se ejecutaría al desplegar). Nada existente se toca:
 | 3 | `mbauwens@francedit.com` | Tras confirmar, si hay fichas sin e-mail | Igual que 2 + nombre, teléfono y enlace de cada ficha sin e-mail, para gestión manual |
 | 4 | Usuario | Tras confirmar / a J+3 | Plan completo con enlaces a fichas; J+3 « Avez-vous reçu des réponses ? » (`wp_schedule_single_event`) |
 
-- **Modo desarrollo**: si `CANAL_PLANNER_TEST_TO` está definida en `canal-ai-config.php` (fuera del repo),
+- **Modo desarrollo** (implementado al revés, más seguro): mientras `CANAL_PLANNER_LIVE` no esté definida a `true` en `canal-ai-config.php` (fuera del repo),
   **todo** destinatario se sustituye por ella y el asunto lleva `[TEST → <destinatario real>]`.
-  Valor actual: `onavarro@francedit.com`. Pasar a producción = borrar la constante.
+  Destino de pruebas: `onavarro@francedit.com` (`CANAL_PLANNER_DEV_TO`). Pasar a producción = definir `CANAL_PLANNER_LIVE` a `true` en `canal-ai-config.php`.
 - Buzón FE en constante `CANAL_PLANNER_FE_INBOX = 'mbauwens@francedit.com'`.
 - Seguridad: todo texto del usuario escapado en HTML; asunto y `Reply-To` sin `\r`/`\n` (CRLF injection);
   `Reply-To` solo si el e-mail pasa `is_email` + `FILTER_VALIDATE_EMAIL`.
@@ -157,7 +157,7 @@ Errores, siempre en el chat y en francés:
 
 - `tests/test-planner-core.php` (puro, en `remote.sh test` con PHP 7.4): validación de slugs y km/día por
   modo, máx. 6 prestatarios, limpieza del prompt, reparto proveedor / buzón FE, plantillas (escapado, sin
-  CRLF en cabeceras, Reply-To), token (hash, caducidad, un solo uso), desvío `CANAL_PLANNER_TEST_TO`.
+  CRLF en cabeceras, Reply-To), token (hash, caducidad, un solo uso), desvío sin `CANAL_PLANNER_LIVE`.
 - `tests/smoke-planner.php`: 404 sin sesión, 200 con sesión, endpoints responden con el JSON esperado.
 - Navegador (capturas tras scroll-reveal): 1440×900, 1366×768, 390×844, 320×640 sin scroll de página y sin
   desplazamientos al cambiar de tema (medición de `getBoundingClientRect`, como en el mockup); flujo
@@ -167,7 +167,7 @@ Errores, siempre en el chat y en francés:
 
 - **Ahora (privada)**: página nueva, tabla nueva, constante de desarrollo. Nada existente cambia.
 - **Pública — SOLO con orden explícita**, junto con TASK-028 / 029b / 030b: quitar `-2026`
-  (`CANAL_PLANNER_PATH`), borrar `CANAL_PLANNER_TEST_TO`, apuntar « Planifier mon voyage » del navbar
+  (`CANAL_PLANNER_PATH`), definir `CANAL_PLANNER_LIVE = true`, apuntar « Planifier mon voyage » del navbar
   (hoy `home#plan`) al planificador, decidir el destino de `/organiser-votre-sejour/`, confirmar que el bloque publicitario `hit-billboard` puede
   ocultarse en esta página, revisar
   `pm.max_children` (cada mensaje ocupa un worker PHP durante la llamada a Claude).
@@ -180,3 +180,24 @@ Errores, siempre en el chat y en francés:
 - Fase 2: « Comment venir » (origen del viajero → puerta de entrada → enlaces Omio afiliados).
 - Cuentas de usuario, guardado de planes, mapa interactivo, pagos o reservas.
 - Multilingüe (el sitio WP es francés).
+
+## Cambios aprobados por el usuario tras la implementación (2026-10-02)
+
+Prevalecen sobre las secciones anteriores. Mockup: `docs/mockups/planificateur-2026-plan.html`.
+
+- **Vista plan:** mientras la IA solo pregunta, chat centrado; desde la primera propuesta, chat a la izquierda (400 px) y
+  plan a la derecha (itinerario vertical con km, tramo y tiempo estimado, foto de portada de cada ficha a 768 px,
+  categoría). En móvil el plan ocupa la pantalla y el chat es una hoja inferior. Los ajustes actualizan el plan en su sitio.
+- **Orbe:** mismo estilo y animación que el del inicio en todos los tamaños.
+- **Demanda en un modal** (no en el chat): resumen, Google Maps con el recorrido (marcadores numerados y polilínea,
+  cargado solo al abrir, misma URL que registra el tema), lista de prestatarios, campos fechas / personas (rellenados,
+  editables, obligatorios) / e-mail / mensaje opcional (≤ 500, texto plano, llega a prestatarios y buzón FE).
+  `/plan/request` acepta `when`, `people`, `message`; columna `message` (BD v2).
+- **Idioma:** la IA responde en el idioma del último mensaje del visitante; la interfaz fija y los correos siguen en francés.
+- **Preguntas antes de proponer:** si faltan fechas/duración, personas o modo/envies y no hay plan, la IA pregunta todo en
+  un solo mensaje (una sola vez) sin proponer. Una tarjeta de preguntas con opciones (estilo claude.ai) se probó en el
+  mockup y se descartó.
+- **Revisión final:** una sola demanda viva por e-mail (la nueva anula el enlace anterior); el correo de confirmación solo
+  lleva nombres del catálogo (no el título ni los textos del plan, que vienen del navegador); GA `planner_request` con
+  `listing_slug` por ficha.
+- « Planifier mon voyage » de la cabecera 2026 ya apunta al planificador (solo aparece en páginas 2026 privadas).

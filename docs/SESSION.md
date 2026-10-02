@@ -5,6 +5,36 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-02 — TASK-044 Planificateur 2026 desplegado en privado y verificado · Siguiente: desplegar 16628df y decidir
+
+**Agente activo al cerrar:** sesión principal (executing-plans + rediseños aprobados con mockup). **Handoff pendiente
+de esta tarea:** ninguno (la otra sesión tiene su propio handoff de TASK-050 más abajo).
+**Dónde quedamos:** `/planificateur-2026/` (página 18505, privada) funciona de punta a punta en producción; revisión final
+hecha (sin críticos) y sus 3 correcciones en el commit 16628df, **pendiente de desplegar** (`remote.sh deploy` + smoke).
+
+**Archivos:** `wp-plugin/canal-home/includes/planner-core.php`, `includes/planner.php`, `template-planner.php`,
+`assets/planner.css`, `assets/planner.js` (nuevos); `includes/ai-core.php`, `includes/ai.php` (factorizados),
+`canal-home.php`, `includes/header.php` (CTA → planificador); `tests/test-planner-core.php`, `tests/smoke-planner.php`,
+`remote.sh`; mockup `docs/mockups/planificateur-2026-plan.html`; spec con la sección « Cambios aprobados… ».
+
+**Decisiones que no están en ARCHITECTURE.md:**
+- Correos seguros por defecto: sin `CANAL_PLANNER_LIVE = true` en `canal-ai-config.php` todo va a onavarro@ con
+  `[TEST → destinatario]`. Fichas sin e-mail → buzón FE mbauwens@.
+- Vista plan (chat izq./plan der.), modal de demanda con Google Maps (URL del tema, carga diferida), IA en el idioma
+  del visitante que pregunta antes de proponer. Tarjeta de preguntas con opciones: descartada por el usuario.
+- Google Maps no pinta en el Chrome de Claude: verificar el mapa en Chrome normal.
+- Menores aplazados de la revisión: ver `.superpowers/sdd/2026-10-01-planificateur-2026/progress.md` (líneas « minor »).
+
+**Próxima acción:**
+```
+! wp-plugin/remote.sh deploy
+wp-plugin/remote.sh run tests/smoke-planner.php     # esperado: Success, incl. « la 2.ª demanda anula el enlace de la 1.ª »
+```
+Después: fusionar `feat/wp-planner-2026` en `main` (finishing-a-development-branch). Publicar (TASK-044b con 028/029b/030b)
+SOLO con orden explícita.
+
+---
+
 ## 2026-10-02 — coder TASK-050 implementada y activa en producción · Handoff pendiente: security
 
 **Dónde quedamos:** caché de página WPFC activa en plan-canal-du-midi.com (script `wp-plugin/ops/wpfc-enable.php`, idempotente,
