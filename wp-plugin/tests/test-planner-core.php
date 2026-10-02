@@ -198,5 +198,14 @@ check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'langue du dernier message du visiteur'
 check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'pose toutes les questions manquantes en une seule fois') !== false, 'instrucciones: preguntas antes de la primera propuesta');
 check(strpos(CANAL_PLANNER_INSTRUCTIONS, 'propose quand même un séjour raisonnable') === false || strpos(CANAL_PLANNER_INSTRUCTIONS, 'Ne pose ces questions qu') !== false, 'instrucciones: preguntar una sola vez');
 
+
+// ── revisión final: el correo 1 (a cualquier dirección) solo lleva datos del catálogo ──
+$spamPlan = $plan;
+$spamPlan['title'] = 'GAGNEZ 1000 EUR sur spam.example';
+$spamPlan['days'][0]['text'] = 'Cliquez sur spam.example/offre';
+$cs = canal_planner_mail_confirm($spamPlan, 'https://x/planificateur-2026/?confirmer=abc', ['Vélos <A>']);
+check(strpos($cs['html'], 'spam.example') === false, 'confirm: sin título ni textos libres del cliente');
+check(strpos($cs['html'], 'Vélos &lt;A&gt;') !== false, 'confirm: conserva los nombres del catálogo');
+
 echo $fails ? "\n$fails FALLOS\n" : "\nTodo OK\n";
 exit($fails ? 1 : 0);

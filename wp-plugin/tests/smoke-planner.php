@@ -82,10 +82,20 @@ $check($token !== '', 'request: token en el enlace');
 $preview = canal_planner_confirm_preview($token);
 $check($preview && $preview['state'] === 'ok' && count($preview['names']) === 2, 'preview: estado ok y 2 nombres');
 
+// Revisión final: una segunda demanda del mismo e-mail anula el enlace anterior (los prestatarios no reciben dos).
+$mails = [];
+$rest('/plan/request', ['plan' => $noDates, 'email' => $email, 'when' => 'du 6 au 7 juin', 'people' => '2 adultes', 'message' => 'Smoke : nous avons un chien']);
+preg_match('/confirmer=([a-f0-9]{64})/', (string) ($mails[0]['message'] ?? ''), $m2);
+$token2 = $m2[1] ?? '';
+$mails = [];
+$check($token2 !== '' && $rest('/plan/confirm', ['token' => $token])->get_status() === 410 && !$mails, 'request: la 2.ª demanda anula el enlace de la 1.ª');
+$token = $token2;
+
 // /plan/confirm
 $mails = [];
 $res = $rest('/plan/confirm', ['token' => $token]);
 $check($res->get_status() === 200, 'confirm: 200');
+$check(count((array) ($res->get_data()['slugs'] ?? [])) === 2, 'confirm: devuelve los slugs (evento GA planner_request con listing_slug)');
 $tos = array_unique(array_column($mails, 'to'));
 $check($tos === [CANAL_PLANNER_DEV_TO], 'confirm: TODOS los correos a ' . CANAL_PLANNER_DEV_TO);
 $check(count($mails) >= 2, 'confirm: correos a prestatarios/buzón + resumen (' . count($mails) . ')');

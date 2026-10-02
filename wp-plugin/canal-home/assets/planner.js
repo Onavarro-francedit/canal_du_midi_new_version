@@ -397,7 +397,7 @@
       const back = el('button', 'pl-dlg-send', 'Revenir à mon séjour'); back.type = 'button'; back.addEventListener('click', closeRequest);
       foot.append(el('small', null, 'Le lien est valable 48 heures.'), back);
       back.focus();
-      if (askBtn) { askBtn.textContent = 'Demande envoyée ✓'; }
+      if (askBtn) { askBtn.textContent = 'Demande envoyée ✓'; askBtn.disabled = true; } // evita una 2.ª demanda del mismo plan
     });
   }
 
@@ -431,7 +431,7 @@
         const r = await post(C.confirmUrl, { token: cf.token });
         setThinking(false);
         if (r.ok) {
-          ga('planner_request', { providers: r.data.providers, fe: r.data.fe });
+          (r.data.slugs || []).forEach((slug) => ga('planner_request', { listing_slug: slug })); // spec §3: demandas por ficha
           addText('Vos demandes sont parties. Les prestataires vous répondent directement par e-mail ; un récapitulatif vous attend dans votre boîte.');
         } else {
           addText(r.data.message || 'Ce lien a expiré ou a déjà été utilisé.');

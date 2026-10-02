@@ -379,11 +379,12 @@ function canal_planner_mail_confirm(array $plan, string $confirmUrl, array $name
     }
     return [
         'subject' => 'Confirmez votre demande · Canal du Midi',
-        'html' => canal_planner_mail_layout('Confirmez votre demande', '<p>Vous avez préparé le séjour <strong>' . canal_planner_e($plan['title']) . '</strong>. '
+        // Va a una dirección que nadie ha verificado aún: solo datos del catálogo (nombres), nunca el título ni
+        // los textos del plan, que vienen del navegador y servirían para enviar spam desde el sitio.
+        'html' => canal_planner_mail_layout('Confirmez votre demande', '<p>Vous avez préparé un séjour sur le Canal du Midi. '
             . 'Confirmez pour que nous transmettions votre demande de disponibilité à :</p><ul>' . $list . '</ul>'
             . canal_planner_button($confirmUrl, 'Confirmer ma demande')
-            . '<p style="font-size:13px;color:#6c718d">Ce lien est valable 48 heures. Si vous n\'êtes pas à l\'origine de cette demande, ignorez cet e-mail : rien ne sera envoyé.</p>'
-            . canal_planner_days_html($plan['days'])),
+            . '<p style="font-size:13px;color:#6c718d">Ce lien est valable 48 heures. Si vous n\'êtes pas à l\'origine de cette demande, ignorez cet e-mail : rien ne sera envoyé.</p>'),
     ];
 }
 

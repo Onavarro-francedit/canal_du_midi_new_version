@@ -276,6 +276,9 @@ function canal_planner_request_endpoint(WP_REST_Request $request): WP_REST_Respo
         return canal_planner_error('rate', 429);
     }
     global $wpdb;
+    // Una sola demanda viva por e-mail: la nueva anula el enlace anterior (si no, confirmar los dos
+    // enviaría dos veces la misma demanda a los prestatarios).
+    $wpdb->query($wpdb->prepare('UPDATE ' . canal_planner_table() . " SET status = 'expired' WHERE email = %s AND status = 'pending'", $email));
     [$token, $hash] = canal_planner_new_token();
     $ok = $wpdb->insert(canal_planner_table(), [
         'token_hash'  => $hash,
@@ -344,7 +347,7 @@ function canal_planner_confirm_endpoint(WP_REST_Request $request): WP_REST_Respo
     canal_planner_send(canal_planner_mail_summary($req, $plan, $items));
     $wpdb->update(canal_planner_table(), ['recipients' => wp_json_encode($log)], ['id' => (int) $row['id']]);
     wp_schedule_single_event(time() + 3 * DAY_IN_SECONDS, 'canal_planner_followup', [(int) $row['id']]);
-    return new WP_REST_Response(['ok' => true, 'providers' => count($routes['provider']), 'fe' => count($routes['fe'])], 200);
+    return new WP_REST_Response(['ok' => true, 'providers' => count($routes['provider']), 'fe' => count($routes['fe']), 'slugs' => array_column($items, 'slug')], 200);
 }
 
 // Vista previa para la página ?confirmer=<token>: solo lectura, no envía nada.
