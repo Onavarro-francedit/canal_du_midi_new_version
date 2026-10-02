@@ -5,6 +5,8 @@
 defined('ABSPATH') || exit;
 
 const CANAL_HOME_HERO_IMAGE = '/wp-content/uploads/2025/04/img_couv_site_2025_v2.jpg';
+// Tarjetas sin foto propia: la talla 768 del hero, no el original de 231 KB (TASK-048).
+const CANAL_HOME_CARD_FALLBACK = '/wp-content/uploads/2025/04/img_couv_site_2025_v2-768x276.jpg';
 const CANAL_HOME_TYPE_WHITELIST = [
     'hotel', 'chambre-a-louer', 'appartement-maison-a-louer', 'camping', 'restaurant', 'nautique',
     'peniche', 'location-de-velo', 'excursions', 'chateaux', 'musees', 'oenotourisme',
@@ -79,7 +81,7 @@ function canal_home_categories(int $limit = 6): array
         $out[] = [
             'name'  => canal_home_plain($term->name),
             'url'   => $link,
-            'image' => $image !== '' ? $image : home_url(CANAL_HOME_HERO_IMAGE),
+            'image' => $image !== '' ? $image : home_url(CANAL_HOME_CARD_FALLBACK),
             'count' => (int) $term->count,
         ];
         if (count($out) >= $limit) {
@@ -157,7 +159,7 @@ function canal_home_card(WP_Post $post, array $preferred = []): array
         'title'    => canal_home_plain(get_the_title($post)),
         'slug'     => $post->post_name,
         'url'      => canal_fiche_url($post->post_name),
-        'image'    => $cover !== '' ? $cover : home_url(CANAL_HOME_HERO_IMAGE),
+        'image'    => $cover !== '' ? $cover : home_url(CANAL_HOME_CARD_FALLBACK),
         'category' => canal_home_category_label($post->ID, $preferred),
         'city'     => canal_home_city($post->ID),
     ];
