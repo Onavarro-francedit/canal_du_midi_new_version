@@ -418,7 +418,8 @@
   /* ── Llegada desde el enlace del e-mail: resumen + botón (abrir el enlace no envía nada) ── */
   const cf = C.confirm;
   // El token no debe quedar en la URL que lee GA (page_location): se quita antes de que cargue gtag (en load).
-  if (cf && /[?&]confirmer=/.test(location.search)) history.replaceState(null, '', location.pathname);
+  // window.history: aquí « history » es el historial del chat (let history = []).
+  if (cf && /[?&]confirmer=/.test(location.search)) window.history.replaceState(null, '', location.pathname);
   if (cf) {
     openChat();
     form.hidden = true;
