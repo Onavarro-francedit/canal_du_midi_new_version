@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planificateur — parcours complet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Mockup v2 « vue plan » (TASK-044, 02/10) — parcours : accueil → l'IA pose une question (chat centré)
+   → première proposition (chat à gauche, plan à droite, photos des fiches) → ajustement en place.
+   L'orbe garde le même style et la même animation à toutes les tailles. Tokens = v10 / pages 2026. */
+:root{
+  --accent:#6a63d9; --accent-ink:#4f48b7; --accent-soft:#ebe9fb;
+  --ink:#1f2340; --ink-2:#3a3e5c; --muted:#6c718d;
+  --line:#eceaf6; --line-2:#e0def0; --bg:#fcf8ff; --card:#ffffff; --chip:#f5f6fb;
+  --o1:#8a7ee8; --o2:#2BB6C4; --o3:#f1c7bc; --o4:#bcdff7; --dark:#0E1424;
+  --f-head:'Sora',system-ui,sans-serif; --f-body:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--f-body);color:var(--ink);background:var(--bg);margin:0;display:flex;flex-direction:column;overflow:hidden}
+h1,h2,strong{font-family:var(--f-head)}
+button{font-family:inherit;cursor:pointer}
+svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* ---------- Navbar 2026 (copie visuelle) ---------- */
+.nav{background:var(--card);border-bottom:1px solid var(--line);flex:none;z-index:10}
+.nav-in{width:min(1360px,100%);margin-inline:auto;padding-inline:16px;display:flex;align-items:center;gap:18px;height:72px}
+.brand{display:flex;align-items:center;gap:12px;font:700 17px var(--f-head);color:var(--ink);text-decoration:none;margin-right:auto}
+.brand i{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#66c7c7,#6a63d9)}
+.menu{display:flex;gap:22px;font-size:14.5px;font-weight:500}
+.tools{display:flex;gap:18px;align-items:center;font-size:14.5px;font-weight:500}
+.tools .t{display:inline-flex;gap:6px;align-items:center}
+.cta{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:99px;color:#fff;text-decoration:none;font-weight:700;font-size:14.5px;background:linear-gradient(135deg,#6a63d9,#8a7ee8);box-shadow:0 0 0 3px rgba(106,99,217,.22)}
+.avatar{width:40px;height:40px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center}
+@media (max-width:1180px){.menu,.tools .t{display:none}.nav-in{height:64px}}
+@media (max-width:520px){.cta span{display:none}.cta{padding:0 12px}}
+
+/* ---------- Orbe : le style « hero » du v10, à toutes les tailles ---------- */
+.orb{position:relative;width:var(--size);height:var(--size);flex-shrink:0;transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .8s ease}
+.orb--hero{--size:clamp(96px,19vh,200px);margin:0 0 clamp(14px,2.6vh,26px)}
+.orb--sm{--size:40px}.orb--xs{--size:34px}
+.orb__glow{position:absolute;inset:-18%;border-radius:50%;background:radial-gradient(circle,rgba(138,126,232,.45) 0%,rgba(43,182,196,.18) 40%,transparent 70%);filter:blur(calc(var(--size)*.12));animation:pulse 4s ease-in-out infinite}
+.orb__core{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(237,233,255,.9) 0%,rgba(201,192,250,.55) 45%,transparent 70%);filter:blur(calc(var(--size)*.045)) saturate(1.3);animation:breath 5s ease-in-out infinite,spin 18s linear infinite}
+.orb__blob{position:absolute;width:62%;height:62%;border-radius:50%;filter:blur(calc(var(--size)*.09));opacity:.85}
+.b1{background:var(--o1);top:4%;left:4%;animation:d1 7s ease-in-out infinite}
+.b2{background:var(--o2);bottom:4%;right:4%;animation:d2 9s ease-in-out infinite}
+.b3{background:var(--o3);bottom:8%;left:10%;width:50%;height:50%;animation:d3 8s ease-in-out infinite}
+.b4{background:var(--o4);top:10%;right:12%;width:45%;height:45%;mix-blend-mode:screen;opacity:.9;animation:d1 11s ease-in-out infinite reverse}
+.orb__swirl{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.55) 30%,transparent 45% 70%,rgba(255,255,255,.35) 80%,transparent 90%);filter:blur(calc(var(--size)*.07));mix-blend-mode:soft-light;opacity:.6;animation:spin 6s linear infinite;transition:opacity .8s}
+.orb__shine{position:absolute;top:22%;left:28%;width:34%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);filter:blur(calc(var(--size)*.05));opacity:.7;transform:rotate(-20deg)}
+.orb.thinking{transform:scale(1.07);filter:saturate(1.35) brightness(1.06)}
+.orb.thinking .orb__swirl{opacity:1}
+@keyframes breath{0%,100%{scale:1}50%{scale:1.05}}
+@keyframes pulse{0%,100%{opacity:.7;scale:1}50%{opacity:1;scale:1.08}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes d1{0%,100%{transform:none}33%{transform:translate(35%,20%) scale(1.15)}66%{transform:translate(10%,40%) scale(.9)}}
+@keyframes d2{0%,100%{transform:none}33%{transform:translate(-30%,-25%) scale(.9)}66%{transform:translate(-45%,5%) scale(1.2)}}
+@keyframes d3{0%,100%{transform:none}50%{transform:translate(40%,-40%) scale(1.25)}}
+
+/* ---------- Écran ---------- */
+.main{flex:1;min-height:0;width:min(1360px,100%);margin-inline:auto;display:grid;grid-template-columns:minmax(0,860px);grid-template-rows:minmax(0,1fr);justify-content:center;gap:20px;padding:20px 16px}
+.main.split{grid-template-columns:400px minmax(0,1fr);justify-content:stretch}
+
+/* Accueil (inchangé, version résumée du v10) */
+.home{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px;min-height:0}
+.hello{margin:0;font:600 18px var(--f-head);color:var(--accent-ink)}
+.title{margin:4px 0 0;white-space:nowrap;font-size:clamp(19px,min(6.2vw,5vh),42px);font-weight:700;letter-spacing:-.025em}
+.home .hero{display:flex;flex-direction:column;align-items:center;text-align:center}
+.home .composer{width:100%}
+
+/* Conversation */
+.chat{min-height:0;display:flex;flex-direction:column}
+.main.split .chat{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.chat-head{flex:none;display:flex;align-items:center;gap:12px;padding:12px 4px}
+.main.split .chat-head{padding:12px 16px;border-bottom:1px solid var(--line)}
+.chat-head strong{font-size:14.5px}
+.chat-head span{display:block;font-size:12.5px;color:var(--muted)}
+.chat-head .new{margin-left:auto;white-space:nowrap;flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);font-weight:600;font-size:13.5px;color:var(--ink)}
+.chat-head .close{display:none}
+.log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:16px 4px;overscroll-behavior:contain}
+.main.split .log{padding:16px}
+.row{display:flex;gap:10px;align-items:flex-start;animation:in .3s ease-out}
+.row.u{justify-content:flex-end}
+.msg{max-width:80%;padding:12px 16px;font-size:15px;line-height:1.5}
+.main.split .msg{font-size:14px;padding:10px 14px;max-width:86%}
+.u .msg{background:var(--accent);color:#fff;border-radius:16px 16px 4px 16px}
+.a .msg{background:var(--card);border:1px solid var(--line);border-radius:4px 16px 16px 16px}
+.main.split .a .msg{background:var(--chip)}
+.a .msg.ok{display:flex;gap:8px}.a .msg.ok svg{width:16px;height:16px;color:#1d6b3f;flex:none;margin-top:2px}
+.typing{display:inline-flex;gap:5px;padding:13px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:dot 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 4px 10px}
+.main.split .chips{padding:0 16px 10px}
+.chips button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);font-size:13px;font-weight:600}
+.composer{flex:none;display:flex;align-items:flex-end;gap:12px;padding:16px 12px 12px 20px;border-radius:24px;background:var(--card);border:1px solid var(--line-2);box-shadow:0 18px 50px rgba(61,72,124,.12)}
+.main.split .composer{margin:0 12px 12px;padding:10px 10px 10px 16px;border-radius:18px;box-shadow:none}
+.composer textarea{flex:1;border:none;outline:none;resize:none;font:inherit;font-size:17px;line-height:1.5;min-height:48px;color:var(--ink);background:transparent;padding:2px 0}
+.main.split .composer textarea{font-size:15px;min-height:24px}
+.send{width:46px;height:46px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.main.split .send{width:40px;height:40px}
+
+/* Plan (à droite) */
+.plan{min-height:0;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;animation:planIn .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes planIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.plan-head{flex:none;padding:22px 26px 18px;border-bottom:1px solid var(--line);display:flex;gap:18px;align-items:flex-start;justify-content:space-between}
+.eyebrow{margin:0 0 6px;font:700 11.5px var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink)}
+.plan h1{margin:0;font-size:clamp(20px,2vw,26px);line-height:1.2;letter-spacing:-.02em}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;background:var(--chip);border:1px solid var(--line);color:var(--ink-2)}
+.pill svg{width:15px;height:15px}
+.plan-cta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:12px;border:1px solid var(--dark);background:var(--dark);color:#fff;font-weight:700;font-size:14.5px;box-shadow:0 8px 22px rgba(14,20,36,.18)}
+.plan-cta small{font-size:12.5px;color:var(--muted)}
+.days{flex:1;min-height:0;overflow-y:auto;padding:6px 26px 24px;overscroll-behavior:contain;transition:opacity .35s,filter .35s}
+.days.updating{opacity:.45;filter:blur(1px)}
+.day{display:grid;grid-template-columns:70px 22px minmax(0,1fr);gap:0 14px;padding-top:18px}
+.when{text-align:right;padding-top:2px}
+.when b{display:block;font:700 12px var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.when em{font-style:normal;font-size:12.5px;color:var(--muted);font-weight:600}
+.rail{position:relative;display:flex;justify-content:center}
+.rail::before{content:"";position:absolute;top:22px;bottom:-18px;width:2px;background:var(--line-2)}
+.day:last-of-type .rail::before{display:none}
+.dot{position:relative;width:14px;height:14px;margin-top:4px;border-radius:50%;background:var(--card);border:3px solid var(--accent)}
+/* Étape = carte avec la photo de la fiche */
+.stop{display:grid;grid-template-columns:168px minmax(0,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card);text-decoration:none;color:inherit;transition:border-color .2s,box-shadow .2s}
+.stop:hover{border-color:#cfc8f7;box-shadow:0 10px 28px rgba(61,72,124,.12)}
+.stop img{width:100%;height:100%;min-height:128px;object-fit:cover;display:block;background:var(--chip)}
+.stop .txt{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stop h2{margin:0;font-size:16.5px;line-height:1.3}
+.stop p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
+.stop .fiche{margin-top:auto;padding-top:6px;font-size:13.5px;font-weight:700;color:var(--accent-ink)}
+.stop .fiche span{color:var(--muted);font-weight:600}
+.leg{margin:0 0 0 106px;padding:10px 0 0;color:var(--muted);font-size:12.5px;font-weight:600}
+.day.changed .stop{animation:flash 1.8s ease-out}
+.day.changed .dot{animation:pop .6s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent-soft);border-color:var(--accent)}100%{box-shadow:none}}
+@keyframes pop{50%{transform:scale(1.5)}}
+
+/* Barre mobile + voile (cachés en desktop) */
+.mbar,.scrim{display:none}
+
+/* ---------- Mobile ---------- */
+@media (max-width:860px){
+  .main,.main.split{grid-template-columns:1fr;padding:12px 12px 16px}
+  .main.split{padding:0}
+  .title{font-size:clamp(19px,6.2vw,30px)}
+  .main.split .plan{order:-1;border:none;border-radius:0}
+  .plan-head{flex-direction:column;padding:16px;gap:12px}
+  .plan-cta{width:100%;align-items:stretch}.plan-cta small{display:none}
+  .days{padding:0 14px 96px}
+  .day{grid-template-columns:44px 16px minmax(0,1fr);gap:0 8px}
+  .stop{grid-template-columns:1fr}
+  .stop img{height:150px;min-height:0}
+  .leg{margin-left:68px}
+  /* le chat devient une feuille */
+  .main.split .chat{position:fixed;left:0;right:0;bottom:0;height:min(72vh,560px);z-index:30;border-radius:22px 22px 0 0;box-shadow:0 -20px 50px rgba(14,20,36,.18);transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+  .main.split .chat.open{transform:none}
+  .main.split .chat-head .new{display:none}
+  .main.split .chat-head .close{display:grid;place-items:center;margin-left:auto;width:40px;height:40px;border:none;background:none;color:var(--muted)}
+  .main.split .scrim{display:block;position:fixed;inset:0;z-index:25;background:rgba(14,20,36,.32);opacity:0;pointer-events:none;transition:opacity .3s}
+  .main.split .scrim.open{opacity:1;pointer-events:auto}
+  .main.split .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;gap:8px;align-items:center;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(252,248,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .mbar .fake{flex:1;display:flex;align-items:center;min-height:46px;padding:0 6px 0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--muted);font-size:14.5px}
+  .mbar .fake .send{width:36px;height:36px;margin-left:auto}
+  .mbar .conv{position:relative;width:46px;height:46px;border-radius:50%;border:1px solid var(--line-2);background:var(--card);display:grid;place-items:center}
+  .mbar .conv b{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font:700 11px/18px var(--f-head);text-align:center}
+}
+
+/* Pilote du mockup */
+.demo{position:fixed;left:16px;bottom:16px;z-index:40;display:flex;gap:6px;padding:8px;border-radius:14px;background:var(--dark);color:#fff;font-size:12.5px;align-items:center;box-shadow:0 10px 30px rgba(14,20,36,.3)}
+.demo button{border:none;border-radius:9px;padding:7px 10px;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:12.5px}
+.demo button.on{background:#fff;color:var(--dark)}
+@media (max-width:860px){.demo{left:8px;right:8px;bottom:auto;top:70px;flex-wrap:wrap;font-size:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#"><i></i>Canal du Midi</a>
+    <nav class="menu" aria-label="Menu principal"><span>En bateau</span><span>Vélo &amp; balades</span><span>Découvrir</span><span>Se loger</span><span>Manger &amp; Boire</span><span>Préparer</span></nav>
+    <div class="tools">
+      <span class="t"><svg viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg>Distances</span>
+      <span class="t"><svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>Carte</span>
+      <a class="cta" href="#" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 20L15 9M14 4v3M12.5 5.5h3M19 9v3M17.5 10.5h3"/></svg><span>Planifier mon voyage</span></a>
+      <span class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+    </div>
+  </div>
+</header>
+
+<main class="main" id="main"></main>
+
+<div class="demo" id="demo">Étape
+  <button type="button" data-step="1">1 · Accueil</button>
+  <button type="button" data-step="2">2 · L'IA demande</button>
+  <button type="button" data-step="3">3 · Proposition</button>
+  <button type="button" data-step="4">4 · « Plus calme »</button>
+</div>
+
+<script>
+const UP='/wp-content/uploads/', SITE='https://www.plan-canal-du-midi.com';
+const img=p=>SITE+UP+p;
+const ORB=(cls)=>`<div class="orb ${cls}" aria-hidden="true"><div class="orb__glow"></div><div class="orb__core"><span class="orb__blob b1"></span><span class="orb__blob b2"></span><span class="orb__blob b3"></span><span class="orb__blob b4"></span><span class="orb__swirl"></span><span class="orb__shine"></span></div></div>`;
+const SEND='<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+const PLAN_A={title:'3 jours à vélo en famille, de Carcassonne à Homps', km:'37 km au total', days:[
+  {d:'Jour 1',km:109,place:'Carcassonne',text:'Prise des vélos (tailles enfants possibles) près de la Cité, puis première mise en jambes le long du canal.',name:'Evadeo Cycles',cat:'Location de vélo',img:img('2020/04/OCM-2022-0579_PHOTO.jpg'),leg:'9 km · environ 1 h à vélo'},
+  {d:'Jour 2',km:118,place:'Trèbes',text:"Courte étape jusqu'à Trèbes : écluses, village ancien et idées de balades à l'antenne Canal du Midi.",name:'Office de tourisme, antenne Canal du Midi',cat:'Office de tourisme',img:img('2020/04/trebes-canal-du-midi-credit-itinerrances-scaled.jpg'),leg:'28 km · environ 2 h 30'},
+  {d:'Jour 3',km:146,place:'Homps',text:"Étape tranquille jusqu'au port de Homps, baignade au jardin et plan d'eau de Jouarres à proximité.",name:"Le Jardin d'Homps",cat:"Chambre d'hôtes",img:img('2020/03/IMG_JH-pool-main-2754.jpg')}
+]};
+const PLAN_B={...PLAN_A, km:'19 km au total', days:[
+  PLAN_A.days[0], {...PLAN_A.days[1], leg:'10 km · environ 50 min'},
+  {d:'Jour 3',km:128,place:'Marseillette',text:"Matinée à l'écluse de Marseillette, pique-nique à l'ombre des platanes et retour en douceur.",name:'Écluse de Marseillette',cat:'Écluse',img:img('2021/05/1920px-Marseillette_Lock.jpg'),changed:true}
+]};
+const main=document.getElementById('main');
+let msgs=[], plan=null, sheetOpen=false;
+
+const row=(m)=> m.role==='u' ? `<div class="row u"><div class="msg">${m.t}</div></div>`
+  : m.role==='typing' ? `<div class="row a">${ORB('orb--xs thinking')}<div class="typing"><i></i><i></i><i></i></div></div>`
+  : `<div class="row a">${ORB('orb--xs')}<div class="msg${m.ok?' ok':''}">${m.ok?'<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>':''}<span>${m.t}</span></div></div>`;
+
+function planHTML(p){
+  return `<section class="plan" aria-labelledby="pt">
+    <div class="plan-head"><div><p class="eyebrow">Votre séjour</p><h1 id="pt">${p.title}</h1>
+      <div class="pills"><span class="pill">À vélo</span><span class="pill">du 14 au 17 mai</span><span class="pill">2 adultes, 2 enfants</span><span class="pill">${p.km}</span></div></div>
+      <div class="plan-cta"><button class="btn" type="button">Demander les disponibilités</button><small>3 prestataires · réponse par e-mail</small></div></div>
+    <div class="days" id="days">${p.days.map(x=>`<div class="day${x.changed?' changed':''}"><div class="when"><b>${x.d}</b><em>km ${x.km}</em></div><div class="rail"><span class="dot"></span></div>
+      <a class="stop" href="#"><img src="${x.img}" alt="${x.name}" loading="lazy"><div class="txt"><h2>${x.place}</h2><p>${x.text}</p><div class="fiche">${x.name} <span>· ${x.cat}</span> →</div></div></a></div>
+      ${x.leg?`<div class="leg">↓ ${x.leg}</div>`:''}`).join('')}</div></section>`;
+}
+function chatHTML(){
+  return `<section class="chat${sheetOpen?' open':''}" id="chat">
+    <div class="chat-head">${ORB('orb--sm')}<div><strong>Assistant du Canal du Midi</strong><span>En ligne</span></div>
+      <button class="new" type="button">Nouveau séjour</button><button class="close" type="button" id="close" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="log" id="log">${msgs.map(row).join('')}</div>
+    ${plan?'<div class="chips"><button type="button">Plus calme</button><button type="button">Un jour de plus</button><button type="button">Avec un bateau</button></div>':''}
+    <form class="composer"><textarea rows="1" placeholder="${plan?'Ajustez votre séjour…':'Répondez à l\'assistant…'}"></textarea><button class="send" type="button">${SEND}</button></form>
+  </section>`;
+}
+function render(step){
+  document.querySelectorAll('.demo button').forEach(b=>b.classList.toggle('on',+b.dataset.step===step));
+  if(step===1){
+    main.className='main';
+    main.innerHTML=`<section class="home"><div class="hero">${ORB('orb--hero')}<p class="hello">Bonjour, voyageur</p><h1 class="title">Quel séjour imaginez-vous ?</h1></div>
+      <form class="composer"><textarea rows="2" placeholder="3 jours à vélo en famille…"></textarea><button class="send" type="button">${SEND}</button></form>
+      <p style="margin:0;color:var(--muted);font-size:14px">(idées par thème, inchangées — mockup v10)</p></section>`;
+    return;
+  }
+  const split=!!plan;
+  main.className='main'+(split?' split':'');
+  main.innerHTML=chatHTML()+(split?planHTML(plan)+'<div class="scrim'+(sheetOpen?' open':'')+'" id="scrim"></div><div class="mbar"><button class="fake" type="button" id="open">Ajustez votre séjour…<span class="send">'+SEND+'</span></button><button class="conv" type="button" id="conv" aria-label="Voir la conversation"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><b>'+msgs.filter(m=>m.role!=='typing').length+'</b></button></div>':'');
+  const log=document.getElementById('log'); log.scrollTop=log.scrollHeight;
+  const sheet=on=>{sheetOpen=on;document.getElementById('chat').classList.toggle('open',on);document.getElementById('scrim').classList.toggle('open',on);};
+  if(split){document.getElementById('open').onclick=()=>sheet(true);document.getElementById('conv').onclick=()=>sheet(true);document.getElementById('scrim').onclick=()=>sheet(false);}
+  const c=document.getElementById('close'); if(c) c.onclick=()=>sheet(false);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let run=0;
+async function go(step){
+  const me=++run; sheetOpen=false;
+  if(step===1){msgs=[];plan=null;render(1);return;}
+  if(step===2){
+    plan=null; msgs=[{role:'u',t:'Une balade à vélo en famille, plutôt facile'},{role:'typing'}]; render(2);
+    await sleep(1400); if(me!==run) return;
+    msgs=[msgs[0],{role:'a',t:"Avec plaisir ! Pour vous proposer un séjour adapté : combien de jours, à quelles dates, et quel âge ont les enfants ?"}]; render(2); return;
+  }
+  const base=[{role:'u',t:'Une balade à vélo en famille, plutôt facile'},{role:'a',t:"Avec plaisir ! Pour vous proposer un séjour adapté : combien de jours, à quelles dates, et quel âge ont les enfants ?"},{role:'u',t:'3 jours, du 14 au 17 mai, 2 adultes et 2 enfants de 8 et 11 ans'}];
+  if(step===3){
+    plan=null; msgs=[...base,{role:'typing'}]; render(3);
+    await sleep(1600); if(me!==run) return;
+    plan=PLAN_A; msgs=[...base,{role:'a',t:"Voici une boucle familiale de Carcassonne à Homps, avec des étapes courtes et ombragées. Le plan est à droite ; dites-moi ce que vous voulez changer."}]; render(3); return;
+  }
+  if(step===4){
+    plan=PLAN_A; msgs=[...base,{role:'a',t:"Voici une boucle familiale de Carcassonne à Homps, avec des étapes courtes et ombragées. Le plan est à droite ; dites-moi ce que vous voulez changer."},{role:'u',t:'Plus calme'},{role:'typing'}];
+    render(4); document.getElementById('days').classList.add('updating');
+    await sleep(1600); if(me!==run) return;
+    plan=PLAN_B; msgs=[...msgs.slice(0,-1),{role:'a',ok:true,t:"C'est fait : étapes raccourcies, le jour 3 s'arrête à l'écluse de Marseillette."}]; render(4);
+  }
+}
+document.getElementById('demo').onclick=e=>{const b=e.target.closest('button'); if(b) go(+b.dataset.step);};
+go(1);
+</script>
+</body>
+</html>
