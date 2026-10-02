@@ -32,33 +32,26 @@ wp-plugin/remote.sh wp db query "SELECT HOUR(time) h, COUNT(*) FROM wp_mylisting
 
 ---
 
-## CIERRE 2026-10-02 — TASK-044 Planificateur 2026 desplegado en privado y verificado · Siguiente: desplegar 16628df y decidir
+## CIERRE 2026-10-02 (tarde) — TASK-044 Planificateur 2026 desplegado en privado, revisión final y menores corregidos · ⚠️ API sin crédito
 
-**Agente activo al cerrar:** sesión principal (executing-plans + rediseños aprobados con mockup). **Handoff pendiente
-de esta tarea:** ninguno (la otra sesión tiene su propio handoff de TASK-050 más abajo).
-**Dónde quedamos:** `/planificateur-2026/` (página 18505, privada) funciona de punta a punta en producción; revisión final
-hecha (sin críticos) y sus 3 correcciones en el commit 16628df, **pendiente de desplegar** (`remote.sh deploy` + smoke).
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente de esta tarea:** ninguno.
+**Dónde quedamos:** `/planificateur-2026/` (página 18505, privada) desplegado con todo, incluidos cb50c1a (menores de la
+revisión) y 87983ed (`window.history`; sin él la página `?confirmer=` no mostraba el resumen) — respuesta a la nota de
+product: sí, ambos están desplegados. `smoke-planner.php` 29/29, confirmación por enlace y foco del modal verificados en
+navegador.
+**⚠️ La cuenta de la API de Anthropic no tiene crédito** (HTTP 400 « credit balance is too low », 02/10 ~13:10): el
+planificador y la búsqueda IA de la home responden « momentanément indisponible » hasta recargar crédito.
 
-**Archivos:** `wp-plugin/canal-home/includes/planner-core.php`, `includes/planner.php`, `template-planner.php`,
-`assets/planner.css`, `assets/planner.js` (nuevos); `includes/ai-core.php`, `includes/ai.php` (factorizados),
-`canal-home.php`, `includes/header.php` (CTA → planificador); `tests/test-planner-core.php`, `tests/smoke-planner.php`,
-`remote.sh`; mockup `docs/mockups/planificateur-2026-plan.html`; spec con la sección « Cambios aprobados… ».
-
-**Decisiones que no están en ARCHITECTURE.md:**
-- Correos seguros por defecto: sin `CANAL_PLANNER_LIVE = true` en `canal-ai-config.php` todo va a onavarro@ con
-  `[TEST → destinatario]`. Fichas sin e-mail → buzón FE mbauwens@.
-- Vista plan (chat izq./plan der.), modal de demanda con Google Maps (URL del tema, carga diferida), IA en el idioma
-  del visitante que pregunta antes de proponer. Tarjeta de preguntas con opciones: descartada por el usuario.
-- Google Maps no pinta en el Chrome de Claude: verificar el mapa en Chrome normal.
-- Menores aplazados de la revisión: ver `.superpowers/sdd/2026-10-01-planificateur-2026/progress.md` (líneas « minor »).
+**Decisiones que no están en ARCHITECTURE.md:** correos seguros por defecto (sin `CANAL_PLANNER_LIVE = true` todo a
+onavarro@); una demanda viva por e-mail; correo de confirmación solo con datos del catálogo; en `planner.js` la variable
+`history` es el historial del chat → usar `window.history`; Google Maps no pinta en el Chrome de Claude.
 
 **Próxima acción:**
 ```
-! wp-plugin/remote.sh deploy
-wp-plugin/remote.sh run tests/smoke-planner.php     # esperado: Success, incl. « la 2.ª demanda anula el enlace de la 1.ª »
+1. Recargar crédito de la API de Anthropic y comprobar /planificateur-2026/ con una conversación real.
+2. Fusionar feat/wp-planner-2026 en main (lleva también TASK-045…050) — con el visto bueno del usuario.
+3. Publicar (TASK-044b con 028/029b/030b) SOLO con orden explícita.
 ```
-Después: fusionar `feat/wp-planner-2026` en `main` (finishing-a-development-branch). Publicar (TASK-044b con 028/029b/030b)
-SOLO con orden explícita.
-(Nota de product, 02/10 15:05: después hay commits 531cbe9 « desplegada y verificada » y cb50c1a « menores de la revisión »;
-confirmar en esa sesión si cb50c1a está desplegado.)
+
+---
 
