@@ -420,3 +420,12 @@ Formato de entrada:
 - Causa raíz: el plan trató el dato como contenido estático; security lo señaló (« caducan ») pero no generó tarea.
 - Corrección aplicada: TASK-047 en 🟡 (copy + revisión anual en enero). Código sin cambios.
 - Prevención: LESSONS.md PRD-014.
+
+
+### [PRD-015] La entrada animada del hero retrasaba el LCP móvil — 2026-10-02 (product TASK-048)
+- Síntoma: LCP móvil de /accueil-2026/ 5,2–5,7 s con la imagen del hero ya ligera (62 KB, prioridad alta).
+- Causa raíz: `home.js` añade `html.hero-ready` tras `window.load`; el CSS de TASK-010 pone entonces `opacity:0` al
+  H1/texto/buscador y los anima de vuelta con retrasos de hasta 1,25 s → el LCP se registra al final de la animación.
+- Corrección aplicada (8a): en ≤ 768 px el contenido del hero queda visible y sin animación; escritorio sin cambios.
+  Móvil 70 → 76–81 (DataForSEO), Lighthouse local 79–90. Escritorio y tablet (769–1024 px) siguen con el parpadeo.
+- Prevención: LESSONS.md PRD-015.

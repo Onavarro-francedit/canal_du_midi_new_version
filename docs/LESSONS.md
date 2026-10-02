@@ -109,6 +109,15 @@ _(sin lecciones todavía)_
 
 ## Producto / UX (PRD-NNN)
 
+- **PRD-015: una animación de entrada que RE-OCULTA contenido ya pintado (tras window.load) mueve el LCP al final de la animación.**
+  TASK-048: el hero de la home se pintaba visible (PRD-001 bien aplicado) pero `html.hero-ready`, añadido tras `load`,
+  volvía a poner `opacity:0` al H1/texto/buscador y los revelaba con `hero-rise` (hasta 1,25 s + 0,9 s): Lighthouse
+  cuenta el LCP cuando el elemento vuelve a ser visible → +1,2 s en móvil. PRD-001 evita el contenido invisible si el
+  JS falla; NO evita que el JS lo esconda DESPUÉS. Regla: el contenido candidato a LCP (H1, imagen del hero, texto
+  principal) nunca se oculta tras haberse pintado; si se quiere entrada animada, solo en escritorio o solo con
+  transform (sin opacity) — y además es un parpadeo visible para el usuario (visto/oculto/visto). Medir siempre el
+  LCP con y sin la animación (DevTools « LCP element » + desglose) antes de optimizar imágenes.
+
 - **PRD-014: un dato con fecha de caducidad (temporadas, horarios, año del plan) no está terminado sin su recordatorio de revisión y su año visible.**
   TASK-046 puso en la FAQ de la home las fechas de temporada de las écluses (2 mai–30 sept…) sin año ni tarea de
   revisión: el año siguiente la respuesta (y el FAQPage JSON-LD que citan los buscadores/IA) sería falsa sin que nadie

@@ -98,7 +98,9 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
   recupera la misma URL. En el plugin la ruta va en una constante (`CANAL_CARTE_PATH`).
 - **Último desplegado (privado):** **TASK-037…042 — navbar + footer 2026** (análisis SEO/AEO/GEO en
   `docs/navbar-analisis-2026-10-01.md`); verificado en producción.
-- **Último completado:** **TASK-045 — accueil-2026 recupera « carte / plan / tracé »** (title, H1, #etapes, FAQ 6,
+- **Último completado:** **TASK-048 ⚠️ — rendimiento móvil páginas 2026** (iconos SVG en CSS, fuentes propias, CSS en línea,
+  GA4 directo diferido, hero sin re-ocultar en móvil; móvil 72 → 76–81, LCP 5,7 → 4,6 s; re-medir tras publicar → TASK-049).
+  Antes: **TASK-046 — FAQ alineada con Search Console**. Antes: **TASK-045 — accueil-2026 recupera « carte / plan / tracé »** (title, H1, #etapes, FAQ 6,
   JSON-LD Map; privada, 2026-10-02). Antes: **TASK-036 — carte: mapa bajo demanda en móvil** (Lighthouse móvil 66–69).
   Antes: **TASK-035 — carte: LCP sin esperar a Google Maps** (Lighthouse móvil 48 → 63,
   escritorio 83). Antes: **TASK-034 — home y carte sin CSS/JS del tema** (PageSpeed móvil home 43 → 78, carte

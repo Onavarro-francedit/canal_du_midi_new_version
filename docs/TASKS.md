@@ -4,39 +4,17 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-### TASK-048 — Páginas 2026: rendimiento móvil (LCP 5,7 s → < 2,5 s) — plan del architect 2026-10-02 → coder
-- Base (DataForSEO, /accueil-2026/ móvil): Perf 72, FCP 2,6 s, LCP 5,7 s, SI 4,2 s, TBT 110 ms; escritorio 91.
-- Plan: fuentes autoalojadas (woff2 latin, @font-face en línea, preload solo de Playfair en la home), Bootstrap
-  Icons → máscaras SVG generadas en build (`assets/icons.css`, en línea), CSS de la home en línea, UA-641851-4 del
-  `header.php` del tema sustituido SOLO en las páginas 2026 por GA4 `G-R0M81JSWP0` directo y diferido a `load`
-  (hallazgo: hoy GA4 lo carga el contenedor UA como destino enlazado — quitar UA a secas mata GA4), `srcset` en la
-  foto de « Expériences » (attachment 17010). Condicionales según el elemento LCP: hero WebP + preload, entrada
-  animada del hero solo ≥ 769 px.
-- Alcance: home (prioridad), carte, ficha (y planificador por compartir el encolado). Páginas PRIVADAS.
-
-**Estado coder 2026-10-02: pasos 1–6 hechos, DESPLEGADO (páginas privadas), commit local sin push.** Pendiente de la
-sesión principal: paso 0 (diagnóstico LCP), 7 (ventana pública + medición), 8a/8b (condicionales).
-- Fuentes: `assets/fonts/` (sora y manrope variables, Playfair 700 normal e itálica; el único uso de Playfair es el h1 de la
-  home), `@font-face` en línea desde `canal_home_base_css()`; preload (crossorigin) solo de Playfair normal en la home (`seo.php`).
-- Iconos: `assets/icons.css` generado (50 `bi-*`, máscaras SVG; bootstrap-icons 1.11.1 exacta en `build/package.json`).
-  Límite: un icono que solo exista en la BD debe añadirse a `EXTRA_ICONS` de `build-css.mjs`.
-- CSS en línea: base (fuentes + iconos) en home, carte, planificador y ficha; además home.css, header.css y home-theme.css
-  en la home (`canal_home_inline_style()` / `canal_home_inline_file()`). Eliminados `CANAL_HOME_FONTS_URL`, el filtro
-  `style_loader_tag` y `canal_fiche_nonblocking_css()`; sin preconnect a Google Fonts.
-- GA4: `canal_home_swap_gtag()` (fiche-core.php, aplicada en `canal_fiche_lighten_head`): UA-641851-4 → stub síncrono +
-  `config G-R0M81JSWP0` + loader en `load`. **Ajuste A (Ads):** descargado `gtag/js?id=UA-641851-4` (348 KB) y
-  `gtag/js?id=G-R0M81JSWP0` (519 KB): NINGUNO contiene `AW-986499205` (solo aparece `G-R0M81JSWP0` como destino enlazado
-  del UA). Por tanto no se añade `config AW-…`. Observación: con el snippet actual `gtag_report_conversion` ya enviaba a
-  un destino AW que ningún contenedor carga → probablemente la conversión de Ads no se registra hoy en ninguna página
-  (fuera de alcance; avisar al usuario).
-- Foto « Expériences »: attachment 17010 (1200×507) con srcset de WP y sizes medidos (≤560: 100vw-32; ≤820: 100vw-72;
-  ≤1080: 100vw-122; >1080: 463 px).
-- Tests: `test-fiche.php` (144 ok: gtag, sin `</style>` en las hojas en línea) y `smoke-render.php` (pendiente de ejecutar por
-  el usuario con el plugin desactivado); `remote.sh test` y `deploy` en verde.
+_(Nada en curso. TASK-048 cerrada ⚠️ → seguimiento TASK-049 en 🟡.)_
 
 _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente
+
+### TASK-049 — Rendimiento 2026: re-medir tras publicar (seguimiento de TASK-048)
+- Tras publicar home/carte/ficha (TASK-028/029b/030b) y con WP Fastest Cache activo: 3 pasadas móvil + escritorio
+  (mediana) en DataForSEO y PageSpeed. Si LCP móvil > 3,5 s o Perf < 85 → 8b (hero WebP + preload, entrada animada
+  del hero también fuera en 769–1024 px). Comprobar en GA4 Tiempo real page_view con consentimiento (Sirdata) en las
+  páginas 2026 vs /. Avisar al usuario: conversión Ads AW-986499205 sin config en ningún contenedor (preexistente). Media · S.
 
 ### TASK-047 — accueil-2026: revisión anual de fechas (enero) (PRD-014)
 - Fechas de temporada y horarios de écluses de la FAQ n.º 4 contra `/navigation/periode-de-navigation/` y VNF;
@@ -346,6 +324,41 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-048 — Páginas 2026: rendimiento móvil — DESPLEGADO EN PRIVADO ⚠️ (listo con mejoras menores) — 2026-10-02
+> **Product 2026-10-02 ⚠️:** objetivo LCP ≤ 2,5 s NO alcanzado; mínimo (LCP ≤ 3,5 s, Perf ≥ 85, SI ≤ 3,5 s) alcanzado en 2/4
+> pasadas de Lighthouse local, no en DataForSEO (móvil 72 → 76–81, LCP 5,7 → 4,6–4,7 s; escritorio 91 → 91–96). Lo que
+> queda depende sobre todo de TTFB sin caché (página privada) → re-medir tras publicar (TASK-049). 8a: hero visible en
+> móvil (PRD-015). Commits locales 32c0805, f2ce819, efe2927 (sin push).
+> **Security 2026-10-02: ⚠️ aprobado con observaciones** (sin críticos). Pendiente: comprobar en navegador que el CMP (Sirdata/consentframework) no ve diferencia con el gtag diferido. Siguiente: product.
+- Base (DataForSEO, /accueil-2026/ móvil): Perf 72, FCP 2,6 s, LCP 5,7 s, SI 4,2 s, TBT 110 ms; escritorio 91.
+- Plan: fuentes autoalojadas (woff2 latin, @font-face en línea, preload solo de Playfair en la home), Bootstrap
+  Icons → máscaras SVG generadas en build (`assets/icons.css`, en línea), CSS de la home en línea, UA-641851-4 del
+  `header.php` del tema sustituido SOLO en las páginas 2026 por GA4 `G-R0M81JSWP0` directo y diferido a `load`
+  (hallazgo: hoy GA4 lo carga el contenedor UA como destino enlazado — quitar UA a secas mata GA4), `srcset` en la
+  foto de « Expériences » (attachment 17010). Condicionales según el elemento LCP: hero WebP + preload, entrada
+  animada del hero solo ≥ 769 px.
+- Alcance: home (prioridad), carte, ficha (y planificador por compartir el encolado). Páginas PRIVADAS.
+
+**Estado coder 2026-10-02: pasos 1–6 hechos, DESPLEGADO (páginas privadas), commit local sin push.** Pendiente de la
+sesión principal: paso 0 (diagnóstico LCP), 7 (ventana pública + medición), 8a/8b (condicionales).
+- Fuentes: `assets/fonts/` (sora y manrope variables, Playfair 700 normal e itálica; el único uso de Playfair es el h1 de la
+  home), `@font-face` en línea desde `canal_home_base_css()`; preload (crossorigin) solo de Playfair normal en la home (`seo.php`).
+- Iconos: `assets/icons.css` generado (50 `bi-*`, máscaras SVG; bootstrap-icons 1.11.1 exacta en `build/package.json`).
+  Límite: un icono que solo exista en la BD debe añadirse a `EXTRA_ICONS` de `build-css.mjs`.
+- CSS en línea: base (fuentes + iconos) en home, carte, planificador y ficha; además home.css, header.css y home-theme.css
+  en la home (`canal_home_inline_style()` / `canal_home_inline_file()`). Eliminados `CANAL_HOME_FONTS_URL`, el filtro
+  `style_loader_tag` y `canal_fiche_nonblocking_css()`; sin preconnect a Google Fonts.
+- GA4: `canal_home_swap_gtag()` (fiche-core.php, aplicada en `canal_fiche_lighten_head`): UA-641851-4 → stub síncrono +
+  `config G-R0M81JSWP0` + loader en `load`. **Ajuste A (Ads):** descargado `gtag/js?id=UA-641851-4` (348 KB) y
+  `gtag/js?id=G-R0M81JSWP0` (519 KB): NINGUNO contiene `AW-986499205` (solo aparece `G-R0M81JSWP0` como destino enlazado
+  del UA). Por tanto no se añade `config AW-…`. Observación: con el snippet actual `gtag_report_conversion` ya enviaba a
+  un destino AW que ningún contenedor carga → probablemente la conversión de Ads no se registra hoy en ninguna página
+  (fuera de alcance; avisar al usuario).
+- Foto « Expériences »: attachment 17010 (1200×507) con srcset de WP y sizes medidos (≤560: 100vw-32; ≤820: 100vw-72;
+  ≤1080: 100vw-122; >1080: 463 px).
+- Tests: `test-fiche.php` (144 ok: gtag, sin `</style>` en las hojas en línea) y `smoke-render.php` (pendiente de ejecutar por
+  el usuario con el plugin desactivado); `remote.sh test` y `deploy` en verde.
 
 ### TASK-046 — accueil-2026: FAQ alineada con las búsquedas reales — DESPLEGADO EN PRIVADO ✅ — 2026-10-02
 FAQ de 8 preguntas en `CANAL_HOME_FAQ` (precio sin cifras abierta por defecto, permis, días, horaires des écluses,
