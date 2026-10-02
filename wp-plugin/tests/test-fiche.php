@@ -268,5 +268,21 @@ check(strpos($min, '"a  /* b */  c"') !== false, 'minify: cadenas intactas');
 check(strpos($min, "\n") === false && strlen($min) < strlen($css) * 0.8, 'minify: sin saltos y más corto');
 check(strpos($min, '@media (max-width: 760px){.b > .c{margin : 0}}') !== false, 'minify: llaves y bloques @media');
 
+
+// ── Sirdata (stub, cmp) y pcm.js: del <head> al principio del <body>, mismo orden ──
+$stub = '<script type="text/javascript" src="https://cache.consentframework.com/js/pa/21931/c/fpKZO/stub"' . "\n" . 'referrerpolicy="unsafe-url" charset="utf-8"></script>';
+$cmp = '<script type="text/javascript" src="https://choices.consentframework.com/js/pa/21931/c/fpKZO/cmp"' . "\n" . 'referrerpolicy="unsafe-url" charset="utf-8" async></script>';
+$pcm = '<script type="text/javascript" src="https://a.rltd.net/tags/pcm.js" async></script>';
+$doc = "<html><head><title>x</title>\n$stub\n$cmp\n$pcm\n<style>a{}</style></head><body class=\"home\"><p>hola</p></body></html>";
+$mv = canal_home_move_consent_to_body($doc);
+$head = substr($mv, 0, strpos($mv, '</head>'));
+check(strpos($head, 'consentframework') === false && strpos($head, 'rltd.net') === false, 'consent: fuera del <head>');
+$after = substr($mv, strpos($mv, '<body class="home">') + strlen('<body class="home">'));
+check(strpos($after, $stub) === 0 || strpos(ltrim($after), $stub) === 0, 'consent: el stub es lo primero del <body>');
+check(strpos($after, $stub) < strpos($after, $cmp) && strpos($after, $cmp) < strpos($after, $pcm) && strpos($after, $pcm) < strpos($after, '<p>hola'), 'consent: orden stub → cmp → pcm antes del contenido');
+check(substr_count($mv, 'consentframework.com/js/pa') === 2, 'consent: sin duplicados');
+check(canal_home_move_consent_to_body($mv) === $mv, 'consent: idempotente');
+check(canal_home_move_consent_to_body('<html><head></head><body>x</body></html>') === '<html><head></head><body>x</body></html>', 'consent: sin scripts → intacto');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

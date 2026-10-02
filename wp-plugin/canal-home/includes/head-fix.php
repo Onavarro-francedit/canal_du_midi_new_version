@@ -19,6 +19,26 @@ function canal_home_fix_head(string $html): string
     return (string) preg_replace('/<body[^>]*>/', "$0\n$div", $html, 1);
 }
 
+// Banner de cookies Sirdata (stub síncrono + cmp) y pcm.js de publicidad: el tema los pone en el <head>; allí el stub
+// crea sus iframes de consentimiento con reintentos hasta que existe <body> y Chrome (Lighthouse/PageSpeed) no presenta
+// ningún frame hasta ~2,3 s (medido 02/10: FCP 0,2 s → 2,2 s). Se mueven, en el mismo orden, al principio del <body>:
+// el stub sigue siendo síncrono y anterior a la publicidad (el consentimiento no cambia).
+function canal_home_move_consent_to_body(string $html): string
+{
+    $headEnd = stripos($html, '</head>');
+    if ($headEnd === false) {
+        return $html;
+    }
+    $head = substr($html, 0, $headEnd);
+    if (!preg_match_all('#<script\b[^>]*\bsrc="https://(?:cache\.consentframework\.com|choices\.consentframework\.com|a\.rltd\.net)/[^"]*"[^>]*>\s*</script>#i', $head, $m)) {
+        return $html;
+    }
+    $head = str_replace($m[0], '', $head);
+    $rest = substr($html, $headEnd);
+    $moved = preg_replace('#<body\b[^>]*>#i', '$0' . "\n" . implode("\n", $m[0]), $rest, 1, $count);
+    return $count ? $head . $moved : $html;
+}
+
 // WebP en el <body>: cada JPG/PNG propio (uploads o assets del plugin) en src, srcset o url() pasa a su
 // hermano « archivo.jpg.webp » si $exists('/wp-content/…') lo confirma. El <head> (og:image) no se toca.
 function canal_home_webp_html(string $html, callable $exists, string $host = 'https://www.plan-canal-du-midi.com'): string
@@ -66,7 +86,7 @@ if (function_exists('add_action')) {
     add_action('template_redirect', function () {
         if (get_query_var('canal_fiche') !== '' || canal_carte_is_page() || canal_home_is_page()) {
             ob_start(function (string $html): string {
-                $html = canal_home_webp_html(canal_fiche_lighten_head(canal_home_fix_head($html)), 'canal_home_webp_exists', untrailingslashit(home_url()));
+                $html = canal_home_webp_html(canal_home_move_consent_to_body(canal_fiche_lighten_head(canal_home_fix_head($html))), 'canal_home_webp_exists', untrailingslashit(home_url()));
                 if (!empty($GLOBALS['canal_home_webp_pending']) && !defined('DONOTCACHEPAGE')) {
                     define('DONOTCACHEPAGE', true); // WP Fastest Cache no guarda una versión con WebP a medias
                 }
