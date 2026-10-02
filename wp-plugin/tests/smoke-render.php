@@ -37,7 +37,7 @@ $check(strpos($html, 'Plan-Canal-du-Midi-2026.pdf') !== false, 'enlace PDF');
 $check(strpos($html, 'https://www.vnf.fr/') !== false && strpos($html, 'https://whc.unesco.org/fr/list/770/') !== false, 'FAQ: enlaces a VNF y UNESCO');
 $check(strpos($html, '<h2>Quel est le tracé du Canal du Midi ?</h2>') !== false && strpos($html, '<h2>Comment préparer votre séjour sur le canal ?</h2>') !== false && strpos($html, 'Quelles sont les étapes') === false, 'H2 en forma de pregunta (tracé)');
 preg_match('/<h1>(.*?)<\/h1>/s', $html, $h1);
-$check(isset($h1[1]) && stripos($h1[1], 'carte') !== false && stripos($h1[1], 'tracé') !== false, 'H1 con carte y tracé');
+$check(isset($h1[1]) && stripos($h1[1], 'carte') !== false && stripos($h1[1], 'tracé') !== false && strpos($h1[1], 'Canal du Midi') === 0, 'H1 empieza por Canal du Midi, con carte y tracé');
 foreach (['tracé', 'parcours', 'détaillée', 'gratuite'] as $w) {
     $check(stripos($html, $w) !== false, "texto contiene « $w »");
 }

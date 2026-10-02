@@ -28,7 +28,7 @@ get_header();
                 </div>
                 <div class="hero-card-content">
                     <div class="eyebrow">L'Officiel du Canal du Midi</div>
-                    <h1>Explorez le Canal du Midi : carte et tracé<br>de Toulouse à la <em>Méditerranée</em></h1>
+                    <h1>Canal du Midi : carte et tracé<br>de Toulouse à la <em>Méditerranée</em></h1>
                     <p style="color:#fff;">
                         <span class="hero-lead-full">Carte interactive, plan détaillé gratuit, hébergements, location de bateaux et de vélos, restaurants, visites : préparez votre séjour le long du canal en toute liberté.</span>
                         <span class="hero-lead-short">Carte, plan gratuit, bateaux, vélos et hébergements du canal.</span>
