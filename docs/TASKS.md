@@ -12,6 +12,17 @@ _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b
 
 ## 🟡 Pendiente
 
+### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
+- `wp-content/themes/my-listing/affiche_pub_940.php` conecta a la BD `pimcore` (51.38.234.212) con usuario y contraseña
+  escritos en el código y mete `$_SERVER['HTTP_REFERER']` sin escapar en la consulta SQL → cualquiera puede inyectar SQL.
+- No es código nuestro (tema + sistema de publicidad): avisar a quien gestiona Pimcore/publicidad para consulta
+  preparada, credenciales fuera del código y cambio de contraseña. Además el tema lo sondea cada 2 s (header.php l. 27).
+  Crítica · fuera del plugin.
+
+### TASK-052 — Sondeo de publicidad del tema en páginas 2026 (decisión del usuario 02/10: dejarlo como está)
+- `header.php` del tema pide `affiche_pub_940.php` cada 2 s (rotación de banners). En páginas 2026 hoy responde vacío.
+  Opción: pedirlo una sola vez tras `load` (sin rotación). Pendiente de decisión. Baja.
+
 ### TASK-050b — Caché WPFC: comprobación a +6 h y avisos (seguimiento de TASK-050)
 - Tras el primer vaciado programado (`wp_fastest_cache_0`, ~20:40 CEST del 02/10; WP-Cron depende de peticiones no cacheadas,
   sin `DISABLE_WP_CRON`): `remote.sh wp cron event list` muestra la siguiente ejecución en ~6 h; `/explorer/` en ventana
@@ -343,6 +354,16 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-051 — Páginas 2026: PageSpeed (WebP, Sirdata en el body, accesibilidad 100) — DESPLEGADO ✅ — 2026-10-02
+- Pedido del usuario: « 100 en todo ». Hecho: WebP de todas las imágenes propias del body (`canal_home_webp_html`),
+  srcset en fotos pequeñas, péniche 480 px, CSS en línea minificado, sin reflow en `home.js`, fondos de tarjetas
+  diferidos (`data-bg` + IntersectionObserver), caché de navegador 1 año (`canal-home/assets/.htaccess`), contraste
+  del banner Sirdata (variables `#sd-cmp`) y stub/cmp/pcm.js movidos al principio del `<body>`.
+- Resultado (Lighthouse móvil local, 4 pasadas): 81–89 estable, FCP observado ~0,33 s (antes 64–68 / 2,2 s);
+  accesibilidad 100, prácticas 100. SEO 92 en Lighthouse 12 local por `Content-Signal` de robots.txt (PageSpeed: 100).
+- No alcanzable sin tocar terceros: script bloqueante de Sirdata (~300 ms) y JS sin usar de GA4/Sirdata.
+- Descartado: fuente del banner → Manrope (el tema le imponía Quicksand de Google Fonts; revertido).
 
 ### TASK-050 — Caché de página (WP Fastest Cache 1.4.9) en todo el sitio de producción — ACTIVA EN PRODUCCIÓN ⚠️ (listo con mejoras menores) — 2026-10-02
 > **Product 2026-10-02 ⚠️:** criterios cumplidos (TTFB 1,0–1,2 s → 0,10–0,13 s en `/`, `/navigation/`, `/explorer/`, ficha;

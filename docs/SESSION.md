@@ -5,6 +5,39 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-02 (fin de semana) — TASK-044 planificador terminado en privado + TASK-051 rendimiento 2026 · ⚠️ /accueil-2026/ PUBLICADA · Siguiente: decidir
+
+**Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
+**Dónde quedamos:** planificador 2026 (página 18505, privada) completo y fusionado en `main`; TASK-051 (rendimiento de
+las páginas 2026) desplegada: Lighthouse móvil local 81–89 estable (antes alternaba 91/66), accesibilidad 100.
+**⚠️ `/accueil-2026/` (18500) está PUBLICADA** desde el 02/10 a petición del usuario para medir en PageSpeed: volver a
+`private` cuando lo diga (`wp-plugin/remote.sh wp post update 18500 --post_status=private`).
+**⚠️ API de Anthropic sin crédito** (planificador y búsqueda IA de la home responden « indisponible »).
+
+**Archivos (TASK-051):** `includes/head-fix.php` (WebP en el body, `canal_home_move_consent_to_body`),
+`includes/fiche-core.php` (`canal_home_minify_css`), `canal-home.php` (CSS en línea minificado), `template-home.php`
+(srcset, fondos `data-bg`), `assets/home.js` (rAF, fondos diferidos), `assets/header.css` (contraste Sirdata),
+`assets/.htaccess` (caché 1 año), `assets/peniche-toulouse-480.jpg`, `tests/test-fiche.php`.
+
+**Decisiones que no están en ARCHITECTURE.md:**
+- WebP: hermano `archivo.jpg.webp` generado al vuelo con GD (8/petición; si faltan, DONOTCACHEPAGE). `rsync --delete`
+  del deploy borra los `.webp` de `canal-home/assets/` → se regeneran solos.
+- Causa del 66/91 en PageSpeed: el `stub` síncrono de Sirdata en el `<head>` → Chrome sin pantalla no presenta frames
+  hasta ~2,3 s. En páginas 2026 stub → cmp → pcm.js se mueven, en el mismo orden, al principio del `<body>`.
+- Tras cada deploy que toque HTML: `remote.sh wp eval 'do_action("wpfc_clear_all_cache");'` (caché WPFC).
+- Lighthouse local: `npx lighthouse@12 <url> --only-categories=performance` varias pasadas; mirar el FCP *observado*.
+
+**Próxima acción:**
+```
+1. Decidir si /accueil-2026/ vuelve a privada.
+2. Recargar crédito de la API de Anthropic y probar el planificador con una conversación real.
+3. ⚠️ Avisar a quien gestiona Pimcore/publicidad: themes/my-listing/affiche_pub_940.php tiene credenciales de BD en
+   claro e inyección SQL vía Referer (ver TASKS 🟡 SEC-001).
+4. Publicar home + carte + ficha + planificador (TASK-028/029b/030b/044b) SOLO con orden explícita.
+```
+
+---
+
 ## CIERRE 2026-10-02 (noche) — Medición SEO/rendimiento gratuita montada · TASK-045/046 ✅, TASK-048 ⚠️, TASK-050 ⚠️ · Siguiente: TASK-050b
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.

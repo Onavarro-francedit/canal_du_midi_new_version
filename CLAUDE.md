@@ -99,7 +99,9 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Último desplegado (privado):** **TASK-044 — Planificateur 2026** (`/planificateur-2026/`, página 18505): chat IA
   en el idioma del visitante + vista plan con fotos + modal de demanda con Google Maps; correos solo a onavarro@ hasta
   `CANAL_PLANNER_LIVE = true`. Rama `feat/wp-planner-2026` (sin fusionar). Antes: TASK-037…042 navbar + footer 2026.
-- **Último completado:** **TASK-050 ⚠️ — caché de página WP Fastest Cache en todo el sitio** (TTFB 0,5–1,2 s →
+- **Último completado (02/10):** **TASK-051 — PageSpeed páginas 2026** (Lighthouse móvil 81–89 estable, accesibilidad 100;
+  causa del 66: stub de Sirdata en el `<head>`). ⚠️ `/accueil-2026/` está **publicada** para medir; ⚠️ SEC-001 en el tema.
+- **Completado antes:** **TASK-050 ⚠️ — caché de página WP Fastest Cache en todo el sitio** (TTFB 0,5–1,2 s →
   ~0,11 s; rollback en `wp-plugin/ops/wpfc-enable.php`; seguimiento TASK-050b). Antes: **TASK-048 ⚠️ — rendimiento móvil páginas 2026** (iconos SVG en CSS, fuentes propias, CSS en línea,
   GA4 directo diferido, hero sin re-ocultar en móvil; móvil 72 → 76–81, LCP 5,7 → 4,6 s; re-medir tras publicar → TASK-049).
   Antes: **TASK-046 — FAQ alineada con Search Console**. Antes: **TASK-045 — accueil-2026 recupera « carte / plan / tracé »** (title, H1, #etapes, FAQ 6,
