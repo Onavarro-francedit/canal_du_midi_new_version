@@ -255,6 +255,8 @@ check(strpos($w, 'sin-webp.png"') !== false && strpos($w, 'sin-webp.png.webp') =
 check(strpos($w, 'otro.example/wp-content/uploads/z.jpg"') !== false, 'webp: otro dominio intacto');
 check(strpos($w, 'og.jpg"') !== false && strpos($w, 'og.jpg.webp') === false, 'webp: el <head> (og:image) no se toca');
 check(canal_home_webp_html('<p>sin body</p>', $exists) === '<p>sin body</p>', 'webp: HTML sin <body> intacto');
+$q = canal_home_webp_html('<body><span style="background-image: url(&quot;' . $H . '/wp-content/uploads/2020/01/hotel-768x513.jpeg&quot;);"></span></body>', $exists);
+check(strpos($q, 'hotel-768x513.jpeg.webp&quot;') !== false, 'webp: url(&quot;…&quot;) escapado de canal_home_css_url');
 
 
 // ── CSS en línea minificado ──

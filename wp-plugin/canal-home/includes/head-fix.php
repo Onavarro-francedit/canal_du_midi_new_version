@@ -27,7 +27,7 @@ function canal_home_webp_html(string $html, callable $exists, string $host = 'ht
     if ($body === false) {
         return $html;
     }
-    $re = '#' . preg_quote($host, '#') . '(/wp-content/(?:uploads|plugins/canal-home/assets)/[^"\'\s?)]+?\.(?:jpe?g|png))(?=[?"\'\s)])#i';
+    $re = '#' . preg_quote($host, '#') . '(/wp-content/(?:uploads|plugins/canal-home/assets)/[^"\'\s?)&]+?\.(?:jpe?g|png))(?=[?"\'\s)&])#i'; // & : url(&quot;…&quot;) de canal_home_css_url
     $out = preg_replace_callback($re, function (array $m) use ($exists, $host): string {
         return $exists($m[1]) ? $host . $m[1] . '.webp' : $m[0];
     }, substr($html, $body));
