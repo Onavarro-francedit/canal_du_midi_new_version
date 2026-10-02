@@ -4,11 +4,42 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(Nada en curso. TASK-048 cerrada ⚠️ → seguimiento TASK-049 en 🟡.)_
+### TASK-050 — Caché de página (WP Fastest Cache 1.4.9) en todo el sitio de producción — IMPLEMENTADA Y ACTIVA EN PRODUCCIÓN (coder, 2026-10-02) — pendiente security + verificación visual
+> **Excepción autorizada por el usuario (2026-10-02)** a « en producción solo se añade »: cambia la configuración de
+> todo el sitio (opción `WpFastestCache` + bloque en `httpdocs/.htaccess`). Reversible en 1 comando (ver rollback).
+- **Hallazgos:** WPFC activo pero sin configurar (no hay opción ni reglas). « Submit » en wp-admin NO funciona: las
+  comprobaciones de Elementor de WPFC dan falso positivo con Elementor 3.0.16 (sin opción `elementor_element_cache_ttl`
+  → « Element Caching activo »; `elementor_css_print_method = external`). Se activa con un script WP-CLI que reutiliza
+  `getHtaccess()` del plugin. WPFC **ignora `DONOTCACHEPAGE`** (solo lo respeta en 403/503): la ficha 2026 abierta con
+  `canal_fiche_public` se cachearía y seguiría servida tras cerrarla → purga al cambiar la opción. Nonces de anónimo en
+  TODAS las páginas (`c27_ajax_nonce` del explorador de listados — sin él no cargan —, `woocommerce-login-nonce` del
+  modal, `wpecpp`) → caché ≤ 6 h. CF7 no verifica nonce a anónimos; planificador/plan sin nonce (honeypot + límites).
+  HTML idéntico móvil/escritorio (solo aleatoriedad) → caché única. nginx ya comprime (gzip). Sin mod_expires.
+- **Ajustes:** Status on · LoggedInUser on · Mobile off · NewPost on (all) · UpdatePost on (post) · Preload, Minify,
+  Combine, Gzip, LBC, Emojis off · timeout « everysixhours » (all) · exclusiones por cookie `wp_woocommerce_session_` y
+  `woocommerce_items_in_cart` · bloque `canal-headers` (nosniff + HSTS) porque la página estática no pasa por PHP.
+- **Código (coder):** `wp-plugin/ops/wpfc-enable.php` (nuevo, idempotente) · `canal-home/includes/fiche-route.php`
+  (purga al añadir/cambiar/borrar `canal_fiche_public`; comentario DONOTCACHEPAGE corregido).
+- **Decisiones del usuario (por defecto: aceptar):** pubs 250×250 del tema (`ORDER BY RAND()` + fechas en PHP) y
+  listados aleatorios de `/` quedan fijos hasta 6 h; las visitas internas de MyListing (`wp_mylisting_visits`) dejan
+  de contar las vistas servidas desde caché (Matomo sigue siendo la referencia).
+- Rollback 1 paso: restaurar `.htaccess.bak-<fecha>-wpfc`, borrar opción `WpFastestCache`, evento `wp_fastest_cache_0`
+  y `wp-content/cache/all`. Desbloquea TASK-049. Alta · M.
+- **Resultado (coder, 2026-10-02):** `ops/wpfc-enable.php` ejecutado en prod (copia `.htaccess.bak-2026-10-02-wpfc`; bloques
+  WPFC + canal-headers antes de « # BEGIN WordPress »; cron `wp_fastest_cache_0` everysixhours). TTFB anónimo (3 pasadas, caliente):
+  `/` 0,106-0,124 · `/navigation/` 0,104-0,109 · `/explorer/` 0,109-0,126 · `/fiche/maison-rassier/` 0,107-0,119 s (antes 1,04-1,19 /
+  0,52-0,57 / 0,60-0,62 / 1,03-1,10). Cookies logged_in / items_in_cart / wp_woocommerce_session → sin caché; GPTBot 403;
+  nosniff y HSTS una sola vez; nonce `c27_ajax_nonce` de `/explorer/` cacheado → `int(1)`. `fiche-route.php`: purga al cambiar
+  `canal_fiche_public`. Pendiente: security, verificación visual (CMP/pubs en `/`, `/histoire/`, listados `/explorer/`).
+
+_(TASK-048 cerrada ⚠️ → seguimiento TASK-049 en 🟡.)_
 
 _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente
+
+- **Medición previa (2026-10-02, TTFB anónimo, 3 pasadas):** `/` 1,13 · 1,19 · 1,04 s · `/navigation/` 0,55 · 0,57 · 0,52 s · `/explorer/` 0,60 · 0,60 · 0,62 s · `/fiche/maison-rassier/` 1,03 · 1,10 · 1,07 s.
+- **Bloqueo:** el modo automático denegó lanzar la implementación (cambia el `.htaccess` de producción). Pendiente: salir del modo automático o que el usuario lance la ejecución.
 
 ### TASK-049 — Rendimiento 2026: re-medir tras publicar (seguimiento de TASK-048)
 - Tras publicar home/carte/ficha (TASK-028/029b/030b) y con WP Fastest Cache activo: 3 pasadas móvil + escritorio

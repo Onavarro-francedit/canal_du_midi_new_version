@@ -5,6 +5,17 @@ sesión.
 
 ---
 
+## 2026-10-02 — coder TASK-050 implementada y activa en producción · Handoff pendiente: security
+
+**Dónde quedamos:** caché de página WPFC activa en plan-canal-du-midi.com (script `wp-plugin/ops/wpfc-enable.php`, idempotente,
+copia `.htaccess.bak-2026-10-02-wpfc`); TTFB ~0,11 s en `/`, `/navigation/`, `/explorer/`, ficha. Verificado por curl (ver TASKS 🔴).
+**Archivos:** `wp-plugin/ops/wpfc-enable.php` (nuevo, activación + rollback en docblock) · `wp-plugin/canal-home/includes/fiche-route.php`
+(purga `wpfc_clear_all_cache` al cambiar `canal_fiche_public`; comentario DONOTCACHEPAGE) · `docs/TASKS.md`.
+**Próxima acción:** `/agent security` TASK-050; luego verificación visual (CMP/pubs en `/` y `/histoire/`, `/explorer/` con listados,
+sesión real sin caché, `/accueil-2026/` en ventana pública).
+
+---
+
 ## CIERRE 2026-10-02 — TASK-048 rendimiento móvil ⚠️ (listo con mejoras menores, privadas) · Siguiente: decidir
 
 **Agente activo al cerrar:** product (pipeline architect → coder → security → product cerrado). **Handoff pendiente:** ninguno.

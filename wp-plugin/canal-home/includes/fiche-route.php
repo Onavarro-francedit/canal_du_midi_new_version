@@ -53,7 +53,7 @@ add_action('template_redirect', function () {
     $wp_query->is_home = false;
     $wp_query->is_404  = false;
     if (!defined('DONOTCACHEPAGE')) {
-        define('DONOTCACHEPAGE', true); // WP Fastest Cache: página privada
+        define('DONOTCACHEPAGE', true); // otros plugins de caché; WPFC no lo respeta (ver purga más abajo)
     }
     nocache_headers();
     status_header(200);
@@ -61,6 +61,14 @@ add_action('template_redirect', function () {
     include CANAL_HOME_DIR . 'template-fiche.php';
     exit;
 }, 0);
+
+// WPFC no respeta DONOTCACHEPAGE (solo en 403/503): al abrir o cerrar la ficha 2026 se vacía la caché de página.
+foreach (['add_option_', 'update_option_', 'delete_option_'] as $canal_fiche_prefix) {
+    add_action($canal_fiche_prefix . 'canal_fiche_public', function () {
+        do_action('wpfc_clear_all_cache');
+    });
+}
+unset($canal_fiche_prefix);
 
 add_action('wp_enqueue_scripts', function () {
     if (!canal_fiche_is_page()) {
