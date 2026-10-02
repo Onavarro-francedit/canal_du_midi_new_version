@@ -2152,3 +2152,14 @@
 }
 @keyframes cdm-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .cdm-home .cdm-spinner { animation-duration: 2.5s; } }
+
+/* TASK-048 (8a): en móvil la entrada del hero tras window.load volvía a ocultar el H1 ya pintado
+   y retrasaba el LCP ~1,2 s. En móvil el contenido se queda visible desde el primer pintado;
+   en escritorio se mantiene la animación (LCP 1,6 s). Ken Burns no cambia. */
+@media (max-width: 768px) {
+    .cdm-home .hero-ready .hero-card-content .eyebrow,
+    .cdm-home .hero-ready .hero-card-content h1,
+    .cdm-home .hero-ready .hero-card-content p,
+    .cdm-home .hero-ready .hero-stats,
+    .cdm-home .hero-ready .hero-search { opacity: 1; transform: none; animation: none; will-change: auto; }
+}

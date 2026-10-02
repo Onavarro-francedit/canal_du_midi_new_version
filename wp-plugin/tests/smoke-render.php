@@ -63,6 +63,8 @@ foreach ($tourCards[1] as $card) {
         && strpos($card, 'class="tour-category"') !== false && strpos($card, 'class="tour-city"') !== false;
 }
 $check($tourOk, 'séjours: 8 tarjetas con foto de fondo (sin <img>), categoría y ciudad separadas');
+preg_match_all('/tour-card-media[^>]*background-image:url\\(&quot;([^&]+)&quot;/', $html, $bg);
+$check(count($bg[1]) > 0 && count(preg_grep('/-\\d+x\\d+\\.(jpe?g|png|webp)$/i', $bg[1])) === count($bg[1]), 'séjours: fondos en talla reducida (no el original)');
 $check(strpos($html, 'CRTL Occitanie') === false && strpos($html, 'photo-credit') === false, 'expériences: sin crédito de foto visible');
 $check(strpos($html, '2020/01/img_8404_1.jpeg') !== false && strpos($html, 'rando-velo_2.webp') === false, 'expériences: foto vélo del canal (no rando-velo_2)');
 preg_match_all('/style="[^"]*\d(\.\d+)?rem[^"]*"/', $html, $remInline);

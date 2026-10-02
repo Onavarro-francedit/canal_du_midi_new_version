@@ -75,7 +75,7 @@ function canal_home_categories(int $limit = 6): array
             continue;
         }
         $imageId = (int) get_term_meta($term->term_id, 'image', true);
-        $image = $imageId ? (string) wp_get_attachment_image_url($imageId, 'large') : '';
+        $image = $imageId ? (string) wp_get_attachment_image_url($imageId, 'medium_large') : '';
         $out[] = [
             'name'  => canal_home_plain($term->name),
             'url'   => $link,
@@ -107,6 +107,16 @@ function canal_home_cover(int $postId): string
         $cover = reset($cover);
     }
     return is_string($cover) ? $cover : '';
+}
+
+// Las tarjetas se ven a ~350 px: usar la talla de WP « medium_large » (768) en vez del original
+// (hasta 280 KB). Si la URL no es de la mediateca, se devuelve tal cual.
+function canal_home_cover_card(int $postId): string
+{
+    $cover = canal_home_cover($postId);
+    $id    = $cover !== '' ? attachment_url_to_postid($cover) : 0;
+    $small = $id ? wp_get_attachment_image_url($id, 'medium_large') : false;
+    return $small ?: $cover;
 }
 
 // Términos region sin acentos ni guiones en la BD (no se modifican): grafía correcta solo al mostrar.
@@ -142,7 +152,7 @@ function canal_home_category_label(int $postId, array $preferred = []): string
 
 function canal_home_card(WP_Post $post, array $preferred = []): array
 {
-    $cover = canal_home_cover($post->ID);
+    $cover = canal_home_cover_card($post->ID);
     return [
         'title'    => canal_home_plain(get_the_title($post)),
         'slug'     => $post->post_name,
