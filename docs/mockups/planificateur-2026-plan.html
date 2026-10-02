@@ -6,6 +6,7 @@
 <title>Planificateur — parcours complet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 /* Mockup v2 « vue plan » (TASK-044, 02/10) — parcours : accueil → l'IA pose une question (chat centré)
    → première proposition (chat à gauche, plan à droite, photos des fiches) → ajustement en place.
@@ -173,6 +174,60 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
   .mbar .conv b{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font:700 11px/18px var(--f-head);text-align:center}
 }
 
+/* ---------- Modal « Demander les disponibilités » (étape 5) ---------- */
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:24px;background:rgba(14,20,36,.45);backdrop-filter:blur(3px);animation:fadeIn .25s ease-out}
+@keyframes fadeIn{from{opacity:0}}
+.dialog{width:min(1040px,100%);max-height:min(860px,100%);display:flex;flex-direction:column;background:var(--card);border-radius:24px;box-shadow:0 30px 80px rgba(14,20,36,.35);overflow:hidden;animation:pop2 .35s cubic-bezier(.2,.7,.2,1)}
+@keyframes pop2{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.dlg-head{flex:none;display:flex;align-items:flex-start;gap:16px;padding:20px 24px;border-bottom:1px solid var(--line)}
+.dlg-head h2{margin:0;font-size:21px;line-height:1.25}
+.dlg-head .eyebrow{margin-bottom:4px}
+.dlg-head .x{margin-left:auto;width:44px;height:44px;flex:none;border-radius:50%;border:1px solid var(--line-2);background:var(--card);display:grid;place-items:center;color:var(--ink-2)}
+.dlg-body{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0}
+.dlg-left{padding:20px 24px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:16px}
+.dlg-right{padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+.map{height:240px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--chip)}
+.map .num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font:700 13px/28px var(--f-head);text-align:center;border:3px solid #fff;box-shadow:0 4px 12px rgba(14,20,36,.3);transition:transform .2s}
+.map .num.hot{transform:scale(1.3);background:var(--dark)}
+.map svg{width:auto;height:auto} /* la règle globale svg{18px} écrasait la ligne du parcours */
+.map-note{margin:-8px 0 0;font-size:12px;color:var(--muted)}
+.who-h{margin:0;font:700 13px var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.who{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.who li{display:grid;grid-template-columns:28px 64px minmax(0,1fr);gap:12px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:14px;transition:border-color .2s,background .2s}
+.who li:hover{border-color:#cfc8f7;background:var(--accent-soft)}
+.who .n{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);font:700 13px/28px var(--f-head);text-align:center}
+.who img{width:64px;height:48px;border-radius:10px;object-fit:cover;display:block}
+.who b{display:block;font:700 14px/1.3 var(--f-head)}
+.who span{font-size:12.5px;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:700;color:var(--ink-2)}
+.field label em{font-style:normal;font-weight:600;color:var(--muted)}
+.field input,.field textarea{width:100%;min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-2);background:var(--card);font:inherit;font-size:15px;color:var(--ink);outline:none}
+.field textarea{min-height:84px;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.legal{margin:0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.dlg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-top:1px solid var(--line);background:var(--bg)}
+.dlg-foot small{font-size:13px;color:var(--muted)}
+.dlg-foot .btn{min-width:240px}
+.done{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:56px 24px}
+.done .ico{width:72px;height:72px;border-radius:50%;background:#eaf6ee;color:#1d6b3f;display:grid;place-items:center}
+.done .ico svg{width:34px;height:34px}
+.done h3{margin:0;font:700 22px var(--f-head)}
+.done p{margin:0;max-width:460px;color:var(--ink-2);line-height:1.6}
+@media (max-width:860px){
+  .modal{padding:0}
+  .dialog{max-height:100%;height:100%;border-radius:0}
+  .dlg-head{padding:14px 16px}.dlg-head h2{font-size:18px}
+  .dlg-body{grid-template-columns:1fr}
+  .dlg-left{border-right:none;padding:16px 16px 0}
+  .dlg-right{padding:16px}
+  .map{height:180px}
+  .two{grid-template-columns:1fr}
+  .dlg-foot{padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .dlg-foot small{display:none}.dlg-foot .btn{flex:1;min-width:0}
+}
+
 /* Pilote du mockup */
 .demo{position:fixed;left:16px;bottom:16px;z-index:40;display:flex;gap:6px;padding:8px;border-radius:14px;background:var(--dark);color:#fff;font-size:12.5px;align-items:center;box-shadow:0 10px 30px rgba(14,20,36,.3)}
 .demo button{border:none;border-radius:9px;padding:7px 10px;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:12.5px}
@@ -202,6 +257,7 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
   <button type="button" data-step="2">2 · L'IA demande</button>
   <button type="button" data-step="3">3 · Proposition</button>
   <button type="button" data-step="4">4 · « Plus calme »</button>
+  <button type="button" data-step="5">5 · Demande</button>
 </div>
 
 <script>
@@ -210,13 +266,13 @@ const img=p=>SITE+UP+p;
 const ORB=(cls)=>`<div class="orb ${cls}" aria-hidden="true"><div class="orb__glow"></div><div class="orb__core"><span class="orb__blob b1"></span><span class="orb__blob b2"></span><span class="orb__blob b3"></span><span class="orb__blob b4"></span><span class="orb__swirl"></span><span class="orb__shine"></span></div></div>`;
 const SEND='<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
 const PLAN_A={title:'3 jours à vélo en famille, de Carcassonne à Homps', km:'37 km au total', days:[
-  {d:'Jour 1',km:109,place:'Carcassonne',text:'Prise des vélos (tailles enfants possibles) près de la Cité, puis première mise en jambes le long du canal.',name:'Evadeo Cycles',cat:'Location de vélo',img:img('2020/04/OCM-2022-0579_PHOTO.jpg'),leg:'9 km · environ 1 h à vélo'},
-  {d:'Jour 2',km:118,place:'Trèbes',text:"Courte étape jusqu'à Trèbes : écluses, village ancien et idées de balades à l'antenne Canal du Midi.",name:'Office de tourisme, antenne Canal du Midi',cat:'Office de tourisme',img:img('2020/04/trebes-canal-du-midi-credit-itinerrances-scaled.jpg'),leg:'28 km · environ 2 h 30'},
-  {d:'Jour 3',km:146,place:'Homps',text:"Étape tranquille jusqu'au port de Homps, baignade au jardin et plan d'eau de Jouarres à proximité.",name:"Le Jardin d'Homps",cat:"Chambre d'hôtes",img:img('2020/03/IMG_JH-pool-main-2754.jpg')}
+  {d:'Jour 1',km:109,place:'Carcassonne',text:'Prise des vélos (tailles enfants possibles) près de la Cité, puis première mise en jambes le long du canal.',name:'Evadeo Cycles',cat:'Location de vélo',img:img('2020/04/OCM-2022-0579_PHOTO.jpg'),leg:'9 km · environ 1 h à vélo',ll:[43.2163,2.3534]},
+  {d:'Jour 2',km:118,place:'Trèbes',text:"Courte étape jusqu'à Trèbes : écluses, village ancien et idées de balades à l'antenne Canal du Midi.",name:'Office de tourisme, antenne Canal du Midi',cat:'Office de tourisme',img:img('2020/04/trebes-canal-du-midi-credit-itinerrances-scaled.jpg'),leg:'28 km · environ 2 h 30',ll:[43.2087,2.4427]},
+  {d:'Jour 3',km:146,place:'Homps',text:"Étape tranquille jusqu'au port de Homps, baignade au jardin et plan d'eau de Jouarres à proximité.",name:"Le Jardin d'Homps",cat:"Chambre d'hôtes",img:img('2020/03/IMG_JH-pool-main-2754.jpg'),ll:[43.2668,2.7203]}
 ]};
 const PLAN_B={...PLAN_A, km:'19 km au total', days:[
   PLAN_A.days[0], {...PLAN_A.days[1], leg:'10 km · environ 50 min'},
-  {d:'Jour 3',km:128,place:'Marseillette',text:"Matinée à l'écluse de Marseillette, pique-nique à l'ombre des platanes et retour en douceur.",name:'Écluse de Marseillette',cat:'Écluse',img:img('2021/05/1920px-Marseillette_Lock.jpg'),changed:true}
+  {d:'Jour 3',km:128,place:'Marseillette',text:"Matinée à l'écluse de Marseillette, pique-nique à l'ombre des platanes et retour en douceur.",name:'Écluse de Marseillette',cat:'Écluse',img:img('2021/05/1920px-Marseillette_Lock.jpg'),ll:[43.2003,2.5470],changed:true}
 ]};
 const main=document.getElementById('main');
 let msgs=[], plan=null, sheetOpen=false;
@@ -229,7 +285,7 @@ function planHTML(p){
   return `<section class="plan" aria-labelledby="pt">
     <div class="plan-head"><div><p class="eyebrow">Votre séjour</p><h1 id="pt">${p.title}</h1>
       <div class="pills"><span class="pill">À vélo</span><span class="pill">du 14 au 17 mai</span><span class="pill">2 adultes, 2 enfants</span><span class="pill">${p.km}</span></div></div>
-      <div class="plan-cta"><button class="btn" type="button">Demander les disponibilités</button><small>3 prestataires · réponse par e-mail</small></div></div>
+      <div class="plan-cta"><button class="btn" type="button" data-ask>Demander les disponibilités</button><small>3 prestataires · réponse par e-mail</small></div></div>
     <div class="days" id="days">${p.days.map(x=>`<div class="day${x.changed?' changed':''}"><div class="when"><b>${x.d}</b><em>km ${x.km}</em></div><div class="rail"><span class="dot"></span></div>
       <a class="stop" href="#"><img src="${x.img}" alt="${x.name}" loading="lazy"><div class="txt"><h2>${x.place}</h2><p>${x.text}</p><div class="fiche">${x.name} <span>· ${x.cat}</span> →</div></div></a></div>
       ${x.leg?`<div class="leg">↓ ${x.leg}</div>`:''}`).join('')}</div></section>`;
@@ -264,6 +320,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let run=0;
 async function go(step){
   const me=++run; sheetOpen=false;
+  closeModal();
   if(step===1){msgs=[];plan=null;render(1);return;}
   if(step===2){
     plan=null; msgs=[{role:'u',t:'Une balade à vélo en famille, plutôt facile'},{role:'typing'}]; render(2);
@@ -283,7 +340,72 @@ async function go(step){
     plan=PLAN_B; msgs=[...msgs.slice(0,-1),{role:'a',ok:true,t:"C'est fait : étapes raccourcies, le jour 3 s'arrête à l'écluse de Marseillette."}]; render(4);
   }
 }
-document.getElementById('demo').onclick=e=>{const b=e.target.closest('button'); if(b) go(+b.dataset.step);};
+document.getElementById('demo').onclick=async e=>{const b=e.target.closest('button'); if(!b) return; const st=+b.dataset.step;
+  if(st===5){ await go(3); await sleep(1700); document.querySelectorAll('.demo button').forEach(x=>x.classList.toggle('on',x===b)); openModal(plan); return; }
+  go(st);};
+
+/* ---------- Étape 5 : modal de demande ---------- */
+const ICON_X='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function openModal(p){
+  closeModal();
+  const m=document.createElement('div'); m.className='modal'; m.id='modal';
+  m.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+    <div class="dlg-head"><div><p class="eyebrow">Demande de disponibilités</p><h2 id="dlg-t">${p.title}</h2>
+      <div class="pills"><span class="pill">À vélo</span><span class="pill">${p.km}</span><span class="pill">${p.days.length} prestataires</span></div></div>
+      <button class="x" type="button" aria-label="Fermer" data-close>${ICON_X}</button></div>
+    <div class="dlg-body" id="dlg-body">
+      <div class="dlg-left">
+        <div class="map" id="map"></div>
+        <p class="map-note">Mockup : fond OpenStreetMap. En production : Google Maps, même rendu.</p>
+        <p class="who-h">Votre demande sera envoyée à</p>
+        <ol class="who">${p.days.map((d,i)=>`<li data-i="${i}"><span class="n">${i+1}</span><img src="${d.img}" alt=""><div><b>${d.name}</b><span>${d.d} · ${d.place} · ${d.cat}</span></div></li>`).join('')}</ol>
+      </div>
+      <form class="dlg-right" id="dlg-form" onsubmit="return false">
+        <div class="two">
+          <div class="field"><label for="f-when">Dates</label><input id="f-when" value="du 14 au 17 mai"></div>
+          <div class="field"><label for="f-people">Personnes</label><input id="f-people" value="2 adultes, 2 enfants"></div>
+        </div>
+        <div class="field"><label for="f-mail">Votre e-mail</label><input id="f-mail" type="email" placeholder="marie@exemple.fr" autocomplete="email"></div>
+        <div class="field"><label for="f-msg">Un message pour les prestataires <em>(facultatif)</em></label><textarea id="f-msg" placeholder="Ex. nous voyageons avec un chien, vélos enfants de 8 et 11 ans…"></textarea></div>
+        <p class="legal">Vous recevrez d'abord un e-mail pour confirmer : rien n'est envoyé aux prestataires avant. Votre adresse ne leur est transmise qu'après confirmation et est conservée 12 mois.</p>
+      </form>
+    </div>
+    <div class="dlg-foot" id="dlg-foot"><small>Les prestataires vous répondent directement par e-mail.</small><button class="btn" type="button" id="dlg-send">Envoyer ma demande</button></div>
+  </div>`;
+  document.body.append(m);
+  m.addEventListener('click',e=>{ if(e.target===m || e.target.closest('[data-close]')) closeModal(); });
+  document.addEventListener('keydown',escClose);
+  document.getElementById('dlg-send').onclick=()=>{
+    const mail=document.getElementById('f-mail').value.trim()||'marie@exemple.fr';
+    document.getElementById('dlg-body').innerHTML=`<div class="done"><div class="ico"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></div>
+      <h3>Vérifiez votre boîte mail</h3><p>Nous venons d'envoyer un e-mail à <strong>${mail.replace(/</g,'&lt;')}</strong>. Cliquez sur « Confirmer ma demande » : votre demande partira aussitôt aux ${p.days.length} prestataires.</p></div>`;
+    document.getElementById('dlg-foot').innerHTML='<small>Le lien est valable 48 heures.</small><button class="btn" type="button" data-close>Revenir à mon séjour</button>';
+  };
+  drawMap(p);
+  if(!matchMedia('(max-width: 860px)').matches) setTimeout(()=>document.getElementById('f-mail')?.focus(),300); // en mobile, le clavier cacherait le résumé
+}
+function escClose(e){ if(e.key==='Escape') closeModal(); }
+function closeModal(){ document.getElementById('modal')?.remove(); document.removeEventListener('keydown',escClose); }
+function loadLeaflet(){
+  if(window.L) return Promise.resolve();
+  return new Promise(r=>{const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; s.onload=r; document.head.append(s);});
+}
+async function drawMap(p){
+  await loadLeaflet();
+  const el=document.getElementById('map'); if(!el) return;
+  const map=L.map(el,{scrollWheelZoom:false,zoomControl:true,attributionControl:false});
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
+  const pts=p.days.map(d=>d.ll);
+  L.polyline(pts,{color:'#6a63d9',weight:4,opacity:.85}).addTo(map);
+  const markers=pts.map((ll,i)=>L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="num">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]})}).addTo(map));
+  map.fitBounds(L.latLngBounds(pts),{padding:[36,36]});
+  setTimeout(()=>{map.invalidateSize();map.fitBounds(L.latLngBounds(pts),{padding:[36,36]});},400); // le modal finit son animation
+  document.querySelectorAll('.who li').forEach(li=>{
+    const num=()=>markers[+li.dataset.i].getElement()?.querySelector('.num');
+    li.onmouseenter=()=>num()?.classList.add('hot'); li.onmouseleave=()=>num()?.classList.remove('hot');
+  });
+}
+main.addEventListener('click',e=>{ if(e.target.closest('[data-ask]')) openModal(plan||PLAN_A); });
 go(1);
 </script>
 </body>
