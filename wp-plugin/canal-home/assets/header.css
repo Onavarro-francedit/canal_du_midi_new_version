@@ -577,7 +577,4 @@ footer.footer { display: none; }
     --text-color: #5c5c5c !important;
     --main-color: #24598a !important;
     --title-color: #24598a !important;
-    /* Manrope ya está cargada en estas páginas: así el banner no descarga Montserrat (~1,5 s en la cadena crítica). */
-    --font-family: 'Manrope', system-ui, sans-serif !important;
-    --font-family-title: 'Manrope', system-ui, sans-serif !important;
 }
