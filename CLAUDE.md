@@ -99,7 +99,8 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Último desplegado (privado):** **TASK-044 — Planificateur 2026** (`/planificateur-2026/`, página 18505): chat IA
   en el idioma del visitante + vista plan con fotos + modal de demanda con Google Maps; correos solo a onavarro@ hasta
   `CANAL_PLANNER_LIVE = true`. Rama `feat/wp-planner-2026` (sin fusionar). Antes: TASK-037…042 navbar + footer 2026.
-- **Último completado:** **TASK-048 ⚠️ — rendimiento móvil páginas 2026** (iconos SVG en CSS, fuentes propias, CSS en línea,
+- **Último completado:** **TASK-050 ⚠️ — caché de página WP Fastest Cache en todo el sitio** (TTFB 0,5–1,2 s →
+  ~0,11 s; rollback en `wp-plugin/ops/wpfc-enable.php`; seguimiento TASK-050b). Antes: **TASK-048 ⚠️ — rendimiento móvil páginas 2026** (iconos SVG en CSS, fuentes propias, CSS en línea,
   GA4 directo diferido, hero sin re-ocultar en móvil; móvil 72 → 76–81, LCP 5,7 → 4,6 s; re-medir tras publicar → TASK-049).
   Antes: **TASK-046 — FAQ alineada con Search Console**. Antes: **TASK-045 — accueil-2026 recupera « carte / plan / tracé »** (title, H1, #etapes, FAQ 6,
   JSON-LD Map; privada, 2026-10-02). Antes: **TASK-036 — carte: mapa bajo demanda en móvil** (Lighthouse móvil 66–69).
@@ -116,5 +117,7 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Siguiente:** decidir la publicación conjunta home +
   carte + ficha (TASK-028 + TASK-029b + TASK-030b) — esto último SOLO con orden explícita; al publicar,
   regenerar y subir `llms-full.txt` (PRD-013).
+- **Medición (gratis):** OpenSEO en `~/open-seo` (sin Lighthouse), Search Console/GA4, PageSpeed Insights CrUX
+  (`PSI_API_KEY`) y Bing Webmaster API (`BING_WMT_KEY`) en `~/open-seo/.env`. Con caché, no decidir por el LCP de laboratorio (PRD-016).
 - Recordatorio: lo visual se verifica SIEMPRE en navegador con captura (y haciendo scroll
   antes de la captura de página completa: scroll-reveal + lazy-load).

@@ -22,6 +22,8 @@ _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b
 - Recordatorio operativo (añadir donde lo vea quien edite en wp-admin): tras « Regenerate CSS » de Elementor o un cambio de
   anuncios urgente → WP Fastest Cache → « Delete Cache ». Opcional: excluir la cookie `wp-postpass_` (security). Baja · XS.
 
+- **Línea base CrUX de `/` (2026-10-02, 28 días previos a la caché, p75):** móvil LCP 2,94 s · TTFB 1,26 s · FCP 2,12 s; escritorio LCP 2,63 s · TTFB 0,96 s; INP y CLS buenos. Re-consultar con PSI (`PSI_API_KEY` en ~/open-seo/.env) hacia el 2026-10-30 para ver el efecto real de la caché.
+
 ### TASK-049 — Rendimiento 2026: re-medir tras publicar (seguimiento de TASK-048)
 - Tras publicar home/carte/ficha (TASK-028/029b/030b) y con WP Fastest Cache activo: 3 pasadas móvil + escritorio
   (mediana) en DataForSEO y PageSpeed. Si LCP móvil > 3,5 s o Perf < 85 → 8b (hero WebP + preload, entrada animada
