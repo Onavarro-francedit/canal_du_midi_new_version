@@ -45,6 +45,7 @@ preg_match('/<section id="etapes".*?<\/section>/s', $html, $etapes);
 $check(isset($etapes[0]) && substr_count($etapes[0], 'class="etape"') === 8 && strpos($etapes[0], 'km 208') !== false, 'étapes: 8 etapas con PK del sitio');
 preg_match('/<section id="faq".*?<\/section>/s', $html, $faqSec);
 $check(isset($faqSec[0]) && substr_count($faqSec[0], '<details') === count(CANAL_HOME_FAQ) && substr_count($faqSec[0], '<h3') === count(CANAL_HOME_FAQ), 'FAQ: preguntas visibles en <details> con <h3>');
+$check(count(CANAL_HOME_FAQ) === 8 && strpos($faqSec[0] ?? '', '€') === false && strpos($faqSec[0] ?? '', 'periode-de-navigation') !== false, 'FAQ: 8 preguntas, sin precios, enlace a horarios');
 $check(strpos($html, 'Azur Communications') !== false, 'E-E-A-T: editor nombrado');
 $check(preg_match('/<img class="hero-card-img"[^>]*fetchpriority="high"[^>]*>/', $html) === 1 && preg_match('/<img class="hero-card-img"[^>]*width="1898" height="682"[^>]*srcset="[^"]+"/', $html) === 1, 'hero: fetchpriority, dimensiones y srcset');
 $check(strpos($html, '<div class="hero-card" data-reveal') === false, 'hero sin animación de entrada (LCP)');

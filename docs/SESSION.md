@@ -5,6 +5,15 @@ sesión.
 
 ---
 
+## 2026-10-02 — TASK-046 FAQ accueil-2026 (coder) · Handoff pendiente: security
+
+**Dónde quedamos:** FAQ de la home con 8 preguntas (alquiler, permiso, días, horarios de écluses, péage, vélo, longitud, mapa); « ouvrages » eliminada. `remote.sh test` Todo OK y deploy hecho; commit local sin push.
+**Archivos:** `wp-plugin/canal-home/includes/content.php` (CANAL_HOME_FAQ + docblock), `wp-plugin/tests/smoke-render.php` (+1 aserción).
+**Pendiente (sesión principal):** smoke-render/smoke-seo con plugin desactivado, verificación visual, llms-full.txt con categorías al publicar (PRD-013).
+**Próxima acción:** `/agent security` sobre TASK-046.
+
+---
+
 ## CIERRE 2026-10-02 — TASK-045 accueil-2026 « carte / plan / tracé » ✅ (privada) · Siguiente: decidir
 
 **Agente activo al cerrar:** product (pipeline architect → coder → security → product cerrado). **Handoff pendiente:** ninguno.

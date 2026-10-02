@@ -4,6 +4,12 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
+### TASK-046 — accueil-2026: FAQ alineada con las búsquedas reales — IMPLEMENTADO Y DESPLEGADO (coder) 2026-10-02, pendiente security + smokes/visual
+Sustituye la FAQ n.º 5 (« ouvrages », sin demanda) por « Combien coûte la location d’un bateau… » (sin cifras) y
+añade « horaires des écluses » (= /navigation/periode-de-navigation/) y « combien de jours ». 8 preguntas.
+Solo `wp-plugin/canal-home/includes/content.php` (+ aserción en `tests/smoke-render.php`). Página 18500 PRIVADA.
+Al publicar: regenerar y subir `llms-full.txt` con categorías (PRD-013). Coder: `remote.sh test` Todo OK, deploy hecho; smoke-render/smoke-seo y visual los hace la sesión principal. Siguiente: security.
+
 _(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
 
 ## 🟡 Pendiente

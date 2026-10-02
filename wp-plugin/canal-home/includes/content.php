@@ -3,7 +3,7 @@
  * Contenido editorial de la home usado a la vez por la plantilla (visible) y por el JSON-LD
  * (FAQPage): una sola fuente, así el schema nunca dice algo distinto de lo que se ve.
  * Datos tomados de las páginas del propio sitio (FAQ, Permis de conduire, Voie verte,
- * calculadora de distancias: PK de cada écluse), 2026-09-29.
+ * calculadora de distancias: PK de cada écluse, période de navigation (2026-10-02)), 2026-09-29.
  */
 defined('ABSPATH') || exit;
 
@@ -14,17 +14,29 @@ const CANAL_HOME_PLAN_PDF = 'pdf/Plan-Canal-du-Midi-2026.pdf';
 // de autoridad opcional ('source' => [etiqueta, url]).
 const CANAL_HOME_FAQ = [
     [
+        'q'    => 'Combien coûte la location d’un bateau sur le Canal du Midi ?',
+        'a'    => "Le prix varie selon le loueur, la durée (semaine, week-end ou journée), la saison et la taille du bateau : les tarifs sont plus élevés en été, surtout de mi-juillet à mi-août. Le carburant est souvent facturé en plus, au forfait par heure de navigation. Le plus simple est de demander un devis à plusieurs loueurs.",
+        'url'  => '/categorie/location-bateau/',
+        'link' => 'Voir les loueurs de bateaux',
+    ],
+    [
         'q'    => 'Faut-il un permis pour naviguer sur le Canal du Midi ?',
         'a'    => "Dans la majorité des cas, non : les bateaux proposés à la location se pilotent sans permis. Le permis « eaux intérieures » n'est obligatoire que si la puissance du moteur dépasse 4,5 kW (6 ch).",
         'url'  => '/navigation/permis-de-conduire/',
         'link' => 'Tout savoir sur le permis',
     ],
     [
-        'q'    => 'Quelle est la longueur du Canal du Midi et combien compte-t-il d’écluses ?',
-        'a'    => "Le Canal du Midi relie Toulouse à l'étang de Thau sur 240 km et compte 63 écluses. Construit par Pierre-Paul Riquet et inauguré en 1681, il est inscrit au patrimoine mondial de l'UNESCO depuis 1996.",
+        'q'    => 'Combien de jours faut-il pour faire le Canal du Midi ?',
+        'a'    => "Comptez 8 à 10 jours en bateau pour aller de Toulouse à l'étang de Thau : 240 km et 63 écluses, à environ 6 km/h. La plupart des loueurs proposent plutôt une semaine sur une partie du canal, souvent en aller simple. À vélo, prévoyez 4 à 6 jours, à raison de 40 à 60 km par jour.",
         'url'  => '/calcul-de-distance-canal-du-midi/',
-        'link' => 'Calculer une distance entre deux écluses',
-        'source' => ['UNESCO — Canal du Midi', 'https://whc.unesco.org/fr/list/770/'],
+        'link' => 'Calculer le temps de trajet entre deux écluses',
+    ],
+    [
+        'q'    => 'Quels sont les horaires des écluses sur le Canal du Midi ?',
+        'a'    => "En haute saison, du 2 mai au 30 septembre, les plaisanciers passent les écluses de 9h à 12h30 et de 13h30 à 19h. En moyenne saison (du 17 mars au 30 avril et en octobre), de 9h à 12h30 et de 13h30 à 18h. En basse saison, le passage se fait sur demande, de 8h30 à 12h30 et de 13h30 à 16h30.",
+        'url'  => '/navigation/periode-de-navigation/',
+        'link' => 'Voir la période de navigation',
+        'source' => ['Avis à la batellerie de VNF (chômages, fermetures)', 'https://avisbat.vnf.fr/'],
     ],
     [
         'q'    => 'Faut-il payer pour naviguer sur le Canal du Midi ?',
@@ -41,10 +53,11 @@ const CANAL_HOME_FAQ = [
         'source' => ['Voies Navigables de France (VNF)', 'https://www.vnf.fr/'],
     ],
     [
-        'q'    => 'Quels ouvrages ne pas manquer le long du canal ?',
-        'a'    => "Le Grand Bassin et l'écluse quadruple de Saint-Roch à Castelnaudary, le pont-canal de Répudre (1676, le plus ancien, construit par Riquet), les 7 écluses de Fonseranes à Béziers (1697) et le pont-canal de l'Orb (1858).",
-        'url'  => '/le-canal/ouvrages/',
-        'link' => 'Les ouvrages du canal',
+        'q'    => 'Quelle est la longueur du Canal du Midi et combien compte-t-il d’écluses ?',
+        'a'    => "Le Canal du Midi relie Toulouse à l'étang de Thau sur 240 km et compte 63 écluses. Construit par Pierre-Paul Riquet et inauguré en 1681, il est inscrit au patrimoine mondial de l'UNESCO depuis 1996.",
+        'url'  => '/calcul-de-distance-canal-du-midi/',
+        'link' => 'Calculer une distance entre deux écluses',
+        'source' => ['UNESCO — Canal du Midi', 'https://whc.unesco.org/fr/list/770/'],
     ],
     [
         'q'    => 'Où trouver une carte détaillée et gratuite du Canal du Midi ?',
