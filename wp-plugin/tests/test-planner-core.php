@@ -174,5 +174,22 @@ check(canal_planner_token_state(['status' => 'pending', 'created_at' => $now - 3
 check(canal_planner_token_state(['status' => 'sent', 'created_at' => $now - 3600], $now) === 'used', 'token: ya usado');
 check(canal_planner_token_state(['status' => 'pending', 'created_at' => $now - CANAL_PLANNER_TOKEN_TTL - 1], $now) === 'expired', 'token: caducado');
 
+
+// ── formulario del modal: fechas, personas, mensaje ─────────────────────
+$base = ['title' => 'T', 'mode' => 'velo', 'when' => '', 'people' => '2 adultes', 'missing' => ['dates'], 'days' => [], 'providers' => ['a']];
+$d1 = canal_planner_apply_details($base, ' du 6 au 7 juin ', '');
+check($d1['when'] === 'du 6 au 7 juin' && $d1['people'] === '2 adultes', 'details: el formulario completa; vacío conserva lo del plan');
+check($d1['missing'] === [], 'details: nada falta → missing vacío');
+$d2 = canal_planner_apply_details($base, '', '');
+check($d2['missing'] === ['dates'], 'details: sigue faltando dates');
+$d3 = canal_planner_apply_details($base, "<b>14</b>\r\nmai", "4\npersonnes");
+check($d3['when'] === '14 mai' && $d3['people'] === '4 personnes', 'details: sin etiquetas ni saltos de línea');
+$req2 = $req + ['message' => "Nous avons un <b>chien</b>\r\nmerci"];
+$pm2 = canal_planner_mail_provider($req2, $items[0]);
+check(strpos($pm2['html'], 'Nous avons un chien merci') !== false && strpos($pm2['html'], '<b>chien') === false, 'provider: mensaje del visitante, texto plano');
+$fe2 = canal_planner_mail_fe($req2, [$items[1]], 'mbauwens@francedit.com');
+check(strpos($fe2['html'], 'Nous avons un chien merci') !== false, 'fe: mensaje del visitante');
+check(strpos(canal_planner_mail_provider($req, $items[0])['html'], 'Message du visiteur') === false, 'provider: sin mensaje → sin bloque');
+
 echo $fails ? "\n$fails FALLOS\n" : "\nTodo OK\n";
 exit($fails ? 1 : 0);

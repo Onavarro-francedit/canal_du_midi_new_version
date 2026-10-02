@@ -157,7 +157,7 @@
   const CHIPS = ['Plus calme', 'Un jour de plus', 'Avec un bateau'];
   const mobile = matchMedia('(max-width: 860px)');
   const planEl = $('#pl-plan'), chipsEl = $('#pl-chips'), countEl = $('#pl-mbar-count');
-  let history = [], plan = null, stage = 'plan', busy = false, askBtn = null;
+  let history = [], plan = null, busy = false, askBtn = null;
 
   /* ── Vista plan: desde la primera propuesta, chat a la izquierda y plan a la derecha (hoja en móvil) ── */
   const setSplit = (on) => { root.classList.toggle('is-split', on); planEl.hidden = !on; if (!on) sheet(false); };
@@ -185,8 +185,7 @@
     if (p.providers.length) {
       const cta = el('div', 'pl-plan-cta');
       askBtn = el('button', null, 'Demander les disponibilités'); askBtn.type = 'button';
-      askBtn.disabled = stage !== 'plan';
-      askBtn.addEventListener('click', () => { askBtn.disabled = true; sheet(true); askProviders(); });
+      askBtn.addEventListener('click', () => openRequest(plan));
       const n = p.providers.length;
       cta.append(askBtn, el('small', null, n + (n > 1 ? ' prestataires' : ' prestataire') + ' · réponse par e-mail'));
       head.append(cta);
@@ -227,7 +226,7 @@
       plan = p;
       renderPlan(p, prev);
       setSplit(true);
-      showChips(stage === 'plan');
+      showChips(true);
       if (reply) addText(reply);
     } else {
       // La IA solo pregunta: se queda el chat; el plan anterior (si lo hay) no cambia.
@@ -235,23 +234,6 @@
       addText(reply || 'Pouvez-vous préciser votre envie ?');
     }
     countMsgs();
-  }
-
-  function askProviders() {
-    if (plan.missing.length) {
-      addText('Pour quelles dates et combien de personnes ? Écrivez-le ci-dessous, je mets votre séjour à jour.');
-      stage = 'plan'; if (askBtn) askBtn.disabled = false;
-      input.placeholder = 'Ex. du 14 au 17 mai, 2 adultes et 2 enfants';
-      input.focus(); countMsgs();
-      return;
-    }
-    const b = el('div', 'pl-ba');
-    b.append(el('div', null, `Je peux écrire à ces ${plan.names.length} prestataires pour vos dates. Ils vous répondront directement :`));
-    const who = el('div', 'pl-who'); plan.names.forEach((n) => who.append(el('span', null, n))); b.append(who);
-    b.append(el('div', null, 'Quelle est votre adresse e-mail ? Écrivez-la ci-dessous.'));
-    b.append(el('p', 'pl-fine', "Elle ne sera transmise qu'à ces prestataires, après confirmation de votre part. Conservée 12 mois."));
-    aiRow(b);
-    stage = 'email'; showChips(false); input.placeholder = 'votre@adresse.fr'; input.focus(); countMsgs();
   }
 
   async function send(text) {
@@ -264,17 +246,7 @@
     const typing = addTyping();
     setThinking(true);
     const daysEl = planEl.querySelector('.pl-days');
-    if (stage === 'email') {
-      const r = await post(C.requestUrl, { plan, email: t, website: website.value });
-      typing.remove();
-      if (r.ok) {
-        ga('planner_request_pending', {});
-        addText(`C'est noté. Je viens d'envoyer un e-mail à ${t} : ouvrez-le et confirmez, vos demandes partent aussitôt.`);
-        stage = 'done'; input.placeholder = 'Une question sur votre séjour ?';
-      } else {
-        addText(r.data.message || "Il me faut une adresse e-mail valide, par exemple marie@exemple.fr.");
-      }
-    } else {
+    {
       history.push({ role: 'user', text: t });
       if (daysEl) daysEl.classList.add('is-updating');
       const r = await post(C.planUrl, { messages: history.slice(-8), plan });
@@ -300,10 +272,132 @@
   }
 
   function reset() {
-    history = []; plan = null; stage = 'plan'; busy = false; sendBtn.disabled = false;
+    history = []; plan = null; busy = false; sendBtn.disabled = false;
     log.innerHTML = ''; planEl.textContent = ''; showChips(false); setSplit(false);
     chat.hidden = true; hero.hidden = false; ideas.hidden = false; wrap.classList.remove('is-chatting');
     setThinking(false); input.value = ''; input.placeholder = 'Décrivez votre séjour idéal…';
+  }
+
+  /* ── Modal « Demander les disponibilités »: resumen, mapa del recorrido y formulario (fuera del chat) ── */
+  const MAPS_SRC = window.CDM_PLANNER_MAPS || '';
+  let modal = null, mapsReady = null;
+  const ICO = (d) => `<svg class="pl-i" viewBox="0 0 24 24">${d}</svg>`;
+  function loadMaps() {
+    if (window.google && window.google.maps) return Promise.resolve(true);
+    if (!MAPS_SRC) return Promise.resolve(false);
+    if (!mapsReady) mapsReady = new Promise((resolve) => {
+      window.canalPlannerMapReady = () => resolve(true);
+      const sc = document.createElement('script');
+      sc.src = MAPS_SRC + (MAPS_SRC.indexOf('?') === -1 ? '?' : '&') + 'loading=async&callback=canalPlannerMapReady';
+      sc.async = true; sc.onerror = () => resolve(false);
+      document.head.appendChild(sc);
+    });
+    return mapsReady;
+  }
+  async function drawRoute(box, stops, list) {
+    const pts = stops.filter((d) => typeof d.lat === 'number' && typeof d.lng === 'number');
+    if (!pts.length || !(await loadMaps()) || !box.isConnected) { box.hidden = true; return; }
+    const map = new google.maps.Map(box, { disableDefaultUI: true, zoomControl: true, gestureHandling: 'cooperative', clickableIcons: false });
+    const bounds = new google.maps.LatLngBounds();
+    const pin = (hot) => ({ path: google.maps.SymbolPath.CIRCLE, scale: hot ? 15 : 12, fillColor: hot ? '#0E1424' : '#6a63d9', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 3 });
+    const markers = stops.map((d, i) => {
+      if (typeof d.lat !== 'number') return null;
+      const pos = { lat: d.lat, lng: d.lng }; bounds.extend(pos);
+      return new google.maps.Marker({ position: pos, map, icon: pin(false), label: { text: String(i + 1), color: '#fff', fontWeight: '700', fontSize: '12px' }, title: d.name });
+    });
+    new google.maps.Polyline({ map, path: pts.map((d) => ({ lat: d.lat, lng: d.lng })), strokeColor: '#6a63d9', strokeOpacity: .85, strokeWeight: 4 });
+    if (pts.length === 1) { map.setCenter(bounds.getCenter()); map.setZoom(13); } else map.fitBounds(bounds, 36);
+    list.querySelectorAll('li').forEach((li) => {
+      const m = markers[+li.dataset.i]; if (!m) return;
+      li.addEventListener('mouseenter', () => { m.setIcon(pin(true)); m.setZIndex(1000); });
+      li.addEventListener('mouseleave', () => { m.setIcon(pin(false)); m.setZIndex(null); });
+    });
+  }
+  function field(id, label, value, opts) {
+    const w = el('div', 'pl-field'); const l = el('label', null, label); l.htmlFor = id;
+    if (opts && opts.hint) l.append(el('em', null, ' ' + opts.hint));
+    const inp = el(opts && opts.area ? 'textarea' : 'input'); inp.id = id;
+    if (!(opts && opts.area)) inp.type = (opts && opts.type) || 'text';
+    inp.value = value || ''; if (opts && opts.ph) inp.placeholder = opts.ph;
+    if (opts && opts.max) inp.maxLength = opts.max;
+    if (opts && opts.auto) inp.autocomplete = opts.auto;
+    w.append(l, inp); return [w, inp];
+  }
+  function closeRequest() {
+    if (!modal) return;
+    modal.remove(); modal = null; document.removeEventListener('keydown', onKey);
+    if (askBtn) askBtn.focus();
+  }
+  const onKey = (e) => { if (e.key === 'Escape') closeRequest(); };
+  function openRequest(p) {
+    closeRequest();
+    // Una parada por prestatario (su primer día en el plan), en el orden del recorrido.
+    const stops = [];
+    p.days.forEach((d) => { if (d.slug && p.providers.indexOf(d.slug) !== -1 && !stops.some((x) => x.slug === d.slug)) stops.push(d); });
+    modal = el('div', 'pl-modal');
+    const dlg = el('div', 'pl-dialog'); dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true'); dlg.setAttribute('aria-labelledby', 'pl-dlg-title');
+    const head = el('div', 'pl-dlg-head'); const hd = el('div');
+    const h = el('h2', null, p.title); h.id = 'pl-dlg-title';
+    const pills = el('div', 'pl-plan-pills');
+    [MODE[p.mode], stops.length + (stops.length > 1 ? ' prestataires' : ' prestataire')].forEach((t) => pills.append(el('span', null, t)));
+    hd.append(el('p', 'pl-eyebrow', 'Demande de disponibilités'), h, pills);
+    const x = el('button', 'pl-dlg-x'); x.type = 'button'; x.setAttribute('aria-label', 'Fermer'); x.innerHTML = ICO('<path d="M6 6l12 12M18 6 6 18"/>');
+    x.addEventListener('click', closeRequest);
+    head.append(hd, x);
+    const body = el('div', 'pl-dlg-body');
+    const left = el('div', 'pl-dlg-left');
+    const map = el('div', 'pl-map');
+    const list = el('ol', 'pl-who-list');
+    stops.forEach((d, i) => {
+      const li = el('li'); li.dataset.i = String(i);
+      const n = el('span', 'pl-n', String(i + 1));
+      const im = el('img'); im.alt = ''; im.loading = 'lazy'; if (d.image) im.src = d.image; else im.hidden = true;
+      const t = el('div'); t.append(el('b', null, d.name), el('span', null, [d.label, d.place, d.cat].filter(Boolean).join(' · ')));
+      li.append(n, im, t); list.append(li);
+    });
+    left.append(map, el('p', 'pl-who-h', 'Votre demande sera envoyée à'), list);
+    const form = el('form', 'pl-dlg-form'); form.noValidate = true;
+    const two = el('div', 'pl-two');
+    const [fw, iWhen] = field('pl-f-when', 'Dates', p.when, { ph: 'Ex. du 14 au 17 mai', max: 80 });
+    const [pw, iPeople] = field('pl-f-people', 'Personnes', p.people, { ph: 'Ex. 2 adultes, 2 enfants', max: 80 });
+    two.append(fw, pw);
+    const [mw, iMail] = field('pl-f-mail', 'Votre e-mail', '', { type: 'email', ph: 'marie@exemple.fr', auto: 'email', max: 190 });
+    const [gw, iMsg] = field('pl-f-msg', 'Un message pour les prestataires', '', { area: true, hint: '(facultatif)', ph: 'Ex. nous voyageons avec un chien, vélos enfants de 8 et 11 ans…', max: 500 });
+    const hp = el('input', 'pl-hp'); hp.type = 'text'; hp.name = 'website'; hp.tabIndex = -1; hp.autocomplete = 'off'; hp.setAttribute('aria-hidden', 'true');
+    const err = el('p', 'pl-dlg-err'); err.setAttribute('role', 'alert');
+    form.append(two, mw, gw, hp, err, el('p', 'pl-legal', "Vous recevrez d'abord un e-mail pour confirmer : rien n'est envoyé aux prestataires avant. Votre adresse ne leur est transmise qu'après confirmation et est conservée 12 mois."));
+    body.append(left, form);
+    const foot = el('div', 'pl-dlg-foot');
+    const go = el('button', 'pl-dlg-send', 'Envoyer ma demande'); go.type = 'submit'; go.setAttribute('form', 'pl-dlg-form'); form.id = 'pl-dlg-form';
+    foot.append(el('small', null, 'Les prestataires vous répondent directement par e-mail.'), go);
+    dlg.append(head, body, foot); modal.append(dlg);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeRequest(); });
+    document.addEventListener('keydown', onKey);
+    document.body.append(modal);
+    drawRoute(map, stops, list);
+    if (!mobile.matches) setTimeout(() => (iWhen.value ? iMail : iWhen).focus(), 250); // en móvil el teclado taparía el resumen
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.textContent = '';
+      if (!iWhen.value.trim() || !iPeople.value.trim()) { err.textContent = 'Indiquez vos dates et le nombre de personnes.'; (iWhen.value.trim() ? iPeople : iWhen).focus(); return; }
+      if (!iMail.checkValidity() || !iMail.value.trim()) { err.textContent = 'Il me faut une adresse e-mail valide, par exemple marie@exemple.fr.'; iMail.focus(); return; }
+      go.disabled = true; go.textContent = 'Envoi…';
+      const r = await post(C.requestUrl, { plan: p, email: iMail.value.trim(), when: iWhen.value, people: iPeople.value, message: iMsg.value, website: hp.value });
+      if (!modal) return;
+      if (!r.ok) { err.textContent = r.data.message || "L'envoi n'a pas abouti, réessayez dans un instant."; go.disabled = false; go.textContent = 'Envoyer ma demande'; return; }
+      ga('planner_request_pending', { providers: stops.length });
+      body.textContent = '';
+      const done = el('div', 'pl-done');
+      const ic = el('div', 'pl-done-ico'); ic.innerHTML = ICO('<path d="M5 12l5 5L20 7"/>');
+      const msg = el('p'); msg.append("Nous venons d'envoyer un e-mail à ", el('strong', null, iMail.value.trim()), '. Cliquez sur « Confirmer ma demande » : votre demande partira aussitôt ' + (stops.length > 1 ? 'aux ' + stops.length + ' prestataires.' : 'au prestataire.'));
+      done.append(ic, el('h3', null, 'Vérifiez votre boîte mail'), msg);
+      body.append(done);
+      foot.textContent = '';
+      const back = el('button', 'pl-dlg-send', 'Revenir à mon séjour'); back.type = 'button'; back.addEventListener('click', closeRequest);
+      foot.append(el('small', null, 'Le lien est valable 48 heures.'), back);
+      back.focus();
+      if (askBtn) { askBtn.textContent = 'Demande envoyée ✓'; }
+    });
   }
 
   form.addEventListener('submit', (e) => { e.preventDefault(); send(input.value); });

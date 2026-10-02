@@ -58,6 +58,7 @@ $check($res->get_status() === 200 && $data['reply'] === 'Voici un séjour.', '/p
 $check(isset($data['plan']['days'][0]['url']) && strpos($data['plan']['days'][0]['url'], CANAL_FICHE_PATH) !== false, '/plan: enlace a la ficha 2026');
 $check(strpos((string) ($data['plan']['days'][0]['image'] ?? ''), 'https://') === 0, '/plan: imagen de la ficha en cada día');
 $check(($data['plan']['days'][0]['cat'] ?? '') === (string) ($a['categories'][0] ?? ''), '/plan: categoría de la ficha en cada día');
+$check(is_float($data['plan']['days'][0]['lat'] ?? null) && is_float($data['plan']['days'][0]['lng'] ?? null), '/plan: coordenadas de la ficha en cada día');
 $check($rest('/plan', ['messages' => []])->get_status() === 400, '/plan: sin mensajes → 400');
 
 // /plan/request
@@ -68,8 +69,11 @@ $fake['days'][0]['slug'] = 'slug-que-no-existe';
 $fake['days'][1]['slug'] = 'otro-falso';
 $check($rest('/plan/request', ['plan' => $fake, 'email' => $email])->get_status() === 400, 'request: plan con slugs falsos → 400');
 $check($rest('/plan/request', ['plan' => $data['plan'], 'email' => $email, 'website' => 'spam'])->get_status() === 200 && !$mails, 'request: honeypot → ok sin correo');
+$noDates = $data['plan'];
+$noDates['when'] = '';
+$check($rest('/plan/request', ['plan' => $noDates, 'email' => $email])->get_status() === 400, 'request: sin fechas ni campo del formulario → 400');
 $mails = [];
-$res = $rest('/plan/request', ['plan' => $data['plan'], 'email' => $email]);
+$res = $rest('/plan/request', ['plan' => $noDates, 'email' => $email, 'when' => 'du 6 au 7 juin', 'people' => '2 adultes', 'message' => 'Smoke : nous avons un chien']);
 $check($res->get_status() === 200 && count($mails) === 1, 'request: 200 y 1 correo de confirmación');
 $check($mails && $mails[0]['to'] === CANAL_PLANNER_DEV_TO, 'request: sin LIVE el correo va a ' . CANAL_PLANNER_DEV_TO);
 preg_match('/confirmer=([a-f0-9]{64})/', (string) ($mails[0]['message'] ?? ''), $m);
@@ -85,6 +89,8 @@ $check($res->get_status() === 200, 'confirm: 200');
 $tos = array_unique(array_column($mails, 'to'));
 $check($tos === [CANAL_PLANNER_DEV_TO], 'confirm: TODOS los correos a ' . CANAL_PLANNER_DEV_TO);
 $check(count($mails) >= 2, 'confirm: correos a prestatarios/buzón + resumen (' . count($mails) . ')');
+$check(strpos((string) ($mails[0]['message'] ?? ''), 'Smoke : nous avons un chien') !== false, 'confirm: el mensaje del visitante llega al prestatario');
+$check(strpos((string) ($mails[0]['subject'] ?? ''), 'du 6 au 7 juin') !== false, 'confirm: las fechas del formulario en el asunto');
 $mails = [];
 $check($rest('/plan/confirm', ['token' => $token])->get_status() === 410 && !$mails, 'confirm: segunda vez → 410 y 0 correos');
 $check($rest('/plan/confirm', ['token' => str_repeat('a', 64)])->get_status() === 404, 'confirm: token desconocido → 404');

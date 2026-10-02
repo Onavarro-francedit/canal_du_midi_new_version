@@ -296,6 +296,31 @@ function canal_planner_email_ok(string $email): bool
     return strpbrk($email, "\r\n") === false && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
+// Fechas y personas del formulario del modal: completan o corrigen las del plan; missing se recalcula.
+function canal_planner_apply_details(array $plan, string $when, string $people): array
+{
+    $when = canal_planner_text($when, 80);
+    $people = canal_planner_text($people, 80);
+    if ($when !== '') {
+        $plan['when'] = $when;
+    }
+    if ($people !== '') {
+        $plan['people'] = $people;
+    }
+    $plan['missing'] = array_values(array_filter([
+        $plan['when'] === '' ? 'dates' : '',
+        $plan['people'] === '' ? 'personnes' : '',
+    ]));
+    return $plan;
+}
+
+// Mensaje opcional del visitante para los prestatarios (texto plano, una línea).
+function canal_planner_message_html(array $req): string
+{
+    $msg = canal_planner_text($req['message'] ?? '', 500);
+    return $msg === '' ? '' : '<p><strong>Message du visiteur :</strong><br>' . canal_planner_e($msg) . '</p>';
+}
+
 function canal_planner_route_recipients(array $items): array
 {
     $routes = ['provider' => [], 'fe' => []];
@@ -374,6 +399,7 @@ function canal_planner_mail_provider(array $req, array $item): array
         'html' => canal_planner_mail_layout('Demande de disponibilité', '<p>Bonjour,</p><p>Un visiteur de plan-canal-du-midi.com prépare un séjour et souhaite connaître vos disponibilités pour <strong>'
             . canal_planner_e((string) $item['title']) . '</strong> :</p><ul>' . $days . '</ul>'
             . '<p><strong>Dates :</strong> ' . canal_planner_e((string) $req['when']) . '<br><strong>Personnes :</strong> ' . canal_planner_e((string) $req['people']) . '</p>'
+            . canal_planner_message_html($req)
             . '<p>Répondez directement à cet e-mail pour lui écrire (' . canal_planner_e((string) $req['email']) . ').</p>'),
     ];
 }
@@ -392,7 +418,7 @@ function canal_planner_mail_fe(array $req, array $items, string $inbox): array
         'subject' => 'Planificateur : demande à transmettre · ' . canal_planner_details($req),
         'html' => canal_planner_mail_layout('Demande pour des prestataires sans e-mail', '<p>Visiteur : <strong>' . canal_planner_e((string) $req['email'])
             . '</strong><br>Dates : ' . canal_planner_e((string) $req['when']) . '<br>Personnes : ' . canal_planner_e((string) $req['people'])
-            . '</p><p>Prestataires à contacter :</p><ul>' . $rows . '</ul>'),
+            . '</p>' . canal_planner_message_html($req) . '<p>Prestataires à contacter :</p><ul>' . $rows . '</ul>'),
     ];
 }
 

@@ -5,7 +5,7 @@
  */
 defined('ABSPATH') || exit;
 
-const CANAL_PLANNER_DB_VERSION      = '1';
+const CANAL_PLANNER_DB_VERSION      = '2'; // 2: columna message
 const CANAL_PLANNER_FE_INBOX        = 'mbauwens@francedit.com';
 const CANAL_PLANNER_DEV_TO          = 'onavarro@francedit.com';
 const CANAL_PLANNER_DAILY_CAP       = 300;
@@ -86,6 +86,7 @@ function canal_planner_install(): void
   plan longtext NOT NULL,
   when_text varchar(190) NOT NULL DEFAULT '',
   people_text varchar(190) NOT NULL DEFAULT '',
+  message text NULL,
   status varchar(20) NOT NULL DEFAULT 'pending',
   recipients longtext NULL,
   created_at datetime NOT NULL,
@@ -116,7 +117,7 @@ function canal_planner_send(array $mail): bool
 // ponytail: una consulta por ficha cada 12 h (254); si crece, una sola consulta de metas.
 function canal_planner_catalog(): array
 {
-    $cached = get_transient('canal_planner_catalog');
+    $cached = get_transient('canal_planner_catalog_v2');
     if (is_array($cached)) {
         return $cached;
     }
@@ -129,13 +130,16 @@ function canal_planner_catalog(): array
         $lat = get_post_meta($post->ID, 'geolocation_lat', true);
         $lng = get_post_meta($post->ID, 'geolocation_long', true);
         $email = sanitize_email((string) get_post_meta($post->ID, '_job_email', true));
-        $item['km'] = ($lat !== '' && $lng !== '') ? canal_planner_km((float) $lat, (float) $lng) : null;
+        $hasGeo = $lat !== '' && $lng !== '';
+        $item['km'] = $hasGeo ? canal_planner_km((float) $lat, (float) $lng) : null;
+        $item['lat'] = $hasGeo ? (float) $lat : null;
+        $item['lng'] = $hasGeo ? (float) $lng : null;
         $item['email'] = canal_planner_email_ok($email) && is_email($email) ? $email : '';
         $item['has_email'] = $item['email'] !== '';
         $item['phone'] = trim((string) get_post_meta($post->ID, '_job_phone', true));
         $items[$item['slug']] = $item;
     }
-    set_transient('canal_planner_catalog', $items, 12 * HOUR_IN_SECONDS);
+    set_transient('canal_planner_catalog_v2', $items, 12 * HOUR_IN_SECONDS);
     return $items;
 }
 
@@ -169,6 +173,8 @@ function canal_planner_public_plan(array $plan, array $catalog): array
         $plan['days'][$i]['name'] = $slug !== '' ? $catalog[$slug]['title'] : '';
         $plan['days'][$i]['cat'] = $slug !== '' ? (string) ($catalog[$slug]['categories'][0] ?? '') : '';
         $plan['days'][$i]['image'] = $card ? (string) $card['image'] : '';
+        $plan['days'][$i]['lat'] = $slug !== '' ? $catalog[$slug]['lat'] : null;
+        $plan['days'][$i]['lng'] = $slug !== '' ? $catalog[$slug]['lng'] : null;
     }
     $plan['days'] = canal_carte_resized_images($plan['days']); // 768 px + srcset, como la carte
     $plan['names'] = array_map(function ($s) use ($catalog) { return $catalog[$s]['title']; }, $plan['providers']);
@@ -185,7 +191,7 @@ function canal_planner_error(string $code, int $status): WP_REST_Response
         'incoherent'  => "Je n'ai pas trouvé de séjour cohérent, précisez votre envie.",
         'email'       => "Il me faut une adresse e-mail valide, par exemple marie@exemple.fr.",
         'plan'        => "Ce séjour ne contient aucune adresse à contacter.",
-        'details'     => 'Pour quelles dates et combien de personnes ?',
+        'details'     => 'Indiquez vos dates et le nombre de personnes.',
         'expired'     => 'Ce lien a expiré ou a déjà été utilisé.',
         'link'        => "Ce lien n'est pas valide.",
     ];
@@ -258,6 +264,9 @@ function canal_planner_request_endpoint(WP_REST_Request $request): WP_REST_Respo
     if (!$v['ok'] || !$v['plan']['providers']) {
         return canal_planner_error('plan', 400);
     }
+    // Fechas y personas del formulario del modal (texto plano, sin saltos de línea); missing se recalcula.
+    $v['plan'] = canal_planner_apply_details($v['plan'], (string) $request->get_param('when'), (string) $request->get_param('people'));
+    $message = canal_planner_text((string) $request->get_param('message'), 500);
     if ($v['plan']['missing']) {
         return canal_planner_error('details', 400);
     }
@@ -274,6 +283,7 @@ function canal_planner_request_endpoint(WP_REST_Request $request): WP_REST_Respo
         'plan'        => wp_json_encode($v['plan']),
         'when_text'   => $v['plan']['when'],
         'people_text' => $v['plan']['people'],
+        'message'     => $message,
         'status'      => 'pending',
         'created_at'  => gmdate('Y-m-d H:i:s'),
     ]);
@@ -320,7 +330,7 @@ function canal_planner_confirm_endpoint(WP_REST_Request $request): WP_REST_Respo
     $catalog = canal_planner_catalog();
     $items = canal_planner_items($plan, $catalog);
     $routes = canal_planner_route_recipients($items);
-    $req = ['email' => $row['email'], 'when' => $row['when_text'], 'people' => $row['people_text'], 'title' => $plan['title']];
+    $req = ['email' => $row['email'], 'when' => $row['when_text'], 'people' => $row['people_text'], 'title' => $plan['title'], 'message' => (string) ($row['message'] ?? '')];
     $log = [];
     foreach ($routes['provider'] as $it) {
         $log[] = ['slug' => $it['slug'], 'to' => 'provider', 'ok' => canal_planner_send(canal_planner_mail_provider($req, $it))];

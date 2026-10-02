@@ -210,3 +210,13 @@ add_action('wp_enqueue_scripts', function () {
         'confirm'    => $token !== '' ? canal_planner_confirm_preview($token) : null,
     ]);
 }, 20);
+
+// Google Maps del modal de demanda: misma URL (clave y bibliotecas) que registra el tema, cargada por planner.js
+// solo al abrir el modal (como la ficha). El tema lo registra tarde: se lee justo antes de los scripts del pie.
+add_action('wp_print_footer_scripts', function () {
+    if (!canal_planner_is_page()) {
+        return;
+    }
+    $maps = wp_scripts()->registered['google-maps'] ?? null;
+    wp_add_inline_script('canal-planner', 'window.CDM_PLANNER_MAPS = ' . wp_json_encode($maps ? (string) $maps->src : '') . ';', 'before');
+}, 1);
