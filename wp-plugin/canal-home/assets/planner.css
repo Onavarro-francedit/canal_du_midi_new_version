@@ -110,7 +110,7 @@ body.cdm-planner-page .hit-billboard{display:none!important}
 .pl-chat-id div:last-child{display:flex;flex-direction:column}
 .pl-chat-id span{font-size:13px;color:var(--muted)}
 .pl-ghost{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font-weight:600;font-size:14px}
-.pl-log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding:16px 4px 8px 0;overscroll-behavior:contain}
+.pl-log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding:16px 4px 8px 14px; /* 14px: el halo del orbe no se recorta */ overscroll-behavior:contain}
 .pl-msg{display:flex;gap:12px;align-items:flex-start;animation:plMsgIn .35s ease-out}
 .pl-msg--user{justify-content:flex-end}
 .pl-bu{max-width:72%;padding:14px 18px;border-radius:18px 18px 4px 18px;background:var(--accent);color:#fff;font-size:15px;line-height:1.5}
