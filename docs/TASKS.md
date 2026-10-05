@@ -36,6 +36,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   (monumentos/museos/châteaux/moulins de las fichas + esclusas de ≥ 3 sas con su cifra) y « À lire » (páginas del sitio de la
   ciudad); FAQ « Que voir le long du Canal du Midi ? » + FAQPage; ItemList de TouristDestination con includesAttraction.
   Datos escasos (6 esclusas notables, pocos monumentos en fichas): sin redacción no compite con « incontournables ».
+- ✅ M1 (05/10, desplegado, verificado y « Hecha » en GEO-IA): página météo 2026 con « Quand venir ? » — respuesta directa,
+  tabla mes a mes (Météo-France FICHECLIM Toulouse-Blagnac/Carcassonne 1991–2020, Béziers-Vias 1994–2020, Licence Ouverte)
+  + temporadas de navegación, FAQ visible (mejor época, verano, invierno, fermeture). `includes/meteo-core.php`, test-meteo.
+  FAQ de las páginas de contenido 2026 sin acordeón. Pendiente deploy: columna Navigation sin corte (commit 11b9150).
 - Pendiente de deploy (local): `canal_fiche_display_title` trata cada tramo « – » por separado (ENSÉRUNE… – Centre des
   monuments nationaux) y « PK » sin corte de línea en las tablas de las guías. Queda en TASK-066: M1 météo (fuente climática
   citada), T2 Sallèles-d'Aude, T4 vélo/distances.
