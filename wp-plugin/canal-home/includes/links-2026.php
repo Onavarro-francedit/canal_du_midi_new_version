@@ -7,10 +7,13 @@
 defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 
 // Archivos que siguen en el tema (sin versión 2026) o que no son páginas.
-const CANAL_2026_KEEP = '#^/(wp-|feed/|region/|zone/|post-category/|mot-cle/|tag/|author/|fiche-2026/)|\.[a-z0-9]{2,5}$#i';
+const CANAL_2026_KEEP = '#^/(wp-|feed/|region/|zone/|mot-cle/|tag/|author/|fiche-2026/)|\.[a-z0-9]{2,5}$#i';
 
-/** Ruta interna (sin host ni query) → su versión 2026, o la misma si no tiene. $isContent: ¿página/artículo elegible? */
-function canal_2026_path(string $path, callable $isContent): string
+/**
+ * Ruta interna (sin host ni query) → su versión 2026, o la misma si no tiene.
+ * $isContent: ¿página/artículo elegible? · $isArchive: ¿categoría del blog con contenido?
+ */
+function canal_2026_path(string $path, callable $isContent, ?callable $isArchive = null): string
 {
     $trim = trim($path, '/');
     if ($trim === '') {
@@ -32,6 +35,9 @@ function canal_2026_path(string $path, callable $isContent): string
     if (preg_match('#^fiche/([^/]+)$#', $trim, $m)) {
         return CANAL_FICHE_PATH . $m[1] . '/';
     }
+    if (preg_match('#^post-category/(.+?)(?:/page/(\d+))?$#', $trim, $m)) {
+        return $isArchive && $isArchive($m[1]) ? canal_archive_path($m[1], (int) ($m[2] ?? 1), CANAL_CONTENU_SUFFIX) : $path;
+    }
     if (preg_match('#^categorie/([^/]+)(/page/\d+)?$#', $trim, $m)) {
         return CANAL_CARTE_PATH . '?type=' . $m[1];
     }
@@ -39,19 +45,19 @@ function canal_2026_path(string $path, callable $isContent): string
 }
 
 /** Reescribe los href del <body> que apuntan al propio sitio ($host); conserva el host usado, la query y el ancla. */
-function canal_2026_rewrite_html(string $html, string $host, callable $isContent): string
+function canal_2026_rewrite_html(string $html, string $host, callable $isContent, ?callable $isArchive = null): string
 {
     $body = stripos($html, '<body');
     if ($body === false) {
         return $html;
     }
     $re = '#\bhref="(' . preg_quote($host, '#') . ')?(/[^"?\#]*)(\?[^"\#]*)?(\#[^"]*)?"#';
-    $rest = preg_replace_callback($re, function (array $m) use ($isContent): string {
+    $rest = preg_replace_callback($re, function (array $m) use ($isContent, $isArchive): string {
         $query = $m[3] ?? '';
         if ($m[2] === '/' && $query !== '') {
             return $m[0]; // búsquedas y ?page_id= de la home
         }
-        $new = canal_2026_path($m[2], $isContent);
+        $new = canal_2026_path($m[2], $isContent, $isArchive);
         if ($new === $m[2]) {
             return $m[0];
         }
@@ -87,8 +93,15 @@ if (function_exists('add_action')) {
         return $map[$path];
     }
 
+    /** ¿Categoría del blog con páginas o artículos publicados? (archivo 2026, TASK-059) */
+    function canal_2026_is_archive(string $path): bool
+    {
+        $term = get_category_by_path($path, true);
+        return $term instanceof WP_Term && (int) $term->count > 0;
+    }
+
     function canal_2026_links_html(string $html): string
     {
-        return canal_2026_rewrite_html($html, untrailingslashit(home_url()), 'canal_2026_is_content');
+        return canal_2026_rewrite_html($html, untrailingslashit(home_url()), 'canal_2026_is_content', 'canal_2026_is_archive');
     }
 }

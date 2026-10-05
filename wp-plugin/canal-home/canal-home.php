@@ -75,6 +75,7 @@ require_once CANAL_HOME_DIR . 'includes/contenu-core.php';
 require_once CANAL_HOME_DIR . 'includes/contenu-route.php';
 require_once CANAL_HOME_DIR . 'includes/calcul-core.php';
 require_once CANAL_HOME_DIR . 'includes/calcul-route.php';
+require_once CANAL_HOME_DIR . 'includes/archive-route.php';
 require_once CANAL_HOME_DIR . 'includes/links-2026.php';
 require_once CANAL_HOME_DIR . 'includes/head-fix.php';
 require_once CANAL_HOME_DIR . 'includes/header.php';
@@ -139,7 +140,7 @@ const CANAL_CARTE_UNUSED_ASSETS = '/^(elementor|e-animation|swiper|wc-|woocommer
 
 function canal_carte_dequeue_unused(): void
 {
-    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page() && !canal_planner_is_page() && !canal_contenu_is_page() && !canal_calcul_is_page()) {
+    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page() && !canal_planner_is_page() && !canal_contenu_is_page() && !canal_calcul_is_page() && !canal_archive_is_page()) {
         return;
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {

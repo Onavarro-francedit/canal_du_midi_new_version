@@ -359,6 +359,17 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-059 — Archivos del blog 2026 `/post-category/<ruta>-2026/[page/N/]` — DESPLEGADO ✅ (privado) — 2026-10-05
+- `includes/archive-route.php` + `template-archive.php` (estilos en `contenu.css`); funciones puras en `contenu-core.php`
+  (`canal_archive_parse/path/pages/window`, `canal_contenu_plain`, test en `test-contenu.php`).
+- Páginas y artículos de la categoría (las del menú mezclan ambos), 12 por página, más recientes primero; tarjetas con foto
+  (destacada o primera imagen), fecha (artículos), resumen; accesos a sub-rubriques; paginación compacta con rel prev/next;
+  JSON-LD CollectionPage + ItemList + BreadcrumbList; noindex mientras haya sufijo. Privada con `canal_contenu_public`.
+- `links-2026.php`: `/post-category/x/` → archivo 2026 si la categoría tiene contenido. El menú 2026 ya no enlaza al tema salvo
+  recevoir-le-plan-2 (CF7), boutique (TablePress) y mon-compte.
+- Verificado: Villes à visiter (12 páginas), Actualités p. 80/159 con 4 sub-rubriques, subcategoría Fêtes; 404 en categoría vacía
+  y página fuera de rango; 390 px sin scroll horizontal; resúmenes sin entidades HTML cortadas.
+
 ### TASK-058 — Enlaces de las páginas 2026 → páginas 2026 — DESPLEGADO ✅ — 2026-10-05
 - `includes/links-2026.php` (test `tests/test-links.php`): reescribe los `href` del `<body>` en el búfer de salida de todas las
   páginas 2026 (y el planificador): `/` → accueil-2026, `/explorer/` → explorer-2026, `/fiche/x/` → fiche-2026, `/categorie/x/`

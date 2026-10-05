@@ -62,7 +62,7 @@ function canal_contenu_data(WP_Post $p): array
     }
     $description = $meta('_canal_2026_description');
     if ($description === '') {
-        $description = canal_fiche_excerpt(wp_strip_all_tags($p->post_excerpt !== '' ? $p->post_excerpt : $html));
+        $description = canal_fiche_excerpt(canal_contenu_plain($p->post_excerpt !== '' ? $p->post_excerpt : $html));
     }
     $image = (string) get_the_post_thumbnail_url($p, 'large');
     if ($image === '' && preg_match('~<img[^>]+src="([^"]+)"~i', $html, $m)) {

@@ -26,7 +26,8 @@ function check(bool $cond, string $label): void
 $isContent = function (string $path): bool {
     return in_array($path, ['canal-de-la-robine', 'navigation/regles-de-navigation', 'nous-contacter', 'peniches-a-vendre'], true);
 };
-$p = function (string $path) use ($isContent) { return canal_2026_path($path, $isContent); };
+$isArchive = function (string $path): bool { return in_array($path, ['vignobles', 'actualites', 'actualites/divers'], true); };
+$p = function (string $path) use ($isContent, $isArchive) { return canal_2026_path($path, $isContent, $isArchive); };
 
 // Rutas fijas.
 check($p('/') === '/accueil-2026/', 'home → accueil-2026');
@@ -43,8 +44,14 @@ check($p('/navigation/regles-de-navigation/') === '/navigation/regles-de-navigat
 check($p('/peniches-a-vendre') === '/peniches-a-vendre-2026/', 'sin barra final');
 check($p('/recevoir-le-plan-du-canal-du-midi-2/') === '/recevoir-le-plan-du-canal-du-midi-2/', 'no elegible → intacta');
 
+// Archivos del blog: solo categorías con contenido.
+check($p('/post-category/vignobles/') === '/post-category/vignobles-2026/', 'archivo → -2026');
+check($p('/post-category/actualites/divers/') === '/post-category/actualites/divers-2026/', 'subcategoría → -2026');
+check($p('/post-category/actualites/page/4/') === '/post-category/actualites-2026/page/4/', 'archivo paginado → -2026');
+check($p('/post-category/histoire/') === '/post-category/histoire/', 'categoría vacía → intacta');
+
 // Lo que nunca se toca.
-foreach (['/wp-content/uploads/a.jpg', '/wp-admin/admin-post.php', '/plan-canal-du-midi.pdf', '/feed/', '/canal-de-la-robine-2026/', '/fiche-2026/x/', '/accueil-2026/', '/region/homps/', '/zone/homps-capestang/', '/post-category/actualites/', '/mot-cle/velo/'] as $keep) {
+foreach (['/wp-content/uploads/a.jpg', '/wp-admin/admin-post.php', '/plan-canal-du-midi.pdf', '/feed/', '/canal-de-la-robine-2026/', '/fiche-2026/x/', '/accueil-2026/', '/region/homps/', '/zone/homps-capestang/', '/post-category/actualites-2026/', '/mot-cle/velo/'] as $keep) {
     check($p($keep) === $keep, "intacta: $keep");
 }
 
@@ -58,7 +65,7 @@ $html = '<html><head><link rel="canonical" href="https://www.plan-canal-du-midi.
     . '<a href="https://www.plan-canal-du-midi.com/?s=velo">e</a>'
     . '<a href="tel:+33600000000">f</a>'
     . '</body></html>';
-$out = canal_2026_rewrite_html($html, $host, $isContent);
+$out = canal_2026_rewrite_html($html, $host, $isContent, $isArchive);
 check(strpos($out, '<link rel="canonical" href="https://www.plan-canal-du-midi.com/fiche/x/">') !== false, 'html: <head> intacto');
 check(strpos($out, 'href="https://www.plan-canal-du-midi.com/canal-de-la-robine-2026/#carte"') !== false, 'html: host + ancla');
 check(strpos($out, 'href="/fiche-2026/port-de-sete/"') !== false, 'html: ruta relativa');
@@ -66,7 +73,7 @@ check(strpos($out, 'href="https://www.plan-canal-du-midi.com/explorer-2026/?type
 check(strpos($out, 'href="https://example.com/canal-de-la-robine/"') !== false, 'html: otro dominio intacto');
 check(strpos($out, 'href="https://www.plan-canal-du-midi.com/?s=velo"') !== false, 'html: búsqueda en la home intacta');
 check(strpos($out, 'href="tel:+33600000000"') !== false, 'html: tel intacto');
-check(canal_2026_rewrite_html($out, $host, $isContent) === $out, 'html: idempotente');
+check(canal_2026_rewrite_html($out, $host, $isContent, $isArchive) === $out, 'html: idempotente');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

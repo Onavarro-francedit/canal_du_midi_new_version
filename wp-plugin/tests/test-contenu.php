@@ -49,6 +49,8 @@ check(canal_contenu_clean_html('<p><strong>Adresse :</strong><br />1 rue</p>') =
 check(canal_contenu_clean_html('<p>Un <strong>mot</strong> en gras.</p>') === '<p>Un <strong>mot</strong> en gras.</p>', 'limpieza: negrita dentro del texto intacta');
 check(canal_contenu_clean_html("<p>&nbsp;</p><p> </p><p><br /></p><p>x</p>") === '<p>x</p>', 'limpieza: párrafos vacíos fuera');
 
+check(canal_contenu_plain('<p>Lien&nbsp;suivant &amp; <b>plus</b></p><script>x()</script>') === 'Lien suivant & plus', 'texto plano: entidades y scripts');
+
 // <title>: sin repetir « Canal du Midi ».
 check(canal_contenu_seo_title('Le Canal de la Robine') === 'Le Canal de la Robine — Canal du Midi', 'title: con sufijo');
 check(canal_contenu_seo_title('Météo du Canal du Midi') === 'Météo du Canal du Midi', 'title: ya lo lleva');
@@ -84,6 +86,15 @@ $c['image'] = '';
 $g = canal_contenu_seo_graph($c, 'https://x/p-2026/', 'https://x/', 'Site')['@graph'];
 check(array_column($g, '@type') === ['WebPage', 'TouristDestination', 'BreadcrumbList', 'FAQPage'], 'jsonld: WebPage + FAQPage');
 check(!isset($g[0]['image']) && !isset($g[0]['headline']), 'jsonld: sin campos vacíos ni headline en WebPage');
+
+// Archivos del blog: /post-category/<ruta>-2026/[page/N/]
+check(canal_archive_parse('post-category/vignobles-2026', '-2026') === ['path' => 'vignobles', 'page' => 1], 'archivo: ruta simple');
+check(canal_archive_parse('post-category/actualites/divers-2026/page/3/', '-2026') === ['path' => 'actualites/divers', 'page' => 3], 'archivo: subcategoría paginada');
+check(canal_archive_parse('post-category/vignobles', '-2026') === null && canal_archive_parse('vignobles-2026', '-2026') === null, 'archivo: sin sufijo o fuera de post-category');
+check(canal_archive_parse('post-category/vignobles-2026/page/0', '-2026') === null && canal_archive_parse('post-category/vignobles-2026', '') === null, 'archivo: página 0 / sufijo vacío');
+check(canal_archive_path('actualites', 1, '-2026') === '/post-category/actualites-2026/' && canal_archive_path('actualites', 2, '-2026') === '/post-category/actualites-2026/page/2/', 'archivo: URL de página');
+check(canal_archive_pages(1900, 12) === 159 && canal_archive_pages(0, 12) === 0 && canal_archive_pages(12, 12) === 1, 'archivo: número de páginas');
+check(canal_archive_window(1, 159) === [1, 2, 159] && canal_archive_window(80, 159) === [1, 79, 80, 81, 159] && canal_archive_window(2, 3) === [1, 2, 3], 'archivo: paginación compacta');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

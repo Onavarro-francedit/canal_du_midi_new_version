@@ -49,6 +49,13 @@ function canal_contenu_clean_html(string $html): string
     return (string) preg_replace('~<p>(?:\s|&nbsp;|\xC2\xA0|<br\s*/?>)*</p>~i', '', $html);
 }
 
+/** Texto plano para resúmenes: sin etiquetas ni entidades (&nbsp; cortado a medias por el recorte). */
+function canal_contenu_plain(string $html): string
+{
+    $text = html_entity_decode(strip_tags((string) preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is', ' ', $html)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    return trim((string) preg_replace('/[\s\x{00A0}]+/u', ' ', $text));
+}
+
 function canal_contenu_seo_title(string $title): string
 {
     return strpos(canal_carte_fold($title), 'canal du midi') !== false ? $title : $title . ' — Canal du Midi';
@@ -131,4 +138,41 @@ function canal_contenu_seo_graph(array $c, string $url, string $homeUrl, string 
         }, $c['faq'])];
     }
     return ['@context' => 'https://schema.org', '@graph' => $graph];
+}
+
+// ---- Archivos del blog (TASK-059): /post-category/<ruta>-2026/[page/N/] con páginas y artículos de la categoría ----
+
+const CANAL_ARCHIVE_PER_PAGE = 12;
+
+/** « post-category/actualites/divers-2026/page/3 » → ['path' => 'actualites/divers', 'page' => 3]; null si no es un archivo 2026. */
+function canal_archive_parse(string $request, string $suffix): ?array
+{
+    if ($suffix === '' || !preg_match('#^post-category/(.+?)' . preg_quote($suffix, '#') . '(?:/page/(\d+))?/?$#', trim($request, '/'), $m)) {
+        return null;
+    }
+    $page = isset($m[2]) ? (int) $m[2] : 1;
+    return $page >= 1 ? ['path' => $m[1], 'page' => $page] : null;
+}
+
+function canal_archive_path(string $path, int $page, string $suffix): string
+{
+    return '/post-category/' . $path . $suffix . '/' . ($page > 1 ? 'page/' . $page . '/' : '');
+}
+
+function canal_archive_pages(int $total, int $perPage): int
+{
+    return (int) ceil($total / $perPage);
+}
+
+/** Páginas que se muestran en la paginación: primera, última y las vecinas de la actual. */
+function canal_archive_window(int $page, int $pages): array
+{
+    $out = [];
+    foreach ([1, $page - 1, $page, $page + 1, $pages] as $n) {
+        if ($n >= 1 && $n <= $pages && !in_array($n, $out, true)) {
+            $out[] = $n;
+        }
+    }
+    sort($out);
+    return $out;
 }
