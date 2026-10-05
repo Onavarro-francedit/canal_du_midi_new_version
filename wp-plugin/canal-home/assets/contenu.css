@@ -215,6 +215,7 @@
 /* Página 404 (TASK-064) */
 .cdm-contenu .contenu-404-search { display: flex; gap: 10px; max-width: 640px; margin: 0 0 32px; }
 .cdm-contenu .contenu-404-search input { flex: 1; min-width: 0; height: 54px; padding: 0 18px; border: 1.5px solid #dcd8f2; border-radius: 16px; font: 600 16px 'Manrope', sans-serif; color: var(--ink); background: #fff; }
+.cdm-contenu .contenu-404-search input::placeholder { color: var(--muted); font-weight: 500; opacity: 1; }
 .cdm-contenu .contenu-404-search input:focus { outline: none; border-color: #6a63d9; box-shadow: 0 0 0 4px rgba(106, 99, 217, .14); }
 .cdm-contenu .contenu-404-search button { height: 54px; padding: 0 24px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #6a63d9, #4f48b7); color: #fff; font: 700 15px 'Manrope', sans-serif; cursor: pointer; }
 .cdm-contenu .contenu-404-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; max-width: 760px; }
