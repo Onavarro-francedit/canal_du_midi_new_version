@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Météo et meilleure période — maquette 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Maquette page météo 2026 — structure des références (WeatherSpark, Weather2Travel, canal-du-midi.com, Le Vélo Voyageur) :
+   1) l'année en un coup d'œil, 2) selon votre façon de voyager, 3) les saisons, 4) prévisions, 5) FAQ.
+   Chiffres : Météo-France, données climatologiques mensuelles, moyennes 2021–2025 de 8 stations le long du canal. */
+:root{
+  --bg:#fcf8ff; --card:#fff; --text:#1f2340; --muted:#6c718d; --line:rgba(92,97,140,.14);
+  --primary:#6a63d9; --primary-deep:#4f48b7; --water:#2BB6C4; --water-ink:#13606b; --soft:#f3f1fd;
+  --ideal:#1f9d6b; --ideal-bg:#e3f6ee; --hot:#d9822b; --hot-bg:#fdf0e1; --vhot:#c4452d; --vhot-bg:#fbe5e0;
+  --mild:#3a7bd5; --mild-bg:#e6effb; --off:#7c7f95; --off-bg:#eef0f5;
+  --f-head:'Sora',system-ui,sans-serif; --f-body:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f-body);color:var(--text);background:var(--bg);line-height:1.6}
+h1,h2,h3{font-family:var(--f-head);letter-spacing:-.02em;margin:0}
+a{color:inherit}
+.container{width:min(1160px,calc(100vw - 32px));margin:0 auto}
+.eyebrow{font:800 12px var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--primary)}
+.note-maquette{background:#fff8e6;border-bottom:1px solid #f0dca8;color:#7a5a12;font-size:13px;text-align:center;padding:6px 16px}
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{width:min(1360px,100%);margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:18px;height:72px}
+.brand{display:flex;align-items:center;gap:12px;font:700 17px var(--f-head);text-decoration:none;margin-right:auto}
+.brand i{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#66c7c7,#6a63d9)}
+.menu{display:flex;gap:22px;font-size:14.5px;font-weight:500}
+.cta{display:inline-flex;align-items:center;height:42px;padding:0 18px;border-radius:99px;color:#fff;text-decoration:none;font-weight:700;font-size:14.5px;background:linear-gradient(135deg,#6a63d9,#8a7ee8)}
+@media (max-width:1180px){.menu{display:none}.nav-in{height:64px}}
+
+.hero{padding:34px 0 18px;background:radial-gradient(1200px 400px at 50% -10%,#efeafd 0%,transparent 70%)}
+.crumbs{font-size:14px;color:var(--muted);margin-bottom:14px}
+.hero h1{font-size:clamp(30px,4.2vw,44px);line-height:1.1;margin:10px 0 8px;max-width:820px}
+.hero .meta{color:var(--muted);font-size:14px;margin:0}
+section.block{padding:30px 0}
+section.block h2{font-size:clamp(22px,2.6vw,28px);margin:6px 0 6px}
+section.block .intro{color:var(--muted);margin:0 0 18px;max-width:760px}
+
+/* 1. L'année en un coup d'œil */
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.year{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px}
+.month{border-radius:14px;padding:10px 8px 12px;background:var(--card);border:1px solid var(--line);text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.month:hover,.month[aria-pressed="true"]{transform:translateY(-2px);box-shadow:0 10px 24px rgba(31,35,64,.12)}
+.month[aria-pressed="true"]{outline:2px solid var(--primary)}
+.month b{display:block;font:700 14px var(--f-head)}
+.month .tag{display:inline-block;margin:6px 0 6px;padding:2px 7px;border-radius:99px;font-size:11px;font-weight:800}
+.month .t{display:block;font:700 16px var(--f-head)}
+.month small{display:block;font-size:11.5px;color:var(--muted);line-height:1.35}
+.k-ideal .tag{background:var(--ideal-bg);color:var(--ideal)} .k-ideal{border-top:4px solid var(--ideal)}
+.k-hot .tag{background:var(--hot-bg);color:var(--hot)} .k-hot{border-top:4px solid var(--hot)}
+.k-vhot .tag{background:var(--vhot-bg);color:var(--vhot)} .k-vhot{border-top:4px solid var(--vhot)}
+.k-mild .tag{background:var(--mild-bg);color:var(--mild)} .k-mild{border-top:4px solid var(--mild)}
+.k-off .tag{background:var(--off-bg);color:var(--off)} .k-off{border-top:4px solid var(--off)}
+.detail{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.detail h3{font-size:19px;margin-bottom:4px}
+.detail p{margin:0 0 10px;color:var(--muted)}
+.places{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.place{background:var(--soft);border-radius:12px;padding:8px 10px;font-size:13px}
+.place b{display:block;font-size:13px}
+.place span{color:var(--muted)}
+
+/* 2. Selon votre façon de voyager */
+.ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.way{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px}
+.way .icon{font-size:26px}
+.way h3{font-size:20px;margin:6px 0 4px}
+.way .best{display:inline-block;margin:2px 0 10px;padding:3px 10px;border-radius:99px;background:var(--ideal-bg);color:var(--ideal);font-weight:800;font-size:13px}
+.way ul{margin:0;padding-left:18px;font-size:14.5px}
+.way li{margin:4px 0}
+
+/* 3. Saisons */
+.seasons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.season{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px}
+.season h3{font-size:18px}
+.season .months{color:var(--muted);font-size:13px;margin:0 0 10px}
+.season dl{margin:0;display:grid;gap:6px;font-size:14px}
+.season dt{font-weight:700}
+.season dd{margin:0 0 4px;color:var(--muted)}
+
+/* 4. Prévisions (existant) */
+.forecast{background:var(--card);border:1px dashed var(--line);border-radius:20px;padding:20px;color:var(--muted);text-align:center}
+
+/* 5. FAQ */
+.faq-item{max-width:860px;padding:14px 0;border-bottom:1px solid var(--line)}
+.faq-item h3{font-size:17px;margin-bottom:6px}
+.faq-item p{margin:0}
+.source{font-size:13px;color:var(--muted);max-width:860px}
+footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color:var(--muted);font-size:14px;text-align:center}
+
+@media (max-width:1000px){
+  .year{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .ways,.seasons{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .places{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .year{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ways,.seasons{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="note-maquette">Maquette — chiffres réels : Météo-France, moyennes 2021–2025 de 8 stations le long du canal (vérifiés avec Open-Meteo). Les prévisions existantes de la page restent en section 4.</div>
+<header class="nav"><div class="nav-in">
+  <a class="brand" href="#"><i></i>Canal du Midi</a>
+  <nav class="menu"><span>En bateau ▾</span><span>Vélo &amp; balades ▾</span><span>Villes &amp; étapes ▾</span><span>Se loger &amp; manger ▾</span><span>Préparer ▾</span></nav>
+  <a class="cta" href="#">Planifier mon voyage</a>
+</div></header>
+
+<main>
+  <section class="hero"><div class="container">
+    <div class="crumbs">Accueil › Préparer › Météo</div>
+    <div class="eyebrow">Météo &amp; meilleure période</div>
+    <h1>Quand partir sur le Canal du Midi ? Le climat mois par mois</h1>
+    <p class="meta">Mis à jour le 5 octobre 2026 · Météo-France, moyennes des 5 dernières années (2021–2025), de Toulouse à l’étang de Thau</p>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="eyebrow">L’année en un coup d’œil</div>
+    <h2>Chaque mois sur le canal</h2>
+    <p class="intro">Température maximale moyenne de l’endroit le plus frais au plus chaud du canal, et nombre de jours à 30 °C ou plus. Touchez un mois pour le détail par étape.</p>
+    <div class="legend" id="legend"></div>
+    <div class="year" id="year"></div>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="eyebrow">Selon votre façon de voyager</div>
+    <h2>La bonne période pour vous</h2>
+    <div class="ways" id="ways"></div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="eyebrow">Les saisons</div>
+    <h2>À quoi s’attendre, saison par saison</h2>
+    <div class="seasons" id="seasons"></div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="eyebrow">Prévisions</div>
+    <h2>La météo des 7 prochains jours</h2>
+    <div class="forecast">Prévisions à 7 jours de Toulouse, Castelnaudary, Carcassonne, Homps, Béziers, Agde et Frontignan (widget existant de la page).</div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <h2>Questions fréquentes</h2>
+    <div id="faq"></div>
+    <p class="source">Sources : Météo-France, « Données climatologiques de base – mensuelles » (meteo.data.gouv.fr, Licence Ouverte), moyennes 2021–2025 des stations Toulouse-Blagnac, Montesquieu-Lauragais, Castelnaudary, Carcassonne, Lézignan-Corbières, Argeliers, Béziers-Courtade et Marseillan ; navigation : notre page « Période de navigation ».</p>
+  </div></section>
+</main>
+<footer>© 2026 L'Officiel du Canal du Midi — maquette</footer>
+
+<script>
+const D = {"stations": [{"name": "Toulouse", "tmax": [9.7, 13.5, 15.7, 18.2, 22.6, 28.0, 29.7, 30.7, 25.6, 22.3, 14.8, 12.0], "tmin": [2.4, 5.0, 6.8, 8.3, 12.0, 16.8, 17.8, 18.3, 15.2, 12.1, 7.2, 4.7], "hot": [0.0, 0.0, 0.0, 0.0, 1.8, 8.4, 15.2, 15.6, 6.2, 1.2, 0.0, 0.0], "rain": [6.8, 4.2, 7.4, 8.2, 8.4, 8.4, 4.6, 4.2, 7.0, 6.4, 9.8, 8.0]}, {"name": "Lauragais", "tmax": [10.2, 13.3, 15.8, 18.5, 22.9, 28.2, 30.3, 31.0, 25.6, 22.2, 14.5, 11.8], "tmin": [3.4, 5.3, 7.0, 8.1, 11.5, 16.2, 17.3, 17.8, 14.9, 12.3, 7.3, 5.2], "hot": [0.0, 0.0, 0.0, 0.0, 2.4, 9.0, 16.6, 17.4, 6.4, 1.6, 0.0, 0.0], "rain": [9.0, 5.6, 8.6, 9.0, 9.2, 9.2, 4.8, 5.0, 7.6, 5.8, 12.0, 9.8]}, {"name": "Castelnaudary", "tmax": [10.0, 13.5, 15.6, 18.6, 22.8, 28.6, 30.3, 31.3, 25.8, 22.3, 14.8, 12.2], "tmin": [2.8, 5.2, 6.7, 7.8, 11.4, 16.5, 17.4, 17.8, 14.9, 12.0, 7.3, 5.1], "hot": [0.0, 0.0, 0.0, 0.4, 1.4, 9.8, 16.8, 18.6, 5.0, 1.2, 0.0, 0.0], "rain": [8.2, 6.4, 8.8, 8.2, 9.2, 7.4, 4.8, 4.2, 7.8, 6.6, 12.0, 8.4]}, {"name": "Carcassonne", "tmax": [10.2, 13.8, 15.7, 18.7, 22.8, 28.5, 30.4, 31.4, 26.0, 22.4, 15.0, 12.4], "tmin": [3.0, 5.4, 6.9, 8.1, 11.6, 16.7, 17.6, 18.2, 15.0, 12.2, 7.4, 5.0], "hot": [0.0, 0.0, 0.0, 0.4, 0.8, 9.8, 16.8, 18.4, 4.8, 1.0, 0.0, 0.0], "rain": [8.4, 5.6, 8.6, 8.0, 8.0, 5.4, 4.8, 3.0, 7.6, 5.0, 10.8, 9.0]}, {"name": "Homps–Lézignan", "tmax": [11.4, 14.3, 16.0, 19.0, 23.3, 29.3, 31.1, 31.7, 26.1, 22.7, 15.7, 13.2], "tmin": [3.8, 6.1, 7.1, 8.9, 12.6, 18.1, 19.2, 19.5, 15.9, 12.9, 8.1, 5.8], "hot": [0.0, 0.0, 0.0, 0.2, 1.2, 11.4, 18.0, 19.4, 4.2, 0.2, 0.0, 0.0], "rain": [5.8, 5.0, 7.0, 6.6, 4.8, 4.2, 3.8, 2.2, 5.0, 4.0, 7.2, 5.8]}, {"name": "Le Somail", "tmax": [12.4, 15.2, 16.9, 20.4, 24.7, 30.6, 32.5, 33.1, 27.5, 23.8, 16.9, 14.2], "tmin": [3.5, 5.8, 6.9, 8.7, 12.5, 17.8, 18.8, 18.9, 15.4, 12.5, 8.0, 5.3], "hot": [0.0, 0.0, 0.0, 0.2, 2.6, 14.2, 24.0, 24.0, 7.4, 0.6, 0.0, 0.0], "rain": [4.6, 5.8, 6.4, 5.6, 4.2, 3.6, 3.6, 2.8, 4.6, 4.6, 5.8, 5.2]}, {"name": "Béziers", "tmax": [12.8, 15.3, 16.7, 20.0, 24.2, 29.8, 31.7, 32.1, 27.0, 23.3, 17.2, 14.2], "tmin": [2.1, 4.7, 5.8, 7.6, 11.8, 16.9, 18.0, 17.7, 14.3, 11.3, 6.9, 4.2], "hot": [0.0, 0.0, 0.0, 0.0, 1.4, 12.0, 22.6, 21.6, 4.0, 0.4, 0.0, 0.0], "rain": [3.8, 3.6, 6.2, 6.0, 4.8, 3.2, 4.0, 2.6, 3.8, 3.6, 5.2, 4.4]}, {"name": "Étang de Thau", "tmax": [12.6, 14.4, 15.9, 18.7, 22.5, 27.5, 29.8, 29.6, 25.2, 22.1, 16.9, 13.7], "tmin": [4.1, 6.6, 8.1, 9.9, 13.7, 18.8, 19.9, 19.4, 16.3, 14.1, 9.0, 5.9], "hot": [0.0, 0.0, 0.0, 0.0, 0.8, 5.6, 13.0, 13.0, 0.2, 0.0, 0.0, 0.0], "rain": [3.6, 4.0, 5.8, 4.6, 4.8, 3.6, 2.8, 2.8, 3.8, 4.2, 5.2, 4.8]}], "months": [{"kind": "off", "tmax": [9.7, 12.8], "hot": [0.0, 0.0], "text": "L’après-midi, 10 à 13 °C selon l’étape ; jamais 30 °C en moyenne ; 4 à 9 jours de pluie. Navigation : basse saison, écluses à la demande, 8 h 30 – 16 h 30."}, {"kind": "off", "tmax": [13.3, 15.3], "hot": [0.0, 0.0], "text": "L’après-midi, 13 à 15 °C selon l’étape ; jamais 30 °C en moyenne ; 4 à 6 jours de pluie. Navigation : basse saison, écluses à la demande, 8 h 30 – 16 h 30."}, {"kind": "off", "tmax": [15.6, 16.9], "hot": [0.0, 0.0], "text": "L’après-midi, 16 à 17 °C selon l’étape ; jamais 30 °C en moyenne ; 6 à 9 jours de pluie. Navigation : basse puis moyenne (17 mars) saison, à la demande jusqu’au 16, puis écluses de 8 h à 19 h."}, {"kind": "mild", "tmax": [18.2, 20.4], "hot": [0.0, 0.4], "text": "L’après-midi, 18 à 20 °C selon l’étape ; jamais 30 °C en moyenne ; 5 à 9 jours de pluie. Navigation : moyenne saison, écluses de 8 h à 19 h."}, {"kind": "ideal", "tmax": [22.5, 24.7], "hot": [0.8, 2.6], "text": "L’après-midi, 22 à 25 °C selon l’étape ; 1 à 3 jours à 30 °C ou plus ; 4 à 9 jours de pluie. Navigation : haute saison, écluses de 8 h à 19 h 30."}, {"kind": "hot", "tmax": [27.5, 30.6], "hot": [5.6, 14.2], "text": "L’après-midi, 28 à 31 °C selon l’étape ; 6 à 14 jours à 30 °C ou plus ; 3 à 9 jours de pluie. Navigation : haute saison, écluses de 8 h à 19 h 30. Le plus chaud : Le Somail (30,6 °C, 14 jours à 30 °C+) ; le plus frais : Étang de Thau (27,5 °C)."}, {"kind": "vhot", "tmax": [29.7, 32.5], "hot": [13.0, 24.0], "text": "L’après-midi, 30 à 32 °C selon l’étape ; 13 à 24 jours à 30 °C ou plus ; 3 à 5 jours de pluie. Navigation : haute saison, écluses de 8 h à 19 h 30. Le plus chaud : Le Somail (32,5 °C, 24 jours à 30 °C+) ; le plus frais : Toulouse (29,7 °C)."}, {"kind": "vhot", "tmax": [29.6, 33.1], "hot": [13.0, 24.0], "text": "L’après-midi, 30 à 33 °C selon l’étape ; 13 à 24 jours à 30 °C ou plus ; 2 à 5 jours de pluie. Navigation : haute saison, écluses de 8 h à 19 h 30. Le plus chaud : Le Somail (33,1 °C, 24 jours à 30 °C+) ; le plus frais : Étang de Thau (29,6 °C)."}, {"kind": "ideal", "tmax": [25.2, 27.5], "hot": [0.2, 7.4], "text": "L’après-midi, 25 à 28 °C selon l’étape ; 0 à 7 jours à 30 °C ou plus ; 4 à 8 jours de pluie. Navigation : haute saison, écluses de 8 h à 19 h 30."}, {"kind": "ideal", "tmax": [22.1, 23.8], "hot": [0.0, 1.6], "text": "L’après-midi, 22 à 24 °C selon l’étape ; 0 à 2 jours à 30 °C ou plus ; 4 à 7 jours de pluie. Navigation : moyenne saison, écluses de 8 h à 19 h."}, {"kind": "off", "tmax": [14.5, 17.2], "hot": [0.0, 0.0], "text": "L’après-midi, 14 à 17 °C selon l’étape ; jamais 30 °C en moyenne ; 5 à 12 jours de pluie. Navigation : basse saison, écluses à la demande, 8 h 30 – 16 h 30."}, {"kind": "off", "tmax": [11.8, 14.2], "hot": [0.0, 0.0], "text": "L’après-midi, 12 à 14 °C selon l’étape ; jamais 30 °C en moyenne ; 4 à 10 jours de pluie. Navigation : basse saison, écluses à la demande, 8 h 30 – 16 h 30."}], "legend": {"ideal": "≥ 20 °C, au plus 8 j à 30 °C+", "mild": "moins de 20 °C l’après-midi", "hot": "9 à 15 j à 30 °C+", "vhot": "plus de 15 j à 30 °C+", "off": "basse saison de navigation"}, "ways": [{"icon": "🚤", "title": "En bateau", "best": "Mai, septembre et octobre", "points": ["Haute saison de navigation de mai à septembre (écluses de 8 h à 19 h 30), moyenne saison en avril et octobre (8 h – 19 h).", "En juillet-août, 13 à 24 jours à 30 °C ou plus en juillet selon l’étape : naviguez tôt le matin.", "Du 1er novembre au 16 mars, écluses à la demande de 8 h 30 à 16 h 30 ; navigation fermée les 1er janvier, 1er mai, 11 novembre et 25 décembre."]}, {"icon": "🚲", "title": "À vélo", "best": "Avril, mai, septembre et octobre", "points": ["En avril, 18 à 20 °C l’après-midi et presque jamais 30 °C : idéal pour enchaîner les étapes.", "En été, le plus chaud : vers Le Somail (48 jours à 30 °C+ en juillet-août) ; le plus frais : vers l’Étang de Thau (26).", "En juillet-août, roulez le matin et emportez de l’eau."]}, {"icon": "🥾", "title": "À pied", "best": "Toute l’année hors juillet-août", "points": ["En hiver, 10 à 13 °C l’après-midi en janvier, plus doux vers la Méditerranée.", "Le plus pluvieux : novembre, 5 à 12 jours de pluie selon l’étape (plus côté Lauragais).", "En juillet-août, marchez tôt et évitez les heures chaudes."]}], "seasons": [{"name": "Printemps", "months": "mars, avril, mai", "rows": [["L’après-midi", "16 à 25 °C selon le mois et l’étape"], ["Jours à 30 °C ou plus", "1 à 3 sur la saison selon l’étape"], ["Jours de pluie", "15 à 27 sur la saison"], ["Navigation", "basse puis moyenne puis haute saison"]]}, {"name": "Été", "months": "juin, juillet, août", "rows": [["L’après-midi", "28 à 33 °C selon le mois et l’étape"], ["Jours à 30 °C ou plus", "32 à 62 sur la saison selon l’étape"], ["Jours de pluie", "9 à 19 sur la saison"], ["Navigation", "haute saison"]]}, {"name": "Automne", "months": "septembre, octobre, novembre", "rows": [["L’après-midi", "14 à 28 °C selon le mois et l’étape"], ["Jours à 30 °C ou plus", "0 à 8 sur la saison selon l’étape"], ["Jours de pluie", "13 à 26 sur la saison"], ["Navigation", "haute puis moyenne puis basse saison"]]}, {"name": "Hiver", "months": "décembre, janvier, février", "rows": [["L’après-midi", "10 à 15 °C selon le mois et l’étape"], ["Jours à 30 °C ou plus", "aucun"], ["Jours de pluie", "12 à 24 sur la saison"], ["Navigation", "basse saison"]]}], "faq": [{"q": "Quelle est la meilleure période pour faire le Canal du Midi ?", "a": "Mai, septembre et octobre : l’après-midi, 22 à 25 °C en mai ; 25 à 28 °C en septembre ; 22 à 24 °C en octobre selon l’étape, au plus 7 jours à 30 °C ou plus, et le canal est ouvert à la navigation. Juillet et août sont les mois les plus chauds."}, {"q": "Quel temps fait-il sur le Canal du Midi en été ?", "a": "En juillet, 29,7 à 32,5 °C de maximale moyenne et 13 à 24 jours à 30 °C ou plus selon l’étape ; en août, 29,6 à 33,1 °C et 13 à 24 jours. Le plus chaud vers Le Somail, le plus frais vers l’Étang de Thau."}, {"q": "Quel temps fait-il sur le Canal du Midi en hiver ?", "a": "En janvier, 2,1 à 4,1 °C le matin et 9,7 à 12,8 °C l’après-midi selon l’étape, plus doux vers la Méditerranée."}, {"q": "Le Canal du Midi est-il fermé en hiver ?", "a": "Non, mais la navigation est en basse saison du 1er novembre au 16 mars : de 8 h 30 à 16 h 30, à la demande. Elle est fermée sur tout le canal le 1er janvier, le 1er mai, le 11 novembre et le 25 décembre. Les fermetures pour travaux (chômages) sont annoncées chaque année par Voies navigables de France."}]};
+const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const SHORT = ['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
+const KIND = {ideal:['Idéal','var(--ideal)'], mild:['Doux','var(--mild)'], hot:['Chaud','var(--hot)'], vhot:['Très chaud','var(--vhot)'], off:['Navigation réduite','var(--off)']};
+const n = v => String(Math.round(v * 10) / 10).replace('.', ',');
+const d = v => String(Math.round(v));
+const range = (a, b, f) => f(a) === f(b) ? f(a) : f(a) + '–' + f(b);
+
+document.getElementById('legend').innerHTML = Object.entries(D.legend).map(([k, txt]) => `<span><i style="background:${KIND[k][1]}"></i><b>${KIND[k][0]}</b> ${txt}</span>`).join('');
+
+const year = document.getElementById('year');
+year.innerHTML = D.months.map((m, i) => `
+  <button type="button" class="month k-${m.kind}" data-i="${i}" aria-pressed="false">
+    <b>${SHORT[i]}</b><span class="tag">${KIND[m.kind][0]}</span>
+    <span class="t">${range(m.tmax[0], m.tmax[1], d)} °C</span>
+    <small>${m.hot[1] < 0.5 ? 'jamais 30 °C' : range(m.hot[0], m.hot[1], d) + ' j à 30 °C+'}</small>
+  </button>`).join('');
+
+function show(i) {
+  const m = D.months[i];
+  year.querySelectorAll('.month').forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+  document.getElementById('detail').innerHTML = `
+    <h3>${MONTHS[i]} sur le Canal du Midi — ${KIND[m.kind][0].toLowerCase()}</h3>
+    <p>${m.text}</p>
+    <div class="places">${D.stations.map(s => `<div class="place"><b>${s.name}</b><span>${n(s.tmin[i])} → ${n(s.tmax[i])} °C · ${s.hot[i] < 0.5 ? '0' : n(s.hot[i])} j à 30 °C+ · ${n(s.rain[i])} j de pluie</span></div>`).join('')}</div>`;
+}
+year.addEventListener('click', e => { const b = e.target.closest('.month'); if (b) show(+b.dataset.i); });
+show(new Date().getMonth());
+
+document.getElementById('ways').innerHTML = D.ways.map(w => `
+  <article class="way"><div class="icon">${w.icon}</div><h3>${w.title}</h3><span class="best">${w.best}</span>
+  <ul>${w.points.map(p => `<li>${p}</li>`).join('')}</ul></article>`).join('');
+document.getElementById('seasons').innerHTML = D.seasons.map(s => `
+  <article class="season"><h3>${s.name}</h3><p class="months">${s.months}</p>
+  <dl>${s.rows.map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('')}</dl></article>`).join('');
+document.getElementById('faq').innerHTML = D.faq.map(q => `<div class="faq-item"><h3>${q.q}</h3><p>${q.a}</p></div>`).join('');
+</script>
+</body>
+</html>
