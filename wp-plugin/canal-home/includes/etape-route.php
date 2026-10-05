@@ -129,8 +129,39 @@ function canal_etapes_index(): array
             'image' => canal_etape_hero($groups), 'voir' => canal_etape_highlights($e, $groups), 'read' => canal_etape_pages($e),
         ];
     }
-    $out['faq'] = canal_etapes_faq($out['midi']);
+    $out['faq'] = array_values(array_filter([canal_etapes_howlong_faq(), canal_etapes_faq($out['midi'])]));
+    $out['legs'] = canal_etapes_legs();
+    $out['parcours'] = array_map('canal_parcours_card', canal_parcours_parse(canal_parcours_items()));
     return $out;
+}
+
+// Parcours editables en Apariencia → Menús (ubicación propia; no toca los menús existentes).
+add_action('after_setup_theme', function () {
+    register_nav_menus(['canal_parcours' => 'Parcours (page Étapes 2026)']);
+});
+
+function canal_parcours_items(): array
+{
+    $locations = get_nav_menu_locations();
+    $items = !empty($locations['canal_parcours']) ? wp_get_nav_menu_items($locations['canal_parcours']) : [];
+    if (!$items) {
+        return CANAL_PARCOURS_DEFAULT;
+    }
+    return array_map(function ($i) {
+        return ['title' => $i->title, 'url' => $i->url, 'classes' => (array) $i->classes];
+    }, $items);
+}
+
+/** Enlace al calcul con el parcours ya rellenado. */
+function canal_parcours_url(array $c): string
+{
+    return add_query_arg(['de' => $c['de'], 'a' => $c['a']], canal_calcul_url());
+}
+
+/** Loueurs de bateaux o de vélos alrededor de la etapa de salida, en la carte. */
+function canal_parcours_loueurs_url(array $c): string
+{
+    return add_query_arg(['type' => $c['mode'] === 'bateau' ? 'location-bateau' : 'location-de-velo', 'search_location' => $c['from']['search']], home_url(CANAL_CARTE_PATH));
 }
 
 // Sitemap: las étapes no son posts; proveedor propio solo con el sitio publicado (TASK-063).
@@ -216,7 +247,7 @@ add_action('wp_enqueue_scripts', function () {
     wp_add_inline_style('canal-fiche-theme', CANAL_THEME_FIX_CSS);
 }, 20);
 
-const CANAL_ETAPES_TITLE = 'Que voir sur le Canal du Midi : villes et villages étape par étape, de Toulouse à la Méditerranée';
+const CANAL_ETAPES_TITLE = 'Quel parcours faire sur le Canal du Midi ? Étapes, distances et durées en bateau ou à vélo';
 
 add_filter('pre_get_document_title', function ($title) {
     if (!canal_etape_is_page()) {
@@ -245,7 +276,7 @@ add_action('wp_head', function () {
     $index = home_url(CANAL_ETAPES_PATH);
     echo '<link rel="canonical" href="' . esc_url($s['url']) . '">' . "\n";
     if (isset($s['index'])) {
-        $desc = 'Les étapes du Canal du Midi et du canal de la Robine : ports, écluses, hébergements, location de bateaux et distances, de Toulouse à l’étang de Thau.';
+        $desc = 'Parcours en bateau ou à vélo sur le Canal du Midi pour une journée, un week-end ou une semaine, et les étapes de Toulouse à l’étang de Thau avec distances, écluses et temps.';
         echo canal_home_seo_social(CANAL_ETAPES_TITLE, $desc, $s['url'], 'Le Canal du Midi', home_url(CANAL_HOME_HERO_IMAGE)); // phpcs:ignore
         $items = [];
         foreach (array_merge($s['index']['midi'], $s['index']['robine']) as $i => $it) {
@@ -257,7 +288,9 @@ add_action('wp_head', function () {
         }
         $graph = [['@type' => 'CollectionPage', 'url' => $s['url'], 'name' => CANAL_ETAPES_TITLE, 'description' => $desc, 'inLanguage' => 'fr-FR', 'about' => $canal, 'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $items]]];
         if ($s['index']['faq']) {
-            $graph[] = ['@type' => 'FAQPage', 'mainEntity' => [['@type' => 'Question', 'name' => $s['index']['faq']['q'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $s['index']['faq']['a']]]]];
+            $graph[] = ['@type' => 'FAQPage', 'mainEntity' => array_map(function ($qa) {
+                return ['@type' => 'Question', 'name' => $qa['q'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $qa['a']]];
+            }, $s['index']['faq'])];
         }
         echo canal_home_seo_jsonld(['@context' => 'https://schema.org', '@graph' => $graph]); // phpcs:ignore
         return;

@@ -96,5 +96,29 @@ $faqIdx = canal_etapes_faq([
 check($faqIdx['q'] === 'Que voir le long du Canal du Midi ?', 'faq índice: pregunta');
 check(strpos($faqIdx['a'], 'Castelnaudary (PK 64,9) : Moulin de Cugarel et Écluses de Saint-Roch (4 sas) ; Béziers (PK 208,4) : Écluses de Fonseranes (8 sas).') !== false && strpos($faqIdx['a'], 'Homps') === false, 'faq índice: etapas con datos, en orden, con PK');
 
+// Parcours (rediseño de /etapes/): menú de wp-admin → parcours, cifras del calcul.
+$items = [
+    ['title' => 'Aller simple', 'url' => 'https://x.fr/calcul/?de=Castelnaudary&a=Homps', 'classes' => ['bateau', 'semaine']],
+    ['title' => 'Aller-retour', 'url' => 'https://x.fr/calcul/?de=homps&a=le%20somail', 'classes' => ['bateau', 'weekend', 'aller-retour']],
+    ['title' => 'Mal', 'url' => 'https://x.fr/calcul/?de=Paris&a=Homps', 'classes' => ['bateau', 'jour']],
+    ['title' => 'Sin modo', 'url' => 'https://x.fr/calcul/?de=Homps&a=Agde', 'classes' => ['semaine']],
+];
+$parsed = canal_parcours_parse($items);
+check(count($parsed) === 2, 'parcours: menú → 2 válidos (ciudad desconocida y sin modo fuera)');
+check($parsed[1]['de'] === 'Homps' && $parsed[1]['a'] === 'Le Somail' && $parsed[1]['retour'] === true, 'parcours: nombres del calcul y aller-retour');
+check(count(canal_parcours_parse(CANAL_PARCOURS_DEFAULT)) === count(CANAL_PARCOURS_DEFAULT), 'parcours: los de por defecto son válidos');
+$c = canal_parcours_card($parsed[0]);
+check($c['title'] === 'Castelnaudary → Homps' && $c['chips'] === ['80 km', '30 écluses · 45 sas', '19 h', '≈ 4 jours de navigation'], 'parcours: barco, cifras del calcul');
+check(array_column($c['via'], 'name') === ['Bram', 'Carcassonne', 'Trèbes'], 'parcours: etapas intermedias en orden');
+check($c['from']['slug'] === 'castelnaudary', 'parcours: etapa de salida');
+$r = canal_parcours_card($parsed[1]);
+check($r['title'] === 'Homps → Le Somail et retour' && $r['chips'][0] === '41 km' && $r['chips'][2] === '7 h 50', 'parcours: aller-retour dobla km y tiempo');
+$v = canal_parcours_card(canal_parcours_parse([['title' => 'x', 'url' => '?de=Toulouse&a=Castelnaudary', 'classes' => ['velo', 'weekend']]])[0]);
+check($v['chips'] === ['65 km', '4 h 20 à vélo', '≈ 2 jours'], 'parcours: bici, km y días');
+$legs = canal_etapes_legs();
+check(count($legs) === 16 && $legs[9]['sites'] === 0 && (int) round($legs[9]['km']) === 23, 'línea: 16 tramos; Le Somail → Capestang sin esclusas');
+$howlong = canal_etapes_howlong_faq();
+check(strpos($howlong['a'], '240,5 km') !== false && strpos($howlong['a'], '63 écluses') !== false && strpos($howlong['a'], '≈ 5 jours') !== false, 'faq: cuánto tiempo, con cifras del calcul');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);
