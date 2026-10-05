@@ -84,6 +84,10 @@ const CANAL_FICHE_LOWER_WORDS = ['de', 'du', 'des', 'la', 'le', 'les', 'et', 'à
 
 function canal_fiche_display_title(string $s): string
 {
+    // « NOM EN MAYÚSCULAS – Complemento » : cada tramo se trata por separado.
+    if (strpos($s, ' – ') !== false) {
+        return implode(' – ', array_map('canal_fiche_display_title', explode(' – ', $s)));
+    }
     if (!preg_match('/\p{Lu}/u', $s) || mb_strtoupper($s, 'UTF-8') !== $s) {
         return $s;
     }

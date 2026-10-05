@@ -417,7 +417,7 @@ get_header();
                                 <thead><tr><?php foreach ($guide['columns'] as $col): ?><th scope="col"><?= esc_html($col) ?></th><?php endforeach; ?></tr></thead>
                                 <tbody>
                                 <?php foreach ($guide['rows'] as $i => $row): ?>
-                                    <tr><?php foreach ($row as $j => $cell): ?><?php if ($j === 0): ?><th scope="row"><?php if (!empty($guide['links'][$i])): ?><a href="<?= esc_url($guide['links'][$i]) ?>"><?= esc_html($cell) ?></a><?php else: ?><?= esc_html($cell) ?><?php endif; ?></th><?php else: ?><td><?= esc_html($cell) ?></td><?php endif; ?><?php endforeach; ?></tr>
+                                    <tr><?php foreach ($row as $j => $cell): ?><?php if ($j === 0): ?><th scope="row"><?php if (!empty($guide['links'][$i])): ?><a href="<?= esc_url($guide['links'][$i]) ?>"><?= esc_html($cell) ?></a><?php else: ?><?= esc_html($cell) ?><?php endif; ?></th><?php else: ?><td><?= esc_html(str_replace('PK ', "PK\u{00A0}", $cell)) ?></td><?php endif; ?><?php endforeach; ?></tr>
                                 <?php endforeach; ?>
                                 </tbody>
                             </table>

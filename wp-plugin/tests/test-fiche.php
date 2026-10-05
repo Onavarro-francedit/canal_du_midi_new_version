@@ -85,6 +85,7 @@ check(canal_fiche_display_title('MAISON RASSIER') === 'Maison Rassier', 'display
 check(canal_fiche_display_title('LE RELAIS DE SULLY') === 'Le Relais de Sully', 'display_title: « de » en minúscula salvo al inicio');
 check(canal_fiche_display_title("L'ESCALE OCCITANE - CAMPING ***") === "L'Escale Occitane - Camping ***", "display_title: tras apóstrofo, mayúscula");
 check(canal_fiche_display_title('Écluse de Sauzens') === 'Écluse de Sauzens', 'display_title: mixto sin cambios');
+check(canal_fiche_display_title('ENSÉRUNE, OPPIDUM ET MUSÉE – Centre des monuments nationaux') === 'Ensérune, Oppidum et Musée – Centre des monuments nationaux', 'display_title: cada tramo « – » por separado');
 check(canal_fiche_display_title('LES CANALOUS - CARCASSONNE') === 'Les Canalous - Carcassonne', 'display_title: artículo inicial en mayúscula');
 
 // FAQ con datos reales.
