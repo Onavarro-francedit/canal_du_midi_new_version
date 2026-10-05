@@ -19,9 +19,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   que pasa; enlaces al calcul y a los loueurs); el canal en línea con los tramos entre etapas y la Robine; FAQ « Combien de
   temps… » + « Que voir… ». Parcours editables en wp-admin: Apariencia → Menús, ubicación « Parcours (page Étapes 2026) »
   (enlace al calcul `?de=X&a=Y`, clases `bateau|velo` `jour|weekend|semaine` [`aller-retour`]); sin menú, `CANAL_PARCOURS_DEFAULT`.
-- Mapa de etapas (05/10, petición del usuario: la línea vertical no decía nada): Google Maps + trazado OSM, un punto por etapa,
-  popup de Toulouse abierto al cargar; popup con PK, km desde Toulouse, oferta por tipo, « À voir », tramo siguiente y
-  « Étape suivante → » (`assets/etapes.js`). Verificado en escritorio; en móvil, popup sin foto (no verificado en móvil real).
+- Rehecho (05/10, petición del usuario: faltaba « à pied », solo 1–2 parcours y el mapa de etapas no aportaba): modos
+  bateau/vélo/à pied; « Au départ de… » calcula todos los tramos que caben (`canal_parcours_all`, ventanas
+  `CANAL_PARCOURS_WINDOWS`, hasta 6 por salida); el mapa dibuja el parcours seleccionado (A/B y etapas intermedias).
+  Verificado en escritorio (vélo · week-end · Carcassonne → 6 parcours; à pied). Móvil sin verificar.
 
 ### TASK-066 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
 - **Leer primero:** `docs/geo-ia-mejoras-2026-10-05.md` (lo escribió la sesión de GEO-IA para esta sesión: metodología,
