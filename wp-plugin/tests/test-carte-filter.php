@@ -43,7 +43,7 @@ check(canal_carte_fold('Écluse À BÉZIERS œuf') === 'ecluse a beziers oeuf', 
 check(canal_carte_fold("l\u{2019}Écluse") === "l'ecluse", 'fold: apóstrofo tipográfico → recto');
 
 // ── canal_carte_params ──────────────────────────────────────────────────
-check(canal_carte_params([], $valid) === ['q' => '', 'type' => [], 'location' => '', 'lat' => null, 'lng' => null], 'params: vacío');
+check(canal_carte_params([], $valid) === ['q' => '', 'type' => [], 'location' => '', 'lat' => null, 'lng' => null, 'tag' => ''], 'params: vacío');
 $p = canal_carte_params(['search_keywords' => 'vélo', 'category' => ['hotel'], 'search_location' => 'Toulouse'], $valid);
 check($p['q'] === 'vélo' && $p['type'] === ['hotel'] && $p['location'] === 'Toulouse', 'params: alias de /explorer/');
 check(canal_carte_params(['q' => 'a', 'search_keywords' => 'b'], $valid)['q'] === 'a', 'params: el nombre propio gana al alias');
@@ -102,6 +102,27 @@ check(strpos($faq[2]['a'], '2 hébergements') !== false, 'faq: hébergement cuen
 check(count(canal_carte_faq([$F('Agde', ['bar'])])) === 1, 'faq: categorías sin fichas se omiten (queda la pregunta de uso)');
 check(substr($qs[0], -2) === ' ?', 'faq: puntuación francesa (espacio antes de ?)');
 check(strpos($faq[1]['a'], '1 loueur de vélos est référencé') === 0, 'faq: concordancia en singular');
+
+// Páginas de taxonomía en la carte (TASK-064): /categorie/, /region/, /mot-cle/ filtran la carte por su término.
+$base = canal_carte_params([], ['hotel', 'camping']);
+$cat = ['tax' => 'job_listing_category', 'slug' => 'hotel', 'name' => 'Hôtel', 'description' => ''];
+$reg = ['tax' => 'region', 'slug' => 'homps', 'name' => 'HOMPS', 'description' => ''];
+$tag = ['tax' => 'case27_job_listing_tags', 'slug' => 'animaux-acceptes', 'name' => 'Animaux acceptés', 'description' => ''];
+check(canal_carte_term_params($base, $cat)['type'] === ['hotel'], 'término: categoría → type');
+check(canal_carte_term_params(canal_carte_params(['type' => 'camping'], ['hotel', 'camping']), $cat)['type'] === ['camping'], 'término: el filtro elegido por el visitante manda');
+check(canal_carte_term_params($base, $reg)['location'] === 'HOMPS', 'término: región → municipio');
+check(canal_carte_term_params($base, $tag)['tag'] === 'animaux-acceptes' && canal_carte_term_params($base, null) === $base + ['tag' => ''], 'término: etiqueta → tag; sin término, sin cambios');
+$tagged = [
+    ['title' => 'A', 'cat_names' => [], 'cat_slugs' => ['hotel'], 'tag_slugs' => ['animaux-acceptes'], 'city' => '', 'address' => '', 'description' => '', 'lat' => null, 'lng' => null],
+    ['title' => 'B', 'cat_names' => [], 'cat_slugs' => ['hotel'], 'tag_slugs' => [], 'city' => '', 'address' => '', 'description' => '', 'lat' => null, 'lng' => null],
+];
+check(array_column(canal_carte_filter($tagged, canal_carte_term_params($base, $tag)), 'title') === ['A'], 'filtro: por etiqueta');
+check(count(canal_carte_filter($tagged, $base)) === 2, 'filtro: sin etiqueta, todos');
+$seo = canal_carte_term_seo($cat, 18);
+check($seo['h1'] === 'Hôtel au bord du Canal du Midi' && strpos($seo['title'], '18 adresses') !== false && strpos($seo['description'], '18 ') === 0, 'seo: categoría');
+check(canal_carte_term_seo($reg, 11)['h1'] === 'Homps : prestataires au bord du Canal du Midi', 'seo: región (MAYÚSCULAS → nombre)');
+check(canal_carte_term_seo(['description' => 'Texte du thème.'] + $cat, 3)['description'] === 'Texte du thème.', 'seo: usa la descripción del término si existe');
+check(canal_carte_term_seo($cat, 1)['title'] === "Hôtel au bord du Canal du Midi : 1 adresse | L'Officiel", 'seo: singular');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

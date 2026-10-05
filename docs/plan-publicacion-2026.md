@@ -21,12 +21,12 @@ publicación de TASK-055/057/059/060/061/062.
 | Planificador | `/planificateur-2026/` | `/planificateur/` | (sustituye a organiser: 352) |
 | Navbar y pie 2026 | en las páginas 2026 | en todas las páginas anteriores | — |
 
-**No cambian:**
-- `/categorie/<x>/`, `/region/<x>/` y `/mot-cle/<x>/`: el tema los sirve con la misma página `/explorer/`
-  (query vars `explore_*`), que se excluyen a propósito. Siguen con la cabecera y el listado del tema; los enlaces
-  internos 2026 van a la carte filtrada;
-- `/region/`, `/zone/`, la tienda Woo, `/mon-compte/` y las páginas antiguas sin redirección;
-- `wp-admin`.
+**También pasan a 2026 (TASK-064):**
+- `/categorie/<x>/`, `/region/<x>/` y `/mot-cle/<x>/`, en su misma URL: la carte 2026 filtrada por su término, con su
+  H1, título, descripción y canonical propios (el tema las sirve con la página `/explorer/` y query vars `explore_*`);
+- la página 404 (cabecera 2026, buscador y accesos) y la búsqueda `?s=` (301 a la búsqueda de la carte).
+
+**No cambian:** la tienda Woo y `/mon-compte/`, `wp-admin`, las páginas de autor y de fecha.
 
 ---
 
@@ -193,4 +193,5 @@ Sirdata). Se marcan como key events en GA4 (lo hace el usuario o yo vía la API 
 | `/planificateur/` en modo publicado (sirve la página por su plantilla; sin bucle con la redirección canónica de WP) | ✅ verificado en la vista previa (también organiser y demandes → planificador) |
 | Al encender (fase 1): página 18505 → `publish` + título « Planificateur »; `llms.txt` / `llms-full.txt` con las URLs definitivas | pendiente |
 | Bloqueantes del usuario (§3 fase 0, punto 5): pedido real del plan, crédito Anthropic, `CANAL_PLANNER_LIVE`, `pm.max_children`, dirección | pendiente |
-| Corregido gracias a la vista previa | Elementor imponía su plantilla en `/` y `/explorer/` (la nuestra va ahora a prioridad 99); `/categorie/` y `/region/` caían en la carte (excluidas) |
+| `/categorie/`, `/region/`, `/mot-cle/`, 404 y `?s=` en 2026 (TASK-064) | ✅ verificado en la vista previa: hotel 18, camping 14, location-bateau 10, Homps 11, etiqueta 52; canonical propio; títulos sobre el filtro del tema (prioridad 10001) |
+| Corregido gracias a la vista previa | Elementor imponía su plantilla en `/` y `/explorer/` (la nuestra va ahora a prioridad 99); la caché de la carte compartía URLs de fichas entre modos (ahora una clave por modo) |

@@ -97,8 +97,31 @@ function canal_carte_is_page(): bool
 {
     return (is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE)
         // Publicado: /explorer/ (página 10154). El tema sirve también /categorie/, /region/ y /mot-cle/ con esa página
-        // (query vars explore_*): esas siguen con el tema (plan de publicación §1).
-        || (CANAL_2026_LIVE && is_page('explorer') && get_query_var('explore_category') === '' && get_query_var('explore_region') === '' && get_query_var('explore_tag') === '');
+        // (query vars explore_*): la carte 2026 filtrada por el término, en su propia URL (TASK-064).
+        || (CANAL_2026_LIVE && is_page('explorer'));
+}
+
+/** Término de la página de taxonomía servida con la carte (/categorie/<x>/, /region/<x>/, /mot-cle/<x>/) o null. */
+function canal_carte_term(): ?array
+{
+    static $term = false;
+    if ($term !== false) {
+        return $term;
+    }
+    $term = null;
+    if (!CANAL_2026_LIVE || !is_page('explorer')) {
+        return $term;
+    }
+    foreach (['explore_category' => 'job_listing_category', 'explore_region' => 'region', 'explore_tag' => 'case27_job_listing_tags'] as $var => $tax) {
+        $slug = (string) get_query_var($var);
+        $t = $slug !== '' ? get_term_by('slug', $slug, $tax) : null;
+        if ($t instanceof WP_Term) {
+            $link = get_term_link($t);
+            $term = ['tax' => $tax, 'slug' => $t->slug, 'name' => $t->name, 'description' => (string) $t->description, 'url' => is_wp_error($link) ? '' : $link];
+            break;
+        }
+    }
+    return $term;
 }
 
 function canal_planner_is_page(): bool
@@ -132,7 +155,16 @@ add_filter('get_canonical_url', function ($url, $post) {
     return CANAL_2026_LIVE && (int) $post->ID === canal_planner_page_id() ? home_url(CANAL_PLANNER_PATH) : $url;
 }, 10, 2);
 
+/** Publicado: las 404 del sitio con la cabecera y el pie 2026 (TASK-064). */
+function canal_404_is_page(): bool
+{
+    return CANAL_2026_LIVE && is_404();
+}
+
 add_filter('template_include', function ($template) {
+    if (canal_404_is_page()) {
+        return CANAL_HOME_DIR . 'template-404.php';
+    }
     if (canal_home_is_page()) {
         return CANAL_HOME_DIR . 'template-home.php';
     }
@@ -141,6 +173,18 @@ add_filter('template_include', function ($template) {
     }
     return canal_carte_is_page() ? CANAL_HOME_DIR . 'template-carte.php' : $template;
 }, 99); // después de Elementor: la portada y /explorer/ publicadas son páginas Elementor
+
+add_action('wp_enqueue_scripts', function () {
+    if (!canal_404_is_page()) {
+        return;
+    }
+    canal_home_inline_style('canal-home-base', canal_home_base_css());
+    canal_home_inline_file('canal-contenu', 'assets/contenu.css', ['canal-home-base']);
+    canal_home_inline_file('canal-etape', 'assets/etape.css', ['canal-contenu']);
+    canal_home_inline_file('canal-home-header', 'assets/header.css', ['canal-home-base']);
+    wp_enqueue_style('canal-fiche-theme', CANAL_HOME_URL . 'assets/fiche-theme.css', ['canal-contenu', 'canal-home-header'], (string) filemtime(CANAL_HOME_DIR . 'assets/fiche-theme.css'));
+    wp_add_inline_style('canal-fiche-theme', CANAL_THEME_FIX_CSS);
+}, 20);
 
 // Prioridad 20: después de los estilos del tema, para ganar a igual especificidad.
 add_action('wp_enqueue_scripts', function () {
@@ -170,7 +214,7 @@ const CANAL_CARTE_UNUSED_ASSETS = '/^(elementor|e-animation|swiper|wc-|woocommer
 
 function canal_carte_dequeue_unused(): void
 {
-    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page() && !canal_planner_is_page() && !canal_contenu_is_page() && !canal_calcul_is_page() && !canal_archive_is_page() && !canal_etape_is_page()) {
+    if (!canal_carte_is_page() && !canal_fiche_is_page() && !canal_home_is_page() && !canal_planner_is_page() && !canal_contenu_is_page() && !canal_calcul_is_page() && !canal_archive_is_page() && !canal_etape_is_page() && !canal_404_is_page()) {
         return;
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {

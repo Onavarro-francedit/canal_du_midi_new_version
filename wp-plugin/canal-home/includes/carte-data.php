@@ -5,13 +5,19 @@
  */
 defined('ABSPATH') || exit;
 
-const CANAL_CARTE_CACHE = 'canal_carte_listings';
+const CANAL_CARTE_CACHE = 'canal_carte_listings_v2'; // v2: tag_slugs (TASK-064)
+
+/** Clave de caché por modo: las URLs de las fichas cambian al publicar (/fiche-2026/ → /fiche/). */
+function canal_carte_cache_key(): string
+{
+    return CANAL_CARTE_CACHE . (CANAL_2026_LIVE ? '_live' : '');
+}
 const CANAL_CARTE_GALLERY_MAX = 8;
 const CANAL_CARTE_EAGER_IMAGES = 6; // tarjetas cuya imagen se pide sin lazy (las visibles al cargar)
 
 function canal_carte_listings(): array
 {
-    $cached = get_transient(CANAL_CARTE_CACHE);
+    $cached = get_transient(canal_carte_cache_key());
     if (is_array($cached)) {
         return $cached;
     }
@@ -59,13 +65,14 @@ function canal_carte_listings(): array
             'type'        => canal_home_category_label($post->ID),
             'cat_names'   => array_map('canal_home_plain', wp_list_pluck($terms, 'name')),
             'cat_slugs'   => array_values(array_unique($slugs)),
+            'tag_slugs'   => array_values(wp_list_pluck(($tags = get_the_terms($post->ID, 'case27_job_listing_tags')) && !is_wp_error($tags) ? $tags : [], 'slug')),
             'city'        => canal_home_city($post->ID),
             'phone'       => trim((string) get_post_meta($post->ID, '_job_phone', true)),
             'email'       => sanitize_email((string) get_post_meta($post->ID, '_job_email', true)),
         ];
     }
     $items = canal_carte_resized_images($items);
-    set_transient(CANAL_CARTE_CACHE, $items, 12 * HOUR_IN_SECONDS);
+    set_transient(canal_carte_cache_key(), $items, 12 * HOUR_IN_SECONDS);
     return $items;
 }
 
@@ -167,6 +174,7 @@ function canal_carte_public(array $item): array
 function canal_carte_flush(): void
 {
     delete_transient(CANAL_CARTE_CACHE);
+    delete_transient(CANAL_CARTE_CACHE . '_live');
 }
 
 // Solo borran nuestro transient: no tocan nada existente.

@@ -39,7 +39,8 @@ function canal_2026_path(string $path, callable $isContent, ?callable $isArchive
     if (preg_match('#^post-category/(.+?)(?:/page/(\d+))?$#', $trim, $m)) {
         return $isArchive && $isArchive($m[1]) ? canal_archive_path($m[1], (int) ($m[2] ?? 1), CANAL_CONTENU_SUFFIX) : $path;
     }
-    if (preg_match('#^categorie/([^/]+)(/page/\d+)?$#', $trim, $m)) {
+    // Privado: las categorías del tema → la carte filtrada. Publicado: /categorie/<x>/ ya es la carte 2026 (TASK-064).
+    if (!CANAL_2026_LIVE && preg_match('#^categorie/([^/]+)(/page/\d+)?$#', $trim, $m)) {
         return CANAL_CARTE_PATH . '?type=' . $m[1];
     }
     return $isContent($trim) ? '/' . $trim . CANAL_CONTENU_SUFFIX . '/' : $path;

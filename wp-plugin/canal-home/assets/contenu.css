@@ -212,6 +212,14 @@
 .cdm-contenu .wpcf7-not-valid-tip { margin-top: 4px; font-size: 13px; font-weight: 600; }
 .cdm-contenu .wpcf7 .wpcf7-response-output { margin: 16px 0 0; padding: 12px 14px; border-radius: 12px; font-size: 14px; }
 
+/* Página 404 (TASK-064) */
+.cdm-contenu .contenu-404-search { display: flex; gap: 10px; max-width: 640px; margin: 0 0 32px; }
+.cdm-contenu .contenu-404-search input { flex: 1; min-width: 0; height: 54px; padding: 0 18px; border: 1.5px solid #dcd8f2; border-radius: 16px; font: 600 16px 'Manrope', sans-serif; color: var(--ink); background: #fff; }
+.cdm-contenu .contenu-404-search input:focus { outline: none; border-color: #6a63d9; box-shadow: 0 0 0 4px rgba(106, 99, 217, .14); }
+.cdm-contenu .contenu-404-search button { height: 54px; padding: 0 24px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #6a63d9, #4f48b7); color: #fff; font: 700 15px 'Manrope', sans-serif; cursor: pointer; }
+.cdm-contenu .contenu-404-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; max-width: 760px; }
+@media (max-width: 600px) { .cdm-contenu .contenu-404-links { grid-template-columns: 1fr; } .cdm-contenu .contenu-404-search { flex-direction: column; } }
+
 /* Archivos del blog (TASK-059): sub-rubriques, tarjetas, paginación */
 .cdm-contenu .contenu-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
 .cdm-contenu .contenu-chips a { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; background: #fff; }

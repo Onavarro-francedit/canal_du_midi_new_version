@@ -6,10 +6,11 @@
 defined('ABSPATH') || exit;
 
 // WP: datos de WordPress en lugar de los repositorios de la app local.
-$resetUrl      = (string) get_permalink();
+$resetUrl      = home_url(CANAL_CARTE_PATH); // WP: también desde /categorie/<x>/: el formulario busca en toda la carte
 $listings      = canal_carte_listings();
 $categories    = canal_carte_categories($listings);
-$params        = canal_carte_params(wp_unslash($_GET), array_column($categories, 'slug'));
+$term          = canal_carte_term(); // WP: /categorie/, /region/, /mot-cle/ publicados (TASK-064)
+$params        = canal_carte_term_params(canal_carte_params(wp_unslash($_GET), array_column($categories, 'slug')), $term);
 $results       = canal_carte_filter($listings, $params);
 $query         = $params['q'];
 $city          = $params['location'];
@@ -40,7 +41,8 @@ $activeFilters = array_filter(array_merge(
 // WP: datos para el <head> (título, meta, JSON-LD), que get_header() imprime.
 $faq      = $results ? canal_carte_faq($listings) : []; // WP: solo se muestra (y se marca) si hay lista
 $modified = canal_carte_last_modified();
-canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified]);
+$termSeo  = $term ? canal_carte_term_seo($term, $resultsCount) : null;
+canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified, 'term' => $term, 'termSeo' => $termSeo]);
 
 get_header();
 ?>
@@ -290,8 +292,13 @@ get_header();
             </div>
             <?php // WP: H1, introducción y editor (SEO/AEO/E-E-A-T), al pie de la columna de filtros en letra pequeña. ?>
             <div class="search-sidebar-about">
+                <?php if ($termSeo): ?>
+                <h1 class="search-results-title"><?= esc_html($termSeo['h1']) ?></h1>
+                <p class="search-results-intro"><?= esc_html($termSeo['intro']) ?></p>
+                <?php else: ?>
                 <h1 class="search-results-title">Carte des prestataires du Canal du Midi</h1>
                 <p class="search-results-intro"><?= (int) count($listings) ?> adresses le long des 240 km du canal, de Toulouse à l'étang de Thau : où dormir, louer un bateau ou un vélo, manger et visiter.</p>
+                <?php endif; ?>
                 <?php if ($modified !== ''): ?>
                     <p class="search-results-publisher">Guide édité par L'Officiel du Canal du Midi · mis à jour le <time datetime="<?= esc_attr($modified) ?>"><?= esc_html(date_i18n('j F Y', strtotime($modified))) ?></time></p>
                 <?php endif; ?>

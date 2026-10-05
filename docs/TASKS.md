@@ -379,6 +379,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-064 — Categorías, regiones, etiquetas y 404 en 2026 (modo publicado) — DESPLEGADO ✅ (apagado) — 2026-10-05
+- Faltaba en el plan: `/categorie/` recibe 106 k impresiones/año y se habría quedado con el diseño antiguo. Ahora, publicado,
+  `/categorie/<x>/`, `/region/<x>/`, `/mot-cle/<x>/` = carte 2026 filtrada por el término en su URL (`canal_carte_term()`,
+  `canal_carte_term_params/seo` con test), H1/título/descripción/canonical/migas propios; el filtro elegido por el visitante
+  manda; etiquetas en los datos de la carte (`tag_slugs`, caché v2 por modo). Menú y 301 de páginas antiguas → `/categorie/<x>/`.
+- 404 con cabecera 2026, buscador y accesos (`template-404.php`); `?s=` → búsqueda de la carte.
+- Verificado en la vista previa; para los visitantes no cambia nada mientras el interruptor siga apagado.
+
 ### TASK-062 — Formularios en las páginas 2026 — DESPLEGADO ✅ (privado) — 2026-10-05
 - « Recevoir le plan par courrier » (`/recevoir-le-plan-du-canal-du-midi-2-2026/`) es un **pedido de pago** (CF7 12976 + PayPal
   add-on, 7 €; mail a agomes@francedit.com + copia webfrancedit@gmail.com): se muestra el MISMO formulario en la plantilla de

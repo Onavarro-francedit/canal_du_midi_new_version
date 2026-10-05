@@ -14,7 +14,8 @@ function canal_header_is_page(): bool
         || (function_exists('canal_contenu_is_page') && canal_contenu_is_page())
         || (function_exists('canal_calcul_is_page') && canal_calcul_is_page())
         || (function_exists('canal_archive_is_page') && canal_archive_is_page())
-        || (function_exists('canal_etape_is_page') && canal_etape_is_page());
+        || (function_exists('canal_etape_is_page') && canal_etape_is_page())
+        || (function_exists('canal_404_is_page') && canal_404_is_page());
 }
 
 // Prioridad 99: la integración Elementor del tema usa el mismo filtro (a 10) y vuelve a poner show=true.
@@ -241,6 +242,10 @@ add_action('mylisting/body/start', function () {
     $isCarte = canal_carte_is_page();
     $menu    = canal_header_menu();
     $cats    = canal_fiche_is_page() ? array_column(canal_fiche_state()['categories'], 'slug') : [];
+    $term    = $isCarte && function_exists('canal_carte_term') ? canal_carte_term() : null;
+    if ($term && $term['tax'] === 'job_listing_category') {
+        $cats = [$term['slug']]; // /categorie/hotel/ marca « Se loger & manger »
+    }
     $type    = $isCarte && isset($_GET['type']) && is_string($_GET['type']) ? sanitize_key(wp_unslash($_GET['type'])) : '';
     $section = function_exists('canal_etape_is_page') && canal_etape_is_page() ? 'Villes & étapes' : canal_header_section($menu, $cats, $type);
     $here    = function (bool $current) { return $current ? ' aria-current="page"' : ''; };

@@ -89,7 +89,7 @@ function canal_2026_is_template_request(): bool
             return true;
         }
     }
-    if (canal_carte_is_page() || canal_home_is_page()) {
+    if (canal_carte_is_page() || canal_home_is_page() || canal_404_is_page()) {
         return true;
     }
     if (!CANAL_2026_LIVE) {

@@ -41,13 +41,13 @@ check($r('/post-category/actualites-2026/page/3/') === '/post-category/actualite
 check($r('/navigation/regles-de-navigation-2026/') === '/navigation/regles-de-navigation/' && $r('/canal-de-la-robine-2026') === '/canal-de-la-robine/', '301: contenido -2026');
 check($r('/organiser-votre-sejour/') === '/planificateur/' && $r('/demande-de-location-de-bateau/') === '/planificateur/', '301: sustituidas por el planificador');
 check($r('/agenda/') === '/manifestations-et-fetes-canal-du-midi/', '301: agenda vacío');
-check($r('/hotels/') === '/explorer/?type=hotel' && $r('/se-restaurer/') === '/explorer/?type=restauration' && $r('/details-presta/') === '/explorer/', '301: páginas antiguas → carte');
+check($r('/hotels/') === '/categorie/hotel/' && $r('/se-restaurer/') === '/categorie/restauration/' && $r('/details-presta/') === '/explorer/', '301: páginas antiguas → su categoría (carte 2026)');
 check($r('/les-ecluses-du-canal-du-midi/') === '/les-ecluses-du-canal-du-midi-2/', '301: lista antigua de esclusas → guía');
 check(count(CANAL_2026_LEGACY_REDIRECTS) >= 50, 'mapa: ≥ 50 páginas antiguas (' . count(CANAL_2026_LEGACY_REDIRECTS) . ')');
 foreach (['/', '/explorer/', '/fiche/port-de-sete/', '/canal-de-la-robine/', '/calcul-de-distance-canal-du-midi/', '/wp-admin/', '/plan-canal-du-midi.pdf', '/categorie/hotel/', '/2026/'] as $keep) {
     check($r($keep) === null, "sin redirección: $keep");
 }
-check(canal_2026_redirect_url('/hotels/', 'utm_source=x') === '/explorer/?type=hotel&utm_source=x' && canal_2026_redirect_url('/fiche-2026/a/', 'x=1') === '/fiche/a/?x=1', 'la query se conserva');
+check(canal_2026_redirect_url('/hotels/', 'utm_source=x') === '/categorie/hotel/?utm_source=x' && canal_2026_redirect_url('/fiche-2026/a/', 'x=1') === '/fiche/a/?x=1', 'la query se conserva');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

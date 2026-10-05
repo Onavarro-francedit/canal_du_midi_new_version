@@ -56,7 +56,58 @@ function canal_carte_params(array $get, array $validCatSlugs): array
         'location' => canal_carte_text($pick('location', 'search_location')),
         'lat'      => $hasGeo ? $lat : null,
         'lng'      => $hasGeo ? $lng : null,
+        'tag'      => '',
     ];
+}
+
+/**
+ * Páginas de taxonomía servidas con la carte (TASK-064): /categorie/<x>/, /region/<x>/, /mot-cle/<x>/ filtran por su
+ * término, salvo que el visitante haya elegido otro filtro del mismo tipo. $term: ['tax','slug','name','description'].
+ */
+function canal_carte_term_params(array $params, ?array $term): array
+{
+    $params += ['tag' => ''];
+    if ($term === null) {
+        return $params;
+    }
+    if ($term['tax'] === 'job_listing_category' && !$params['type']) {
+        $params['type'] = [$term['slug']];
+    } elseif ($term['tax'] === 'region' && $params['location'] === '') {
+        $params['location'] = $term['name'];
+    } elseif ($term['tax'] === 'case27_job_listing_tags') {
+        $params['tag'] = $term['slug'];
+    }
+    return $params;
+}
+
+/** Nombre para mostrar: « HOMPS » → « Homps », « SAINT-MARTIN-LALANDE » → « Saint-Martin-Lalande ». */
+function canal_carte_term_label(string $name): string
+{
+    $name = trim(html_entity_decode($name, ENT_QUOTES, 'UTF-8'));
+    return mb_strtoupper($name, 'UTF-8') === $name ? mb_convert_case(mb_strtolower($name, 'UTF-8'), MB_CASE_TITLE, 'UTF-8') : $name;
+}
+
+/** Título, H1, intro y descripción de una página de taxonomía (solo datos: término y número de fichas). */
+function canal_carte_term_seo(array $term, int $count): array
+{
+    $name = canal_carte_term_label($term['name']);
+    $adresses = $count . ' adresse' . ($count > 1 ? 's' : '');
+    $prestas = $count . ' prestataire' . ($count > 1 ? 's' : '');
+    if ($term['tax'] === 'region') {
+        $h1 = $name . ' : prestataires au bord du Canal du Midi';
+        $title = $name . ' : ' . $prestas . " du Canal du Midi | L'Officiel";
+        $intro = $prestas . ' à ' . $name . ' et aux alentours, le long du Canal du Midi : hébergements, bateaux, vélos, restaurants et visites.';
+    } elseif ($term['tax'] === 'case27_job_listing_tags') {
+        $h1 = $name . ' : prestataires du Canal du Midi';
+        $title = $name . ' — ' . $prestas . " du Canal du Midi | L'Officiel";
+        $intro = $prestas . ' « ' . $name . ' » le long du Canal du Midi, de Toulouse à l’étang de Thau.';
+    } else {
+        $h1 = $name . ' au bord du Canal du Midi';
+        $title = $h1 . ' : ' . $adresses . " | L'Officiel";
+        $intro = $adresses . ' « ' . $name . ' » le long du Canal du Midi, de Toulouse à l’étang de Thau : carte interactive, coordonnées et accès.';
+    }
+    $desc = trim((string) preg_replace('/\s+/u', ' ', strip_tags(html_entity_decode($term['description'] ?? '', ENT_QUOTES, 'UTF-8'))));
+    return ['h1' => $h1, 'title' => $title, 'intro' => $intro, 'description' => $desc !== '' ? $desc : $intro];
 }
 
 // Parámetros que filtran la carte (propios + alias de /explorer/). Una URL con alguno relleno es una
@@ -100,6 +151,9 @@ function canal_carte_filter(array $listings, array $params): array
             }
         }
         if ($params['type'] && !array_intersect($params['type'], $item['cat_slugs'])) {
+            continue;
+        }
+        if (($params['tag'] ?? '') !== '' && !in_array($params['tag'], $item['tag_slugs'] ?? [], true)) {
             continue;
         }
         if ($location !== '' && strpos(canal_carte_fold($item['city'] . ' ' . $item['address']), $location) === false) {
