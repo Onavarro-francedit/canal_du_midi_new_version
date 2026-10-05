@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* Maquette TASK-057 — identité des pages 2026 (fond lavande, Sora/Manrope, eyebrow violet, cartes blanches,
-   cartes-photo, frise des PK de la home, bouton violet). Données : PK réels des 63 écluses (calculateur actuel). */
+   cartes-photo, bouton violet). Données : PK réels des 63 écluses (calculateur actuel). */
 :root{
   --bg:#fcf8ff; --card:#fff; --text:#1f2340; --muted:#6c718d; --line:rgba(92,97,140,.14);
   --primary:#6a63d9; --primary-deep:#4f48b7; --water:#2BB6C4; --water-ink:#13606b; --soft:#f3f1fd;
@@ -69,18 +69,6 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .mode .time{font:800 26px/1.15 var(--f-head);letter-spacing:-.02em}
 .mode .days{font-size:14px;color:var(--muted)}
 
-/* Frise des PK (motif de la home) avec le tronçon en surbrillance */
-.frise{margin-top:28px;padding-top:22px;border-top:1px dashed #e2def4}
-.frise-track{position:relative;height:74px;margin:0 8px}
-.frise-line{position:absolute;left:0;right:0;top:22px;height:4px;border-radius:4px;background:#e6e3f5}
-.frise-seg{position:absolute;top:20px;height:8px;border-radius:8px;background:linear-gradient(90deg,var(--water),var(--primary));transition:left .35s ease,width .35s ease}
-.frise-lock{position:absolute;top:17px;width:2px;height:14px;background:#c9c4e6;transform:translateX(-1px)}
-.frise-lock.on{background:var(--primary-deep)}
-.frise-town{position:absolute;top:44px;transform:translateX(-50%);font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
-.frise-town::before{content:"";position:absolute;left:50%;top:-20px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#fff;border:2px solid #b9b4dc}
-.pin{position:absolute;top:0;transform:translateX(-50%);font:800 11px var(--f-head);color:#fff;background:var(--primary-deep);padding:3px 8px;border-radius:99px;white-space:nowrap;transition:left .35s ease}
-.pin--a{background:var(--water-ink)}
-.frise-legend{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:6px}
 .calc-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-top:18px;font-size:13px;color:var(--muted)}
 .share{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:99px;border:1.5px solid #dcd8f2;background:#fff;font:700 14px var(--f-body);color:var(--primary-deep);cursor:pointer}
 
@@ -145,8 +133,6 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
   .mode h3{margin:0;flex:1}
   .mode .txt{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
   .mode .time{font-size:21px}
-  .frise-town:not(.keep){display:none}
-  .pin{display:none}
   #map{height:300px}
   .map-box.is-lazy #map{display:none}
   .map-box.is-lazy .map-open{display:flex}
@@ -228,14 +214,6 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
         </div>
         <div class="map-legend"><span><i style="background:#6a63d9"></i>Votre trajet</span><span><i style="background:#c9c4e6"></i>Canal du Midi</span><span>◦ Écluses du trajet</span></div>
 
-        <div class="frise" aria-hidden="true">
-          <div class="frise-track" id="track">
-            <div class="frise-line"></div>
-            <div class="frise-seg" id="seg"></div>
-          </div>
-          <div class="frise-legend"><span>Toulouse · PK 0</span><span>Chaque trait = une écluse</span><span>Étang de Thau · PK 240</span></div>
-        </div>
-
         <div class="calc-foot">
           <span>Temps indicatifs : bateau 7 km/h + 10 min par sas d'écluse (comme les loueurs), vélo 15 km/h, à pied 4 km/h.</span>
           <button type="button" class="share" id="share"><svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg> Copier le lien du trajet</button>
@@ -309,7 +287,7 @@ const LOCKS = [[1.11,1,"Béarnais"],[2.05,1,"Minimes"],[3.72,1,"Bayard"],[15.73,
 // Villes et ports (PK indicatifs, à vérifier) ; keep = étiquette visible sur mobile.
 const TOWNS = [["Toulouse",0,1],["Toulouse Port Saint-Sauveur",5.4],["Ramonville",12.3],["Castanet-Tolosan",15.7],["Montgiscard",24.9],["Seuil de Naurouze",51.6],["Castelnaudary",64.9,1],["Bram",80.9],["Carcassonne",105.1,1],["Trèbes",117.5],["Marseillette",127.2],["Puichéric",136.4],["Homps",145.2,1],["Argens-Minervois",151.4],["Le Somail",165.6],["Capestang",188.4],["Poilhes",194],["Colombiers",200.6],["Béziers",208.4,1],["Portiragnes (Cassafières)",222.4],["Agde",231.2],["Étang de Thau (Les Onglous)",240.5,1]];
 const MATRIX = ["Toulouse","Castelnaudary","Carcassonne","Trèbes","Homps","Le Somail","Capestang","Béziers","Agde","Étang de Thau (Les Onglous)"];
-const SPEED_BOAT=7, MIN_PER_SAS=10, SPEED_BIKE=15, SPEED_WALK=4, BOAT_H_DAY=6, BIKE_KM_DAY=55, WALK_KM_DAY=20, TOTAL=240.5;
+const SPEED_BOAT=7, MIN_PER_SAS=10, SPEED_BIKE=15, SPEED_WALK=4, BOAT_H_DAY=6, BIKE_KM_DAY=55, WALK_KM_DAY=20;
 
 const places = new Map();
 TOWNS.forEach(([n,pk])=>places.set(n,pk));
@@ -321,7 +299,6 @@ const $=id=>document.getElementById(id);
 const fmtH=h=>{const t=Math.round(h*6)*10;const H=Math.floor(t/60),M=t%60;return H?`${H} h${M?" "+String(M).padStart(2,"0"):""}`:`${M} min`};
 const days=n=>n<=1?"dans la journée":`≈ ${n} jours`;
 const de=n=>(/^[AEIOUYÉÈ]/.test(n)?"d'":"de ")+n;
-const pct=pk=>`${(pk/TOTAL)*100}%`;
 
 function calc(a,b){
   const lo=Math.min(a,b),hi=Math.max(a,b),km=hi-lo;
@@ -329,13 +306,6 @@ function calc(a,b){
   const sites=inSeg.length,sas=inSeg.reduce((s,[,c])=>s+c,0);
   const boat=km/SPEED_BOAT+sas*MIN_PER_SAS/60;
   return {lo,hi,km,sites,sas,boat,bike:km/SPEED_BIKE,walk:km/SPEED_WALK};
-}
-
-function drawTrack(){
-  const t=$("track");
-  LOCKS.forEach(([pk])=>{const d=document.createElement("div");d.className="frise-lock";d.style.left=pct(pk);d.dataset.pk=pk;t.appendChild(d)});
-  TOWNS.filter(x=>x[2]).forEach(([n,pk])=>{const d=document.createElement("div");d.className="frise-town keep";d.style.left=pct(pk);if(pk<10)d.style.transform="translateX(-8px)";if(pk>230)d.style.transform="translateX(calc(-100% + 8px))";d.textContent=n;t.appendChild(d)});
-  ["a","b"].forEach(k=>{const p=document.createElement("div");p.className="pin pin--"+k;p.id="pin-"+k;t.appendChild(p)});
 }
 
 function update(){
@@ -348,10 +318,6 @@ function update(){
   $("t-boat").textContent=fmtH(r.boat); $("d-boat").textContent=days(Math.ceil(r.boat/BOAT_H_DAY))+" de navigation";
   $("t-bike").textContent=fmtH(r.bike); $("d-bike").textContent=r.km<=60?"dans la journée":days(Math.ceil(r.km/BIKE_KM_DAY));
   $("t-walk").textContent=fmtH(r.walk); $("d-walk").textContent=days(Math.ceil(r.km/WALK_KM_DAY));
-  $("seg").style.left=pct(r.lo); $("seg").style.width=`${(r.km/TOTAL)*100}%`;
-  document.querySelectorAll(".frise-lock").forEach(d=>d.classList.toggle("on",+d.dataset.pk>r.lo+0.01&&+d.dataset.pk<=r.hi+0.01));
-  $("pin-a").style.left=pct(places.get(fa)); $("pin-a").textContent=fa.replace(/^Écluses? (de |d')?/,"");
-  $("pin-b").style.left=pct(places.get(fb)); $("pin-b").textContent=fb.replace(/^Écluses? (de |d')?/,"");
   $("arrival-title").textContent=`Que faire à ${fb.replace(/^Écluses? (de |d')?/,"")} ?`;
   history.replaceState(null,"",`?de=${encodeURIComponent(fa)}&a=${encodeURIComponent(fb)}`);
   drawMap();
@@ -407,7 +373,7 @@ else addEventListener("load",()=>setTimeout(loadMap,300));
 const q=new URLSearchParams(location.search);
 if(places.has(q.get("de")))$("from").value=q.get("de");
 if(places.has(q.get("a")))$("to").value=q.get("a");
-drawTrack(); drawMatrix(); update();
+drawMatrix(); update();
 ["from","to"].forEach(id=>{$(id).addEventListener("input",update);$(id).addEventListener("focus",e=>e.target.select())});
 $("swap").addEventListener("click",()=>{const a=$("from").value;$("from").value=$("to").value;$("to").value=a;update()});
 $("share").addEventListener("click",()=>{navigator.clipboard?.writeText(location.href);$("share").lastChild.textContent=" Lien copié"});
