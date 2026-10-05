@@ -308,3 +308,10 @@ _(sin lecciones todavía)_
   usuario, (2) `cursor` coherente, y (3) una decisión consciente y documentada sobre táctil
   (fallback con flechas ↑↓, o "el backoffice es desktop-only"). Detectado en la revisión product
   de TASK-026 (2026-09-03). **Pendiente de decidir/corregir** (BUG-020).
+
+- **PRD-017: ningún enlace a la carte (ni a otro listado) sin comprobar que la búsqueda da resultados.**
+  En /etapes/ (« Loueurs à Toulouse ») y en 12 páginas de etapa (« Tout voir sur la carte ») el enlace llevaba a una
+  carte vacía: las páginas cuentan fichas por radio y la carte filtra por texto en commune/dirección. Regla: un enlace
+  `type` + `search_location` se construye y se cuenta con los MISMOS parámetros (`canal_carte_count($query)`, mismo
+  filtro que la carte); con 0 fichas no se muestra, y la etiqueta lleva el número real (« 2 loueurs à Homps »).
+  Detectado por el usuario el 2026-10-05 (TASK-067).
