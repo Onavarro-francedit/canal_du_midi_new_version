@@ -100,8 +100,10 @@ function canal_etape_data(array $e): array
         'read'   => $read,
         'faq'    => canal_etape_faq($e, $groups),
         'url'    => canal_etape_url($e['slug']),
+        // '' si la carte no daría ninguna ficha (cuenta por municipio, los grupos por radio): sin enlace vacío.
         'carte'  => function (string $type) use ($e): string {
-            return add_query_arg(array_filter(['type' => $type, 'search_location' => $e['search']]), home_url(CANAL_CARTE_PATH));
+            $query = array_filter(['type' => $type, 'search_location' => $e['search']]);
+            return canal_carte_count($query) ? add_query_arg($query, home_url(CANAL_CARTE_PATH)) : '';
         },
     ];
 }
@@ -170,16 +172,10 @@ function canal_parcours_loueurs_url(array $c): string
     return add_query_arg(canal_parcours_carte_query($c), home_url(CANAL_CARTE_PATH));
 }
 
-/** Etiqueta del botón, o null si la carte no daría ninguna ficha con esa búsqueda (mismo filtro que la carte). */
+/** Etiqueta del botón, o null si la carte no daría ninguna ficha con esa búsqueda. */
 function canal_parcours_loueurs_label(array $c): ?string
 {
-    static $listings = null, $slugs = null;
-    if ($listings === null) {
-        $listings = canal_carte_listings();
-        $slugs = array_column(canal_carte_categories($listings), 'slug');
-    }
-    $n = count(canal_carte_filter($listings, canal_carte_params(canal_parcours_carte_query($c), $slugs)));
-    return canal_parcours_carte_label($c['mode'], $n, canal_etape_a($c['from']));
+    return canal_parcours_carte_label($c['mode'], canal_carte_count(canal_parcours_carte_query($c)), canal_etape_a($c['from']));
 }
 
 // Sitemap: las étapes no son posts; proveedor propio solo con el sitio publicado (TASK-063).

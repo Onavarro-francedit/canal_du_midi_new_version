@@ -171,6 +171,17 @@ function canal_carte_public(array $item): array
     ];
 }
 
+/** Fichas que mostraría la carte con esta búsqueda (mismos parámetros y filtro que la carte): para no enlazar a una carte vacía. */
+function canal_carte_count(array $query): int
+{
+    static $listings = null, $slugs = null;
+    if ($listings === null) {
+        $listings = canal_carte_listings();
+        $slugs = array_column(canal_carte_categories($listings), 'slug');
+    }
+    return count(canal_carte_filter($listings, canal_carte_params($query, $slugs)));
+}
+
 function canal_carte_flush(): void
 {
     delete_transient(CANAL_CARTE_CACHE);

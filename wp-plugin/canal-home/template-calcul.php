@@ -114,7 +114,7 @@ get_header();
       </div>
       <div class="calc-photos" id="calc-photos">
         <?php foreach ($photos as $p): ?>
-          <a class="calc-photo" href="<?= $carte($p[0]) // phpcs:ignore — esc_url arriba. ?>" data-type="<?= esc_attr($p[0]) ?>">
+          <a class="calc-photo" href="<?= $carte($p[0]) // phpcs:ignore — esc_url arriba. ?>" data-type="<?= esc_attr($p[0]) ?>"<?= canal_carte_count(['type' => $p[0], 'search_location' => $c['arrival']['search']]) ? '' : ' hidden' ?>>
             <img src="<?= esc_url(home_url($p[3])) ?>" alt="" loading="lazy" width="768" height="512">
             <span><small><?= esc_html($p[1]) ?></small><strong><?= esc_html($p[2]) ?></strong></span>
           </a>

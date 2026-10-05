@@ -27,7 +27,7 @@ get_header();
                 <h1><?= esc_html($e['name']) ?></h1>
                 <p class="etape-lead"><?= esc_html($s['lead']) ?></p>
                 <div class="etape-actions">
-                    <a class="etape-btn" href="<?= esc_url(($s['carte'])('')) ?>"><i class="bi bi-map" aria-hidden="true"></i> Voir sur la carte</a>
+                    <?php if ($carteUrl = ($s['carte'])('')): ?><a class="etape-btn" href="<?= esc_url($carteUrl) ?>"><i class="bi bi-map" aria-hidden="true"></i> Voir sur la carte</a><?php endif; ?>
                     <?php if ($e['canal'] === 'midi'): ?>
                         <a class="etape-btn etape-btn--soft" href="<?= esc_url(add_query_arg('de', $e['calcul'], home_url('/' . CANAL_CALCUL_SLUG . CANAL_CONTENU_SUFFIX . '/'))) ?>"><i class="bi bi-rulers" aria-hidden="true"></i> Calculer un trajet</a>
                     <?php endif; ?>
@@ -56,7 +56,7 @@ get_header();
             <section class="etape-section" aria-labelledby="etape-<?= esc_attr($key) ?>">
                 <div class="etape-section-head">
                     <h2 id="etape-<?= esc_attr($key) ?>"><?= esc_html($g['label']) ?> <span><?= (int) $g['count'] ?></span></h2>
-                    <a href="<?= esc_url(($s['carte'])($g['type'])) ?>">Tout voir sur la carte →</a>
+                    <?php if ($carteUrl = ($s['carte'])($g['type'])): ?><a href="<?= esc_url($carteUrl) ?>">Tout voir sur la carte →</a><?php endif; ?>
                 </div>
                 <ul class="etape-cards">
                     <?php foreach ($g['items'] as $it): ?>

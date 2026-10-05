@@ -148,6 +148,8 @@ add_action('wp_enqueue_scripts', function () {
             'walkKmh' => CANAL_CALCUL_WALK_KMH, 'walkKmDay' => CANAL_CALCUL_WALK_KM_DAY,
         ],
         'carteUrl' => home_url(CANAL_CARTE_PATH),
+        // Fichas por municipio de llegada y tipo: la foto cuyo enlace daría una carte vacía se oculta.
+        'carteCounts' => canal_calcul_carte_counts(),
         'traceUrl' => CANAL_HOME_URL . 'assets/calcul/canal-du-midi-trace.json?ver=' . filemtime(CANAL_HOME_DIR . 'assets/calcul/canal-du-midi-trace.json'),
     ]);
 }, 20);
@@ -161,6 +163,19 @@ add_action('wp_print_footer_scripts', function () {
     $maps = wp_scripts()->registered['google-maps'] ?? null;
     wp_add_inline_script('canal-calcul', 'window.CDM_CALCUL_MAPS = ' . wp_json_encode($maps ? (string) $maps->src : '') . ';', 'before');
 }, 1);
+
+const CANAL_CALCUL_CARTE_TYPES = ['location-bateau', 'hebergement', 'location-de-velo'];
+
+function canal_calcul_carte_counts(): array
+{
+    $out = [];
+    foreach (array_unique(array_column(CANAL_CALCUL_TOWNS, 'search')) as $search) {
+        foreach (CANAL_CALCUL_CARTE_TYPES as $type) {
+            $out[$search][$type] = canal_carte_count(['type' => $type, 'search_location' => $search]);
+        }
+    }
+    return $out;
+}
 
 const CANAL_CALCUL_TITLE = 'Calcul de distance sur le Canal du Midi : km, écluses, temps de trajet';
 const CANAL_CALCUL_DESCRIPTION = 'Distance, nombre d’écluses et temps de trajet en bateau, à vélo ou à pied entre deux villes, ports ou écluses du Canal du Midi, de Toulouse à l’étang de Thau.';

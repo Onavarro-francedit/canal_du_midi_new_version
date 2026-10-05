@@ -146,6 +146,7 @@
             u.searchParams.set('type', a.dataset.type);
             u.searchParams.set('search_location', arr.search);
             a.href = u.toString();
+            a.hidden = !((D.carteCounts[arr.search] || {})[a.dataset.type] > 0);
         });
         if (push !== false) {
             var u = new URL(location.href);

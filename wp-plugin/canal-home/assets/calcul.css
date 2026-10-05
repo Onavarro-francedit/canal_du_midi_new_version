@@ -94,6 +94,7 @@
 .cdm-calcul .calc-section-head p { color: var(--muted); margin: 10px 0 0; }
 .cdm-calcul .calc-photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .cdm-calcul .calc-photo { position: relative; display: block; height: 220px; border-radius: 22px; overflow: hidden; text-decoration: none; color: #fff; box-shadow: 0 18px 40px rgba(31, 35, 64, .16); }
+.cdm-calcul .calc-photo[hidden] { display: none; }
 .cdm-calcul .calc-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .cdm-calcul .calc-photo:hover img { transform: scale(1.04); }
 .cdm-calcul .calc-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(14, 20, 36, .78)); }
