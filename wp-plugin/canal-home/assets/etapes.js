@@ -56,7 +56,9 @@
             markers.push(m);
             bounds.extend(m.getPosition());
         });
-        map.fitBounds(bounds, 40);
+        // Los popups se abren por encima del punto: se reserva arriba su altura para que el canal no quede cortado.
+        var h = document.getElementById('etapes-map').offsetHeight;
+        map.fitBounds(bounds, { top: Math.min(330, Math.round(h * .6)), right: 30, bottom: 24, left: 30 });
         google.maps.event.addListenerOnce(map, 'idle', function () { open(0, false); });
         box.classList.add('is-ready');
     };
