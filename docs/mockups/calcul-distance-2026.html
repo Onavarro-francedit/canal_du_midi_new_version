@@ -84,6 +84,14 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .calc-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-top:18px;font-size:13px;color:var(--muted)}
 .share{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:99px;border:1.5px solid #dcd8f2;background:#fff;font:700 14px var(--f-body);color:var(--primary-deep);cursor:pointer}
 
+/* Carte Google Maps du trajet */
+.map-box{position:relative;margin-top:26px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#eef3f6}
+#map{height:380px}
+.map-open{display:none}
+.map-credit{position:absolute;left:10px;bottom:6px;font-size:11px;color:#55607a;background:rgba(255,255,255,.8);padding:1px 6px;border-radius:6px}
+.map-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted)}
+.map-legend i{display:inline-block;width:18px;height:5px;border-radius:4px;vertical-align:middle;margin-right:6px}
+
 /* Sections */
 .section{padding:64px 0}
 .section-head{max-width:720px;margin-bottom:26px}
@@ -139,6 +147,11 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
   .mode .time{font-size:21px}
   .frise-town:not(.keep){display:none}
   .pin{display:none}
+  #map{height:300px}
+  .map-box.is-lazy #map{display:none}
+  .map-box.is-lazy .map-open{display:flex}
+  .map-box.is-lazy .map-credit{display:none}
+  .map-open{width:100%;height:64px;border:0;background:linear-gradient(135deg,#f3f1fd,#e9f7f8);align-items:center;justify-content:center;gap:10px;font:700 15px var(--f-body);color:var(--primary-deep);cursor:pointer}
   .brand{white-space:nowrap}
   .cta{height:38px;padding:0 14px;font-size:13px;white-space:nowrap}
 }
@@ -146,7 +159,7 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
 </style>
 </head>
 <body>
-<div class="note-maquette">Maquette TASK-057 — données réelles (PK du calculateur actuel) ; PK des villes et de Fonseranes à vérifier avant publication.</div>
+<div class="note-maquette">Maquette TASK-057 — PK réels des écluses ; PK des villes et ports calculés sur le tracé OpenStreetMap recalé sur les écluses (écart ≤ 0,5 km).</div>
 
 <header class="nav">
   <div class="nav-in">
@@ -207,6 +220,13 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
             </div>
           </div>
         </div>
+
+        <div class="map-box" id="map-box">
+          <div id="map" role="img" aria-label="Carte du trajet sur le Canal du Midi"></div>
+          <button type="button" class="map-open" id="map-open"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Voir le trajet sur la carte</button>
+          <span class="map-credit">Tracé du canal © OpenStreetMap</span>
+        </div>
+        <div class="map-legend"><span><i style="background:#6a63d9"></i>Votre trajet</span><span><i style="background:#c9c4e6"></i>Canal du Midi</span><span>◦ Écluses du trajet</span></div>
 
         <div class="frise" aria-hidden="true">
           <div class="frise-track" id="track">
@@ -282,13 +302,14 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
 
 <footer>© 2026 L'Officiel du Canal du Midi — maquette</footer>
 
+<script src="maps-key.local.js"></script>
 <script>
 // PK réels des 63 écluses (select du calculateur actuel) + sas par site ; Fonseranes ajoutée (PK à vérifier).
-const LOCKS = [[1.11,1,"Béarnais"],[2.05,1,"Minimes"],[3.72,1,"Bayard"],[15.73,1,"Castanet"],[17.45,1,"Vic"],[24.94,2,"Montgiscard"],[28.11,1,"Ayguesvives"],[29.66,2,"Sanglier"],[33.3,1,"Négra"],[37.51,2,"Laval"],[38.96,1,"Gardouch"],[43.05,1,"Renneville"],[45.92,2,"Encassan"],[47.51,1,"Emborrel"],[51.632,1,"l'Océan"],[56.631,1,"la Méditerranée"],[57.503,2,"Roc"],[58.741,3,"Laurens"],[59.701,1,"la Domergue"],[60.918,1,"Laplanque"],[65.597,4,"Saint-Roch"],[67.068,2,"Gay"],[68.716,3,"Vivier"],[69.135,1,"Guilhermin"],[69.672,1,"Saint-Sernin"],[70.564,1,"Guerre"],[71.659,1,"la Peyruque"],[72.161,1,"la Criminelle"],[73.55,1,"Tréboul"],[77.372,1,"Villepinte"],[79.046,1,"Sauzens"],[80.256,1,"Bram"],[85.874,1,"Béteille"],[93.392,1,"Villesèquelande"],[98.215,2,"Lalande"],[98.53,1,"Herminis"],[99.901,1,"Ladouce"],[105.26,1,"Carcassonne"],[107.97,1,"Saint-Jean"],[108.75,2,"Fresquel (double)"],[109,1,"Fresquel (simple)"],[112.61,1,"l'Évêque"],[113.4,1,"Villedubert"],[118.01,3,"Trèbes"],[127.2,1,"Marseillette"],[130.352,3,"Fonfile"],[131.594,2,"Saint-Martin"],[133.359,2,"l'Aiguille"],[136.396,2,"Puichéric"],[142.7,1,"Jouarres"],[146.39,1,"Homps"],[147.08,2,"Ognon"],[149.81,2,"Pechlaurier"],[152.29,1,"Argens"],[206.8,8,"Fonseranes"],[208.012,1,"l'Orb"],[208.39,1,"Béziers"],[212.452,1,"Arièges"],[213.796,1,"Villeneuve"],[218.262,1,"Portiragnes"],[231.42,1,"ronde d'Agde"],[232.04,1,"Prades"],[235.3,1,"Bagnas"]];
+const LOCKS = [[1.11,1,"Béarnais"],[2.05,1,"Minimes"],[3.72,1,"Bayard"],[15.73,1,"Castanet"],[17.45,1,"Vic"],[24.94,2,"Montgiscard"],[28.11,1,"Ayguesvives"],[29.66,2,"Sanglier"],[33.3,1,"Négra"],[37.51,2,"Laval"],[38.96,1,"Gardouch"],[43.05,1,"Renneville"],[45.92,2,"Encassan"],[47.51,1,"Emborrel"],[51.632,1,"l'Océan"],[56.631,1,"la Méditerranée"],[57.503,2,"Roc"],[58.741,3,"Laurens"],[59.701,1,"la Domergue"],[60.918,1,"Laplanque"],[65.597,4,"Saint-Roch"],[67.068,2,"Gay"],[68.716,3,"Vivier"],[69.135,1,"Guilhermin"],[69.672,1,"Saint-Sernin"],[70.564,1,"Guerre"],[71.659,1,"la Peyruque"],[72.161,1,"la Criminelle"],[73.55,1,"Tréboul"],[77.372,1,"Villepinte"],[79.046,1,"Sauzens"],[80.256,1,"Bram"],[85.874,1,"Béteille"],[93.392,1,"Villesèquelande"],[98.215,2,"Lalande"],[98.53,1,"Herminis"],[99.901,1,"Ladouce"],[105.26,1,"Carcassonne"],[107.97,1,"Saint-Jean"],[108.75,2,"Fresquel (double)"],[109,1,"Fresquel (simple)"],[112.61,1,"l'Évêque"],[113.4,1,"Villedubert"],[118.01,3,"Trèbes"],[127.2,1,"Marseillette"],[130.352,3,"Fonfile"],[131.594,2,"Saint-Martin"],[133.359,2,"l'Aiguille"],[136.396,2,"Puichéric"],[142.7,1,"Jouarres"],[146.39,1,"Homps"],[147.08,2,"Ognon"],[149.81,2,"Pechlaurier"],[152.29,1,"Argens"],[206.6,8,"Fonseranes"],[208.012,1,"l'Orb"],[208.39,1,"Béziers"],[212.452,1,"Arièges"],[213.796,1,"Villeneuve"],[218.262,1,"Portiragnes"],[231.42,1,"ronde d'Agde"],[232.04,1,"Prades"],[235.3,1,"Bagnas"]];
 // Villes et ports (PK indicatifs, à vérifier) ; keep = étiquette visible sur mobile.
-const TOWNS = [["Toulouse",0,1],["Ramonville",8.5],["Castanet-Tolosan",15.7],["Montgiscard",24.9],["Seuil de Naurouze",51.6],["Castelnaudary",64.8,1],["Bram",80.3],["Carcassonne",105.3,1],["Trèbes",118.1],["Marseillette",127.2],["Puichéric",136.4],["Homps",146.4,1],["Argens-Minervois",152.3],["Le Somail",160],["Capestang",188],["Béziers",207.2,1],["Portiragnes",218.3],["Agde",231.4],["Étang de Thau",240,1]];
-const MATRIX = ["Toulouse","Castelnaudary","Carcassonne","Trèbes","Homps","Le Somail","Capestang","Béziers","Agde","Étang de Thau"];
-const SPEED_BOAT=7, MIN_PER_SAS=10, SPEED_BIKE=15, SPEED_WALK=4, BOAT_H_DAY=6, BIKE_KM_DAY=55, WALK_KM_DAY=20, TOTAL=240;
+const TOWNS = [["Toulouse",0,1],["Toulouse Port Saint-Sauveur",5.4],["Ramonville",12.3],["Castanet-Tolosan",15.7],["Montgiscard",24.9],["Seuil de Naurouze",51.6],["Castelnaudary",64.9,1],["Bram",80.9],["Carcassonne",105.1,1],["Trèbes",117.5],["Marseillette",127.2],["Puichéric",136.4],["Homps",145.2,1],["Argens-Minervois",151.4],["Le Somail",165.6],["Capestang",188.4],["Poilhes",194],["Colombiers",200.6],["Béziers",208.4,1],["Portiragnes (Cassafières)",222.4],["Agde",231.2],["Étang de Thau (Les Onglous)",240.5,1]];
+const MATRIX = ["Toulouse","Castelnaudary","Carcassonne","Trèbes","Homps","Le Somail","Capestang","Béziers","Agde","Étang de Thau (Les Onglous)"];
+const SPEED_BOAT=7, MIN_PER_SAS=10, SPEED_BIKE=15, SPEED_WALK=4, BOAT_H_DAY=6, BIKE_KM_DAY=55, WALK_KM_DAY=20, TOTAL=240.5;
 
 const places = new Map();
 TOWNS.forEach(([n,pk])=>places.set(n,pk));
@@ -333,15 +354,55 @@ function update(){
   $("pin-b").style.left=pct(places.get(fb)); $("pin-b").textContent=fb.replace(/^Écluses? (de |d')?/,"");
   $("arrival-title").textContent=`Que faire à ${fb.replace(/^Écluses? (de |d')?/,"")} ?`;
   history.replaceState(null,"",`?de=${encodeURIComponent(fa)}&a=${encodeURIComponent(fb)}`);
+  drawMap();
 }
 
 function drawMatrix(){
   const pk=n=>TOWNS.find(t=>t[0]===n)[1];
-  let h="<thead><tr><th></th>"+MATRIX.map(n=>`<th scope="col">${n}</th>`).join("")+"</tr></thead><tbody>";
-  MATRIX.forEach(r=>{h+=`<tr><th scope="row">${r}</th>`+MATRIX.map(c=>r===c?'<td class="diag">—</td>':`<td><button data-a="${r}" data-b="${c}">${Math.round(Math.abs(pk(r)-pk(c)))}</button></td>`).join("")+"</tr>"});
+  let h="<thead><tr><th></th>"+MATRIX.map(n=>`<th scope="col">${n.replace(' (Les Onglous)','')}</th>`).join("")+"</tr></thead><tbody>";
+  MATRIX.forEach(r=>{h+=`<tr><th scope="row">${r.replace(' (Les Onglous)','')}</th>`+MATRIX.map(c=>r===c?'<td class="diag">—</td>':`<td><button data-a="${r}" data-b="${c}">${Math.round(Math.abs(pk(r)-pk(c)))}</button></td>`).join("")+"</tr>"});
   $("matrix").innerHTML=h+"</tbody>";
   $("matrix").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;$("from").value=b.dataset.a;$("to").value=b.dataset.b;update();window.scrollTo({top:0,behavior:"smooth"})});
 }
+
+// ---- Carte : tracé OSM [lat,lng,PK] + Google Maps (clé du site, fichier local hors git) ----
+let TRACE=null, map=null, layers=[];
+const atPk=pk=>{for(let i=1;i<TRACE.length;i++){const a=TRACE[i-1],b=TRACE[i];if(pk<=b[2]){const t=(pk-a[2])/((b[2]-a[2])||1);return {lat:a[0]+(b[0]-a[0])*t,lng:a[1]+(b[1]-a[1])*t}}}const z=TRACE[TRACE.length-1];return {lat:z[0],lng:z[1]}};
+const pathBetween=(lo,hi)=>[atPk(lo),...TRACE.filter(p=>p[2]>lo&&p[2]<hi).map(p=>({lat:p[0],lng:p[1]})),atPk(hi)];
+function drawMap(){
+  if(!map||!TRACE)return;
+  const fa=$("from").value.trim(),fb=$("to").value.trim();
+  if(!places.has(fa)||!places.has(fb))return;
+  const a=places.get(fa),b=places.get(fb),r=calc(a,b);
+  layers.forEach(l=>l.setMap(null)); layers=[];
+  const seg=pathBetween(r.lo,r.hi);
+  layers.push(new google.maps.Polyline({map,path:seg,strokeColor:"#ffffff",strokeWeight:11,strokeOpacity:1,zIndex:2}));
+  layers.push(new google.maps.Polyline({map,path:seg,strokeColor:"#6a63d9",strokeWeight:6,strokeOpacity:1,zIndex:3}));
+  LOCKS.filter(([pk])=>pk>r.lo+0.01&&pk<=r.hi+0.01).forEach(([pk,c,n])=>layers.push(new google.maps.Marker({map,position:atPk(pk),title:lockName(n)+(c>1?` (${c} sas)`:""),zIndex:4,
+    icon:{path:google.maps.SymbolPath.CIRCLE,scale:c>1?5:4,fillColor:"#fff",fillOpacity:1,strokeColor:"#4f48b7",strokeWeight:2}})));
+  [[a,"#13606b","A",fa],[b,"#4f48b7","B",fb]].forEach(([pk,col,lab,name])=>layers.push(new google.maps.Marker({map,position:atPk(pk),title:name,zIndex:5,
+    label:{text:lab,color:"#fff",fontWeight:"800",fontSize:"12px"},icon:{path:google.maps.SymbolPath.CIRCLE,scale:12,fillColor:col,fillOpacity:1,strokeColor:"#fff",strokeWeight:3}})));
+  const bounds=new google.maps.LatLngBounds(); seg.forEach(p=>bounds.extend(p)); map.fitBounds(bounds,48);
+}
+function initMap(){
+  map=new google.maps.Map($("map"),{center:{lat:43.33,lng:2.4},zoom:8,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,clickableIcons:false,
+    styles:[{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#bfe6ec"}]},{featureType:"landscape",stylers:[{color:"#f4f2fa"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#ffffff"}]},{featureType:"road",elementType:"labels.icon",stylers:[{visibility:"off"}]}]});
+  new google.maps.Polyline({map,path:TRACE.map(p=>({lat:p[0],lng:p[1]})),strokeColor:"#c9c4e6",strokeWeight:4,strokeOpacity:1,zIndex:1});
+  drawMap();
+}
+let mapsRequested=false;
+function loadMap(){
+  if(mapsRequested)return; mapsRequested=true;
+  $("map-box").classList.remove("is-lazy");
+  fetch("canal-du-midi-trace.json").then(r=>r.json()).then(t=>{TRACE=t;
+    window.cdmInitMap=initMap;
+    const s=document.createElement("script");
+    s.src=`https://maps.googleapis.com/maps/api/js?key=${window.CDM_MAPS_KEY||""}&v=3&language=fr&callback=cdmInitMap`;
+    s.async=true; document.head.appendChild(s);});
+}
+// Escritorio : la carte se charge après l'affichage ; mobile : seulement sur demande (comme la carte 2026, TASK-036).
+if(matchMedia("(max-width:600px)").matches){$("map-box").classList.add("is-lazy");$("map-open").addEventListener("click",loadMap)}
+else addEventListener("load",()=>setTimeout(loadMap,300));
 
 const q=new URLSearchParams(location.search);
 if(places.has(q.get("de")))$("from").value=q.get("de");
