@@ -10,7 +10,8 @@ defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 function canal_header_is_page(): bool
 {
     return canal_home_is_page() || canal_carte_is_page() || canal_fiche_is_page()
-        || (function_exists('canal_planner_is_page') && canal_planner_is_page());
+        || (function_exists('canal_planner_is_page') && canal_planner_is_page())
+        || (function_exists('canal_contenu_is_page') && canal_contenu_is_page());
 }
 
 // Prioridad 99: la integración Elementor del tema usa el mismo filtro (a 10) y vuelve a poner show=true.

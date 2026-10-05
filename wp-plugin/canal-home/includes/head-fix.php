@@ -84,7 +84,7 @@ function canal_home_webp_exists(string $rel): bool
 if (function_exists('add_action')) {
     // Prioridad -1: antes del template_redirect de la ficha (prioridad 0, que incluye la plantilla y sale).
     add_action('template_redirect', function () {
-        if (get_query_var('canal_fiche') !== '' || canal_carte_is_page() || canal_home_is_page()) {
+        if (get_query_var('canal_fiche') !== '' || get_query_var('canal_contenu') !== '' || canal_carte_is_page() || canal_home_is_page()) {
             ob_start(function (string $html): string {
                 $html = canal_home_webp_html(canal_home_move_consent_to_body(canal_fiche_lighten_head(canal_home_fix_head($html))), 'canal_home_webp_exists', untrailingslashit(home_url()));
                 if (!empty($GLOBALS['canal_home_webp_pending']) && !defined('DONOTCACHEPAGE')) {

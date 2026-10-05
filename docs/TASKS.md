@@ -4,18 +4,20 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-### TASK-053 — Generador de páginas 2026 (resto del sitio) — fase 1: inventario ✅ 2026-10-05
-- Inventario + tráfico 12 meses (GA4 + Search Console) + intención de búsqueda: `docs/inventario-paginas-2026-10-05.md`,
-  datos por URL con decisión en `docs/data/paginas-trafico-2025-10_2026-09.csv`.
-- Conclusión: 4 plantillas genéricas por router (contenido · listado · calcul de distance · ville/étape) en vez de página
-  a página; navbar 6 → 5 entradas (−16 enlaces, + Villes & étapes).
-- Siguiente: diseño (brainstorming) y plan de la plantilla *contenido* (`/<slug>-2026/`).
-
-_(TASK-048 cerrada ⚠️ → seguimiento TASK-049 en 🟡.)_
-
-_(Publicar home + carte + ficha: SOLO con orden explícita, TASK-028 / TASK-029b / TASK-030b en 🟡.)_
+### TASK-053 — Generador de páginas 2026 (resto del sitio)
+- Fase 1 inventario ✅ (`docs/inventario-paginas-2026-10-05.md`, CSV por URL). Decisión del usuario 05/10: **todas** las páginas
+  y artículos pasan a 2026 (también los sin tráfico) y hay que mejorar SEO/AEO/GEO de todo.
+- ✅ TASK-055 plantilla de contenido (ver 🟢). Siguiente: TASK-056 (enriquecimiento IA), luego calcul de distance 2026,
+  listados de categoría, villes & étapes, navbar de 5 entradas.
 
 ## 🟡 Pendiente
+
+### TASK-056 — Enriquecimiento editorial IA de todas las páginas/artículos (fase 2 de TASK-055)
+- Por URL, en metadatos nuevos (no se toca post_content): `_canal_2026_title` (406 títulos en MAYÚSCULAS),
+  `_canal_2026_description`, `_canal_2026_summary` (« L'essentiel »), `_canal_2026_faq` (JSON). La plantilla ya los lee.
+- ~800 artículos (41 %) son copias de prensa (579 La Dépêche « DDM », 212 Midi Libre): reescribir como texto propio que
+  cite la fuente (duplicado = no posiciona + riesgo de derechos). Incluso `/peniches-a-vendre-…/` (nº 6) es de ladepeche.fr.
+- Requiere crédito en la API de Anthropic (o generarlo en sesión por lotes). Empezar por las ~260 URLs con tráfico.
 
 ### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
 - `wp-content/themes/my-listing/affiche_pub_940.php` conecta a la BD `pimcore` (51.38.234.212) con usuario y contraseña
@@ -359,6 +361,18 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-055 — Plantilla de contenido 2026: cualquier página o artículo en `/<ruta>-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
+- Spec `docs/superpowers/specs/2026-10-05-plantilla-contenido-2026-design.md`, plan en `docs/superpowers/plans/`.
+- `includes/contenu-core.php` (puro, `tests/test-contenu.php`), `includes/contenu-route.php` (parse_request sin reglas de
+  reescritura; las páginas reales -2026 no cambian), `template-contenu.php`, `assets/contenu.css` (a mano, en línea).
+- Elegibles: 1 936 artículos + páginas con plantilla de contenido; 404 en plantillas especiales (calcul de distance,
+  rechercher-presta, tienda…). Privada: `read_private_pages` o `wp option update canal_contenu_public 1`.
+- Automático: un solo H1 (h1 del texto → h2), pseudo-títulos en negrita → h2, `[Zoomer]` fuera, meta description, Article/
+  WebPage + BreadcrumbList + entidad Canal du Midi, fechas visibles, aviso en artículos de >3 años, columna con
+  herramientas y páginas hermanas, canonical, noindex mientras haya sufijo. Lee los metadatos `_canal_2026_*` (TASK-056).
+- Verificado: smoke en prod (5 URLs + exclusiones), 404 sin sesión, navegador 1440 px y 390 px sin scroll horizontal
+  (los widgets de ancho fijo hacen scroll en su bloque), Manrope sobre el `p{Quicksand!important}` del tema.
 
 ### TASK-054 — Plan PDF: URL fija con la edición más reciente — DESPLEGADO ✅ — 2026-10-05
 - `https://www.plan-canal-du-midi.com/plan-canal-du-midi.pdf` sirve el `uploads/pdf/Plan-Canal-du-Midi-AAAA.pdf` de año más
