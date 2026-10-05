@@ -84,6 +84,7 @@ function canal_contenu_data(WP_Post $p): array
     $crumbs[] = [$url, $title];
     return [
         'id'          => $p->ID,
+        'plugins'     => canal_contenu_keeps_plugins($p->post_name),
         'type'        => $p->post_type,
         'title'       => $title,
         'description' => $description,

@@ -37,6 +37,7 @@ check($p('/categorie/location-bateau/') === '/explorer-2026/?type=location-batea
 check($p('/categorie/ports/page/2/') === '/explorer-2026/?type=ports', 'categoría paginada → carte filtrada');
 check($p('/calcul-de-distance-canal-du-midi/') === '/calcul-de-distance-canal-du-midi-2026/', 'calcul → calcul 2026');
 check($p('/organiser-votre-sejour/') === '/planificateur-2026/', 'organiser → planificateur');
+check($p('/demande-de-location-de-bateau/') === '/planificateur-2026/' && $p('/demande-dhebergement-le-long-du-canal-du-midi/') === '/planificateur-2026/', 'demandes → planificateur');
 
 // Contenido: solo si es elegible.
 check($p('/canal-de-la-robine/') === '/canal-de-la-robine-2026/', 'página de contenido → -2026');

@@ -10,10 +10,13 @@ defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 const CANAL_CONTENU_SUFFIX = '-2026';
 // Páginas de contenido; las demás plantillas son herramientas, formularios o listados antiguos (404 en -2026).
 const CANAL_CONTENU_PAGE_TEMPLATES = ['', 'default', 'templates/content-sidebar.php'];
-// También las que llevan formularios o tablas de plugins (CF7, ccf_form, calendar, TablePress): en las páginas 2026 sus
-// scripts y el reCAPTCHA no se cargan, así que siguen en el tema hasta tener su propia versión.
+// Fuera también las « demande… » (las sustituye el planificador: links-2026.php las enlaza allí) y el agenda vacío.
 const CANAL_CONTENU_EXCLUDED_SLUGS = ['boutique', 'panier', 'paiement', 'mon-compte', 'claim-list', 'site-web-en-maintenance', 'votre-demande-de-guide-est-valide',
-    'agenda', 'demande-de-location-de-bateau', 'demande-de-promenade-en-bateaux', 'demande-dhebergement-le-long-du-canal-du-midi', 'boutique-canal-du-midi', 'recevoir-le-plan-du-canal-du-midi-2'];
+    'agenda', 'demande-de-location-de-bateau', 'demande-de-promenade-en-bateaux', 'demande-dhebergement-le-long-du-canal-du-midi'];
+// Páginas cuyo contenido es un plugin que debe seguir funcionando igual: el pedido del plan en papel (CF7 + PayPal, 7 €)
+// y la boutique (TablePress). En ellas no se quitan los scripts de esos plugins (canal_carte_dequeue_unused).
+const CANAL_CONTENU_PLUGIN_SLUGS = ['recevoir-le-plan-du-canal-du-midi-2', 'boutique-canal-du-midi'];
+const CANAL_CONTENU_PLUGIN_ASSETS = '/^(contact-form-7|wpcf7|swv|cf7pp|wpecpp|wp-ecommerce-paypal|tablepress)/';
 const CANAL_CONTENU_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 // « navigation/regles-de-navigation-2026 » → « navigation/regles-de-navigation »; null si no es una ruta -2026.
@@ -30,6 +33,11 @@ function canal_contenu_strip_suffix(string $request, string $suffix): ?string
 }
 
 // Todos los artículos publicados (decisión del usuario: también los que no tienen tráfico); páginas de contenido.
+function canal_contenu_keeps_plugins(string $slug): bool
+{
+    return in_array($slug, CANAL_CONTENU_PLUGIN_SLUGS, true);
+}
+
 function canal_contenu_is_eligible(string $type, string $status, string $template, string $slug): bool
 {
     if ($status !== 'publish' || in_array($slug, CANAL_CONTENU_EXCLUDED_SLUGS, true)) {

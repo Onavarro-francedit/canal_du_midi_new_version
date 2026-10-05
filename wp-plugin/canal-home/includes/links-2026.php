@@ -26,7 +26,8 @@ function canal_2026_path(string $path, callable $isContent, ?callable $isArchive
     if ($trim === 'explorer') {
         return CANAL_CARTE_PATH;
     }
-    if ($trim === 'organiser-votre-sejour') {
+    // Las « demande… » de antes: el planificador las sustituye (sin versión 2026).
+    if ($trim === 'organiser-votre-sejour' || in_array($trim, ['demande-de-location-de-bateau', 'demande-de-promenade-en-bateaux', 'demande-dhebergement-le-long-du-canal-du-midi'], true)) {
         return CANAL_PLANNER_PATH;
     }
     if ($trim === CANAL_CALCUL_SLUG) {

@@ -147,6 +147,10 @@ function canal_carte_dequeue_unused(): void
     }
     foreach ([wp_scripts(), wp_styles()] as $deps) {
         foreach ($deps->queue as $handle) {
+            // Pedido del plan y boutique: sus formularios y tablas de plugins siguen cargando sus scripts.
+            if (canal_contenu_is_page() && !empty(canal_contenu_state()['plugins']) && preg_match(CANAL_CONTENU_PLUGIN_ASSETS, $handle)) {
+                continue;
+            }
             // Carte: conserva Google Maps; ficha y home (sin mapa propio del tema): fuera.
             if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle) || (canal_carte_is_page() ? canal_theme_is_unused_asset($handle) : canal_fiche_is_unused_asset($handle))) {
                 $deps->dequeue($handle);

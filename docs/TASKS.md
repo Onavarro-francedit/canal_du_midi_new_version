@@ -359,6 +359,17 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-062 — Formularios en las páginas 2026 — DESPLEGADO ✅ (privado) — 2026-10-05
+- « Recevoir le plan par courrier » (`/recevoir-le-plan-du-canal-du-midi-2-2026/`) es un **pedido de pago** (CF7 12976 + PayPal
+  add-on, 7 €; mail a agomes@francedit.com + copia webfrancedit@gmail.com): se muestra el MISMO formulario en la plantilla de
+  contenido, sin quitar sus scripts (`CANAL_CONTENU_PLUGIN_SLUGS` / `CANAL_CONTENU_PLUGIN_ASSETS`). No se reescribe el flujo de pago.
+- La boutique (TablePress, enlaces externos de 2020) también pasa a 2026 con su tabla.
+- Las 3 « demande… » (0–9 vistas/año) no tienen versión 2026: sus enlaces llevan al planificador (links-2026.php). El agenda
+  vacío sigue fuera.
+- Verificado sin enviar pedidos: CF7 + SWV + cf7pp + wpecpp cargados; envío vacío → « invalid » por AJAX, 7 campos marcados, sin
+  correo ni PayPal. Campos con el estilo del calcul. El menú 2026 solo enlaza ya al tema en « Mon compte ».
+- ⚠️ Probar un pedido real (o de prueba de PayPal) antes de publicar.
+
 ### TASK-061 — Navbar 2026 de 5 entradas — DESPLEGADO ✅ — 2026-10-05
 - `canal_header_menu()` (header.php): En bateau | Vélo & balades | **Villes & étapes** (6 etapas, Robine, Le canal, À voir; pie
   « Toutes les étapes ») | **Se loger & manger** | Préparer (con el plan PDF). 103 → 66 enlaces: fuera 16 categorías con 0–2
