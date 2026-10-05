@@ -17,26 +17,25 @@ function check(bool $cond, string $label): void
 }
 
 foreach (CANAL_METEO_STATIONS as $s) {
-    foreach (['tmin', 'tmax', 'rain', 'hot'] as $k) {
+    foreach (['tmin', 'tmax', 'rain', 'hot', 'heat', 'record'] as $k) {
         check(count($s[$k]) === 12, "datos: {$s['name']} $k con 12 meses");
     }
-    check(strpos($s['url'], 'FICHECLIM_') !== false, "datos: {$s['name']} enlaza su ficha Météo-France");
 }
 check(count(CANAL_METEO_NAV) === 12, 'navegación: 12 meses');
-check(CANAL_METEO_STATIONS[1]['tmax'][6] === 28.8 && CANAL_METEO_STATIONS[1]['rain'][6] === 4.6, 'datos: Carcassonne julio = ficha (28,8 °C, 4,6 j)');
+check(CANAL_METEO_STATIONS[1]['tmax'][7] === 31.4 && CANAL_METEO_STATIONS[1]['hot'][7] === 18.4 && CANAL_METEO_STATIONS[1]['record'][7] === [43.2, 2023], 'datos: Carcassonne agosto 2021–2025 (31,4 °C, 18,4 j ≥ 30 °C, 43,2 °C en 2023)');
 
-check(canal_meteo_best_months() === [5, 6, 9], 'mejor época: mayo, junio, septiembre (regla 20–27 °C + navegación en temporada)');
+check(canal_meteo_best_months() === [5, 9, 10], 'mejor época 2021–2025: mayo, septiembre, octubre (regla 20–27 °C + navegación en temporada)');
 check(canal_meteo_months_label([5, 6, 9]) === 'mai, juin et septembre', 'meses en francés');
 check(canal_meteo_num(28.8) === '28,8' && canal_meteo_num(10.0) === '10', 'números con coma, sin ,0');
 
 $rows = canal_meteo_rows();
 check(count($rows) === 12 && $rows[0]['month'] === 'Janvier' && count($rows[0]['temps']) === 3, 'tabla: 12 filas, 3 estaciones');
-check($rows[4]['best'] && !$rows[6]['best'], 'tabla: mayo marcado, julio no');
+check($rows[4]['best'] && !$rows[6]['best'] && $rows[7]['record'] === '43,2 °C (2023)', 'tabla: mayo marcado, julio no; máxima de agosto');
 
 $faq = canal_meteo_faq();
 check(count($faq) === 4, 'faq: 4 preguntas');
-check(strpos($faq[0]['a'], 'Mai, juin et septembre') === 0 && strpos($faq[0]['a'], 'Carcassonne') !== false, 'faq: mejor época con la regla');
-check(strpos($faq[1]['a'], '28,8') !== false, 'faq: verano con la cifra de la ficha');
+check(strpos($faq[0]['a'], 'Mai, septembre et octobre') === 0 && strpos($faq[0]['a'], '43,2 °C (août 2023)') !== false, 'faq: mejor época con la regla y la máxima');
+check(strpos($faq[1]['a'], '31,4') !== false && strpos($faq[1]['a'], '35 °C') !== false, 'faq: verano con las cifras 2021–2025');
 check(strpos($faq[3]['a'], '1er janvier') !== false && strpos($faq[3]['a'], '25 décembre') !== false, 'faq: cierres de nuestra página de navegación');
 foreach ($faq as $qa) {
     check(substr($qa['q'], -2) === ' ?', 'faq: « ' . $qa['q'] . ' »');
