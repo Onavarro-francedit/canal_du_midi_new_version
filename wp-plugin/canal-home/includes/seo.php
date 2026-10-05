@@ -7,6 +7,8 @@
 defined('ABSPATH') || exit;
 
 const CANAL_HOME_SITE_NAME = "L'Officiel du Canal du Midi";
+// Así nos nombran las IA y el dominio (GEO-IA 05/10): une las dos marcas en el schema.
+const CANAL_HOME_ALT_NAMES = ['Plan Canal du Midi', 'plan-canal-du-midi.com'];
 const CANAL_HOME_LOGO      = '/wp-content/uploads/2020/04/logo_canal_nouveau_2020_v6.png';
 const CANAL_HOME_FACEBOOK  = 'https://www.facebook.com/canaldumidi.officiel/';
 const CANAL_HOME_INSTAGRAM = 'https://www.instagram.com/lofficielducanaldumidi/';
@@ -60,6 +62,7 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
                 '@type'              => 'Organization',
                 '@id'                => $org,
                 'name'               => CANAL_HOME_SITE_NAME,
+                'alternateName'      => CANAL_HOME_ALT_NAMES,
                 'url'                => $home,
                 'logo'               => home_url(CANAL_HOME_LOGO),
                 'sameAs'             => [CANAL_HOME_FACEBOOK, CANAL_HOME_INSTAGRAM],
@@ -77,6 +80,7 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
                 '@id'             => $site,
                 'url'             => $home,
                 'name'            => CANAL_HOME_SITE_NAME,
+                'alternateName'   => CANAL_HOME_ALT_NAMES,
                 'inLanguage'      => 'fr-FR',
                 'publisher'       => ['@id' => $org],
                 'potentialAction' => [
@@ -125,6 +129,7 @@ function canal_home_seo_graph(string $url, array $sejours, string $modified = ''
                 'description'         => "Carte détaillée et gratuite du Canal du Midi, de Toulouse à l'étang de Thau : écluses, ports, services et points d'intérêt.",
                 'url'                 => home_url(CANAL_PLAN_PDF_PATH),
                 'encodingFormat'      => 'application/pdf',
+                'version'             => canal_plan_pdf_year(),
                 'isAccessibleForFree' => true,
                 'inLanguage'          => 'fr-FR',
                 'publisher'           => ['@id' => $org],

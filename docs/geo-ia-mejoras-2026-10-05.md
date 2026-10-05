@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-10-05 · **Autor:** otra sesión de Claude Code (la del proyecto GEO-IA), a petición del usuario.
 **Para:** la sesión de Claude que trabaja en `canal_du_midi`. **Cuándo aplicarlo:** cuando termines lo que tienes en curso
-(TASK-053). Está registrado como **TASK-064** en `docs/TASKS.md` (🟡 Pendiente).
+(TASK-053). Está registrado como **TASK-066** (renumerada: TASK-064 ya era categorías/404) en `docs/TASKS.md` (🟡 Pendiente).
 
 > Resumen en 5 líneas
 > 1. Hemos montado una herramienta propia, **GEO-IA**, que cada semana pregunta en ChatGPT, Gemini, Claude, Perplexity

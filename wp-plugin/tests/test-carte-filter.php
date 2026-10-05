@@ -102,6 +102,9 @@ check(strpos($faq[2]['a'], '2 hébergements') !== false, 'faq: hébergement cuen
 check(count(canal_carte_faq([$F('Agde', ['bar'])])) === 1, 'faq: categorías sin fichas se omiten (queda la pregunta de uso)');
 check(substr($qs[0], -2) === ' ?', 'faq: puntuación francesa (espacio antes de ?)');
 check(strpos($faq[1]['a'], '1 loueur de vélos est référencé') === 0, 'faq: concordancia en singular');
+$pdf = canal_carte_faq($faqData, '2026');
+check(count($pdf) === 5 && strpos(end($pdf)['q'], 'PDF') !== false, 'faq: con edición del plan, pregunta « carte en PDF » al final');
+check(strpos(end($pdf)['a'], 'édition 2026') !== false && strpos(end($pdf)['a'], '/plan-canal-du-midi.pdf') !== false, 'faq: PDF con año de edición y URL fija');
 
 // Páginas de taxonomía en la carte (TASK-064): /categorie/, /region/, /mot-cle/ filtran la carte por su término.
 $base = canal_carte_params([], ['hotel', 'camping']);

@@ -39,7 +39,7 @@ $activeFilters = array_filter(array_merge(
 ));
 
 // WP: datos para el <head> (título, meta, JSON-LD), que get_header() imprime.
-$faq      = $results ? canal_carte_faq($listings) : []; // WP: solo se muestra (y se marca) si hay lista
+$faq      = $results ? canal_carte_faq($listings, canal_plan_pdf_year()) : []; // WP: solo se muestra (y se marca) si hay lista
 $modified = canal_carte_last_modified();
 $termSeo  = $term ? canal_carte_term_seo($term, $resultsCount) : null;
 canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified, 'term' => $term, 'termSeo' => $termSeo]);

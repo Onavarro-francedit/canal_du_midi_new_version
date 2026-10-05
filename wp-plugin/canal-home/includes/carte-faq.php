@@ -29,8 +29,11 @@ function canal_carte_join_fr(array $items): string
     return implode(', ', array_slice($items, 0, -1)) . ' et ' . end($items);
 }
 
-/** @return array<int, array{q: string, a: string}> */
-function canal_carte_faq(array $listings): array
+/**
+ * $planYear: edición del PDF del plan (canal_plan_pdf_year()); vacío → sin la pregunta del PDF.
+ * @return array<int, array{q: string, a: string}>
+ */
+function canal_carte_faq(array $listings, string $planYear = ''): array
 {
     $count = function (string $slug) use ($listings): int {
         return count(array_filter($listings, function ($item) use ($slug) {
@@ -72,5 +75,13 @@ function canal_carte_faq(array $listings): array
         'a' => 'Cherchez par mot-clé ou par type de service, activez « Autour de moi » pour trier les adresses par distance, '
             . 'ou décrivez votre séjour à l’assistant IA. Chaque fiche indique l’adresse, le téléphone et l’itinéraire.',
     ];
+    if ($planYear !== '') {
+        $faq[] = [
+            'q' => 'Où télécharger une carte détaillée du Canal du Midi en PDF ?',
+            'a' => 'Le plan officiel du Canal du Midi (édition ' . $planYear . ') est gratuit : de Toulouse à l’étang de Thau, '
+                . 'avec les étapes, les écluses, les ports et les points d’intérêt. Téléchargez-le en PDF sur '
+                . 'plan-canal-du-midi.com/plan-canal-du-midi.pdf ou recevez-le par e-mail depuis la page d’accueil.',
+        ];
+    }
     return $faq;
 }

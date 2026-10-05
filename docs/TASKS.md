@@ -12,7 +12,7 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
-### TASK-064 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
+### TASK-066 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
 - **Leer primero:** `docs/geo-ia-mejoras-2026-10-05.md` (lo escribió la sesión de GEO-IA para esta sesión: metodología,
   resultados, páginas competidoras y detalle de cada mejora). Panel: `http://localhost/geo-ia/?site=canal-du-midi`.
 - Medición: nos citan en el 20 % de las respuestas de IA (Google IA 5/10, Perplexity 3/10, Gemini 2/10, ChatGPT/Claude 0).
@@ -22,6 +22,12 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   · T1 `alternateName` « L'Officiel du Canal du Midi » · T2 Sallèles-d'Aude · T4 respuesta directa en vélo/distances.
 - ⚠️ M1/M2/M4/M5 son contenido editorial nuevo: **confirmar con el usuario** (TASK-056 descartada). Preferir páginas
   construidas desde datos. Tras desplegar cada una: botón « Hecha » en el panel GEO-IA.
+- ✅ T1 (05/10, local, sin desplegar): el nombre ya era « L'Officiel du Canal du Midi »; se añade `alternateName`
+  « Plan Canal du Midi » / dominio en Organization y WebSite (`seo.php`) y « aussi appelé… » en llms.txt, llms-full.txt y su
+  generador. Al desplegar: subir también llms.txt y llms-full.txt a httpdocs.
+- ✅ M3 (05/10, local, sin desplegar): FAQ de la carte con « Où télécharger une carte détaillée… en PDF ? » (año de
+  `canal_plan_pdf_year()`, test en `test-carte-filter.php`); texto del bloque plan de la home con la edición; `version` en el
+  schema Map. Falta: `remote.sh deploy` (bloqueado por permisos esta sesión) y botón « Hecha » en GEO-IA.
 
 ### TASK-063 — Publicación del sitio 2026 — FASE 0 HECHA (05/10); publicar SOLO con orden explícita
 - Fase 0 ✅: interruptor `canal_2026_live` (apagado), vista previa de administrador `/?canal_2026_preview=1`, 301, eventos GA4,

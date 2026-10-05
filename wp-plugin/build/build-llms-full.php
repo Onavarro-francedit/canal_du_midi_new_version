@@ -8,7 +8,7 @@ $base = 'https://www.plan-canal-du-midi.com';
 $cats = is_readable($argv[1] ?? '') ? trim(file_get_contents($argv[1])) : '';
 
 $o  = "# L'Officiel du Canal du Midi — version complète\n\n";
-$o .= "> Guide pratique et plan officiel du Canal du Midi (France), édité chaque année par Azur Communications. Plus de 250 prestataires touristiques référencés le long du canal, de Toulouse à l'étang de Thau. Version résumée : $base/llms.txt\n\n";
+$o .= "> Guide pratique et plan officiel du Canal du Midi (France), édité chaque année par Azur Communications, aussi appelé « Plan Canal du Midi » (plan-canal-du-midi.com). Plus de 250 prestataires touristiques référencés le long du canal, de Toulouse à l'étang de Thau. Version résumée : $base/llms.txt\n\n";
 $o .= "## Le Canal du Midi en bref\n\n";
 $o .= "- Longueur : 240 km, de Toulouse à l'étang de Thau (Les Onglous, vers Sète).\n";
 $o .= "- Écluses : 63.\n- Construction : Pierre-Paul Riquet ; inauguration en 1681.\n";

@@ -348,7 +348,7 @@ get_header();
                 <div class="eyebrow">Guide officiel</div>
                 <h2>Recevez le plan du Canal du Midi 2026</h2>
                 <p style="color:var(--muted);margin-bottom:24px;">
-                    La carte détaillée et gratuite du canal : toutes les étapes, écluses et points d'intérêt de Toulouse à la Méditerranée, directement dans votre boîte mail.
+                    Carte détaillée et gratuite du Canal du Midi<?= ($planYear = canal_plan_pdf_year()) !== '' ? ', édition ' . esc_html($planYear) : '' ?> : toutes les étapes, écluses, ports et points d'intérêt de Toulouse à l'étang de Thau. En PDF à télécharger ou directement dans votre boîte mail.
                 </p>
 
                 <?php if ($planMsg): ?>
