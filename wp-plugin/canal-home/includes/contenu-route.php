@@ -94,7 +94,9 @@ function canal_contenu_data(WP_Post $p): array
         'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: ($p->post_name === CANAL_METEO_SLUG ? canal_meteo_faq() : []),
         'html'        => $html,
         'published'   => (string) get_post_time('c', false, $p),
-        'modified'    => (string) get_post_modified_time('c', false, $p),
+        'modified'    => $p->post_name === CANAL_METEO_SLUG
+            ? max((string) get_post_modified_time('c', false, $p), CANAL_METEO_UPDATED)
+            : (string) get_post_modified_time('c', false, $p),
         'image'       => $image !== '' ? $image : home_url(CANAL_HOME_HERO_IMAGE),
         'thumb'       => (string) get_the_post_thumbnail($p, 'large', ['class' => 'contenu-cover', 'loading' => 'eager', 'fetchpriority' => 'high']),
         'crumbs'      => $crumbs,

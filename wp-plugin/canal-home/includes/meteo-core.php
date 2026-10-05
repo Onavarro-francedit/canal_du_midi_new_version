@@ -12,6 +12,8 @@ const CANAL_METEO_SLUG = 'meteo-du-canal-du-midi';
 const CANAL_METEO_NAV_URL = '/navigation/periode-de-navigation/';
 const CANAL_METEO_SOURCE_URL = 'https://meteo.data.gouv.fr/datasets/donnees-climatologiques-de-base-mensuelles';
 const CANAL_METEO_YEARS = '2021–2025';
+// Fecha de la última actualización de estos datos: la página météo 2026 muestra la más reciente entre esta y la de WordPress.
+const CANAL_METEO_UPDATED = '2026-10-05T12:00:00+02:00';
 const CANAL_METEO_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 // Media mensual 2021–2025. tmin/tmax: media de las mínimas/máximas diarias (°C); rain: días con ≥ 1 mm; hot: días con
