@@ -4,7 +4,12 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
-_(Nada en curso: TASK-050 cerrada ⚠️ → seguimiento TASK-050b en 🟡.)_
+### TASK-053 — Generador de páginas 2026 (resto del sitio) — fase 1: inventario ✅ 2026-10-05
+- Inventario + tráfico 12 meses (GA4 + Search Console) + intención de búsqueda: `docs/inventario-paginas-2026-10-05.md`,
+  datos por URL con decisión en `docs/data/paginas-trafico-2025-10_2026-09.csv`.
+- Conclusión: 4 plantillas genéricas por router (contenido · listado · calcul de distance · ville/étape) en vez de página
+  a página; navbar 6 → 5 entradas (−16 enlaces, + Villes & étapes).
+- Siguiente: diseño (brainstorming) y plan de la plantilla *contenido* (`/<slug>-2026/`).
 
 _(TASK-048 cerrada ⚠️ → seguimiento TASK-049 en 🟡.)_
 
