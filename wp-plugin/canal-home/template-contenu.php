@@ -62,7 +62,7 @@ get_header();
                                 <thead>
                                     <tr>
                                         <th scope="col">Mois</th>
-                                        <?php foreach (CANAL_METEO_STATIONS as $st): ?><th scope="col"><?= esc_html($st['name']) ?><small>moy. min / max</small></th><?php endforeach; ?>
+                                        <?php foreach (CANAL_METEO_STATIONS as $st): ?><th scope="col"><?= esc_html($st['name']) ?><small>max. moyenne</small></th><?php endforeach; ?>
                                         <th scope="col">Jours ≥ 30 °C<small>Carcassonne</small></th>
                                         <th scope="col">Max. relevé<small>Carcassonne</small></th>
                                         <th scope="col">Pluie<small>Carcassonne</small></th>
@@ -83,7 +83,7 @@ get_header();
                                 </tbody>
                             </table>
                         </div>
-                        <p class="contenu-meteo-source">Moyennes <?= esc_html(CANAL_METEO_YEARS) ?> (5 dernières années complètes) des températures minimales et maximales quotidiennes, nombre moyen de jours à 30 °C ou plus et avec au moins 1 mm de pluie, température la plus haute relevée sur ces années :
+                        <p class="contenu-meteo-source">Moyennes <?= esc_html(CANAL_METEO_YEARS) ?> (5 dernières années complètes) des températures maximales quotidiennes, nombre moyen de jours à 30 °C ou plus et avec au moins 1 mm de pluie, température la plus haute relevée sur ces années :
                             <a href="<?= esc_url(CANAL_METEO_SOURCE_URL) ?>" target="_blank" rel="noopener">Météo-France, données climatologiques mensuelles</a>
                             (stations <?= esc_html(implode(', ', array_column(CANAL_METEO_STATIONS, 'station'))) ?>), Licence Ouverte. « Conseillé » : maximale moyenne de 20 à 27 °C à Carcassonne et navigation en saison. Saisons de navigation : <a href="<?= esc_url(home_url(CANAL_METEO_NAV_URL)) ?>">Période de navigation</a>.</p>
                     </section>

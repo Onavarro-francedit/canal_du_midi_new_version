@@ -50,7 +50,7 @@ const CANAL_METEO_STATIONS = [
 const CANAL_METEO_NAV = [
     ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
     ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
-    ['Basse puis moyenne (17 mars)', '8 h 30 – 16 h 30, puis 8 h – 19 h', false],
+    ['Basse, moyenne le 17', '8 h 30 – 16 h 30, puis 8 h – 19 h', false],
     ['Moyenne saison', '8 h – 19 h', true],
     ['Haute saison', '8 h – 19 h 30', true],
     ['Haute saison', '8 h – 19 h 30', true],
@@ -96,7 +96,7 @@ function canal_meteo_months_label(array $months): string
     return $names ? implode(', ', $names) . ' et ' . $last : (string) $last;
 }
 
-/** Filas de la tabla: mes, mín/máx por estación, días ≥ 30 °C, máxima registrada y lluvia (Carcassonne), navegación. */
+/** Filas de la tabla: mes, máxima media por estación, días ≥ 30 °C, máxima registrada y lluvia (Carcassonne), navegación. */
 function canal_meteo_rows(): array
 {
     $best = canal_meteo_best_months();
@@ -106,7 +106,7 @@ function canal_meteo_rows(): array
         $rows[] = [
             'month'  => ucfirst(CANAL_METEO_MONTHS[$i]),
             'temps'  => array_map(function ($s) use ($i) {
-                return canal_meteo_num($s['tmin'][$i]) . ' / ' . canal_meteo_num($s['tmax'][$i]) . ' °C';
+                return canal_meteo_num($s['tmax'][$i]) . ' °C';
             }, CANAL_METEO_STATIONS),
             'hot'    => canal_meteo_num($car['hot'][$i]) . ' j',
             'record' => canal_meteo_num($car['record'][$i][0]) . ' °C (' . $car['record'][$i][1] . ')',
