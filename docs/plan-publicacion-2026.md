@@ -91,7 +91,8 @@ Momento: un día laborable por la mañana. Octubre es temporada baja (el tráfic
 momento para corregir antes de la temporada 2027.
 
 1. `CANAL_2026_LIVE = true` → `remote.sh deploy` (los tests y el lint de PHP 7.4 se ejecutan antes).
-2. Planificador: página 18505 → `publish` + slug `planificateur`.
+2. Planificador: `remote.sh wp post update 18505 --post_status=publish --post_title="Planificateur" --post_name=planificateur`
+   (`/planificateur/` ya lo sirve el plugin en modo publicado aunque no se cambie el slug; el título quita el « 2026 » de la pestaña).
 3. Vaciar la caché WPFC (`wpfc_clear_all_cache`) y `canal_carte_listings`.
 4. Subir `llms.txt` y `llms-full.txt`.
 5. **Smoke en ventana anónima** (lista de §6): 200 + diseño 2026 en las 15 URLs tipo; 301 en las del §4.
@@ -189,6 +190,7 @@ Sirdata). Se marcan como key events en GA4 (lo hace el usuario o yo vía la API 
 | Copia de la BD | ✅ `/var/www/vhosts/plan-canal-du-midi.com/backups-canal/db-pre-publicacion-2026-20261005-1145-completa.sql.gz` (101 tablas + 32 vistas, 8,5 MB) |
 | Tag git del plugin | ✅ `pre-publicacion-2026` |
 | Línea base | ✅ `docs/data/baseline-gsc-28d-2026-10-05.csv`, `docs/data/baseline-crux-2026-10-05.txt` (CrUX de origen: móvil LCP 2,97 s · INP 114 ms · TTFB 1,25 s; escritorio LCP 2,70 s) |
-| Al encender (fase 1): página 18505 → `publish` + slug `planificateur`; `llms.txt` / `llms-full.txt` con las URLs definitivas | pendiente |
+| `/planificateur/` en modo publicado (sirve la página por su plantilla; sin bucle con la redirección canónica de WP) | ✅ verificado en la vista previa (también organiser y demandes → planificador) |
+| Al encender (fase 1): página 18505 → `publish` + título « Planificateur »; `llms.txt` / `llms-full.txt` con las URLs definitivas | pendiente |
 | Bloqueantes del usuario (§3 fase 0, punto 5): pedido real del plan, crédito Anthropic, `CANAL_PLANNER_LIVE`, `pm.max_children`, dirección | pendiente |
 | Corregido gracias a la vista previa | Elementor imponía su plantilla en `/` y `/explorer/` (la nuestra va ahora a prioridad 99); `/categorie/` y `/region/` caían en la carte (excluidas) |

@@ -106,6 +106,32 @@ function canal_planner_is_page(): bool
     return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_PLANNER_TEMPLATE;
 }
 
+/** Página del planificador (la que usa su plantilla), sea cual sea su slug o estado. */
+function canal_planner_page_id(): int
+{
+    static $id = null;
+    if ($id === null) {
+        $ids = get_posts(['post_type' => 'page', 'post_status' => ['publish', 'private'], 'meta_key' => '_wp_page_template', 'meta_value' => CANAL_PLANNER_TEMPLATE, 'fields' => 'ids', 'numberposts' => 1]);
+        $id = (int) ($ids[0] ?? 0);
+    }
+    return $id;
+}
+
+// Publicado (o vista previa): /planificateur/ sirve la página del planificador aunque su slug siga siendo
+// planificateur-2026 (al publicar basta con ponerla en « publish »). Sin la redirección canónica de WP, que
+// mandaría al permalink -2026 y, con la 301 de redirects-2026.php, haría un bucle.
+add_action('parse_request', function (WP $wp) {
+    if (CANAL_2026_LIVE && trim((string) $wp->request, '/') === trim(CANAL_PLANNER_PATH, '/') && canal_planner_page_id()) {
+        $wp->query_vars = ['page_id' => canal_planner_page_id()];
+    }
+}, 6);
+add_filter('redirect_canonical', function ($url) {
+    return CANAL_2026_LIVE && canal_planner_is_page() ? false : $url;
+});
+add_filter('get_canonical_url', function ($url, $post) {
+    return CANAL_2026_LIVE && (int) $post->ID === canal_planner_page_id() ? home_url(CANAL_PLANNER_PATH) : $url;
+}, 10, 2);
+
 add_filter('template_include', function ($template) {
     if (canal_home_is_page()) {
         return CANAL_HOME_DIR . 'template-home.php';
