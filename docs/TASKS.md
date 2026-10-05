@@ -12,6 +12,17 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
+### TASK-064 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
+- **Leer primero:** `docs/geo-ia-mejoras-2026-10-05.md` (lo escribió la sesión de GEO-IA para esta sesión: metodología,
+  resultados, páginas competidoras y detalle de cada mejora). Panel: `http://localhost/geo-ia/?site=canal-du-midi`.
+- Medición: nos citan en el 20 % de las respuestas de IA (Google IA 5/10, Perplexity 3/10, Gemini 2/10, ChatGPT/Claude 0).
+  0/5 en météo, campings, location bateau y « que voir »; canal-du-midi.com se lleva 55 citas.
+- Mejoras: M1 météo « meilleure période » + tabla · M2 campings con distancia a la orilla/PK · M3 PDF (ya hecho por TASK-054;
+  falta bloque de respuesta en la carte) · M4 location bateau sans permis · M5 top villages/sites por PK en `/etapes-2026/`
+  · T1 `alternateName` « L'Officiel du Canal du Midi » · T2 Sallèles-d'Aude · T4 respuesta directa en vélo/distances.
+- ⚠️ M1/M2/M4/M5 son contenido editorial nuevo: **confirmar con el usuario** (TASK-056 descartada). Preferir páginas
+  construidas desde datos. Tras desplegar cada una: botón « Hecha » en el panel GEO-IA.
+
 ### TASK-063 — Publicación del sitio 2026 — plan listo, SOLO con orden explícita
 - Plan completo: `docs/plan-publicacion-2026.md` (agrupa TASK-028/029b/030b/044b). Un solo interruptor `CANAL_2026_LIVE`
   (URLs originales, sin noindex, 301 activas); vuelta atrás = constante a false + deploy (~2 min).
