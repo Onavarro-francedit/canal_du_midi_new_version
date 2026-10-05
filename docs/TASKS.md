@@ -12,23 +12,6 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
-### TASK-067 — /etapes/ « Quel parcours faire ? » (rediseño, 2026-10-05) — desplegado y verificado (privado)
-- El usuario: el índice de 20 fichas no ayuda a decidir. Investigación (Loire à Vélo, Canal des 2 Mers, Le Boat,
-  canal-du-midi.com): entrar por modo + duración y proponer pocos parcours con cifras. Maqueta `docs/mockups/etapes-2026.html`.
-- Hecho: selectores bateau/vélo × journée/week-end/semaine → parcours (km, esclusas, horas, días del calcul; etapas por las
-  que pasa; enlaces al calcul y a los loueurs); el canal en línea con los tramos entre etapas y la Robine; FAQ « Combien de
-  temps… » + « Que voir… ». Parcours editables en wp-admin: Apariencia → Menús, ubicación « Parcours (page Étapes 2026) »
-  (enlace al calcul `?de=X&a=Y`, clases `bateau|velo` `jour|weekend|semaine` [`aller-retour`]); sin menú, `CANAL_PARCOURS_DEFAULT`.
-- Rehecho (05/10, petición del usuario: faltaba « à pied », solo 1–2 parcours y el mapa de etapas no aportaba): modos
-  bateau/vélo/à pied; « Au départ de… » calcula todos los tramos que caben (`canal_parcours_all`, ventanas
-  `CANAL_PARCOURS_WINDOWS`, hasta 6 por salida); el mapa dibuja el parcours seleccionado (A/B y etapas intermedias).
-  Verificado en escritorio (vélo · week-end · Carcassonne → 6 parcours; à pied). Móvil sin verificar.
-- Enlaces a la carte con recuento previo (`canal_carte_count`, PRD-017) en /etapes/, página de etapa y calcul.
-- FAQ de /etapes/ con las preguntas de Search Console (12 meses): parcours, bateau combien de temps, vélo 3/4/5 jours
-  (reparto calculado), à pied, sans permis, vélo en famille; visible sin clic + FAQPage. Pendiente de otra página:
-  « combien de temps pour passer les écluses de Fonseranes » (877 imp.) → Béziers/Fonseranes; « réglementation chemin
-  de halage » (302) solo con fuente oficial.
-
 ### TASK-066 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
 - **Leer primero:** `docs/geo-ia-mejoras-2026-10-05.md` (lo escribió la sesión de GEO-IA para esta sesión: metodología,
   resultados, páginas competidoras y detalle de cada mejora). Panel: `http://localhost/geo-ia/?site=canal-du-midi`.
@@ -412,6 +395,24 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-067 — /etapes/ « Quel parcours faire ? » (rediseño, 2026-10-05) — COMPLETADO ✅ (privado, desplegado y verificado) — 2026-10-05
+- El usuario: el índice de 20 fichas no ayuda a decidir. Investigación (Loire à Vélo, Canal des 2 Mers, Le Boat,
+  canal-du-midi.com): entrar por modo + duración y proponer pocos parcours con cifras. Maqueta `docs/mockups/etapes-2026.html`.
+- Hecho: selectores bateau/vélo × journée/week-end/semaine → parcours (km, esclusas, horas, días del calcul; etapas por las
+  que pasa; enlaces al calcul y a los loueurs); el canal en línea con los tramos entre etapas y la Robine; FAQ « Combien de
+  temps… » + « Que voir… ». Parcours editables en wp-admin: Apariencia → Menús, ubicación « Parcours (page Étapes 2026) »
+  (enlace al calcul `?de=X&a=Y`, clases `bateau|velo` `jour|weekend|semaine` [`aller-retour`]); sin menú, `CANAL_PARCOURS_DEFAULT`.
+- Rehecho (05/10, petición del usuario: faltaba « à pied », solo 1–2 parcours y el mapa de etapas no aportaba): modos
+  bateau/vélo/à pied; « Au départ de… » calcula todos los tramos que caben (`canal_parcours_all`, ventanas
+  `CANAL_PARCOURS_WINDOWS`, hasta 6 por salida); el mapa dibuja el parcours seleccionado (A/B y etapas intermedias).
+  Verificado en escritorio (vélo · week-end · Carcassonne → 6 parcours; à pied). Móvil sin verificar.
+- Enlaces a la carte con recuento previo (`canal_carte_count`, PRD-017) en /etapes/, página de etapa y calcul.
+- FAQ de /etapes/ con las preguntas de Search Console (12 meses): parcours, bateau combien de temps, vélo 3/4/5 jours
+  (reparto calculado), à pied, sans permis, vélo en famille; visible sin clic + FAQPage. Pendiente de otra página:
+  « combien de temps pour passer les écluses de Fonseranes » (877 imp.) → Béziers/Fonseranes; « réglementation chemin
+  de halage » (302) solo con fuente oficial.
+
 
 ### TASK-065 — « Mon compte » con el diseño 2026 (modo publicado) — DESPLEGADO ✅ (apagado) — 2026-10-05
 - Uso real: solo el equipo (4 admin, 3 editores, 1 cliente; registro cerrado, 0 altas en 12 meses; fichas de 3 usuarios).

@@ -5,6 +5,25 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-05 (16:30) — TASK-066 (GEO-IA) T1/M2/M3/M4/M5 y TASK-067 (/etapes/) HECHAS · Siguiente: resto de TASK-066
+
+**Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado (privado) y commiteado.
+**Dónde quedamos:** /etapes/ rediseñada y cerrada por el usuario (« Quel parcours faire ? »: bateau/vélo/à pied × durée ×
+départ, parcours calculados, mapa del parcours, FAQ de Search Console); TASK-066 con M1, T2 y T4 pendientes.
+**Archivos:** `includes/guide-core.php` (nuevo: guías camping/location-bateau), `assets/etapes.js` (nuevo), `etape-core.php`,
+`etape-route.php`, `template-etapes.php`, `template-etape.php`, `template-carte.php`, `carte-faq.php`, `carte-data.php`
+(`canal_carte_count`), `calcul-route.php` + `calcul.js` (fotos sin carte vacía), `seo.php` (alternateName), `fiche-core.php`
+(títulos « MAYÚSCULAS – … »), llms*.txt, tests test-guide/test-etape/test-carte-filter/test-fiche.
+**Decisiones:** parcours editables en Apariencia → Menús (« Parcours (page Étapes 2026) »); FAQ visibles sin acordeón;
+ningún enlace a la carte sin recuento previo (PRD-017); textos de guías solo con datos o fuentes del sitio.
+**Próxima acción:**
+```
+TASK-066 pendientes: M1 météo (tabla mes a mes con fuente citada), T2 Sallèles-d'Aude, T4 respuesta directa vélo/distances;
++ FAQ « combien de temps pour passer les écluses de Fonseranes » en la página de Béziers/Fonseranes.
+```
+
+---
+
 ## ESTADO 2026-10-05 (cierre del día) — TODAS las páginas públicas tienen versión 2026, lista tras el interruptor (apagado)
 
 Hecho hoy: inventario, plan PDF fijo, contenido, calcul, archivos, étapes, navbar, formularios, fase 0 de publicación,
