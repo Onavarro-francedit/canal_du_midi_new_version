@@ -5,6 +5,35 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-05 — Inventario completo + plan PDF fijo + plantilla de contenido 2026 · Siguiente: TASK-056 (IA) o calcul de distance 2026
+
+**Agente activo al cerrar:** sesión principal (sin agentes del pipeline: decisión del usuario 05/10, se usan skills superpowers).
+**Handoff pendiente:** ninguno.
+**Dónde quedamos:** cualquier página o artículo de producción se ve en versión 2026 en `/<ruta>-2026/` (privado, TASK-055).
+
+**Archivos de la sesión:**
+- `docs/inventario-paginas-2026-10-05.md` + `docs/data/paginas-trafico-2025-10_2026-09.csv` — inventario, tráfico GA4+GSC, intención, navbar.
+- `wp-plugin/canal-home/includes/plan.php` — URL fija `/plan-canal-du-midi.pdf` (última edición, nginx X-Accel-Redirect) (TASK-054).
+- Producción `.htaccess` raíz: bloque `canal-plan-pdf` (301 de todas las ediciones; copia `.htaccess.bak-2026-10-05`).
+- `includes/contenu-core.php`, `includes/contenu-route.php`, `template-contenu.php`, `assets/contenu.css`, `tests/test-contenu.php`,
+  `tests/smoke-contenu.php` (TASK-055); integraciones en `canal-home.php`, `header.php`, `head-fix.php`, `fiche-route.php`.
+
+**Decisiones que no están en ARCHITECTURE.md:**
+- Todas las páginas y artículos pasan a 2026, también sin tráfico; mejorar SEO/AEO/GEO de cada URL (memoria migrar-todo-seo-geo).
+- Router de contenido sin reglas de reescritura (`parse_request`): si existe un post real con la ruta -2026 se respeta.
+- Enriquecimiento IA en metadatos nuevos `_canal_2026_{title,description,summary,faq}`; la plantilla ya los lee.
+- ~800 artículos son copias de prensa (La Dépêche/Midi Libre): reescribir con fuente citada en TASK-056.
+- `smoke-contenu.php` se ejecuta con el plugin YA desplegado (no requiere archivos).
+
+**Próxima acción:**
+```
+1. TASK-056: recargar crédito Anthropic y generar title/description/summary/faq de las ~260 URLs con tráfico.
+2. O bien: plantilla Calcul de distance 2026 (página nº 1, 20 % de las vistas).
+3. Pendientes de antes: /accueil-2026/ sigue publicada · SEC-001 (credenciales en el tema).
+```
+
+---
+
 ## CIERRE 2026-10-02 (fin de semana) — TASK-044 planificador terminado en privado + TASK-051 rendimiento 2026 · ⚠️ /accueil-2026/ PUBLICADA · Siguiente: decidir
 
 **Agente activo al cerrar:** sesión principal. **Handoff pendiente:** ninguno.
