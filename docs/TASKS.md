@@ -7,16 +7,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 ### TASK-053 — Generador de páginas 2026 (resto del sitio)
 - Fase 1 inventario ✅ (`docs/inventario-paginas-2026-10-05.md`, CSV por URL). Decisión del usuario 05/10: **todas** las páginas
   y artículos pasan a 2026 (también los sin tráfico) y hay que mejorar SEO/AEO/GEO de todo.
-- ✅ TASK-055 plantilla de contenido (ver 🟢). TASK-056 (IA) descartada. Siguiente: calcul de distance 2026 (benchmark antes),
+- ✅ TASK-055 plantilla de contenido (ver 🟢). TASK-056 (IA) descartada. ✅ TASK-057 calcul de distance 2026. Siguiente:
   listados de categoría, villes & étapes, navbar de 5 entradas.
 
 ## 🟡 Pendiente
-
-### TASK-057 — Calcul de distance 2026 (página nº 1, 20 % del tráfico) — benchmark hecho, pendiente de aprobar alcance
-- Benchmark y propuestas: `docs/calcul-distance-benchmark-2026-10-05.md` (VNF Navi, France Vélo Tourisme, Le Boat,
-  CanalPlanAC). La herramienta actual subestima el barco ~⅓ (no cuenta esclusas), solo deja elegir esclusas, le faltan
-  Fonseranes, el Grand Bief y la Robine. Propuestas 1–7 imprescindibles, 8–9 recomendadas.
-
 
 ### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
 - `wp-content/themes/my-listing/affiche_pub_940.php` conecta a la BD `pimcore` (51.38.234.212) con usuario y contraseña
@@ -364,6 +358,18 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
   ver **BUG-004**; copy "qui se vend bien" → hablar al viajero.
 
 ## 🟢 Completadas
+
+### TASK-057 — Calcul de distance 2026 en `/calcul-de-distance-canal-du-midi-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
+- Benchmark `docs/calcul-distance-benchmark-2026-10-05.md` · maqueta `docs/mockups/calcul-distance-2026.html` · spec y plan
+  en `docs/superpowers/`.
+- `includes/calcul-core.php` (63 esclusas con sas/ficha, 22 ciudades y puertos, modelo 7 km/h + 10 min/sas; test
+  `tests/test-calcul.php`), `includes/calcul-route.php` (ruta, fotos `medium` en caché, SEO WebApplication), `template-calcul.php`,
+  `assets/calcul.css|js`, `assets/calcul/canal-du-midi-trace.json` (OSM 302044 recalado en las esclusas).
+- Sin Pimcore ni credenciales. Google Maps con la URL del tema: escritorio tras `load`, móvil solo al pulsar.
+- Verificado en prod con sesión: Castelnaudary → Trèbes 53 km · 23 esclusas · 12 h 40 (Le Boat: 13 h), Toulouse → Béziers
+  208 km · 57 esclusas · 44 h 30; ⇄, tabla, búsqueda sin acentos, URL compartible, ventanita sin scroll, 390 px sin
+  scroll horizontal, 404 sin sesión. Abrir: `wp option update canal_calcul_public 1`.
+- Pendiente (después): ramal de la Robine (8 fichas de esclusas ya localizadas), 5 esclusas sin ficha, hora de llegada.
 
 ### TASK-055 — Plantilla de contenido 2026: cualquier página o artículo en `/<ruta>-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
 - Spec `docs/superpowers/specs/2026-10-05-plantilla-contenido-2026-design.md`, plan en `docs/superpowers/plans/`.

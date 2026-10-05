@@ -5,6 +5,21 @@ sesión.
 
 ---
 
+## CIERRE PARCIAL 2026-10-05 (tarde) — TASK-057 Calcul de distance 2026 desplegado (privado) · Siguiente: listados de categoría o Robine
+
+**Agente activo:** sesión principal (skills superpowers, sin agentes del pipeline). **Handoff pendiente:** ninguno.
+**Dónde quedamos:** `/calcul-de-distance-canal-du-midi-2026/` funciona en prod con sesión; todo commiteado.
+**Decisiones nuevas:** no generar contenido para artículos (los publican los clientes); hallazgos de empresa en
+`docs/para-direccion.md` (prensa copiada, contraseña Pimcore en el tema, fotos Wikimedia sin crédito). Mapa = Google Maps
+(URL del tema) + trazado OSM propio; sin frise de PK.
+**Próxima acción:**
+```
+1. Informar a dirección: docs/para-direccion.md (3 puntos).
+2. Siguiente plantilla del generador: listados de categoría (reutilizar carte 2026) o ramal de la Robine en el calcul.
+```
+
+---
+
 ## CIERRE 2026-10-05 — Inventario completo + plan PDF fijo + plantilla de contenido 2026 · Siguiente: TASK-056 (IA) o calcul de distance 2026
 
 **Agente activo al cerrar:** sesión principal (sin agentes del pipeline: decisión del usuario 05/10, se usan skills superpowers).

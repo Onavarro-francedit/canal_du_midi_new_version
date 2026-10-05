@@ -99,7 +99,7 @@ add_action('wp_print_footer_scripts', function () {
 
 // Pie del tema: los enlaces de redes son solo un icono (Lighthouse: « enlaces sin nombre »). Solo en nuestras páginas.
 add_filter('nav_menu_link_attributes', function ($atts, $item) {
-    if (canal_fiche_is_page() || canal_home_is_page() || canal_carte_is_page() || canal_contenu_is_page()) {
+    if (canal_fiche_is_page() || canal_home_is_page() || canal_carte_is_page() || canal_contenu_is_page() || canal_calcul_is_page()) {
         $label = canal_fiche_icon_link_label((string) $item->title, (string) ($atts['href'] ?? ''));
         if ($label !== '' && empty($atts['aria-label'])) {
             $atts['aria-label'] = $label;
