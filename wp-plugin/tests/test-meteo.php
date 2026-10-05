@@ -31,7 +31,7 @@ check(canal_meteo_num(28.8) === '28,8' && canal_meteo_num(10.0) === '10', 'núme
 
 $rows = canal_meteo_rows();
 check(count($rows) === 12 && $rows[0]['month'] === 'Janvier' && count($rows[0]['temps']) === 3, 'tabla: 12 filas, 3 estaciones');
-check($rows[4]['best'] && !$rows[6]['best'] && $rows[7]['record'] === '43,2 °C (2023)', 'tabla: mayo marcado, julio no; máxima de agosto');
+check($rows[4]['best'] && !$rows[6]['best'] && $rows[7]['record'] === '43,2 (2023)', 'tabla: mayo marcado, julio no; máxima de agosto');
 
 $faq = canal_meteo_faq();
 check(count($faq) === 4, 'faq: 4 preguntas');

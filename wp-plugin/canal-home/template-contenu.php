@@ -61,11 +61,11 @@ get_header();
                                 <thead>
                                     <tr>
                                         <th scope="col">Mois</th>
-                                        <?php foreach (CANAL_METEO_STATIONS as $st): ?><th scope="col"><?= esc_html($st['name']) ?><small>max. moyenne</small></th><?php endforeach; ?>
-                                        <th scope="col">Jours ≥ 30 °C<small>Carcassonne</small></th>
-                                        <th scope="col">Max. relevé<small>Carcassonne</small></th>
-                                        <th scope="col">Pluie<small>Carcassonne</small></th>
-                                        <th scope="col">Navigation</th>
+                                        <?php foreach (CANAL_METEO_STATIONS as $st): ?><th scope="col"><?= esc_html($st['name']) ?><small>max. moy. °C</small></th><?php endforeach; ?>
+                                        <th scope="col">≥ 30 °C<small>jours, Carcass.</small></th>
+                                        <th scope="col">Max. relevé<small>°C, Carcass.</small></th>
+                                        <th scope="col">Pluie<small>jours, Carcass.</small></th>
+                                        <th scope="col">Navigation<small>saison</small></th>
                                     </tr>
                                 </thead>
                                 <tbody>

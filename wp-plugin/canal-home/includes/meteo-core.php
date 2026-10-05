@@ -48,18 +48,18 @@ const CANAL_METEO_STATIONS = [
 
 // Temporadas de navegación por mes (página « Période de navigation »): [temporada, amplitud horaria, en temporada].
 const CANAL_METEO_NAV = [
-    ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
-    ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
-    ['Basse, moyenne le 17', '8 h 30 – 16 h 30, puis 8 h – 19 h', false],
-    ['Moyenne saison', '8 h – 19 h', true],
-    ['Haute saison', '8 h – 19 h 30', true],
-    ['Haute saison', '8 h – 19 h 30', true],
-    ['Haute saison', '8 h – 19 h 30', true],
-    ['Haute saison', '8 h – 19 h 30', true],
-    ['Haute saison', '8 h – 19 h 30', true],
-    ['Moyenne saison', '8 h – 19 h', true],
-    ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
-    ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
+    ['Basse', '8 h 30 – 16 h 30, à la demande', false],
+    ['Basse', '8 h 30 – 16 h 30, à la demande', false],
+    ['Basse, puis moyenne le 17', '8 h 30 – 16 h 30, puis 8 h – 19 h', false],
+    ['Moyenne', '8 h – 19 h', true],
+    ['Haute', '8 h – 19 h 30', true],
+    ['Haute', '8 h – 19 h 30', true],
+    ['Haute', '8 h – 19 h 30', true],
+    ['Haute', '8 h – 19 h 30', true],
+    ['Haute', '8 h – 19 h 30', true],
+    ['Moyenne', '8 h – 19 h', true],
+    ['Basse', '8 h 30 – 16 h 30, à la demande', false],
+    ['Basse', '8 h 30 – 16 h 30, à la demande', false],
 ];
 
 // Meses aconsejados: en las tres ciudades, como mucho 7 días a 30 °C o más, máxima media de 20 °C o más, y navegación en
@@ -118,11 +118,11 @@ function canal_meteo_rows(): array
         $rows[] = [
             'month'  => ucfirst(CANAL_METEO_MONTHS[$i]),
             'temps'  => array_map(function ($s) use ($i) {
-                return canal_meteo_num($s['tmax'][$i]) . ' °C';
+                return canal_meteo_num($s['tmax'][$i]);
             }, CANAL_METEO_STATIONS),
-            'hot'    => canal_meteo_num($car['hot'][$i]) . ' j',
-            'record' => canal_meteo_num($car['record'][$i][0]) . ' °C (' . $car['record'][$i][1] . ')',
-            'rain'   => canal_meteo_num($car['rain'][$i]) . ' j',
+            'hot'    => canal_meteo_num($car['hot'][$i]),
+            'record' => canal_meteo_num($car['record'][$i][0]) . ' (' . $car['record'][$i][1] . ')',
+            'rain'   => canal_meteo_num($car['rain'][$i]),
             'nav'    => CANAL_METEO_NAV[$i][0],
             'best'   => in_array($i + 1, $best, true),
         ];
