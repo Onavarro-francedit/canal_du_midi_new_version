@@ -75,6 +75,7 @@ require_once CANAL_HOME_DIR . 'includes/contenu-core.php';
 require_once CANAL_HOME_DIR . 'includes/contenu-route.php';
 require_once CANAL_HOME_DIR . 'includes/calcul-core.php';
 require_once CANAL_HOME_DIR . 'includes/calcul-route.php';
+require_once CANAL_HOME_DIR . 'includes/links-2026.php';
 require_once CANAL_HOME_DIR . 'includes/head-fix.php';
 require_once CANAL_HOME_DIR . 'includes/header.php';
 

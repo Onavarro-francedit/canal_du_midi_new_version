@@ -10,7 +10,10 @@ defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 const CANAL_CONTENU_SUFFIX = '-2026';
 // Páginas de contenido; las demás plantillas son herramientas, formularios o listados antiguos (404 en -2026).
 const CANAL_CONTENU_PAGE_TEMPLATES = ['', 'default', 'templates/content-sidebar.php'];
-const CANAL_CONTENU_EXCLUDED_SLUGS = ['boutique', 'panier', 'paiement', 'mon-compte', 'claim-list', 'site-web-en-maintenance', 'votre-demande-de-guide-est-valide'];
+// También las que llevan formularios o tablas de plugins (CF7, ccf_form, calendar, TablePress): en las páginas 2026 sus
+// scripts y el reCAPTCHA no se cargan, así que siguen en el tema hasta tener su propia versión.
+const CANAL_CONTENU_EXCLUDED_SLUGS = ['boutique', 'panier', 'paiement', 'mon-compte', 'claim-list', 'site-web-en-maintenance', 'votre-demande-de-guide-est-valide',
+    'agenda', 'demande-de-location-de-bateau', 'demande-de-promenade-en-bateaux', 'demande-dhebergement-le-long-du-canal-du-midi', 'boutique-canal-du-midi', 'recevoir-le-plan-du-canal-du-midi-2'];
 const CANAL_CONTENU_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 // « navigation/regles-de-navigation-2026 » → « navigation/regles-de-navigation »; null si no es una ruta -2026.

@@ -36,6 +36,7 @@ check(!canal_contenu_is_eligible('page', 'publish', 'rechercher-presta.php', 'ho
 check(!canal_contenu_is_eligible('page', 'publish', 'canal-home/template-home.php', 'accueil-2026'), 'no elegible: página 2026');
 check(!canal_contenu_is_eligible('page', 'publish', 'elementor_header_footer', 'explorer'), 'no elegible: explorer Elementor');
 check(!canal_contenu_is_eligible('page', 'publish', '', 'panier'), 'no elegible: tienda');
+check(!canal_contenu_is_eligible('page', 'publish', 'templates/content-sidebar.php', 'recevoir-le-plan-du-canal-du-midi-2'), 'no elegible: página con formulario CF7');
 check(!canal_contenu_is_eligible('post', 'private', '', 'x') && !canal_contenu_is_eligible('post', 'draft', '', 'x'), 'no elegible: no publicado');
 check(!canal_contenu_is_eligible('job_listing', 'publish', '', 'port-de-sete'), 'no elegible: ficha');
 

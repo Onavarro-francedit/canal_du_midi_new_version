@@ -8,6 +8,9 @@
  */
 defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 
+// Página actual del calculador; la versión 2026 es /<slug>-2026/ (calcul-route.php).
+const CANAL_CALCUL_SLUG = 'calcul-de-distance-canal-du-midi';
+
 // Modelo de tiempos (CanalPlanAC / loueurs; calibrado con Le Boat: Castelnaudary → Trèbes 13 h publicadas).
 const CANAL_CALCUL_BOAT_KMH = 7;
 const CANAL_CALCUL_MIN_PER_SAS = 10;

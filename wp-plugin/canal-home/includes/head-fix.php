@@ -87,11 +87,14 @@ if (function_exists('add_action')) {
         if (get_query_var('canal_fiche') !== '' || get_query_var('canal_contenu') !== '' || get_query_var('canal_calcul') !== '' || canal_carte_is_page() || canal_home_is_page()) {
             ob_start(function (string $html): string {
                 $html = canal_home_webp_html(canal_home_move_consent_to_body(canal_fiche_lighten_head(canal_home_fix_head($html))), 'canal_home_webp_exists', untrailingslashit(home_url()));
+                $html = canal_2026_links_html($html); // enlaces internos → versión 2026 (links-2026.php)
                 if (!empty($GLOBALS['canal_home_webp_pending']) && !defined('DONOTCACHEPAGE')) {
                     define('DONOTCACHEPAGE', true); // WP Fastest Cache no guarda una versión con WebP a medias
                 }
                 return $html;
             });
+        } elseif (canal_planner_is_page()) {
+            ob_start('canal_2026_links_html'); // el planificador conserva su <head> (formulario): solo los enlaces
         }
     }, -1);
 }

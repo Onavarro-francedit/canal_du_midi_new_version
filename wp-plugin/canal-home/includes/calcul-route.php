@@ -6,7 +6,6 @@
  */
 defined('ABSPATH') || exit;
 
-const CANAL_CALCUL_SLUG = 'calcul-de-distance-canal-du-midi';
 const CANAL_CALCUL_DEFAULT = ['Castelnaudary', 'Trèbes'];
 
 function canal_calcul_url(): string
