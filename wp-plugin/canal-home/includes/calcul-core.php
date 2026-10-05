@@ -28,6 +28,7 @@ const CANAL_CALCUL_TOWNS = [
     ['name' => 'Ramonville', 'pk' => 12.3, 'search' => 'Ramonville'],
     ['name' => 'Castanet-Tolosan', 'pk' => 15.7, 'search' => 'Castanet'],
     ['name' => 'Montgiscard', 'pk' => 24.9, 'search' => 'Montgiscard'],
+    ['name' => 'Port-Lauragais', 'pk' => 50.2, 'search' => 'Avignonet'],
     ['name' => 'Seuil de Naurouze', 'pk' => 51.6, 'search' => 'Montferrand', 'de' => 'du Seuil de Naurouze', 'a' => 'au Seuil de Naurouze'],
     ['name' => 'Castelnaudary', 'pk' => 64.9, 'search' => 'Castelnaudary'],
     ['name' => 'Bram', 'pk' => 80.9, 'search' => 'Bram'],
