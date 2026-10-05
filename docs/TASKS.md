@@ -7,17 +7,11 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 ### TASK-053 — Generador de páginas 2026 (resto del sitio)
 - Fase 1 inventario ✅ (`docs/inventario-paginas-2026-10-05.md`, CSV por URL). Decisión del usuario 05/10: **todas** las páginas
   y artículos pasan a 2026 (también los sin tráfico) y hay que mejorar SEO/AEO/GEO de todo.
-- ✅ TASK-055 plantilla de contenido (ver 🟢). Siguiente: TASK-056 (enriquecimiento IA), luego calcul de distance 2026,
+- ✅ TASK-055 plantilla de contenido (ver 🟢). TASK-056 (IA) descartada. Siguiente: calcul de distance 2026 (benchmark antes),
   listados de categoría, villes & étapes, navbar de 5 entradas.
 
 ## 🟡 Pendiente
 
-### TASK-056 — Enriquecimiento editorial IA de todas las páginas/artículos (fase 2 de TASK-055)
-- Por URL, en metadatos nuevos (no se toca post_content): `_canal_2026_title` (406 títulos en MAYÚSCULAS),
-  `_canal_2026_description`, `_canal_2026_summary` (« L'essentiel »), `_canal_2026_faq` (JSON). La plantilla ya los lee.
-- ~800 artículos (41 %) son copias de prensa (579 La Dépêche « DDM », 212 Midi Libre): reescribir como texto propio que
-  cite la fuente (duplicado = no posiciona + riesgo de derechos). Incluso `/peniches-a-vendre-…/` (nº 6) es de ladepeche.fr.
-- Requiere crédito en la API de Anthropic (o generarlo en sesión por lotes). Empezar por las ~260 URLs con tráfico.
 
 ### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
 - `wp-content/themes/my-listing/affiche_pub_940.php` conecta a la BD `pimcore` (51.38.234.212) con usuario y contraseña
@@ -1247,6 +1241,12 @@ Mejoras de copy de product (qué comprobar en el devis; « En été… » y cier
 - **TASK-000** — Inicialización del pipeline de agentes y estructura `docs/`.
 
 ## 🚫 Descartadas / en pausa
+
+### TASK-056 — Enriquecimiento editorial IA de páginas/artículos — DESCARTADA (decisión del usuario, 2026-10-05)
+- « No generes nada »: los artículos existentes los publicamos a petición de los propios clientes; no se reescriben ni se
+  generan títulos/resúmenes/FAQ con IA. La plantilla de contenido (TASK-055) sigue leyendo `_canal_2026_*` si algún día
+  se rellenan a mano, pero no hay que generarlos.
+- Hallazgo pendiente de comunicar a dirección: ver `docs/para-direccion.md`.
 
 - **TASK-011 + BUG-005** — Elemento firma "la ligne d'eau" (hairline SVG degradado
   teal→violeta del hero + 3 divisores entre secciones con marcas-écluse).
