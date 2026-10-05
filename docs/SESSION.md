@@ -5,6 +5,29 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-05 (noche) — TASK-066 M1 (página météo) HECHA · Siguiente: T2, T4 y Fonseranes
+
+**Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado (privado), commiteado y en origin.
+**Dónde quedamos:** TASK-066 con M1–M5 y T1 hechas (todas « Hecha » en el panel GEO-IA); quedan T2 (Sallèles-d'Aude), T4
+(respuesta directa vélo/distances) y la FAQ « combien de temps pour passer les écluses de Fonseranes » (Béziers).
+**Archivos de la sesión (tarde-noche):**
+- `includes/meteo-core.php` — clima por mes de 8 estaciones Météo-France (media 2021–2025), etiquetas, modos de viaje, estaciones, FAQ.
+- `template-contenu.php`, `assets/contenu.css` — página météo (año de un vistazo, modos, estaciones) y FAQ de contenido sin acordeón.
+- `includes/contenu-route.php` — título, descripción y fecha « Mis à jour » de la página météo.
+- `assets/icons/directions_{boat,bike,walk}.svg` — Material Symbols (Google, Apache 2.0).
+- `build/build-meteo.php` — regenera CANAL_METEO_STATIONS desde meteo.data.gouv.fr (cada enero).
+- `docs/mockups/meteo-2026.*` — maqueta aprobada + generador y datos.
+- `includes/carte-data.php` (`canal_carte_count`), étapes/etape/calcul — ningún enlace a una carte vacía (PRD-017).
+**Decisiones:** datos del visitante = últimos 5 años, nunca normales de 30 años (memoria `datos-recientes-no-normales`);
+iconos de biblioteca (Material Symbols / Bootstrap Icons), nunca emojis; FAQ siempre visibles; contrastar cifras con una
+segunda fuente (Open-Meteo) antes de enseñarlas.
+**Próxima acción:**
+```
+TASK-066: T4 (vélo/distances, respuesta directa con cifras del calcul) → T2 (Sallèles-d'Aude) → FAQ Fonseranes en Béziers.
+```
+
+---
+
 ## CIERRE 2026-10-05 (16:30) — TASK-066 (GEO-IA) T1/M2/M3/M4/M5 y TASK-067 (/etapes/) HECHAS · Siguiente: resto de TASK-066
 
 **Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado (privado) y commiteado.

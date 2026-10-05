@@ -99,7 +99,11 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Último desplegado (privado):** **TASK-044 — Planificateur 2026** (`/planificateur-2026/`, página 18505): chat IA
   en el idioma del visitante + vista plan con fotos + modal de demanda con Google Maps; correos solo a onavarro@ hasta
   `CANAL_PLANNER_LIVE = true`. Rama `feat/wp-planner-2026` (sin fusionar). Antes: TASK-037…042 navbar + footer 2026.
-- **Último completado (05/10):** **TASK-057 — Calcul de distance 2026** (`/calcul-de-distance-canal-du-midi-2026/`, privado;
+- **Último completado (05/10, noche):** **TASK-066 GEO-IA** M1 (página météo « quand partir », 8 estaciones Météo-France
+  2021–2025, sin tabla), M2 campings, M3 PDF, M4 location bateau, M5 étapes, T1 alternateName; **TASK-067 `/etapes/`**
+  « Quel parcours faire ? » (parcours por modo/duración/salida, mapa del parcours, FAQ de Search Console). Reglas nuevas: datos
+  recientes (5 años), iconos de biblioteca, FAQ visibles, ningún enlace a una carte vacía (PRD-017).
+- **Antes (05/10):** **TASK-057 — Calcul de distance 2026** (`/calcul-de-distance-canal-du-midi-2026/`, privado;
   esclusas y sas en el tiempo de barco, Google Maps + trazado OSM, fichas de esclusas enlazadas). Antes ese día: **TASK-055 — plantilla de contenido 2026**: cualquier página o artículo en `/<ruta>-2026/`
   (privado; `canal_contenu_public`). Antes: TASK-054 plan PDF en URL fija `/plan-canal-du-midi.pdf`; inventario de todo el
   sitio en `docs/inventario-paginas-2026-10-05.md`. TASK-056 (IA) descartada; temas para dirección en `docs/para-direccion.md`.
