@@ -8,6 +8,7 @@ require __DIR__ . '/../canal-home/includes/carte-filter.php';
 require __DIR__ . '/../canal-home/includes/fiche-core.php';
 require __DIR__ . '/../canal-home/includes/calcul-core.php';
 require __DIR__ . '/../canal-home/includes/etape-core.php';
+require __DIR__ . '/../canal-home/includes/guide-core.php';
 
 $fails = 0;
 function check(bool $cond, string $label): void
@@ -88,13 +89,6 @@ $voirGroups = ['voir' => ['items' => [
 $h = canal_etape_highlights(canal_etape_find('trebes'), $voirGroups);
 check($h === ['Château et Remparts de la Cité', 'Moulin', 'Écluse de Trèbes (3 sas)'], 'à voir: monumentos (sin mairies) y esclusas notables');
 check(canal_etape_highlights(canal_etape_find('homps'), []) === [], 'à voir: sin datos → vacío');
-$faqIdx = canal_etapes_faq([
-    ['e' => canal_etape_find('castelnaudary'), 'voir' => ['Moulin de Cugarel', 'Écluses de Saint-Roch (4 sas)']],
-    ['e' => canal_etape_find('homps'), 'voir' => []],
-    ['e' => canal_etape_find('beziers'), 'voir' => ['Écluses de Fonseranes (8 sas)']],
-]);
-check($faqIdx['q'] === 'Que voir le long du Canal du Midi ?', 'faq índice: pregunta');
-check(strpos($faqIdx['a'], 'Castelnaudary (PK 64,9) : Moulin de Cugarel et Écluses de Saint-Roch (4 sas) ; Béziers (PK 208,4) : Écluses de Fonseranes (8 sas).') !== false && strpos($faqIdx['a'], 'Homps') === false, 'faq índice: etapas con datos, en orden, con PK');
 
 // Parcours (rediseño de /etapes/): menú de wp-admin → parcours, cifras del calcul.
 $items = [
@@ -115,8 +109,6 @@ $r = canal_parcours_card($parsed[1]);
 check($r['title'] === 'Homps → Le Somail et retour' && $r['chips'][0] === '41 km' && $r['chips'][2] === '7 h 50', 'parcours: aller-retour dobla km y tiempo');
 $v = canal_parcours_card(canal_parcours_parse([['title' => 'x', 'url' => '?de=Toulouse&a=Castelnaudary', 'classes' => ['velo', 'weekend']]])[0]);
 check($v['chips'] === ['65 km', '4 h 20 à vélo', '≈ 2 jours'], 'parcours: bici, km y días');
-$howlong = canal_etapes_howlong_faq();
-check(strpos($howlong['a'], '240,5 km') !== false && strpos($howlong['a'], '63 écluses') !== false && strpos($howlong['a'], '≈ 5 jours') !== false, 'faq: cuánto tiempo, con cifras del calcul');
 
 // Parcours calculados (todas las salidas) y modo « à pied ».
 $pied = canal_parcours_card(canal_parcours_parse([['title' => 'x', 'url' => '?de=Carcassonne&a=Trèbes', 'classes' => ['pied', 'jour']]])[0]);
@@ -137,6 +129,23 @@ check(canal_parcours_carte_label('bateau', 1, 'à Castelnaudary') === '1 loueur 
 check(canal_parcours_carte_label('velo', 3, 'au Somail') === '3 loueurs de vélos au Somail', 'botón: vélos en plural');
 check(canal_parcours_carte_label('pied', 2, 'à Homps') === '2 hébergements à Homps', 'botón: a pie → hébergements');
 check(canal_parcours_carte_label('bateau', 0, 'à Toulouse') === null, 'botón: sin fichas → sin botón');
+
+// FAQ de /etapes/: preguntas de Search Console (12 meses), respuestas con las cifras del calcul.
+$split = canal_etapes_split(5);
+check(count($split) === 5 && $split[0]['from'] === 'Toulouse' && end($split)['to'] === 'Marseillan', 'reparto: 5 días de Toulouse a Marseillan');
+check(abs(array_sum(array_column($split, 'km')) - 240.5) < 0.6, 'reparto: suma 240,5 km');
+check(max(array_column(canal_etapes_split(3), 'km')) <= 100, 'reparto: 3 días sin jornadas de más de 100 km');
+$faq = canal_etapes_search_faq();
+$qs = array_column($faq, 'q');
+check(count($faq) === 6, 'faq: 6 preguntas');
+check(in_array('Combien de temps pour faire le Canal du Midi en bateau ?', $qs, true), 'faq: pregunta literal de Search Console (bateau)');
+$velo = $faq[array_search('Faire le Canal du Midi à vélo en 3, 4 ou 5 jours : quelles étapes ?', $qs, true)]['a'];
+check(strpos($velo, 'En 5 jours') !== false && strpos($velo, 'Toulouse → ') !== false && strpos($velo, ' km') !== false, 'faq: étapes en bici calculadas');
+$permis = $faq[array_search('Peut-on louer un bateau sans permis sur le Canal du Midi ?', $qs, true)]['a'];
+check(strpos($permis, 'Oui. ') === 0 && strpos($permis, '8 km/h') !== false, 'faq: sans permis → « Oui » + la regla de la fuente');
+foreach ($faq as $qa) {
+    check(substr($qa['q'], -2) === ' ?' && strlen($qa['a']) > 60, 'faq: « ' . $qa['q'] . ' » con respuesta');
+}
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

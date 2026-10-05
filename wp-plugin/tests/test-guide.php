@@ -70,7 +70,7 @@ check($b['rows'][0][1] === 'PK 64,9', 'bateau: PK de la ciudad del calcul, no el
 check(strpos($b['rows'][0][3], 'Homps') === 0 && strpos($b['rows'][0][3], 'écluses') !== false, 'bateau: tramo hasta la base siguiente');
 check($b['rows'][3][3] === '—', 'bateau: última base sin tramo');
 check(strpos($b['intro'], '8 km/h') !== false && strpos($b['intro'], 'carte de plaisance') !== false, 'bateau: intro con la regla de la fuente');
-check(strpos($b['faq']['q'], 'permis') !== false, 'bateau: faq del permiso');
+check(strpos($b['faq']['q'], 'permis') !== false && strpos($b['faq']['a'], 'Non. ') === 0, 'bateau: faq del permiso (« Faut-il ? » → Non)');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

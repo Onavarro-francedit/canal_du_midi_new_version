@@ -10,6 +10,10 @@ const CANAL_GUIDE_BANK_M  = 300;    // « au bord du canal »
 const CANAL_GUIDE_MAX_M   = 15000;  // más lejos: no está « le long du canal »
 const CANAL_GUIDE_BASE_KM = 3;      // una base toma el nombre de la ciudad del calcul si está a menos de 3 km
 const CANAL_GUIDE_RULES_URL = '/navigation/regles-de-navigation/';
+// Fuente: nuestra página « Règles de navigation » (también la usa la FAQ de /etapes/).
+// Sin « Oui/Non » delante: depende de cómo se formula la pregunta.
+const CANAL_GUIDE_PERMIS_ANSWER = 'Pour un bateau loué à une société de location, vous êtes dispensé du permis : le loueur vous délivre une carte de plaisance '
+    . 'à la signature du contrat. La vitesse est limitée à 8 km/h sur le canal.';
 const CANAL_GUIDE_EXCLUDE = 'lieux-dinformations'; // offices de tourisme clasificadas también como camping o loueur
 
 /** @return array<int, array{0: float, 1: float, 2: float}> [lat, lng, pk] */
@@ -183,8 +187,7 @@ function canal_guide_bateau(array $rows): ?array
         'links'   => [],
         'faq'     => [
             'q' => 'Faut-il un permis pour louer un bateau sur le Canal du Midi ?',
-            'a' => 'Non. Pour un bateau loué à une société de location, vous êtes dispensé du permis : le loueur vous délivre une carte de plaisance '
-                . 'à la signature du contrat. La vitesse est limitée à 8 km/h sur le canal.',
+            'a' => 'Non. ' . CANAL_GUIDE_PERMIS_ANSWER,
         ],
         'source'  => 'Règles : notre page « Règles de navigation ». Temps de navigation : 7 km/h et 10 minutes par sas d’écluse, comme le calcul de distance.',
     ];

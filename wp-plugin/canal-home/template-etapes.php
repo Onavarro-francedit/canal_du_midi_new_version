@@ -101,12 +101,16 @@ get_header();
             </ol>
         </section>
 
-        <?php foreach ($idx['faq'] as $i => $qa): ?>
-            <section class="etape-section etapes-faq" aria-labelledby="etapes-faq-<?= (int) $i ?>">
-                <h2 id="etapes-faq-<?= (int) $i ?>"><?= esc_html($qa['q']) ?></h2>
-                <p><?= esc_html($qa['a']) ?></p>
-            </section>
-        <?php endforeach; ?>
+        <?php // Preguntas de Search Console con respuesta visible: sin acordeón (los bots no hacen clic). ?>
+        <section class="etape-section etapes-faq" aria-labelledby="etapes-faq-title">
+            <h2 id="etapes-faq-title">Questions fréquentes sur le parcours</h2>
+            <?php foreach ($idx['faq'] as $qa): ?>
+                <div class="etapes-faq-item">
+                    <h3><?= esc_html($qa['q']) ?></h3>
+                    <p><?= esc_html($qa['a']) ?></p>
+                </div>
+            <?php endforeach; ?>
+        </section>
     </div>
 </main>
 </div>

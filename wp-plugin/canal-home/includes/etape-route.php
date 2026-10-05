@@ -131,7 +131,7 @@ function canal_etapes_index(): array
             'image' => canal_etape_hero($groups), 'voir' => canal_etape_highlights($e, $groups), 'read' => canal_etape_pages($e),
         ];
     }
-    $out['faq'] = array_values(array_filter([canal_etapes_howlong_faq(), canal_etapes_faq($out['midi'])]));
+    $out['faq'] = canal_etapes_search_faq();
     $out['parcours'] = array_map('canal_parcours_card', canal_parcours_parse(canal_parcours_items()));
     return $out;
 }

@@ -209,21 +209,6 @@ function canal_etape_highlights(array $e, array $groups): array
     return array_merge(array_column($sights, 'title'), canal_etape_locks_notable(canal_etape_pk($e), (float) $e['radius']));
 }
 
-/** Pregunta del índice: etapas del Canal du Midi con algo « à voir », en orden de PK. $index: [['e' => …, 'voir' => […]]]. */
-function canal_etapes_faq(array $index): ?array
-{
-    $parts = [];
-    foreach ($index as $it) {
-        $pk = canal_etape_pk($it['e']);
-        if ($it['voir'] && $pk !== null) {
-            $parts[] = $it['e']['name'] . ' (' . canal_etape_pk_label($pk) . ') : ' . canal_etape_list($it['voir']);
-        }
-    }
-    return $parts ? [
-        'q' => 'Que voir le long du Canal du Midi ?',
-        'a' => 'De Toulouse à l’étang de Thau, étape par étape : ' . implode(' ; ', $parts) . '.',
-    ] : null;
-}
 
 // Parcours de /etapes/ (rediseño 05/10): se editan en wp-admin (menú « Parcours (Étapes 2026) »). Cada elemento es un
 // enlace al calcul (?de=…&a=…), su título es la etiqueta y sus clases CSS dicen el modo, la duración y « aller-retour ».
@@ -377,15 +362,92 @@ function canal_etape_a_name(string $calcul): string
     return $calcul === 'Étang de Thau (Les Onglous)' ? 'l’étang de Thau' : $calcul;
 }
 
-/** « Combien de temps pour faire le Canal du Midi ? » con las cifras del calcul. */
-function canal_etapes_howlong_faq(): array
+/** Reparto del canal entero en $days jornadas, cortando en la etapa más cercana a cada fracción del recorrido. */
+function canal_etapes_split(int $days): array
 {
-    $r = canal_calcul_compute(0.0, canal_calcul_pk('Étang de Thau (Les Onglous)'));
+    $midi = array_values(array_filter(CANAL_ETAPES, function ($e) { return $e['canal'] === 'midi'; }));
+    $total = (float) canal_etape_pk(end($midi));
+    $cuts = [$midi[0]];
+    for ($k = 1; $k < $days; $k++) {
+        $target = $total * $k / $days;
+        $best = null;
+        foreach ($midi as $e) {
+            $pk = (float) canal_etape_pk($e);
+            if ($pk > (float) canal_etape_pk(end($cuts)) && $pk < $total && ($best === null || abs($pk - $target) < abs((float) canal_etape_pk($best) - $target))) {
+                $best = $e;
+            }
+        }
+        $cuts[] = $best;
+    }
+    $cuts[] = end($midi);
+    $out = [];
+    for ($i = 1, $n = count($cuts); $i < $n; $i++) {
+        $out[] = ['from' => $cuts[$i - 1]['name'], 'to' => $cuts[$i]['name'], 'km' => round((float) canal_etape_pk($cuts[$i]) - (float) canal_etape_pk($cuts[$i - 1]), 1)];
+    }
+    return $out;
+}
+
+/**
+ * FAQ de /etapes/ (05/10): preguntas tomadas de Search Console (12 meses: « parcours canal du midi », « combien de temps
+ * pour faire le canal du midi en bateau », « canal du midi en vélo en 4 jours », « à pied », « sans permis »,
+ * « à vélo en famille »); respuestas con las cifras del calcul. Visibles sin clic (los bots no hacen clic).
+ */
+function canal_etapes_search_faq(): array
+{
+    $end = 'Étang de Thau (Les Onglous)';
+    $all = canal_calcul_compute(0.0, canal_calcul_pk($end));
+    $km = number_format($all['km'], 1, ',', '');
+    $via = array_slice(CANAL_CALCUL_MATRIX, 1, -1);
+    $leg = function (string $a, string $b, string $mode): string {
+        $r = canal_calcul_compute(canal_calcul_pk($a), canal_calcul_pk($b));
+        $t = $mode === 'bateau' ? $r['boat'] : ($mode === 'velo' ? $r['bike'] : $r['walk']);
+        return $a . ' → ' . $b . ' (' . (int) round($r['km']) . ' km' . ($mode === 'bateau' ? ', ' . $r['sites'] . ' écluses' : '') . ', ' . canal_calcul_duration($t) . ')';
+    };
+    $splits = [];
+    foreach ([5, 4, 3] as $d) {
+        $splits[] = 'En ' . $d . ' jours : ' . implode(' ; ', array_map(function ($s) {
+            return $s['from'] . ' → ' . $s['to'] . ' (' . (int) round($s['km']) . ' km)';
+        }, canal_etapes_split($d))) . '.';
+    }
+    $short = [];
+    $midi = array_values(array_filter(CANAL_ETAPES, function ($e) { return $e['canal'] === 'midi'; }));
+    for ($i = 1, $n = count($midi); $i < $n; $i++) {
+        $r = canal_calcul_compute((float) canal_etape_pk($midi[$i - 1]), (float) canal_etape_pk($midi[$i]));
+        if ($r['km'] >= 10 && $r['km'] <= 25) {
+            $short[] = $midi[$i - 1]['name'] . ' → ' . $midi[$i]['name'] . ' (' . (int) round($r['km']) . ' km, ' . canal_calcul_duration($r['bike']) . ')';
+        }
+    }
     return [
-        'q' => 'Combien de temps faut-il pour faire le Canal du Midi ?',
-        'a' => 'De Toulouse à l’étang de Thau, le canal mesure ' . number_format($r['km'], 1, ',', '') . ' km et compte ' . $r['sites'] . ' écluses (' . $r['sas'] . ' sas). '
-            . 'En bateau, comptez ' . canal_calcul_duration($r['boat']) . ' de navigation, soit ' . canal_calcul_days_boat($r['boat'])
-            . ' ; à vélo, ' . canal_calcul_duration($r['bike']) . ' de selle, soit ' . canal_calcul_days_bike($r['km']) . '.',
+        [
+            'q' => 'Quel est le parcours du Canal du Midi ?',
+            'a' => 'Le Canal du Midi relie Toulouse (PK 0) à l’étang de Thau (PK ' . $km . ') sur ' . $km . ' km et ' . $all['sites'] . ' écluses (' . $all['sas']
+                . ' sas), en passant par ' . canal_etape_list($via) . '. Après Le Somail, le canal de la Robine part vers Narbonne et Port-la-Nouvelle.',
+        ],
+        [
+            'q' => 'Combien de temps pour faire le Canal du Midi en bateau ?',
+            'a' => 'Le canal entier représente ' . canal_calcul_duration($all['boat']) . ' de navigation (7 km/h et 10 minutes par sas d’écluse), soit '
+                . canal_calcul_days_boat($all['boat']) . ' à 6 h par jour. En une semaine de location, on parcourt une partie du canal, par exemple '
+                . $leg('Castelnaudary', 'Homps', 'bateau') . ' ou ' . $leg('Homps', 'Béziers', 'bateau') . '.',
+        ],
+        [
+            'q' => 'Faire le Canal du Midi à vélo en 3, 4 ou 5 jours : quelles étapes ?',
+            'a' => 'Le chemin de halage relie Toulouse à l’étang de Thau sur ' . $km . ' km, soit ' . canal_calcul_duration($all['bike']) . ' de selle à 15 km/h. '
+                . implode(' ', $splits),
+        ],
+        [
+            'q' => 'Peut-on faire le Canal du Midi à pied ?',
+            'a' => 'Oui, par le chemin de halage. De Toulouse à l’étang de Thau, comptez ' . canal_calcul_duration($all['walk']) . ' de marche à 4 km/h, soit '
+                . canal_calcul_days_walk($all['km']) . ' à 20 km par jour. Pour une journée : ' . $leg('Carcassonne', 'Trèbes', 'pied') . ' ou '
+                . $leg('Capestang', 'Béziers', 'pied') . '.',
+        ],
+        [
+            'q' => 'Peut-on louer un bateau sans permis sur le Canal du Midi ?',
+            'a' => 'Oui. ' . CANAL_GUIDE_PERMIS_ANSWER,
+        ],
+        [
+            'q' => 'Quelles étapes à vélo en famille sur le Canal du Midi ?',
+            'a' => 'Pour des journées courtes, choisissez un tronçon de 10 à 25 km entre deux étapes : ' . canal_etape_list($short) . '.',
+        ],
     ];
 }
 
