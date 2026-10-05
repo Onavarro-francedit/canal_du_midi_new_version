@@ -311,6 +311,16 @@ function canal_parcours_card(array $p): array
     ];
 }
 
+/** Texto del botón hacia la carte (« 2 loueurs à Homps »); null si la búsqueda no da ninguna ficha. */
+function canal_parcours_carte_label(string $mode, int $n, string $at): ?string
+{
+    if ($n < 1) {
+        return null;
+    }
+    $words = ['bateau' => ['loueur', 'loueurs'], 'velo' => ['loueur de vélos', 'loueurs de vélos'], 'pied' => ['hébergement', 'hébergements']];
+    return $n . ' ' . $words[$mode][$n > 1 ? 1 : 0] . ' ' . $at;
+}
+
 /** Cifras de la tarjeta según el modo; $k = 2 para un aller-retour. */
 function canal_parcours_chips(string $mode, array $r, int $k = 1): array
 {

@@ -160,15 +160,26 @@ function canal_parcours_url(array $c): string
 // Segundo botón de la tarjeta: lo que se busca en la etapa de salida según el modo (barco, bici, a pie → dormir).
 const CANAL_PARCOURS_CARTE_TYPE = ['bateau' => 'location-bateau', 'velo' => 'location-de-velo', 'pied' => 'hebergement'];
 
-function canal_parcours_loueurs_url(array $c): string
+function canal_parcours_carte_query(array $c): array
 {
-    return add_query_arg(['type' => CANAL_PARCOURS_CARTE_TYPE[$c['mode']], 'search_location' => $c['from']['search']], home_url(CANAL_CARTE_PATH));
+    return ['type' => CANAL_PARCOURS_CARTE_TYPE[$c['mode']], 'search_location' => $c['from']['search']];
 }
 
-function canal_parcours_loueurs_label(array $c): string
+function canal_parcours_loueurs_url(array $c): string
 {
-    $at = canal_etape_a($c['from']);
-    return $c['mode'] === 'bateau' ? 'Loueurs ' . $at : ($c['mode'] === 'velo' ? 'Louer un vélo ' . $at : 'Où dormir ' . $at);
+    return add_query_arg(canal_parcours_carte_query($c), home_url(CANAL_CARTE_PATH));
+}
+
+/** Etiqueta del botón, o null si la carte no daría ninguna ficha con esa búsqueda (mismo filtro que la carte). */
+function canal_parcours_loueurs_label(array $c): ?string
+{
+    static $listings = null, $slugs = null;
+    if ($listings === null) {
+        $listings = canal_carte_listings();
+        $slugs = array_column(canal_carte_categories($listings), 'slug');
+    }
+    $n = count(canal_carte_filter($listings, canal_carte_params(canal_parcours_carte_query($c), $slugs)));
+    return canal_parcours_carte_label($c['mode'], $n, canal_etape_a($c['from']));
 }
 
 // Sitemap: las étapes no son posts; proveedor propio solo con el sitio publicado (TASK-063).

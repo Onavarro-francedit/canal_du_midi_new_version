@@ -22,7 +22,7 @@
             + '<ul class="etapes-chips">' + r.chips.map(function (c, i) { return '<li' + (i === r.chips.length - 1 ? ' class="is-key"' : '') + '>' + esc(c) + '</li>'; }).join('') + '</ul>'
             + (via.length ? '<p><b>Vous passez par :</b> ' + via.map(function (e) { return '<a href="' + esc(e.url) + '">' + esc(e.name) + '</a>'; }).join(' · ') + '</p>' : '')
             + '<div class="etapes-prop-actions"><a class="etapes-btn etapes-btn--primary" href="' + esc(url) + '">Voir le détail</a>'
-            + '<a class="etapes-btn" href="' + esc(a.links[state.mode]) + '">' + esc(a.labels[state.mode]) + '</a></div>'
+            + (a.labels[state.mode] ? '<a class="etapes-btn" href="' + esc(a.links[state.mode]) + '">' + esc(a.labels[state.mode]) + '</a>' : '') + '</div>'
             + '</div></article>';
     }
 

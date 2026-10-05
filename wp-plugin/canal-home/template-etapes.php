@@ -78,7 +78,7 @@ get_header();
                                 <?php endif; ?>
                                 <div class="etapes-prop-actions">
                                     <a class="etapes-btn etapes-btn--primary" href="<?= esc_url(canal_parcours_url($c)) ?>">Voir le détail</a>
-                                    <a class="etapes-btn" href="<?= esc_url(canal_parcours_loueurs_url($c)) ?>"><?= esc_html(canal_parcours_loueurs_label($c)) ?></a>
+                                    <?php if ($carte = canal_parcours_loueurs_label($c)): ?><a class="etapes-btn" href="<?= esc_url(canal_parcours_loueurs_url($c)) ?>"><?= esc_html($carte) ?></a><?php endif; ?>
                                 </div>
                             </div>
                         </article>

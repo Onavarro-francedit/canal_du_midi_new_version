@@ -132,5 +132,11 @@ check(count($fromCarca) >= 2, 'todos: desde Carcassonne en bici un fin de semana
 $one = array_values($all)[0];
 check(isset($one['a'], $one['b'], $one['mode'], $one['duree'], $one['chips'], $one['km']) && $one['a'] < $one['b'], 'todos: entrada compacta, una por par y modo');
 
+// Botón de la carte: con el número real de fichas; sin fichas, sin botón.
+check(canal_parcours_carte_label('bateau', 1, 'à Castelnaudary') === '1 loueur à Castelnaudary', 'botón: 1 loueur');
+check(canal_parcours_carte_label('velo', 3, 'au Somail') === '3 loueurs de vélos au Somail', 'botón: vélos en plural');
+check(canal_parcours_carte_label('pied', 2, 'à Homps') === '2 hébergements à Homps', 'botón: a pie → hébergements');
+check(canal_parcours_carte_label('bateau', 0, 'à Toulouse') === null, 'botón: sin fichas → sin botón');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);
