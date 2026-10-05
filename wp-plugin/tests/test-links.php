@@ -2,10 +2,8 @@
 // Tests de links-2026.php — PHP CLI puro (7.4+), sin WordPress.
 // Uso: php wp-plugin/tests/test-links.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
-const CANAL_HOME_PATH = '/accueil-2026/';
-const CANAL_CARTE_PATH = '/explorer-2026/';
-const CANAL_FICHE_PATH = '/fiche-2026/';
-const CANAL_PLANNER_PATH = '/planificateur-2026/';
+require __DIR__ . '/../canal-home/includes/live.php';
+canal_2026_define_paths(false);
 require __DIR__ . '/../canal-home/includes/contenu-core.php';
 require __DIR__ . '/../canal-home/includes/calcul-core.php';
 require __DIR__ . '/../canal-home/includes/links-2026.php';

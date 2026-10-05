@@ -185,7 +185,7 @@ function canal_fiche_tel_intl(string $raw): string
 // validadores). Abrir: wp option update canal_fiche_public 1 · cerrar: wp option delete canal_fiche_public.
 function canal_fiche_can_view(bool $canReadPrivate, $publicOption): bool
 {
-    return $canReadPrivate || $publicOption === '1';
+    return (defined('CANAL_2026_LIVE') && CANAL_2026_LIVE) || $canReadPrivate || $publicOption === '1';
 }
 
 // Ficha: sin pagos (Stripe); Google Maps en diferido desde fiche.js. Desde que la cabecera es nuestra

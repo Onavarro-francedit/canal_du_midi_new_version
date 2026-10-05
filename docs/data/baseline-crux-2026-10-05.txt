@@ -1,0 +1,6 @@
+/ mobile (origen) LCP 2973 INP 114 CLS 0 TTFB 1251 | lab perf 34
+/ desktop (origen) LCP 2698 INP 66 CLS 3 TTFB 956 | lab perf 49
+/calcul-de-distance-canal-du-midi/ mobile (origen) LCP 2973 INP 114 CLS 0 TTFB 1251 | lab perf 47
+/calcul-de-distance-canal-du-midi/ desktop (origen) LCP 2698 INP 66 CLS 3 TTFB 956 | lab perf 60
+/explorer/ mobile (origen) LCP 2973 INP 114 CLS 0 TTFB 1251 | lab perf 36
+/explorer/ desktop (origen) LCP 2698 INP 66 CLS 3 TTFB 956 | lab perf 35

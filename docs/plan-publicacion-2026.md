@@ -1,6 +1,6 @@
 # Plan de publicación del sitio 2026 — plan-canal-du-midi.com
 
-**Fecha:** 2026-10-05 · **Estado:** propuesta. **Nada se ejecuta sin la orden explícita del usuario** (regla del
+**Fecha:** 2026-10-05 · **Estado:** fase 0 HECHA (2026-10-05, ver §9); publicación pendiente. **Nada se ejecuta sin la orden explícita del usuario** (regla del
 proyecto: en producción no se modifica lo existente salvo orden expresa).
 **Sustituye y agrupa:** TASK-028 (home), TASK-029b (carte), TASK-030b (ficha), TASK-044b (planificador) y la
 publicación de TASK-055/057/059/060/061/062.
@@ -22,13 +22,15 @@ publicación de TASK-055/057/059/060/061/062.
 | Navbar y pie 2026 | en las páginas 2026 | en todas las páginas anteriores | — |
 
 **No cambian:**
-- `/categorie/<x>/` (sigue el listado del tema; los enlaces internos van a la carte filtrada);
+- `/categorie/<x>/`, `/region/<x>/` y `/mot-cle/<x>/`: el tema los sirve con la misma página `/explorer/`
+  (query vars `explore_*`), que se excluyen a propósito. Siguen con la cabecera y el listado del tema; los enlaces
+  internos 2026 van a la carte filtrada;
 - `/region/`, `/zone/`, la tienda Woo, `/mon-compte/` y las páginas antiguas sin redirección;
 - `wp-admin`.
 
 ---
 
-## 2. Cómo: un solo interruptor (`CANAL_2026_LIVE`)
+## 2. Cómo: un solo interruptor (opción `canal_2026_live` → constante `CANAL_2026_LIVE`)
 
 Las páginas 2026 se enlazan entre sí. **Publicar por partes dejaría a los visitantes con enlaces a páginas privadas
 (404).** Por eso se publica todo a la vez, con una constante del plugin.
@@ -44,8 +46,12 @@ Las páginas 2026 se enlazan entre sí. **Publicar por partes dejaría a los vis
 - **Ajustes de WordPress:** no se tocan, salvo el planificador (página 18505 → `publish`, slug `planificateur`).
   La portada sigue siendo la página 15269: el plugin pinta encima la plantilla 2026, así que no hace falta cambiar
   *Réglages → Lecture*.
-- **Vuelta atrás:** `CANAL_2026_LIVE = false` + `remote.sh deploy` + vaciar la caché WPFC, en unos 2 minutos. Las
-  redirecciones se apagan con el mismo interruptor.
+- **Encender:** `wp-plugin/remote.sh wp option update canal_2026_live 1`. **Vuelta atrás:**
+  `wp-plugin/remote.sh wp option delete canal_2026_live`. Son segundos, sin desplegar. Al cambiar la opción se vacía
+  sola la caché WPFC. Las redirecciones se apagan con el mismo interruptor.
+- **Vista previa (solo administradores):** con sesión, visitar `/?canal_2026_preview=1` y se ve TODO el sitio como
+  publicado (cookie de 1 día); `/?canal_2026_preview=0` la quita. Nadie más lo nota y WPFC no cachea a usuarios con
+  sesión. En la vista previa no se tocan las reglas de URL globales (las fichas siguen en `/fiche-2026/` para los demás).
 
 **Código pendiente (fase 0, en privado y con tests):**
 - el modo `LIVE` de cada ruta;
@@ -128,7 +134,7 @@ en 24 h (descontando el día de la semana).
 | `fiche_contact` | clic en llamar, e-mail, web, itinerario o redes de una ficha | `method`, `fiche` | ✅ |
 | `plan_commande` | CF7 `wpcf7mailsent` del formulario 12976 (pedido en papel) | — | ✅ |
 | `plan_pdf` | clic en `/plan-canal-du-midi.pdf` | `source` (página) | ✅ |
-| `planner_demande` | demanda enviada desde el planificador | `items` (n.º de prestatarios) | ✅ |
+| `planner_request` (ya existía en planner.js) | demanda confirmada, uno por prestatario | `listing_slug` | ✅ |
 | `calcul_trajet` | trayecto calculado (1 por trayecto distinto) | `de`, `a`, `km` | — |
 | `etape_clic` | clic en un prestatario desde una étape | `etape`, `groupe` | — |
 
@@ -168,3 +174,21 @@ Sirdata). Se marcan como key events en GA4 (lo hace el usuario o yo vía la API 
   decidir con datos de +28 días).
 - TASK-043: navbar, pie y textos editables desde wp-admin (cuando el cliente apruebe el diseño).
 - Robine en el calcul; mapa en las étapes; eventos de GA4 adicionales; TASK-031 en el resto del sitio.
+
+---
+
+## 9. Fase 0 — hecha el 2026-10-05
+
+| Paso | Estado |
+|---|---|
+| Interruptor `canal_2026_live` + rutas por modo (`includes/live.php`, test `tests/test-live.php`) | ✅ desplegado, **apagado** |
+| Modo publicado en home, carte, ficha, contenido, calcul, archivos y étapes (con test de rutas) | ✅ verificado en la vista previa: 16 URLs → 200, plantilla 2026, un H1, indexables, canonical correcto |
+| Redirecciones 301 (`includes/redirects-2026.php`, 59 páginas antiguas + rutas -2026) | ✅ verificado en la vista previa: 8 casos |
+| Sitemap de las étapes (solo publicado) | ✅ |
+| Eventos de GA4 (`includes/events-2026.php`, `calcul_trajet` en calcul.js) | ✅ activos ya en las páginas 2026; verificados `fiche_contact` y `plan_pdf` |
+| Copia de la BD | ✅ `/var/www/vhosts/plan-canal-du-midi.com/backups-canal/db-pre-publicacion-2026-20261005-1145-completa.sql.gz` (101 tablas + 32 vistas, 8,5 MB) |
+| Tag git del plugin | ✅ `pre-publicacion-2026` |
+| Línea base | ✅ `docs/data/baseline-gsc-28d-2026-10-05.csv`, `docs/data/baseline-crux-2026-10-05.txt` (CrUX de origen: móvil LCP 2,97 s · INP 114 ms · TTFB 1,25 s; escritorio LCP 2,70 s) |
+| Al encender (fase 1): página 18505 → `publish` + slug `planificateur`; `llms.txt` / `llms-full.txt` con las URLs definitivas | pendiente |
+| Bloqueantes del usuario (§3 fase 0, punto 5): pedido real del plan, crédito Anthropic, `CANAL_PLANNER_LIVE`, `pm.max_children`, dirección | pendiente |
+| Corregido gracias a la vista previa | Elementor imponía su plantilla en `/` y `/explorer/` (la nuestra va ahora a prioridad 99); `/categorie/` y `/region/` caían en la carte (excluidas) |

@@ -23,7 +23,9 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 - ⚠️ M1/M2/M4/M5 son contenido editorial nuevo: **confirmar con el usuario** (TASK-056 descartada). Preferir páginas
   construidas desde datos. Tras desplegar cada una: botón « Hecha » en el panel GEO-IA.
 
-### TASK-063 — Publicación del sitio 2026 — plan listo, SOLO con orden explícita
+### TASK-063 — Publicación del sitio 2026 — FASE 0 HECHA (05/10); publicar SOLO con orden explícita
+- Fase 0 ✅: interruptor `canal_2026_live` (apagado), vista previa de administrador `/?canal_2026_preview=1`, 301, eventos GA4,
+  sitemap étapes, copia de BD, tag `pre-publicacion-2026`, línea base. Detalle en `docs/plan-publicacion-2026.md` §9.
 - Plan completo: `docs/plan-publicacion-2026.md` (agrupa TASK-028/029b/030b/044b). Un solo interruptor `CANAL_2026_LIVE`
   (URLs originales, sin noindex, 301 activas); vuelta atrás = constante a false + deploy (~2 min).
 - Fase 0 (sin cambios visibles): modo LIVE + mapa de 301 + eventos GA4 + copia de BD + línea base de medición + llms.

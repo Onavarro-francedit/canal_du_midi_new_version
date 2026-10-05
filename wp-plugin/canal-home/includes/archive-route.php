@@ -104,13 +104,18 @@ add_action('parse_request', function (WP $wp) {
 
 add_action('template_redirect', function () {
     $id = (int) get_query_var('canal_archive');
+    $page = max(1, (int) get_query_var('canal_archive_page'));
+    if ($id === 0 && CANAL_2026_LIVE && is_category()) {
+        $id = get_queried_object_id();
+        $page = max(1, (int) get_query_var('paged'));
+    }
     if ($id === 0) {
         return;
     }
     global $wp_query;
     $term = get_term($id, 'category');
     $data = $term instanceof WP_Term && canal_fiche_can_view(current_user_can('read_private_pages'), get_option('canal_contenu_public'))
-        ? canal_archive_data($term, max(1, (int) get_query_var('canal_archive_page')))
+        ? canal_archive_data($term, $page)
         : null;
     if (!$data) {
         $wp_query->set_404();
@@ -121,10 +126,10 @@ add_action('template_redirect', function () {
     canal_archive_state($data);
     $wp_query->is_home = false;
     $wp_query->is_404  = false;
-    if (!defined('DONOTCACHEPAGE')) {
-        define('DONOTCACHEPAGE', true);
+    if (!CANAL_2026_LIVE) {
+        defined('DONOTCACHEPAGE') || define('DONOTCACHEPAGE', true);
+        nocache_headers();
     }
-    nocache_headers();
     status_header(200);
     include CANAL_HOME_DIR . 'template-archive.php';
     exit;

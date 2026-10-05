@@ -81,10 +81,29 @@ function canal_home_webp_exists(string $rel): bool
     return !is_wp_error($saved) && is_file($file . '.webp');
 }
 
+/** ¿Esta petición la pinta una plantilla 2026? (rutas -2026 privadas o, publicado, las URLs de siempre) */
+function canal_2026_is_template_request(): bool
+{
+    foreach (['canal_fiche', 'canal_contenu', 'canal_calcul', 'canal_archive', 'canal_etape'] as $var) {
+        if (get_query_var($var) !== '') {
+            return true;
+        }
+    }
+    if (canal_carte_is_page() || canal_home_is_page()) {
+        return true;
+    }
+    if (!CANAL_2026_LIVE) {
+        return false;
+    }
+    $q = get_queried_object();
+    return is_singular('job_listing') || is_category() || is_page(CANAL_CALCUL_SLUG)
+        || (is_singular(['post', 'page']) && $q instanceof WP_Post && canal_contenu_post_eligible($q));
+}
+
 if (function_exists('add_action')) {
     // Prioridad -1: antes del template_redirect de la ficha (prioridad 0, que incluye la plantilla y sale).
     add_action('template_redirect', function () {
-        if (get_query_var('canal_fiche') !== '' || get_query_var('canal_contenu') !== '' || get_query_var('canal_calcul') !== '' || get_query_var('canal_archive') !== '' || get_query_var('canal_etape') !== '' || canal_carte_is_page() || canal_home_is_page()) {
+        if (canal_2026_is_template_request()) {
             ob_start(function (string $html): string {
                 $html = canal_home_webp_html(canal_home_move_consent_to_body(canal_fiche_lighten_head(canal_home_fix_head($html))), 'canal_home_webp_exists', untrailingslashit(home_url()));
                 $html = canal_2026_links_html($html); // enlaces internos → versión 2026 (links-2026.php)

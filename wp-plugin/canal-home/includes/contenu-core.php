@@ -6,8 +6,7 @@
  */
 defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 
-// Al publicar → '' (y el router pasa a servir las URLs originales: tarea de publicación, aún no hecha).
-const CANAL_CONTENU_SUFFIX = '-2026';
+// CANAL_CONTENU_SUFFIX ('-2026' en privado, '' publicado) lo define live.php.
 // Páginas de contenido; las demás plantillas son herramientas, formularios o listados antiguos (404 en -2026).
 const CANAL_CONTENU_PAGE_TEMPLATES = ['', 'default', 'templates/content-sidebar.php'];
 // Fuera también las « demande… » (las sustituye el planificador: links-2026.php las enlaza allí) y el agenda vacío.

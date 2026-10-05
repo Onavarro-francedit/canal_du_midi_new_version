@@ -28,7 +28,7 @@ function canal_contenu_is_page(): bool
 
 function canal_contenu_post_eligible(WP_Post $p): bool
 {
-    return canal_contenu_is_eligible($p->post_type, $p->post_status, (string) get_page_template_slug($p), $p->post_name);
+    return $p->post_password === '' && canal_contenu_is_eligible($p->post_type, $p->post_status, (string) get_page_template_slug($p), $p->post_name);
 }
 
 /** Páginas de la misma rúbrica: hermanas (o hijas si no tiene madre), elegibles, enlazadas en versión 2026. */
@@ -120,6 +120,10 @@ add_action('parse_request', function (WP $wp) {
 
 add_action('template_redirect', function () {
     $id = (int) get_query_var('canal_contenu');
+    if ($id === 0 && CANAL_2026_LIVE && is_singular(['post', 'page']) && !is_front_page()) {
+        $queried = get_queried_object();
+        $id = $queried instanceof WP_Post && canal_contenu_post_eligible($queried) ? $queried->ID : 0;
+    }
     if ($id === 0) {
         return;
     }
@@ -134,10 +138,10 @@ add_action('template_redirect', function () {
     canal_contenu_state(canal_contenu_data(get_post($id)));
     $wp_query->is_home = false;
     $wp_query->is_404  = false;
-    if (!defined('DONOTCACHEPAGE')) {
-        define('DONOTCACHEPAGE', true);
+    if (!CANAL_2026_LIVE) {
+        defined('DONOTCACHEPAGE') || define('DONOTCACHEPAGE', true);
+        nocache_headers();
     }
-    nocache_headers();
     status_header(200);
     header('Link: <' . esc_url_raw(home_url('/llms.txt')) . '>; rel="llms-txt"', false);
     include CANAL_HOME_DIR . 'template-contenu.php';

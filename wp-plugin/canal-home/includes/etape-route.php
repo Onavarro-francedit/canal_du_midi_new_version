@@ -122,6 +122,32 @@ function canal_etapes_index(): array
     return $out;
 }
 
+// Sitemap: las étapes no son posts; proveedor propio solo con el sitio publicado (TASK-063).
+add_action('init', function () {
+    if (!CANAL_2026_LIVE || canal_2026_is_preview() || !class_exists('WP_Sitemaps_Provider')) {
+        return;
+    }
+    wp_register_sitemap_provider('etapes', new class ('etapes', 'etapes') extends WP_Sitemaps_Provider {
+        public function __construct(string $name, string $type)
+        {
+            $this->name = $name;
+            $this->object_type = $type;
+        }
+        public function get_url_list($page_num, $object_subtype = '')
+        {
+            $urls = [['loc' => home_url(CANAL_ETAPES_PATH)]];
+            foreach (CANAL_ETAPES as $e) {
+                $urls[] = ['loc' => canal_etape_url($e['slug'])];
+            }
+            return $urls;
+        }
+        public function get_max_num_pages($object_subtype = '')
+        {
+            return 1;
+        }
+    });
+});
+
 add_filter('query_vars', function (array $vars) {
     $vars[] = 'canal_etape';
     return $vars;
@@ -151,10 +177,10 @@ add_action('template_redirect', function () {
     canal_etape_state($slug === '_index' ? ['index' => canal_etapes_index(), 'url' => home_url(CANAL_ETAPES_PATH)] : canal_etape_data(canal_etape_find($slug)));
     $wp_query->is_home = false;
     $wp_query->is_404  = false;
-    if (!defined('DONOTCACHEPAGE')) {
-        define('DONOTCACHEPAGE', true);
+    if (!CANAL_2026_LIVE) {
+        defined('DONOTCACHEPAGE') || define('DONOTCACHEPAGE', true);
+        nocache_headers();
     }
-    nocache_headers();
     status_header(200);
     include CANAL_HOME_DIR . ($slug === '_index' ? 'template-etapes.php' : 'template-etape.php');
     exit;

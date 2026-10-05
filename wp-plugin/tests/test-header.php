@@ -2,7 +2,8 @@
 // Tests de includes/header.php (menú y sección activa) — PHP CLI puro (7.4+), sin WordPress.
 // Uso: php wp-plugin/tests/test-header.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
-const CANAL_CARTE_PATH = '/explorer-2026/'; // en WP la define canal-home.php
+require __DIR__ . '/../canal-home/includes/live.php';
+canal_2026_define_paths(false);
 function add_filter(...$a) {}
 function add_action(...$a) {}
 require __DIR__ . '/../canal-home/includes/etape-core.php';

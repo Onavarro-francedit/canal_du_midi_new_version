@@ -26,17 +26,28 @@ function canal_fiche_is_page(): bool
 }
 
 add_action('init', function () {
-    add_rewrite_tag('%canal_fiche%', '([^/]+)');
-    add_rewrite_rule('^' . trim(CANAL_FICHE_PATH, '/') . '/([^/]+)/?$', 'index.php?canal_fiche=$matches[1]', 'top');
-    // Flush una sola vez por ruta: rewrite_rules es una caché derivada; añadir la regla no altera las demás.
-    if (get_option('canal_fiche_rewrite') !== CANAL_FICHE_PATH . '1') {
+    // Vista previa de un administrador: no se tocan las reglas globales (romperían /fiche-2026/ a los demás).
+    if (canal_2026_is_preview()) {
+        return;
+    }
+    // Publicado: /fiche/<slug>/ es la URL del tema (is_singular('job_listing')); la regla propia sobra.
+    $want = CANAL_2026_LIVE ? 'live' : CANAL_FICHE_PATH . '1';
+    if (!CANAL_2026_LIVE) {
+        add_rewrite_tag('%canal_fiche%', '([^/]+)');
+        add_rewrite_rule('^' . trim(CANAL_FICHE_PATH, '/') . '/([^/]+)/?$', 'index.php?canal_fiche=$matches[1]', 'top');
+    }
+    // Flush una sola vez por modo: rewrite_rules es una caché derivada; añadir o quitar la regla no altera las demás.
+    if (get_option('canal_fiche_rewrite') !== $want) {
         flush_rewrite_rules(false);
-        update_option('canal_fiche_rewrite', CANAL_FICHE_PATH . '1', false);
+        update_option('canal_fiche_rewrite', $want, false);
     }
 });
 
 add_action('template_redirect', function () {
     $slug = get_query_var('canal_fiche');
+    if (CANAL_2026_LIVE && is_singular('job_listing')) {
+        $slug = get_queried_object()->post_name;
+    }
     if (!is_string($slug) || $slug === '') {
         return;
     }
@@ -52,10 +63,10 @@ add_action('template_redirect', function () {
     canal_fiche_state(canal_fiche_data($post));
     $wp_query->is_home = false;
     $wp_query->is_404  = false;
-    if (!defined('DONOTCACHEPAGE')) {
-        define('DONOTCACHEPAGE', true); // otros plugins de caché; WPFC no lo respeta (ver purga más abajo)
+    if (!CANAL_2026_LIVE) { // privada: que ninguna caché la guarde (WPFC no respeta DONOTCACHEPAGE: ver purga)
+        defined('DONOTCACHEPAGE') || define('DONOTCACHEPAGE', true);
+        nocache_headers();
     }
-    nocache_headers();
     status_header(200);
     header('Link: <' . esc_url_raw(home_url('/llms.txt')) . '>; rel="llms-txt"', false); // como la home y la carte
     include CANAL_HOME_DIR . 'template-fiche.php';

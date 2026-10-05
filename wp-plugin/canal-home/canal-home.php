@@ -13,14 +13,10 @@ define('CANAL_HOME_URL', plugin_dir_url(__FILE__));
 define('CANAL_HOME_VERSION', '1.0.0');
 define('CANAL_HOME_TEMPLATE', 'canal-home/template-home.php');
 define('CANAL_CARTE_TEMPLATE', 'canal-home/template-carte.php');
-// Las páginas nuevas llevan el sufijo -2026 (home: /accueil-2026/); al publicar se quita el sufijo.
-const CANAL_CARTE_PATH = '/explorer-2026/';
-// Home nueva (página 18500): la cabecera propia enlaza a sus secciones. Al publicar → '/' (TASK-028).
-const CANAL_HOME_PATH = '/accueil-2026/';
-// Ficha nueva: /fiche-2026/<slug>/ (regla propia). Al publicar → '/fiche/' (TASK-030b).
-const CANAL_FICHE_PATH = '/fiche-2026/';
-// Planificateur 2026 (TASK-044): página privada. Al publicar → '/planificateur/' o la que se decida.
-const CANAL_PLANNER_PATH = '/planificateur-2026/';
+// Rutas de las páginas 2026 (CANAL_HOME_PATH, CANAL_CARTE_PATH, CANAL_FICHE_PATH, CANAL_PLANNER_PATH,
+// CANAL_CONTENU_SUFFIX, CANAL_ETAPE_PATH, CANAL_ETAPES_PATH) y CANAL_2026_LIVE: las define includes/live.php en
+// plugins_loaded según el interruptor de publicación (TASK-063). Privado: rutas -2026; publicado: las de siempre.
+require_once CANAL_HOME_DIR . 'includes/live.php';
 define('CANAL_PLANNER_TEMPLATE', 'canal-home/template-planner.php');
 
 // TASK-048: fuentes e iconos propios, sin CDN ni hojas externas. Fuentes woff2 latin autoalojadas (Sora y Manrope
@@ -79,6 +75,8 @@ require_once CANAL_HOME_DIR . 'includes/archive-route.php';
 require_once CANAL_HOME_DIR . 'includes/etape-core.php';
 require_once CANAL_HOME_DIR . 'includes/etape-route.php';
 require_once CANAL_HOME_DIR . 'includes/links-2026.php';
+require_once CANAL_HOME_DIR . 'includes/redirects-2026.php';
+require_once CANAL_HOME_DIR . 'includes/events-2026.php';
 require_once CANAL_HOME_DIR . 'includes/head-fix.php';
 require_once CANAL_HOME_DIR . 'includes/header.php';
 
@@ -91,12 +89,16 @@ add_filter('theme_page_templates', function ($templates) {
 
 function canal_home_is_page(): bool
 {
-    return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_HOME_TEMPLATE;
+    return (is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_HOME_TEMPLATE)
+        || (CANAL_2026_LIVE && is_front_page()); // publicado: la portada (página 15269) con la plantilla 2026
 }
 
 function canal_carte_is_page(): bool
 {
-    return is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE;
+    return (is_page() && get_page_template_slug(get_queried_object_id()) === CANAL_CARTE_TEMPLATE)
+        // Publicado: /explorer/ (página 10154). El tema sirve también /categorie/, /region/ y /mot-cle/ con esa página
+        // (query vars explore_*): esas siguen con el tema (plan de publicación §1).
+        || (CANAL_2026_LIVE && is_page('explorer') && get_query_var('explore_category') === '' && get_query_var('explore_region') === '' && get_query_var('explore_tag') === '');
 }
 
 function canal_planner_is_page(): bool
@@ -112,7 +114,7 @@ add_filter('template_include', function ($template) {
         return CANAL_HOME_DIR . 'template-planner.php';
     }
     return canal_carte_is_page() ? CANAL_HOME_DIR . 'template-carte.php' : $template;
-});
+}, 99); // después de Elementor: la portada y /explorer/ publicadas son páginas Elementor
 
 // Prioridad 20: después de los estilos del tema, para ganar a igual especificidad.
 add_action('wp_enqueue_scripts', function () {

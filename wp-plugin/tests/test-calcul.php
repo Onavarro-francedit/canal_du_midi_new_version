@@ -2,6 +2,8 @@
 // Tests de calcul-core.php — PHP CLI puro (7.4+), sin WordPress.
 // Uso: php wp-plugin/tests/test-calcul.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
+require __DIR__ . '/../canal-home/includes/live.php';
+canal_2026_define_paths(false);
 require __DIR__ . '/../canal-home/includes/carte-filter.php';
 require __DIR__ . '/../canal-home/includes/calcul-core.php';
 

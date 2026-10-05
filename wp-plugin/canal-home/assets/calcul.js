@@ -154,7 +154,16 @@
             history.replaceState(null, '', u.toString());
         }
         drawMap(fa, fb, r);
+        clearTimeout(sendTimer);
+        sendTimer = setTimeout(function () {
+            var key = fa + '→' + fb;
+            if (key !== lastSent && typeof window.gtag === 'function') {
+                lastSent = key;
+                window.gtag('event', 'calcul_trajet', { de: fa, a: fb, km: Math.round(r.km) });
+            }
+        }, 2000);
     }
+    var sendTimer = 0, lastSent = '';
 
     ['calc-from', 'calc-to'].forEach(function (id) {
         $(id).addEventListener('input', update);

@@ -95,7 +95,7 @@ add_action('parse_request', function (WP $wp) {
 }, 5);
 
 add_action('template_redirect', function () {
-    if (get_query_var('canal_calcul') !== '1') {
+    if (get_query_var('canal_calcul') !== '1' && !(CANAL_2026_LIVE && is_page(CANAL_CALCUL_SLUG))) {
         return;
     }
     global $wp_query;
@@ -110,10 +110,10 @@ add_action('template_redirect', function () {
     canal_calcul_state(canal_calcul_data($from, $to));
     $wp_query->is_home = false;
     $wp_query->is_404  = false;
-    if (!defined('DONOTCACHEPAGE')) {
-        define('DONOTCACHEPAGE', true);
+    if (!CANAL_2026_LIVE) {
+        defined('DONOTCACHEPAGE') || define('DONOTCACHEPAGE', true);
+        nocache_headers();
     }
-    nocache_headers();
     status_header(200);
     header('Link: <' . esc_url_raw(home_url('/llms.txt')) . '>; rel="llms-txt"', false);
     include CANAL_HOME_DIR . 'template-calcul.php';

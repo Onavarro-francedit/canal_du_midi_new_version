@@ -6,9 +6,7 @@
  */
 defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 
-// Al publicar → '/etape/' y '/etapes/'.
-const CANAL_ETAPE_PATH = '/etape-2026/';
-const CANAL_ETAPES_PATH = '/etapes-2026/';
+// CANAL_ETAPE_PATH / CANAL_ETAPES_PATH ('/etape-2026/' en privado, '/etape/' publicado) los define live.php.
 
 // Etapas: 'calcul' = lugar de CANAL_CALCUL_TOWNS (solo Canal du Midi); lat/lng = ficha del puerto (o centro); radius en km;
 // 'de' / 'a' = formas con artículo si no son « de X » / « à X »; 'pages' = páginas del sitio sobre la ciudad.

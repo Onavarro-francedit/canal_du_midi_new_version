@@ -31,7 +31,8 @@ run_test() {
         $PHP74 $TMP/tests/test-contenu.php
         $PHP74 $TMP/tests/test-calcul.php
         $PHP74 $TMP/tests/test-links.php
-        $PHP74 $TMP/tests/test-etape.php"
+        $PHP74 $TMP/tests/test-etape.php
+        $PHP74 $TMP/tests/test-live.php"
 }
 
 case "${1:-}" in
