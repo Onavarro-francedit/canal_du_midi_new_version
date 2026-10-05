@@ -359,6 +359,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-058 — Enlaces de las páginas 2026 → páginas 2026 — DESPLEGADO ✅ — 2026-10-05
+- `includes/links-2026.php` (test `tests/test-links.php`): reescribe los `href` del `<body>` en el búfer de salida de todas las
+  páginas 2026 (y el planificador): `/` → accueil-2026, `/explorer/` → explorer-2026, `/fiche/x/` → fiche-2026, `/categorie/x/`
+  → carte `?type=x`, calcul → calcul-2026, organiser → planificateur, páginas/artículos elegibles → `-2026` (caché en transient 12 h).
+- Quedan sin versión 2026 (enlazan al tema): `/post-category/…` (7 en el menú), recevoir-le-plan-2 (CF7), boutique (TablePress),
+  mon-compte. Las 6 páginas con formularios/tablas de plugins se excluyen de la plantilla de contenido.
+- Verificado: 186 enlaces reescritos → 200; el sitio actual sin enlaces -2026.
+
 ### TASK-057 — Calcul de distance 2026 en `/calcul-de-distance-canal-du-midi-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
 - Benchmark `docs/calcul-distance-benchmark-2026-10-05.md` · maqueta `docs/mockups/calcul-distance-2026.html` · spec y plan
   en `docs/superpowers/`.
