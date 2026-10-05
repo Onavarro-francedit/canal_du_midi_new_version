@@ -13,7 +13,7 @@ sesión.
 **Abrir para medir:** opciones `canal_contenu_public`, `canal_calcul_public`, `canal_etape_public` (= '1'); `/accueil-2026/` sigue publicada.
 **Próxima acción:**
 ```
-1. Navbar de 5 entradas (En bateau | Vélo & balades | Villes & étapes | Se loger & manger | Préparer), −16 enlaces vacíos.
+1. ✅ Navbar de 5 entradas hecho (TASK-061).
 2. Formularios (recevoir-le-plan-2 CF7, demandes) o retirarlos; luego plan de publicación (orden explícita).
 ```
 

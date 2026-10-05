@@ -359,6 +359,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-061 — Navbar 2026 de 5 entradas — DESPLEGADO ✅ — 2026-10-05
+- `canal_header_menu()` (header.php): En bateau | Vélo & balades | **Villes & étapes** (6 etapas, Robine, Le canal, À voir; pie
+  « Toutes les étapes ») | **Se loger & manger** | Préparer (con el plan PDF). 103 → 66 enlaces: fuera 16 categorías con 0–2
+  fichas o duplicadas y « Sur place ». En las etapas se marca « Villes & étapes ». Pie: « Villes et étapes du canal ».
+- Sigue en PHP (memoria wp-admin-editable: lo existente pasa a wp-admin cuando el cliente apruebe el diseño 2026).
+- Verificado: 76 enlaces de la cabecera → 200; solo 2 al tema (recevoir-le-plan-2 con CF7, mon-compte); móvil OK. Test
+  `test-header.php` con la nueva estructura.
+
 ### TASK-060 — Villes & étapes 2026: `/etape-2026/<slug>/` (20 etapas) + índice `/etapes-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
 - Spec `docs/superpowers/specs/2026-10-05-etapes-2026-design.md`. `includes/etape-core.php` (datos y funciones puras, test
   `tests/test-etape.php`), `includes/etape-route.php`, `template-etape.php`, `template-etapes.php`, `assets/etape.css`.

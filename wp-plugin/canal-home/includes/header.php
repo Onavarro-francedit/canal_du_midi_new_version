@@ -26,26 +26,23 @@ add_filter('mylisting/header-config', function ($config) {
 }, 99);
 
 /**
- * Menú principal del sitio (menú WP « Principale », 16) reorganizado por intención y modo de viaje,
- * ordenado por vistas GA4 (oct 2025 – sep 2026; Calcul de distance = nº 1 del sitio). Sin duplicados,
- * 2 niveles. Rutas relativas a home_url(); las absolutas son externas. Estas páginas no leen el menú
- * de WP: si cambia allí, actualizar aquí. 'carte' = slug de categoría para « Voir sur la carte ».
+ * Menú principal de las páginas 2026 (TASK-061, docs/inventario-paginas-2026-10-05.md §7): 5 paneles por intención y
+ * modo de viaje; fuera las categorías con 0–2 fichas, los duplicados y « Sur place ». Los enlaces a páginas antiguas
+ * se reescriben a su versión 2026 al servir la página (links-2026.php). Sigue en PHP hasta que el cliente apruebe el
+ * diseño 2026 (memoria wp-admin-editable). 'carte' = slug de categoría para « Voir sur la carte ».
  */
 function canal_header_menu(): array
 {
-    // Etiquetas (TASK-040, docs/navbar-analisis-2026-10-01.md §7): cada opción una sola vez, sin títulos
-    // de columna repetidos como enlace, guías separadas de los listados de prestatarios.
     return [
         'En bateau' => [
             'cols' => [
                 'Louer & naviguer' => [
                     'Location de bateau' => '/categorie/location-bateau/',
                     'Croisière en bateau' => '/categorie/croisiere-bateau/',
-                    'Activités nautiques' => '/categorie/nautique/',
                     'Péniches à vendre' => '/peniches-a-vendre-sur-le-canal-tout-savoir-avant-dacheter/',
                 ],
                 'Ports & écluses' => [
-                    'Ports de plaisance (canal et littoral)' => '/categorie/ports/',
+                    'Ports de plaisance' => '/categorie/ports/',
                     'Ports fluviaux' => '/categorie/ports-fluviaux/',
                     'Haltes nautiques' => '/categorie/halte-nautique/',
                     'Les 63 écluses : guide' => '/les-ecluses-du-canal-du-midi-2/',
@@ -59,7 +56,6 @@ function canal_header_menu(): array
                     'Les panneaux' => '/navigation/les-panneaux/',
                     'Passer une écluse' => '/navigation/passer-une-ecluse/',
                     'Se préparer au voyage en bateau' => '/canal-du-midi-en-bateau-comment-sy-preparer/',
-                    // Sustituye al calculador de itinerarios de VNF (CIFL), cerrado en 2026.
                     'Avisbat : état du réseau (VNF)' => 'https://avisbat.vnf.fr/',
                 ],
             ],
@@ -71,120 +67,91 @@ function canal_header_menu(): array
                 'Prestataires vélo' => [
                     'Location de vélo' => '/categorie/location-de-velo/',
                     'Voyage organisé à vélo' => '/categorie/organisation-de-voyage-a-velo/',
-                    'Le canal à vélo' => '/categorie/velo/',
                 ],
                 'Guides vélo' => [
                     'Voie verte et véloroute' => '/voie-verte-et-veloroute/',
-                    'Balade à vélo sur le canal' => '/balade-a-velo-sur-le-canal-du-midi/',
                     'Chemins de halage : conditions' => '/conditions-dutilisation-des-chemins-de-halage-le-long-du-canal-du-midi-a-velo/',
                 ],
-                'Autrement' => [
-                    'En roller' => '/balade-en-roller-2/',
+                'À pied' => [
                     'Balade à pied / Randonnée' => '/balade-a-pied-randonnee/',
-                    'Canoë-kayak' => '/categorie/location-de-canoe-kayak/',
-                    'Loisirs de plein air' => '/categorie/loisir-de-plein-air/',
-                    'Toutes les activités' => '/categorie/activites-loisirs/',
+                    'En roller' => '/balade-en-roller-2/',
                 ],
             ],
-            'foot' => [],
+            'foot' => ['Tous les prestataires vélo' => '/categorie/velo/'],
             'carte' => 'velo',
         ],
-        'Découvrir' => [
+        'Villes & étapes' => [
             'cols' => [
+                'Étapes du canal' => [
+                    'Toulouse' => CANAL_ETAPE_PATH . 'toulouse/',
+                    'Castelnaudary' => CANAL_ETAPE_PATH . 'castelnaudary/',
+                    'Carcassonne' => CANAL_ETAPE_PATH . 'carcassonne/',
+                    'Le Somail' => CANAL_ETAPE_PATH . 'le-somail/',
+                    'Béziers' => CANAL_ETAPE_PATH . 'beziers/',
+                    'Agde' => CANAL_ETAPE_PATH . 'agde/',
+                ],
+                'Canal de la Robine' => [
+                    "Sallèles-d'Aude" => CANAL_ETAPE_PATH . 'salleles-daude/',
+                    'Narbonne' => CANAL_ETAPE_PATH . 'narbonne/',
+                    'Port-la-Nouvelle' => CANAL_ETAPE_PATH . 'port-la-nouvelle/',
+                    'Le canal de la Robine' => '/canal-de-la-robine/',
+                ],
                 'Le canal' => [
                     'Histoire' => '/le-canal/histoire/',
                     'Construction' => '/le-canal/construction/',
                     'Ouvrages' => '/le-canal/ouvrages/',
                     'Alimentation en eau' => '/alimentation-en-eau-du-canal/',
                     'La faune et la flore' => '/la-faune-et-la-flore/',
-                    'Le Canal de la Robine' => '/canal-de-la-robine/',
+                    'Photos et vidéos' => '/video-de-presentation-du-canal-du-midi/',
                 ],
                 'À voir' => [
                     'Vignobles' => '/post-category/vignobles/',
-                    'Circuits près du canal' => '/post-category/circuits-pres-du-canal-du-midi/',
                     'Lieux remarquables' => '/post-category/lieux-remarquables/',
                     'Sites et monuments' => '/categorie/site-et-monument/',
-                    'Villes à visiter' => '/post-category/villes-a-visiter/',
                     'Musées' => '/categorie/musees/',
                     'Moulins' => '/categorie/moulins/',
-                    'Excursions' => '/categorie/excursions/',
-                    'Œnotourisme' => '/categorie/oenotourisme/',
-                ],
-                'Médias' => [
-                    'Vidéos du canal' => '/video-de-presentation-du-canal-du-midi/',
-                    'Photos du canal' => '/photos-canal-du-midi/',
-                    'Archives : films et vidéos' => '/films-et-videos/',
-                    'Archives : ouvrages, cartes et images' => '/ouvrages-cartes-et-images/',
                 ],
             ],
-            'foot' => [],
+            'foot' => ['Toutes les étapes du canal' => CANAL_ETAPES_PATH],
             'carte' => 'voir-visiter',
         ],
-        'Se loger' => [
+        'Se loger & manger' => [
             'cols' => [
-                'Hôtels & chambres' => [
+                'Se loger' => [
                     'Campings' => '/categorie/camping/',
                     'Hôtels' => '/categorie/hotel/',
-                    'Chambres à louer' => '/categorie/chambre-a-louer/',
                     "Chambres d'hôtes" => '/categorie/chambre-dhotes/',
-                    'Appart-hôtels' => '/categorie/appartement-hotel/',
-                ],
-                'Locations' => [
                     'Gîtes' => '/categorie/gites/',
                     'Locations saisonnières' => '/categorie/location-saisonniere/',
-                    'Appartements / Maisons' => '/categorie/appartement-maison-a-louer/',
+                    'Appart-hôtels' => '/categorie/appartement-hotel/',
                 ],
-                'Insolite & auberges' => [
-                    'Hébergements insolites' => '/categorie/insolite/',
-                    'Péniches' => '/categorie/peniche/',
-                    'Roulottes' => '/categorie/roulotte/',
-                    'Auberges collectives' => '/categorie/auberge-collective/',
-                    'Auberges de jeunesse' => '/categorie/auberge-de-jeunesse/',
-                    'Hostels' => '/categorie/hostel/',
-                ],
-            ],
-            'foot' => ['Tous les hébergements' => '/categorie/hebergement/'],
-            'carte' => 'hebergement',
-        ],
-        'Manger & Boire' => [
-            'cols' => [
-                'Restaurants & bars' => [
-                    'Tous les restaurants & bars' => '/categorie/restauration-2/',
+                'Manger & boire' => [
                     'Restaurants' => '/categorie/restaurant/',
                     'Brasseries / Snacks' => '/categorie/brasserie-snack/',
-                    'Bateaux-restaurants' => '/categorie/bateau-restaurant/',
                     'Bars' => '/categorie/bar/',
                 ],
-                'Produits & vins' => [
-                    'Tous les commerces alimentaires' => '/categorie/commerce-alimentaire/',
+                'Produits du terroir' => [
                     'Vente de vins' => '/categorie/vente-de-vins/',
                     'Produits régionaux' => '/categorie/produits-regionaux/',
                     'Boulangeries / Pâtisseries' => '/categorie/boulangerie-patisserie/',
                     'Supermarchés / Épiceries' => '/categorie/supermarche-epicerie/',
                 ],
             ],
-            'foot' => ['Tout Manger & Boire' => '/categorie/restauration/'],
-            'carte' => 'restauration',
+            'foot' => ['Tous les hébergements' => '/categorie/hebergement/', 'Tout Manger & Boire' => '/categorie/restauration/'],
+            'carte' => 'hebergement',
         ],
         'Préparer' => [
             'cols' => [
                 'Outils' => [
                     'Calcul de distance' => '/calcul-de-distance-canal-du-midi/',
                     'Météo du Canal du Midi' => '/meteo-du-canal-du-midi/',
-                    'Recevoir le plan du canal' => '/recevoir-le-plan-du-canal-du-midi-2/',
-                    'Organiser votre séjour' => '/organiser-votre-sejour/',
+                    'Plan du canal (PDF)' => '/plan-canal-du-midi.pdf',
+                    'Recevoir le plan par courrier' => '/recevoir-le-plan-du-canal-du-midi-2/',
                 ],
                 'Agenda' => [
                     'Fêtes et manifestations' => '/manifestations-et-fetes-canal-du-midi/',
                     'Jours de marchés' => '/jours-de-marches-proche-du-canal-du-midi/',
                     'Actualités' => '/post-category/actualites/',
-                ],
-                'Sur place' => [
-                    'Shopping' => '/categorie/shopping/',
-                    'Librairies' => '/categorie/librairie/',
-                    'Artisanat' => '/categorie/artisanat/',
-                    'Commerces' => '/categorie/commerce/',
-                    'Services' => '/categorie/services/',
                 ],
                 'Aide' => [
                     'Foire aux questions' => '/foire-aux-question-faq-canal-du-midi/',
@@ -230,6 +197,7 @@ function canal_footer_menu(): array
             'Hébergements' => '/categorie/hebergement/',
             'Restaurants & bars' => '/categorie/restauration-2/',
             'Sites et monuments' => '/categorie/site-et-monument/',
+            'Villes et étapes du canal' => CANAL_ETAPES_PATH,
             'Carte interactive' => CANAL_CARTE_PATH,
         ],
         'Préparer son séjour' => [
@@ -274,7 +242,7 @@ add_action('mylisting/body/start', function () {
     $menu    = canal_header_menu();
     $cats    = canal_fiche_is_page() ? array_column(canal_fiche_state()['categories'], 'slug') : [];
     $type    = $isCarte && isset($_GET['type']) && is_string($_GET['type']) ? sanitize_key(wp_unslash($_GET['type'])) : '';
-    $section = canal_header_section($menu, $cats, $type);
+    $section = function_exists('canal_etape_is_page') && canal_etape_is_page() ? 'Villes & étapes' : canal_header_section($menu, $cats, $type);
     $here    = function (bool $current) { return $current ? ' aria-current="page"' : ''; };
     $i = 0;
     ?>
