@@ -32,6 +32,18 @@ p { color: inherit; }
 
 /* WP: editor + fecha (E-E-A-T) y preguntas frecuentes al final de la lista (AEO). */
 .search-results-publisher { margin: 0; font-size: 10.5px; line-height: 1.4; color: #94a3b8; }
+.carte-guide { grid-column: 1 / -1; padding: 22px 4px 8px; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+.carte-guide h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; line-height: 1.3; color: #1a1d26; }
+.carte-guide p { margin: 0 0 12px; font-size: 13px; line-height: 1.55; color: #475569; }
+.carte-guide-scroll { overflow-x: auto; margin: 0 0 10px; }
+.carte-guide table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.4; }
+.carte-guide th, .carte-guide td { padding: 7px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+.carte-guide thead th { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #64748b; white-space: nowrap; }
+.carte-guide tbody th { font-weight: 600; color: #1a1d26; }
+.carte-guide tbody th a { color: #6a63d9; }
+.carte-guide td { color: #334155; }
+.carte-guide .carte-guide-source { margin: 0; font-size: 12px; color: #64748b; }
+.carte-guide .carte-guide-source a { color: #6a63d9; text-decoration: underline; }
 .carte-faq { grid-column: 1 / -1; padding: 22px 4px 8px; border-top: 1px solid rgba(0, 0, 0, 0.08); }
 .carte-faq-kicker { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6a63d9; }
 .carte-faq-item { margin: 0 0 16px; }

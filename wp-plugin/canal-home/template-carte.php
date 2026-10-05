@@ -42,6 +42,14 @@ $activeFilters = array_filter(array_merge(
 $faq      = $results ? canal_carte_faq($listings, canal_plan_pdf_year()) : []; // WP: solo se muestra (y se marca) si hay lista
 $modified = canal_carte_last_modified();
 $termSeo  = $term ? canal_carte_term_seo($term, $resultsCount) : null;
+// WP: guía por datos en /categorie/camping/ y /categorie/location-bateau/ (TASK-066): respuesta, tabla por PK y su pregunta.
+$guide = ($term && $term['tax'] === 'job_listing_category' && $results)
+    ? canal_guide_for($term['slug'], $listings, canal_guide_trace(CANAL_HOME_DIR . 'assets/calcul/canal-du-midi-trace.json'))
+    : null;
+if ($guide) {
+    $termSeo['intro'] = $guide['intro'];
+    array_unshift($faq, $guide['faq']);
+}
 canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified, 'term' => $term, 'termSeo' => $termSeo]);
 
 get_header();
@@ -400,6 +408,23 @@ get_header();
                             </div>
                         </article>
                     <?php endforeach; ?>
+                    <?php if ($guide): ?>
+                    <section class="carte-guide" aria-labelledby="carte-guide-title">
+                        <h2 id="carte-guide-title"><?= esc_html($guide['title']) ?></h2>
+                        <p><?= esc_html($guide['intro']) ?></p>
+                        <div class="carte-guide-scroll">
+                            <table>
+                                <thead><tr><?php foreach ($guide['columns'] as $col): ?><th scope="col"><?= esc_html($col) ?></th><?php endforeach; ?></tr></thead>
+                                <tbody>
+                                <?php foreach ($guide['rows'] as $i => $row): ?>
+                                    <tr><?php foreach ($row as $j => $cell): ?><?php if ($j === 0): ?><th scope="row"><?php if (!empty($guide['links'][$i])): ?><a href="<?= esc_url($guide['links'][$i]) ?>"><?= esc_html($cell) ?></a><?php else: ?><?= esc_html($cell) ?><?php endif; ?></th><?php else: ?><td><?= esc_html($cell) ?></td><?php endif; ?><?php endforeach; ?></tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="carte-guide-source"><?= esc_html($guide['source']) ?><?php if ($term['slug'] === 'location-bateau'): ?> <a href="<?= esc_url(home_url(CANAL_GUIDE_RULES_URL)) ?>">Règles de navigation</a> · <a href="<?= esc_url(canal_calcul_url()) ?>">Calcul de distance</a><?php endif; ?></p>
+                    </section>
+                    <?php endif; ?>
                     <?php // WP: preguntas frecuentes (AEO), dentro de la lista porque es ella la que hace scroll. ?>
                     <section class="carte-faq" aria-labelledby="carte-faq-title">
                         <p class="carte-faq-kicker" id="carte-faq-title">Questions fréquentes</p>
