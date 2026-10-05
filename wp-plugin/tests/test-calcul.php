@@ -24,6 +24,7 @@ sort($sorted);
 check(count(CANAL_CALCUL_LOCKS) === 63 && $pks === $sorted, 'datos: 63 esclusas ordenadas');
 $fons = array_values(array_filter(CANAL_CALCUL_LOCKS, function ($l) { return strpos($l['name'], 'Fonseranes') !== false; }));
 check(count($fons) === 1 && $fons[0]['sas'] === 8 && $fons[0]['slug'] === 'ecluses-de-fonseranes', 'datos: Fonseranes 8 sas con ficha');
+check(!in_array('', array_column(CANAL_CALCUL_LOCKS, 'slug'), true), 'datos: las 63 esclusas tienen ficha');
 $towns = CANAL_CALCUL_TOWNS;
 check($towns[0]['pk'] === 0.0 && end($towns)['pk'] === 240.5, 'datos: Toulouse PK 0 → Les Onglous PK 240,5');
 

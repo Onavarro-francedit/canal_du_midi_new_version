@@ -377,7 +377,8 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 - Verificado en prod con sesión: Castelnaudary → Trèbes 53 km · 23 esclusas · 12 h 40 (Le Boat: 13 h), Toulouse → Béziers
   208 km · 57 esclusas · 44 h 30; ⇄, tabla, búsqueda sin acentos, URL compartible, ventanita sin scroll, 390 px sin
   scroll horizontal, 404 sin sesión. Abrir: `wp option update canal_calcul_public 1`.
-- Pendiente (después): ramal de la Robine (8 fichas de esclusas ya localizadas), 5 esclusas sin ficha, hora de llegada.
+- Las 63 esclusas enlazan a su ficha: las 5 « sin ficha » existían con otro nombre (la Planque, Guillermin, Villeséque, la Douce,
+  Fontfile; Pimcore escribía Laplanque, Guilhermin…). Pendiente (después): ramal de la Robine, hora de llegada.
 
 ### TASK-055 — Plantilla de contenido 2026: cualquier página o artículo en `/<ruta>-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
 - Spec `docs/superpowers/specs/2026-10-05-plantilla-contenido-2026-design.md`, plan en `docs/superpowers/plans/`.

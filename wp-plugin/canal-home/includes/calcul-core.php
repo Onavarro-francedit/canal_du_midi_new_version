@@ -50,7 +50,8 @@ const CANAL_CALCUL_TOWNS = [
 // Tabla de distancias: ciudades principales (nombres de CANAL_CALCUL_TOWNS).
 const CANAL_CALCUL_MATRIX = ['Toulouse', 'Castelnaudary', 'Carcassonne', 'Trèbes', 'Homps', 'Le Somail', 'Capestang', 'Béziers', 'Agde', 'Étang de Thau (Les Onglous)'];
 
-// 63 esclusas: PK, sas (cámaras: una escala de 3 = 3), nombre (título de la ficha) y slug de la ficha ('' si no hay).
+// 63 esclusas: PK, sas (cámaras: una escala de 3 = 3), nombre (título de la ficha) y slug de la ficha. Todas tienen ficha
+// (los nombres de Pimcore « Laplanque », « Guilhermin », « Ladouce »… son los de las fichas: la Planque, Guillermin, la Douce…).
 const CANAL_CALCUL_LOCKS = [
     ['pk' => 1.11, 'sas' => 1, 'name' => 'Écluse du Béarnais', 'slug' => 'ecluse-du-bearnais'],
     ['pk' => 2.05, 'sas' => 1, 'name' => 'Écluse des Minimes', 'slug' => 'ecluse-des-minimes'],
@@ -71,11 +72,11 @@ const CANAL_CALCUL_LOCKS = [
     ['pk' => 57.503, 'sas' => 2, 'name' => 'Écluse du Roc', 'slug' => 'ecluse-du-roc'],
     ['pk' => 58.741, 'sas' => 3, 'name' => 'Écluse de Laurens', 'slug' => 'ecluse-de-laurens'],
     ['pk' => 59.701, 'sas' => 1, 'name' => 'Écluse de la Domergue', 'slug' => 'ecluse-de-la-domergue'],
-    ['pk' => 60.918, 'sas' => 1, 'name' => 'Écluse de Laplanque', 'slug' => ''],
+    ['pk' => 60.918, 'sas' => 1, 'name' => 'Écluse de la Planque', 'slug' => 'ecluse-de-la-planque'],
     ['pk' => 65.597, 'sas' => 4, 'name' => 'Écluses de Saint-Roch', 'slug' => 'ecluses-de-saint-roch'],
     ['pk' => 67.068, 'sas' => 2, 'name' => 'Écluse de Gay', 'slug' => 'ecluse-de-gay'],
     ['pk' => 68.716, 'sas' => 3, 'name' => 'Écluse du Vivier', 'slug' => 'ecluse-du-vivier'],
-    ['pk' => 69.135, 'sas' => 1, 'name' => 'Écluse de Guilhermin', 'slug' => ''],
+    ['pk' => 69.135, 'sas' => 1, 'name' => 'Écluse de Guillermin', 'slug' => 'ecluse-de-guillermin'],
     ['pk' => 69.672, 'sas' => 1, 'name' => 'Écluse de Saint-Sernin', 'slug' => 'ecluse-de-saint-sernin'],
     ['pk' => 70.564, 'sas' => 1, 'name' => 'Écluse de Guerre', 'slug' => 'ecluse-de-guerre'],
     ['pk' => 71.659, 'sas' => 1, 'name' => 'Écluse de la Peyruque', 'slug' => 'ecluse-de-la-peyruque'],
@@ -85,10 +86,10 @@ const CANAL_CALCUL_LOCKS = [
     ['pk' => 79.046, 'sas' => 1, 'name' => 'Écluse de Sauzens', 'slug' => 'ecluse-de-sauzens'],
     ['pk' => 80.256, 'sas' => 1, 'name' => 'Écluse de Bram', 'slug' => 'ecluse-de-bram'],
     ['pk' => 85.874, 'sas' => 1, 'name' => 'Écluse de Béteille', 'slug' => 'ecluse-de-beteille'],
-    ['pk' => 93.392, 'sas' => 1, 'name' => 'Écluse de Villesèquelande', 'slug' => ''],
+    ['pk' => 93.392, 'sas' => 1, 'name' => 'Écluse de Villeséque', 'slug' => 'ecluse-de-villeseque'],
     ['pk' => 98.215, 'sas' => 2, 'name' => 'Écluse de Lalande', 'slug' => 'ecluse-de-lalande'],
     ['pk' => 98.53, 'sas' => 1, 'name' => 'Écluse d\'Herminis', 'slug' => 'ecluse-dherminis'],
-    ['pk' => 99.901, 'sas' => 1, 'name' => 'Écluse de Ladouce', 'slug' => ''],
+    ['pk' => 99.901, 'sas' => 1, 'name' => 'Écluse de la Douce', 'slug' => 'ecluse-de-la-douce'],
     ['pk' => 105.26, 'sas' => 1, 'name' => 'Écluse de Carcassonne', 'slug' => 'ecluse-de-carcassonne'],
     ['pk' => 107.97, 'sas' => 1, 'name' => 'Écluse de Saint-Jean', 'slug' => 'ecluse-de-saint-jean'],
     ['pk' => 108.75, 'sas' => 2, 'name' => 'Écluse double de Fresquel', 'slug' => 'ecluse-double-de-fresquel'],
@@ -97,7 +98,7 @@ const CANAL_CALCUL_LOCKS = [
     ['pk' => 113.4, 'sas' => 1, 'name' => 'Écluse de Villedubert', 'slug' => 'ecluse-de-villedubert'],
     ['pk' => 118.01, 'sas' => 3, 'name' => 'Écluse de Trèbes', 'slug' => 'ecluse-de-trebes'],
     ['pk' => 127.2, 'sas' => 1, 'name' => 'Écluse de Marseillette', 'slug' => 'ecluse-de-marseillette'],
-    ['pk' => 130.352, 'sas' => 3, 'name' => 'Écluse de Fonfile', 'slug' => ''],
+    ['pk' => 130.352, 'sas' => 3, 'name' => 'Écluse de Fontfile', 'slug' => 'ecluse-de-fontfile'],
     ['pk' => 131.594, 'sas' => 2, 'name' => 'Écluse de Saint-Martin', 'slug' => 'ecluse-de-saint-martin'],
     ['pk' => 133.359, 'sas' => 2, 'name' => 'Écluse de l\'Aiguille', 'slug' => 'ecluse-de-laiguille'],
     ['pk' => 136.396, 'sas' => 2, 'name' => 'Écluse de Puichéric', 'slug' => 'ecluse-de-puicheric'],
