@@ -12,6 +12,11 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
+### TASK-057 — Calcul de distance 2026 (página nº 1, 20 % del tráfico) — benchmark hecho, pendiente de aprobar alcance
+- Benchmark y propuestas: `docs/calcul-distance-benchmark-2026-10-05.md` (VNF Navi, France Vélo Tourisme, Le Boat,
+  CanalPlanAC). La herramienta actual subestima el barco ~⅓ (no cuenta esclusas), solo deja elegir esclusas, le faltan
+  Fonseranes, el Grand Bief y la Robine. Propuestas 1–7 imprescindibles, 8–9 recomendadas.
+
 
 ### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
 - `wp-content/themes/my-listing/affiche_pub_940.php` conecta a la BD `pimcore` (51.38.234.212) con usuario y contraseña
@@ -19,6 +24,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 - No es código nuestro (tema + sistema de publicidad): avisar a quien gestiona Pimcore/publicidad para consulta
   preparada, credenciales fuera del código y cambio de contraseña. Además el tema lo sondea cada 2 s (header.php l. 27).
   Crítica · fuera del plugin.
+- **05/10:** el mismo patrón en `themes/my-listing/templates/calcul_distance_canal.php` (plantilla de *Calcul de distance*):
+  mismas credenciales de `pimcore` en claro y el bloque de publicidad construye el SQL con `$_SERVER['REQUEST_URI']`
+  sin escapar → inyección SQL desde la URL. La versión 2026 (TASK-057) no reutilizará ese código.
+  Incluido en `docs/para-direccion.md` §2.
 
 ### TASK-052 — Sondeo de publicidad del tema en páginas 2026 (decisión del usuario 02/10: dejarlo como está)
 - `header.php` del tema pide `affiche_pub_940.php` cada 2 s (rotación de banners). En páginas 2026 hoy responde vacío.

@@ -5,6 +5,18 @@ nuevos arriba.
 
 ---
 
+## 2. Seguridad: contraseña de la base de datos de Pimcore visible en el tema (detectado el 2026-10-02 y el 2026-10-05)
+
+Hay dos archivos del tema my-listing que contienen **el usuario y la contraseña de la base de datos `pimcore`**
+(servidor 51.38.234.212) escritos en claro: `affiche_pub_940.php` y `templates/calcul_distance_canal.php`. Además, los
+dos construyen consultas SQL con datos que manda el visitante (Referer y URL) sin escapar, lo que permite **inyección
+SQL**. Es la base de la publicidad y de las fichas de Pimcore.
+
+**Acción recomendada:** quien gestione Pimcore y la publicidad debería cambiar esa contraseña, sacarla del código y usar
+consultas preparadas. No es código del plugin 2026; no se ha tocado. Detalle técnico en `docs/TASKS.md` → SEC-001.
+
+---
+
 ## 1. Artículos del blog que reproducen noticias de prensa (detectado el 2026-10-05)
 
 **Qué pasa.** De los 1 936 artículos publicados en plan-canal-du-midi.com, unos **800 (41 %)** reproducen noticias de
