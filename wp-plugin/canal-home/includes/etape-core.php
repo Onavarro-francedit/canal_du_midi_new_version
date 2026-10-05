@@ -182,6 +182,49 @@ function canal_etape_faq(array $e, array $groups): array
     return $faq;
 }
 
+// « À voir » (TASK-066 M5): monumentos de las fichas y esclusas de 3 sas o más; sin textos redactados.
+const CANAL_ETAPE_SIGHT_SLUGS = ['site-et-monument', 'musees', 'chateaux', 'moulins'];
+const CANAL_ETAPE_LOCK_MIN_SAS = 3;
+
+/** Esclusas de varios sas a menos de $km del PK (en km de canal), con su cifra. */
+function canal_etape_locks_notable(?float $pk, float $km): array
+{
+    if ($pk === null) {
+        return [];
+    }
+    $out = [];
+    foreach (CANAL_CALCUL_LOCKS as $l) {
+        if ($l['sas'] >= CANAL_ETAPE_LOCK_MIN_SAS && abs($l['pk'] - $pk) <= $km) {
+            $out[] = $l['name'] . ' (' . $l['sas'] . ' sas)';
+        }
+    }
+    return $out;
+}
+
+function canal_etape_highlights(array $e, array $groups): array
+{
+    $sights = array_filter($groups['voir']['items'] ?? [], function ($item) {
+        return (bool) array_intersect($item['cat_slugs'] ?? [], CANAL_ETAPE_SIGHT_SLUGS);
+    });
+    return array_merge(array_column($sights, 'title'), canal_etape_locks_notable(canal_etape_pk($e), (float) $e['radius']));
+}
+
+/** Pregunta del índice: etapas del Canal du Midi con algo « à voir », en orden de PK. $index: [['e' => …, 'voir' => […]]]. */
+function canal_etapes_faq(array $index): ?array
+{
+    $parts = [];
+    foreach ($index as $it) {
+        $pk = canal_etape_pk($it['e']);
+        if ($it['voir'] && $pk !== null) {
+            $parts[] = $it['e']['name'] . ' (' . canal_etape_pk_label($pk) . ') : ' . canal_etape_list($it['voir']);
+        }
+    }
+    return $parts ? [
+        'q' => 'Que voir le long du Canal du Midi ?',
+        'a' => 'De Toulouse à l’étang de Thau, étape par étape : ' . implode(' ; ', $parts) . '.',
+    ] : null;
+}
+
 function canal_etape_title(array $e): string
 {
     return $e['name'] . ($e['canal'] === 'midi' ? ' — étape du Canal du Midi' : ' — canal de la Robine') . ' : que faire, où dormir, distances';

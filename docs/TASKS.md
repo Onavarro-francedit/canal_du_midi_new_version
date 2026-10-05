@@ -32,6 +32,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   (plantilla carte) respuesta directa (intro), tabla por PK y pregunta FAQ (FAQPage), solo datos: PK y distancia a la orilla de
   cada ficha sobre el trazado OSM del calcul; bases de loueurs con km/esclusas/horas hasta la base siguiente (calcul-core).
   Reglas del permiso y 8 km/h de `/navigation/regles-de-navigation/`. Excluye `lieux-dinformations`. Test `test-guide.php`.
+- ✅ M5 (05/10, local; falta deploy): índice `/etapes-2026/` como « Que voir sur le Canal du Midi » — por etapa « À voir »
+  (monumentos/museos/châteaux/moulins de las fichas + esclusas de ≥ 3 sas con su cifra) y « À lire » (páginas del sitio de la
+  ciudad); FAQ « Que voir le long du Canal du Midi ? » + FAQPage; ItemList de TouristDestination con includesAttraction.
+  Datos escasos (6 esclusas notables, pocos monumentos en fichas): sin redacción no compite con « incontournables ».
 
 ### TASK-063 — Publicación del sitio 2026 — FASE 0 HECHA (05/10); publicar SOLO con orden explícita
 - Fase 0 ✅: interruptor `canal_2026_live` (apagado), vista previa de administrador `/?canal_2026_preview=1`, 301, eventos GA4,

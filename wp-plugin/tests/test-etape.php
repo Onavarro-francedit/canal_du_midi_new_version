@@ -76,5 +76,25 @@ check(count($faqRobine) === 1, 'faq: sin prestatarios ni vecinos → solo la ubi
 
 check(canal_etape_title(canal_etape_find('capestang')) === 'Capestang — étape du Canal du Midi : que faire, où dormir, distances', 'title');
 
+// M5 (TASK-066): « À voir » por etapa, solo con datos.
+check(canal_etape_locks_notable(206.0, 2.0) === ['Écluses de Fonseranes (8 sas)'], 'esclusas notables: Fonseranes cerca de Béziers');
+check(canal_etape_locks_notable(145.2, 3.0) === [], 'esclusas notables: ninguna de 3 sas o más cerca de Homps');
+check(canal_etape_locks_notable(null, 3.0) === [], 'esclusas notables: Robine sin PK');
+$voirGroups = ['voir' => ['items' => [
+    ['title' => 'Château et Remparts de la Cité', 'cat_slugs' => ['chateaux', 'voir-visiter']],
+    ['title' => 'Mairie de Trèbes', 'cat_slugs' => ['lieux-dinformations']],
+    ['title' => 'Moulin', 'cat_slugs' => ['moulins']],
+]]];
+$h = canal_etape_highlights(canal_etape_find('trebes'), $voirGroups);
+check($h === ['Château et Remparts de la Cité', 'Moulin', 'Écluse de Trèbes (3 sas)'], 'à voir: monumentos (sin mairies) y esclusas notables');
+check(canal_etape_highlights(canal_etape_find('homps'), []) === [], 'à voir: sin datos → vacío');
+$faqIdx = canal_etapes_faq([
+    ['e' => canal_etape_find('castelnaudary'), 'voir' => ['Moulin de Cugarel', 'Écluses de Saint-Roch (4 sas)']],
+    ['e' => canal_etape_find('homps'), 'voir' => []],
+    ['e' => canal_etape_find('beziers'), 'voir' => ['Écluses de Fonseranes (8 sas)']],
+]);
+check($faqIdx['q'] === 'Que voir le long du Canal du Midi ?', 'faq índice: pregunta');
+check(strpos($faqIdx['a'], 'Castelnaudary (PK 64,9) : Moulin de Cugarel et Écluses de Saint-Roch (4 sas) ; Béziers (PK 208,4) : Écluses de Fonseranes (8 sas).') !== false && strpos($faqIdx['a'], 'Homps') === false, 'faq índice: etapas con datos, en orden, con PK');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

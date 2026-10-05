@@ -81,13 +81,7 @@ function canal_etape_data(array $e): array
             }
         }
     }
-    $read = [];
-    foreach ($e['pages'] as $path) {
-        $p = get_page_by_path($path, OBJECT, ['page', 'post']);
-        if ($p instanceof WP_Post && $p->post_status === 'publish') {
-            $read[] = [canal_archive_item_url($p), canal_fiche_display_title(wp_strip_all_tags($p->post_title))];
-        }
-    }
+    $read = canal_etape_pages($e);
     $ids = $wpdb->get_col($wpdb->prepare(
         "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'post' AND post_status = 'publish' AND post_title LIKE %s ORDER BY post_date DESC LIMIT 3",
         '%' . $wpdb->esc_like($e['search']) . '%'
@@ -112,13 +106,30 @@ function canal_etape_data(array $e): array
     ];
 }
 
+/** Páginas del sitio sobre la ciudad: [[url, título], …]. */
+function canal_etape_pages(array $e): array
+{
+    $read = [];
+    foreach ($e['pages'] as $path) {
+        $p = get_page_by_path($path, OBJECT, ['page', 'post']);
+        if ($p instanceof WP_Post && $p->post_status === 'publish') {
+            $read[] = [canal_archive_item_url($p), canal_fiche_display_title(wp_strip_all_tags($p->post_title))];
+        }
+    }
+    return $read;
+}
+
 function canal_etapes_index(): array
 {
     $out = ['midi' => [], 'robine' => []];
     foreach (CANAL_ETAPES as $e) {
         $groups = canal_etape_groups_for($e);
-        $out[$e['canal']][] = ['e' => $e, 'url' => canal_etape_url($e['slug']), 'lead' => canal_etape_lead($e), 'count' => canal_etape_count($groups), 'image' => canal_etape_hero($groups)];
+        $out[$e['canal']][] = [
+            'e' => $e, 'url' => canal_etape_url($e['slug']), 'lead' => canal_etape_lead($e), 'count' => canal_etape_count($groups),
+            'image' => canal_etape_hero($groups), 'voir' => canal_etape_highlights($e, $groups), 'read' => canal_etape_pages($e),
+        ];
     }
+    $out['faq'] = canal_etapes_faq($out['midi']);
     return $out;
 }
 
@@ -205,7 +216,7 @@ add_action('wp_enqueue_scripts', function () {
     wp_add_inline_style('canal-fiche-theme', CANAL_THEME_FIX_CSS);
 }, 20);
 
-const CANAL_ETAPES_TITLE = 'Les étapes du Canal du Midi : villes et villages de Toulouse à la Méditerranée';
+const CANAL_ETAPES_TITLE = 'Que voir sur le Canal du Midi : villes et villages étape par étape, de Toulouse à la Méditerranée';
 
 add_filter('pre_get_document_title', function ($title) {
     if (!canal_etape_is_page()) {
@@ -238,11 +249,17 @@ add_action('wp_head', function () {
         echo canal_home_seo_social(CANAL_ETAPES_TITLE, $desc, $s['url'], 'Le Canal du Midi', home_url(CANAL_HOME_HERO_IMAGE)); // phpcs:ignore
         $items = [];
         foreach (array_merge($s['index']['midi'], $s['index']['robine']) as $i => $it) {
-            $items[] = ['@type' => 'ListItem', 'position' => $i + 1, 'url' => $it['url'], 'name' => $it['e']['name']];
+            $place = ['@type' => 'TouristDestination', 'name' => $it['e']['name'], 'url' => $it['url'], 'geo' => ['@type' => 'GeoCoordinates', 'latitude' => $it['e']['lat'], 'longitude' => $it['e']['lng']]];
+            if ($it['voir']) {
+                $place['includesAttraction'] = array_map(function ($name) { return ['@type' => 'TouristAttraction', 'name' => $name]; }, $it['voir']);
+            }
+            $items[] = ['@type' => 'ListItem', 'position' => $i + 1, 'item' => $place];
         }
-        echo canal_home_seo_jsonld(['@context' => 'https://schema.org', '@graph' => [ // phpcs:ignore
-            ['@type' => 'CollectionPage', 'url' => $s['url'], 'name' => CANAL_ETAPES_TITLE, 'description' => $desc, 'inLanguage' => 'fr-FR', 'about' => $canal, 'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $items]],
-        ]]);
+        $graph = [['@type' => 'CollectionPage', 'url' => $s['url'], 'name' => CANAL_ETAPES_TITLE, 'description' => $desc, 'inLanguage' => 'fr-FR', 'about' => $canal, 'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $items]]];
+        if ($s['index']['faq']) {
+            $graph[] = ['@type' => 'FAQPage', 'mainEntity' => [['@type' => 'Question', 'name' => $s['index']['faq']['q'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $s['index']['faq']['a']]]]];
+        }
+        echo canal_home_seo_jsonld(['@context' => 'https://schema.org', '@graph' => $graph]); // phpcs:ignore
         return;
     }
     $e = $s['e'];
