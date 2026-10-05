@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calcul de distance — maquette 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Maquette TASK-057 — identité des pages 2026 (fond lavande, Sora/Manrope, eyebrow violet, cartes blanches,
+   cartes-photo, frise des PK de la home, bouton violet). Données : PK réels des 63 écluses (calculateur actuel). */
+:root{
+  --bg:#fcf8ff; --card:#fff; --text:#1f2340; --muted:#6c718d; --line:rgba(92,97,140,.14);
+  --primary:#6a63d9; --primary-deep:#4f48b7; --water:#2BB6C4; --water-ink:#13606b; --soft:#f3f1fd;
+  --sand:#F4EFE7; --terracotta:#A9572F; --shadow:0 24px 60px rgba(61,72,124,.14);
+  --f-head:'Sora',system-ui,sans-serif; --f-body:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f-body);color:var(--text);background:var(--bg);line-height:1.6}
+h1,h2,h3{font-family:var(--f-head);letter-spacing:-.02em;margin:0}
+a{color:inherit}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.container{width:min(1160px,calc(100vw - 32px));margin:0 auto}
+.eyebrow{font:800 12px var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--primary)}
+.note-maquette{background:#fff8e6;border-bottom:1px solid #f0dca8;color:#7a5a12;font-size:13px;text-align:center;padding:6px 16px}
+
+/* Navbar 2026 (copie visuelle de cdm-header) */
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{width:min(1360px,100%);margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:18px;height:72px}
+.brand{display:flex;align-items:center;gap:12px;font:700 17px var(--f-head);text-decoration:none;margin-right:auto}
+.brand i{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#66c7c7,#6a63d9)}
+.menu{display:flex;gap:22px;font-size:14.5px;font-weight:500}
+.tools{display:flex;gap:18px;align-items:center;font-size:14.5px;font-weight:600}
+.tools .is-current{color:var(--primary-deep);text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
+.cta{display:inline-flex;align-items:center;height:42px;padding:0 18px;border-radius:99px;color:#fff;text-decoration:none;font-weight:700;font-size:14.5px;background:linear-gradient(135deg,#6a63d9,#8a7ee8)}
+@media (max-width:1180px){.menu,.tools{display:none}.nav-in{height:64px}}
+
+/* Hero + calculateur */
+.hero{padding:40px 0 56px;background:radial-gradient(1200px 400px at 50% -10%,#efeafd 0%,transparent 70%)}
+.crumbs{font-size:14px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--muted)}
+.hero-head{max-width:760px;margin-bottom:28px}
+.hero-head h1{font-size:clamp(30px,4.4vw,48px);line-height:1.1;margin:10px 0 12px}
+.hero-head p{margin:0;color:var(--muted);font-size:17px}
+
+.calc{background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:28px}
+.fields{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
+.field label{display:block;font:700 13px var(--f-head);color:var(--muted);margin:0 0 6px 4px}
+.field input{width:100%;height:58px;border:1.5px solid #dcd8f2;border-radius:16px;padding:0 18px;font:600 17px var(--f-body);color:var(--text);background:#fff}
+.field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(106,99,217,.14)}
+.swap{width:52px;height:58px;border-radius:16px;border:1.5px solid #dcd8f2;background:var(--soft);color:var(--primary-deep);display:grid;place-items:center;cursor:pointer}
+.swap:hover{background:#e9e6fb}
+
+.result{margin-top:26px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr);gap:24px;align-items:stretch}
+.summary{border-radius:20px;padding:22px 24px;background:linear-gradient(135deg,#f3f1fd,#e9f7f8)}
+.summary .km{font:800 clamp(44px,6vw,64px)/1 var(--f-head);letter-spacing:-.03em}
+.summary .km small{font-size:.38em;font-weight:700;margin-left:6px;color:var(--muted)}
+.summary .locks{margin:10px 0 0;font-weight:700}
+.summary .locks span{color:var(--muted);font-weight:600}
+.summary .sentence{margin:12px 0 0;font-size:15px;color:var(--muted)}
+.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mode{border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:6px}
+.mode-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center}
+.mode--boat .mode-ico{background:#e6f6f8;color:var(--water-ink)}
+.mode--bike .mode-ico{background:#eaf6ee;color:#1d6b3f}
+.mode--walk .mode-ico{background:var(--sand);color:var(--terracotta)}
+.mode h3{font-size:15px;margin-top:4px}
+.mode .time{font:800 26px/1.15 var(--f-head);letter-spacing:-.02em}
+.mode .days{font-size:14px;color:var(--muted)}
+
+/* Frise des PK (motif de la home) avec le tronçon en surbrillance */
+.frise{margin-top:28px;padding-top:22px;border-top:1px dashed #e2def4}
+.frise-track{position:relative;height:74px;margin:0 8px}
+.frise-line{position:absolute;left:0;right:0;top:22px;height:4px;border-radius:4px;background:#e6e3f5}
+.frise-seg{position:absolute;top:20px;height:8px;border-radius:8px;background:linear-gradient(90deg,var(--water),var(--primary));transition:left .35s ease,width .35s ease}
+.frise-lock{position:absolute;top:17px;width:2px;height:14px;background:#c9c4e6;transform:translateX(-1px)}
+.frise-lock.on{background:var(--primary-deep)}
+.frise-town{position:absolute;top:44px;transform:translateX(-50%);font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.frise-town::before{content:"";position:absolute;left:50%;top:-20px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#fff;border:2px solid #b9b4dc}
+.pin{position:absolute;top:0;transform:translateX(-50%);font:800 11px var(--f-head);color:#fff;background:var(--primary-deep);padding:3px 8px;border-radius:99px;white-space:nowrap;transition:left .35s ease}
+.pin--a{background:var(--water-ink)}
+.frise-legend{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:6px}
+.calc-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.share{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:99px;border:1.5px solid #dcd8f2;background:#fff;font:700 14px var(--f-body);color:var(--primary-deep);cursor:pointer}
+
+/* Sections */
+.section{padding:64px 0}
+.section-head{max-width:720px;margin-bottom:26px}
+.section-head h2{font-size:clamp(24px,3vw,34px);line-height:1.2;margin-top:8px}
+.section-head p{color:var(--muted);margin:10px 0 0}
+
+/* Cartes-photo « À l'arrivée » (comme « Que faire » de la home) */
+.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.photo{position:relative;display:block;height:220px;border-radius:22px;overflow:hidden;text-decoration:none;color:#fff;box-shadow:0 18px 40px rgba(31,35,64,.16)}
+.photo img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.photo:hover img{transform:scale(1.04)}
+.photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(14,20,36,.78))}
+.photo span{position:absolute;left:18px;right:18px;bottom:16px;z-index:1}
+.photo small{display:block;font:800 11px var(--f-head);letter-spacing:.18em;text-transform:uppercase;opacity:.85}
+.photo strong{font:700 19px var(--f-head)}
+
+/* Tableau des distances */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:22px;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{padding:11px 10px;text-align:center;border-bottom:1px solid var(--line)}
+thead th{font:700 12.5px var(--f-head);color:var(--muted);background:#faf9fe;position:sticky;top:0}
+tbody th{text-align:left;font:700 14px var(--f-head);white-space:nowrap;padding-left:18px;background:#faf9fe}
+td button{border:0;background:none;font:600 14px var(--f-body);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:8px}
+td button:hover{background:var(--soft);color:var(--primary-deep)}
+td.diag{color:#c8c5dc}
+.table-note{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* Bon à savoir */
+.tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tip{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px}
+.tip h3{font-size:17px;margin:12px 0 8px}
+.tip p{margin:0 0 12px;font-size:15px;color:var(--muted)}
+.tip a{font-weight:700;color:var(--primary-deep);text-decoration:none}
+.tip a:hover{text-decoration:underline}
+.tip-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--soft);color:var(--primary-deep)}
+
+footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color:var(--muted);font-size:14px;text-align:center}
+
+@media (max-width:900px){
+  .result{grid-template-columns:1fr}
+  .photos,.tips{grid-template-columns:1fr}
+  .photo{height:180px}
+}
+@media (max-width:600px){
+  .hero{padding-top:20px}
+  .calc{padding:18px;border-radius:22px}
+  .fields{grid-template-columns:1fr;gap:8px}
+  .swap{justify-self:center;width:46px;height:40px;transform:rotate(90deg)}
+  .modes{grid-template-columns:1fr}
+  .mode{flex-direction:row;align-items:center;gap:14px;padding:14px}
+  .mode h3{margin:0;flex:1}
+  .mode .txt{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+  .mode .time{font-size:21px}
+  .frise-town:not(.keep){display:none}
+  .pin{display:none}
+  .brand{white-space:nowrap}
+  .cta{height:38px;padding:0 14px;font-size:13px;white-space:nowrap}
+}
+@media (min-width:601px){.mode .txt{display:contents}}
+</style>
+</head>
+<body>
+<div class="note-maquette">Maquette TASK-057 — données réelles (PK du calculateur actuel) ; PK des villes et de Fonseranes à vérifier avant publication.</div>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#"><i></i>Canal du Midi</a>
+    <nav class="menu"><span>En bateau ▾</span><span>Vélo &amp; balades ▾</span><span>Découvrir ▾</span><span>Se loger ▾</span><span>Manger &amp; Boire ▾</span><span>Préparer ▾</span></nav>
+    <div class="tools"><span class="is-current">Distances</span><span>Carte</span></div>
+    <a class="cta" href="#">Planifier mon voyage</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="crumbs"><a href="#">Accueil</a> › Calcul de distance</div>
+      <div class="hero-head">
+        <div class="eyebrow">Outil gratuit</div>
+        <h1>Calcul de distance sur le Canal du Midi</h1>
+        <p>Distance, écluses et temps de trajet en bateau, à vélo ou à pied entre deux villes, ports ou écluses, de Toulouse à l'étang de Thau.</p>
+      </div>
+
+      <div class="calc" role="region" aria-label="Calculateur de distance">
+        <form class="fields" onsubmit="return false">
+          <div class="field">
+            <label for="from">Départ</label>
+            <input id="from" list="places" value="Castelnaudary" autocomplete="off">
+          </div>
+          <button type="button" class="swap" id="swap" aria-label="Inverser départ et arrivée">
+            <svg viewBox="0 0 24 24"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>
+          </button>
+          <div class="field">
+            <label for="to">Arrivée</label>
+            <input id="to" list="places" value="Trèbes" autocomplete="off">
+          </div>
+          <datalist id="places"></datalist>
+        </form>
+
+        <div class="result" aria-live="polite">
+          <div class="summary">
+            <div class="km" id="km">53<small>km</small></div>
+            <p class="locks" id="locks">24 écluses <span>· 34 sas</span></p>
+            <p class="sentence" id="sentence"></p>
+          </div>
+          <div class="modes">
+            <div class="mode mode--boat">
+              <div class="mode-ico"><svg viewBox="0 0 24 24"><path d="M3 17l2 3h14l2-3H3zM5 17V11h14v6M8 11V7h8v4M12 4v3"/></svg></div>
+              <h3>En bateau</h3>
+              <div class="txt"><div class="time" id="t-boat"></div><div class="days" id="d-boat"></div></div>
+            </div>
+            <div class="mode mode--bike">
+              <div class="mode-ico"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-8h5l3 8M10 8l2 8h-6M14 5h3"/></svg></div>
+              <h3>À vélo</h3>
+              <div class="txt"><div class="time" id="t-bike"></div><div class="days" id="d-bike"></div></div>
+            </div>
+            <div class="mode mode--walk">
+              <div class="mode-ico"><svg viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M9 12l3-4 3 3 3 1M12 8l-1 5"/></svg></div>
+              <h3>À pied</h3>
+              <div class="txt"><div class="time" id="t-walk"></div><div class="days" id="d-walk"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="frise" aria-hidden="true">
+          <div class="frise-track" id="track">
+            <div class="frise-line"></div>
+            <div class="frise-seg" id="seg"></div>
+          </div>
+          <div class="frise-legend"><span>Toulouse · PK 0</span><span>Chaque trait = une écluse</span><span>Étang de Thau · PK 240</span></div>
+        </div>
+
+        <div class="calc-foot">
+          <span>Temps indicatifs : bateau 7 km/h + 10 min par sas d'écluse (comme les loueurs), vélo 15 km/h, à pied 4 km/h.</span>
+          <button type="button" class="share" id="share"><svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg> Copier le lien du trajet</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:8px">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">À l'arrivée</div>
+        <h2 id="arrival-title">Que faire à Trèbes ?</h2>
+      </div>
+      <div class="photos">
+        <a class="photo" href="#"><img src="https://www.plan-canal-du-midi.com/wp-content/uploads/2023/02/00Peniche-768x576.jpeg" alt="" loading="lazy"><span><small>Bateau</small><strong>Louer un bateau</strong></span></a>
+        <a class="photo" href="#"><img src="https://www.plan-canal-du-midi.com/wp-content/uploads/2019/11/la-marelle-chambre-bleue-big-768x576.jpg" alt="" loading="lazy"><span><small>Se loger</small><strong>Où dormir</strong></span></a>
+        <a class="photo" href="#"><img src="https://www.plan-canal-du-midi.com/wp-content/uploads/2019/11/location-de-v%C3%A9los-768x512.jpeg" alt="" loading="lazy"><span><small>Vélo</small><strong>Louer un vélo</strong></span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:16px">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Tableau des distances</div>
+        <h2>Distances entre les villes du Canal du Midi</h2>
+        <p>En kilomètres par le canal. Cliquez sur une distance pour voir les écluses et les temps de trajet.</p>
+      </div>
+      <div class="table-wrap"><table id="matrix"></table></div>
+      <p class="table-note">Points kilométriques (PK) depuis le port de l'Embouchure à Toulouse.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:16px">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Bon à savoir</div>
+        <h2>Avant de partir</h2>
+      </div>
+      <div class="tips">
+        <div class="tip">
+          <div class="tip-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Horaires des écluses</h3>
+          <p>En haute saison (mai à septembre), de 9h à 12h30 et de 13h30 à 19h. Comptez environ 6 heures de navigation par jour.</p>
+          <a href="#">Règles de navigation →</a>
+        </div>
+        <div class="tip">
+          <div class="tip-ico"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3L12 3zM12 10v4M12 17h.01"/></svg></div>
+          <h3>Fermetures et travaux</h3>
+          <p>Chômages d'hiver, travaux ou sécheresse peuvent interrompre la navigation. Vérifiez les avis à la batellerie avant de partir.</p>
+          <a href="#">Avisbat (VNF) ↗</a>
+        </div>
+        <div class="tip">
+          <div class="tip-ico"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-8h5l3 8"/></svg></div>
+          <h3>À vélo : traces et trains</h3>
+          <p>Le chemin de halage fait partie du Canal des 2 Mers à vélo : étapes, traces GPX et gares pour revenir en train.</p>
+          <a href="#">France Vélo Tourisme ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>© 2026 L'Officiel du Canal du Midi — maquette</footer>
+
+<script>
+// PK réels des 63 écluses (select du calculateur actuel) + sas par site ; Fonseranes ajoutée (PK à vérifier).
+const LOCKS = [[1.11,1,"Béarnais"],[2.05,1,"Minimes"],[3.72,1,"Bayard"],[15.73,1,"Castanet"],[17.45,1,"Vic"],[24.94,2,"Montgiscard"],[28.11,1,"Ayguesvives"],[29.66,2,"Sanglier"],[33.3,1,"Négra"],[37.51,2,"Laval"],[38.96,1,"Gardouch"],[43.05,1,"Renneville"],[45.92,2,"Encassan"],[47.51,1,"Emborrel"],[51.632,1,"l'Océan"],[56.631,1,"la Méditerranée"],[57.503,2,"Roc"],[58.741,3,"Laurens"],[59.701,1,"la Domergue"],[60.918,1,"Laplanque"],[65.597,4,"Saint-Roch"],[67.068,2,"Gay"],[68.716,3,"Vivier"],[69.135,1,"Guilhermin"],[69.672,1,"Saint-Sernin"],[70.564,1,"Guerre"],[71.659,1,"la Peyruque"],[72.161,1,"la Criminelle"],[73.55,1,"Tréboul"],[77.372,1,"Villepinte"],[79.046,1,"Sauzens"],[80.256,1,"Bram"],[85.874,1,"Béteille"],[93.392,1,"Villesèquelande"],[98.215,2,"Lalande"],[98.53,1,"Herminis"],[99.901,1,"Ladouce"],[105.26,1,"Carcassonne"],[107.97,1,"Saint-Jean"],[108.75,2,"Fresquel (double)"],[109,1,"Fresquel (simple)"],[112.61,1,"l'Évêque"],[113.4,1,"Villedubert"],[118.01,3,"Trèbes"],[127.2,1,"Marseillette"],[130.352,3,"Fonfile"],[131.594,2,"Saint-Martin"],[133.359,2,"l'Aiguille"],[136.396,2,"Puichéric"],[142.7,1,"Jouarres"],[146.39,1,"Homps"],[147.08,2,"Ognon"],[149.81,2,"Pechlaurier"],[152.29,1,"Argens"],[206.8,8,"Fonseranes"],[208.012,1,"l'Orb"],[208.39,1,"Béziers"],[212.452,1,"Arièges"],[213.796,1,"Villeneuve"],[218.262,1,"Portiragnes"],[231.42,1,"ronde d'Agde"],[232.04,1,"Prades"],[235.3,1,"Bagnas"]];
+// Villes et ports (PK indicatifs, à vérifier) ; keep = étiquette visible sur mobile.
+const TOWNS = [["Toulouse",0,1],["Ramonville",8.5],["Castanet-Tolosan",15.7],["Montgiscard",24.9],["Seuil de Naurouze",51.6],["Castelnaudary",64.8,1],["Bram",80.3],["Carcassonne",105.3,1],["Trèbes",118.1],["Marseillette",127.2],["Puichéric",136.4],["Homps",146.4,1],["Argens-Minervois",152.3],["Le Somail",160],["Capestang",188],["Béziers",207.2,1],["Portiragnes",218.3],["Agde",231.4],["Étang de Thau",240,1]];
+const MATRIX = ["Toulouse","Castelnaudary","Carcassonne","Trèbes","Homps","Le Somail","Capestang","Béziers","Agde","Étang de Thau"];
+const SPEED_BOAT=7, MIN_PER_SAS=10, SPEED_BIKE=15, SPEED_WALK=4, BOAT_H_DAY=6, BIKE_KM_DAY=55, WALK_KM_DAY=20, TOTAL=240;
+
+const places = new Map();
+TOWNS.forEach(([n,pk])=>places.set(n,pk));
+const lockName=n=>n==="Fonseranes"?"Écluses de Fonseranes":n.startsWith("ronde")?"Écluse "+n:"Écluse "+(/^(l'|la )/.test(n)?"de ":/^[AEIOUYÉÈ]/.test(n)?"d'":"de ")+n;
+LOCKS.forEach(([pk,,n])=>places.set(lockName(n),pk));
+document.getElementById("places").innerHTML=[...places.keys()].map(n=>`<option value="${n}">`).join("");
+
+const $=id=>document.getElementById(id);
+const fmtH=h=>{const t=Math.round(h*6)*10;const H=Math.floor(t/60),M=t%60;return H?`${H} h${M?" "+String(M).padStart(2,"0"):""}`:`${M} min`};
+const days=n=>n<=1?"dans la journée":`≈ ${n} jours`;
+const de=n=>(/^[AEIOUYÉÈ]/.test(n)?"d'":"de ")+n;
+const pct=pk=>`${(pk/TOTAL)*100}%`;
+
+function calc(a,b){
+  const lo=Math.min(a,b),hi=Math.max(a,b),km=hi-lo;
+  const inSeg=LOCKS.filter(([pk])=>pk>lo+0.01&&pk<=hi+0.01);
+  const sites=inSeg.length,sas=inSeg.reduce((s,[,c])=>s+c,0);
+  const boat=km/SPEED_BOAT+sas*MIN_PER_SAS/60;
+  return {lo,hi,km,sites,sas,boat,bike:km/SPEED_BIKE,walk:km/SPEED_WALK};
+}
+
+function drawTrack(){
+  const t=$("track");
+  LOCKS.forEach(([pk])=>{const d=document.createElement("div");d.className="frise-lock";d.style.left=pct(pk);d.dataset.pk=pk;t.appendChild(d)});
+  TOWNS.filter(x=>x[2]).forEach(([n,pk])=>{const d=document.createElement("div");d.className="frise-town keep";d.style.left=pct(pk);if(pk<10)d.style.transform="translateX(-8px)";if(pk>230)d.style.transform="translateX(calc(-100% + 8px))";d.textContent=n;t.appendChild(d)});
+  ["a","b"].forEach(k=>{const p=document.createElement("div");p.className="pin pin--"+k;p.id="pin-"+k;t.appendChild(p)});
+}
+
+function update(){
+  const fa=$("from").value.trim(),fb=$("to").value.trim();
+  if(!places.has(fa)||!places.has(fb))return;
+  const r=calc(places.get(fa),places.get(fb));
+  $("km").innerHTML=`${Math.round(r.km)}<small>km</small>`;
+  $("locks").innerHTML=r.sites?`${r.sites} écluse${r.sites>1?"s":""} <span>· ${r.sas} sas</span>`:"Aucune écluse";
+  $("sentence").textContent=`${de(fa).replace(/^./,c=>c.toUpperCase())} à ${fb} : ${Math.round(r.km)} km par le Canal du Midi${r.sites?` et ${r.sites} écluse${r.sites>1?"s":""} à franchir`:""}.`;
+  $("t-boat").textContent=fmtH(r.boat); $("d-boat").textContent=days(Math.ceil(r.boat/BOAT_H_DAY))+" de navigation";
+  $("t-bike").textContent=fmtH(r.bike); $("d-bike").textContent=r.km<=60?"dans la journée":days(Math.ceil(r.km/BIKE_KM_DAY));
+  $("t-walk").textContent=fmtH(r.walk); $("d-walk").textContent=days(Math.ceil(r.km/WALK_KM_DAY));
+  $("seg").style.left=pct(r.lo); $("seg").style.width=`${(r.km/TOTAL)*100}%`;
+  document.querySelectorAll(".frise-lock").forEach(d=>d.classList.toggle("on",+d.dataset.pk>r.lo+0.01&&+d.dataset.pk<=r.hi+0.01));
+  $("pin-a").style.left=pct(places.get(fa)); $("pin-a").textContent=fa.replace(/^Écluses? (de |d')?/,"");
+  $("pin-b").style.left=pct(places.get(fb)); $("pin-b").textContent=fb.replace(/^Écluses? (de |d')?/,"");
+  $("arrival-title").textContent=`Que faire à ${fb.replace(/^Écluses? (de |d')?/,"")} ?`;
+  history.replaceState(null,"",`?de=${encodeURIComponent(fa)}&a=${encodeURIComponent(fb)}`);
+}
+
+function drawMatrix(){
+  const pk=n=>TOWNS.find(t=>t[0]===n)[1];
+  let h="<thead><tr><th></th>"+MATRIX.map(n=>`<th scope="col">${n}</th>`).join("")+"</tr></thead><tbody>";
+  MATRIX.forEach(r=>{h+=`<tr><th scope="row">${r}</th>`+MATRIX.map(c=>r===c?'<td class="diag">—</td>':`<td><button data-a="${r}" data-b="${c}">${Math.round(Math.abs(pk(r)-pk(c)))}</button></td>`).join("")+"</tr>"});
+  $("matrix").innerHTML=h+"</tbody>";
+  $("matrix").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;$("from").value=b.dataset.a;$("to").value=b.dataset.b;update();window.scrollTo({top:0,behavior:"smooth"})});
+}
+
+const q=new URLSearchParams(location.search);
+if(places.has(q.get("de")))$("from").value=q.get("de");
+if(places.has(q.get("a")))$("to").value=q.get("a");
+drawTrack(); drawMatrix(); update();
+["from","to"].forEach(id=>{$(id).addEventListener("input",update);$(id).addEventListener("focus",e=>e.target.select())});
+$("swap").addEventListener("click",()=>{const a=$("from").value;$("from").value=$("to").value;$("to").value=a;update()});
+$("share").addEventListener("click",()=>{navigator.clipboard?.writeText(location.href);$("share").lastChild.textContent=" Lien copié"});
+</script>
+</body>
+</html>
