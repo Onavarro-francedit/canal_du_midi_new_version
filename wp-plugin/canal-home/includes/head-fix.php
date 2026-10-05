@@ -112,7 +112,7 @@ if (function_exists('add_action')) {
                 }
                 return $html;
             });
-        } elseif (canal_planner_is_page()) {
+        } elseif (canal_planner_is_page() || canal_account_is_page()) {
             ob_start('canal_2026_links_html'); // el planificador conserva su <head> (formulario): solo los enlaces
         }
     }, -1);

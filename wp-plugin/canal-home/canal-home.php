@@ -155,6 +155,26 @@ add_filter('get_canonical_url', function ($url, $post) {
     return CANAL_2026_LIVE && (int) $post->ID === canal_planner_page_id() ? home_url(CANAL_PLANNER_PATH) : $url;
 }, 10, 2);
 
+/**
+ * Publicado: « Mon compte » (WooCommerce + panel de MyListing: Mes fiches, Promotions, Favoris…) con la cabecera y el pie
+ * 2026 (TASK-065). Solo lo usa el equipo (registro cerrado): se conservan TODOS los scripts y estilos del tema y de Woo,
+ * y solo se añade compte.css por encima.
+ */
+function canal_account_is_page(): bool
+{
+    return CANAL_2026_LIVE && function_exists('is_account_page') && is_account_page();
+}
+
+add_action('wp_enqueue_scripts', function () {
+    if (!canal_account_is_page()) {
+        return;
+    }
+    canal_home_inline_style('canal-home-base', canal_home_base_css());
+    canal_home_inline_file('canal-home-header', 'assets/header.css', ['canal-home-base']);
+    canal_home_inline_file('canal-compte', 'assets/compte.css', ['canal-home-header']);
+    wp_add_inline_style('canal-compte', CANAL_THEME_FIX_CSS);
+}, 99);
+
 /** Publicado: las 404 del sitio con la cabecera y el pie 2026 (TASK-064). */
 function canal_404_is_page(): bool
 {

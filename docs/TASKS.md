@@ -379,6 +379,15 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-065 — « Mon compte » con el diseño 2026 (modo publicado) — DESPLEGADO ✅ (apagado) — 2026-10-05
+- Uso real: solo el equipo (4 admin, 3 editores, 1 cliente; registro cerrado, 0 altas en 12 meses; fichas de 3 usuarios).
+- `canal_account_is_page()` (is_account_page, solo publicado): cabecera y pie 2026 + `assets/compte.css` POR ENCIMA del CSS del
+  tema y de Woo, que se conservan enteros (panel MyListing: Mes fiches, Promotions, Favoris, Détails du compte). Pestañas en
+  píldora, tarjetas de estadísticas blancas, campos/botones/select2 2026, formulario de inicio de sesión en tarjeta.
+- Verificado en la vista previa (con sesión): panel, Mes fiches y Détails du compte. El formulario de inicio de sesión de un
+  visitante solo se puede ver al publicar (la vista previa exige sesión). Las páginas de edición de fichas del tema
+  (« Modifier ») siguen con el diseño del tema.
+
 ### TASK-064 — Categorías, regiones, etiquetas y 404 en 2026 (modo publicado) — DESPLEGADO ✅ (apagado) — 2026-10-05
 - Faltaba en el plan: `/categorie/` recibe 106 k impresiones/año y se habría quedado con el diseño antiguo. Ahora, publicado,
   `/categorie/<x>/`, `/region/<x>/`, `/mot-cle/<x>/` = carte 2026 filtrada por el término en su URL (`canal_carte_term()`,

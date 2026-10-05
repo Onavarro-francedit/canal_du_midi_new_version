@@ -15,7 +15,8 @@ function canal_header_is_page(): bool
         || (function_exists('canal_calcul_is_page') && canal_calcul_is_page())
         || (function_exists('canal_archive_is_page') && canal_archive_is_page())
         || (function_exists('canal_etape_is_page') && canal_etape_is_page())
-        || (function_exists('canal_404_is_page') && canal_404_is_page());
+        || (function_exists('canal_404_is_page') && canal_404_is_page())
+        || (function_exists('canal_account_is_page') && canal_account_is_page());
 }
 
 // Prioridad 99: la integración Elementor del tema usa el mismo filtro (a 10) y vuelve a poner show=true.
