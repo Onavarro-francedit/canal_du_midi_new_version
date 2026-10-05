@@ -60,23 +60,21 @@ get_header();
                             <table>
                                 <thead>
                                     <tr>
-                                        <th scope="col">Mois</th>
+                                        <th scope="col">Mois<small>et saison</small></th>
                                         <?php foreach (CANAL_METEO_STATIONS as $st): ?><th scope="col"><?= esc_html($st['name']) ?><small>max. moy. °C</small></th><?php endforeach; ?>
                                         <th scope="col">≥ 30 °C<small>jours, Carcass.</small></th>
                                         <th scope="col">Max. relevé<small>°C, Carcass.</small></th>
                                         <th scope="col">Pluie<small>jours, Carcass.</small></th>
-                                        <th scope="col">Navigation<small>saison</small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach (canal_meteo_rows() as $row): ?>
                                         <tr<?= $row['best'] ? ' class="is-best"' : '' ?>>
-                                            <th scope="row"><?= esc_html($row['month']) ?><?= $row['best'] ? ' <span>conseillé</span>' : '' ?></th>
+                                            <th scope="row"><?= esc_html($row['month']) ?><small>Navigation : <?= esc_html(mb_strtolower($row['nav'], 'UTF-8')) ?></small></th>
                                             <?php foreach ($row['temps'] as $t): ?><td><?= esc_html($t) ?></td><?php endforeach; ?>
                                             <td><?= esc_html($row['hot']) ?></td>
                                             <td><?= esc_html($row['record']) ?></td>
                                             <td><?= esc_html($row['rain']) ?></td>
-                                            <td><?= esc_html($row['nav']) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -84,7 +82,7 @@ get_header();
                         </div>
                         <p class="contenu-meteo-source">Moyennes <?= esc_html(CANAL_METEO_YEARS) ?> (5 dernières années complètes) des températures maximales quotidiennes, nombre moyen de jours à 30 °C ou plus et avec au moins 1 mm de pluie, température la plus haute relevée sur ces années :
                             <a href="<?= esc_url(CANAL_METEO_SOURCE_URL) ?>" target="_blank" rel="noopener">Météo-France, données climatologiques mensuelles</a>
-                            (stations <?= esc_html(implode(', ', array_column(CANAL_METEO_STATIONS, 'station'))) ?>), Licence Ouverte. « Conseillé » : au plus 7 jours à 30 °C ou plus et maximale moyenne d’au moins 20 °C dans les trois villes, navigation ouverte. Saisons de navigation : <a href="<?= esc_url(home_url(CANAL_METEO_NAV_URL)) ?>">Période de navigation</a>.</p>
+                            (stations <?= esc_html(implode(', ', array_column(CANAL_METEO_STATIONS, 'station'))) ?>), Licence Ouverte. En vert, les mois conseillés : au plus 7 jours à 30 °C ou plus et maximale moyenne d’au moins 20 °C dans les trois villes, navigation ouverte. Saisons de navigation : <a href="<?= esc_url(home_url(CANAL_METEO_NAV_URL)) ?>">Période de navigation</a>.</p>
                     </section>
                 <?php endif; ?>
                 <?= $c['html'] // phpcs:ignore — contenido del editor, como the_content. ?>
