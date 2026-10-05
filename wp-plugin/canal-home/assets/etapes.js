@@ -32,7 +32,12 @@
         current = i;
         markers[i].setIcon(icon(true));
         markers[i].setZIndex(10 + i);
-        iw.setContent(popup(D.points[i], i));
+        var node = document.createElement('div');
+        node.innerHTML = popup(D.points[i], i);
+        // Google Maps no deja subir los clics del popup al documento: el botón se conecta aquí.
+        var nb = node.querySelector('[data-etape-next]');
+        if (nb) nb.addEventListener('click', function () { open(i + 1, true); });
+        iw.setContent(node.firstChild);
         iw.open({ map: map, anchor: markers[i], shouldFocus: false });
         if (pan) map.panTo(markers[i].getPosition());
         document.querySelectorAll('.etapes-chip').forEach(function (c, k) { c.setAttribute('aria-current', k === i ? 'true' : 'false'); });
@@ -63,10 +68,8 @@
         box.classList.add('is-ready');
     };
 
-    // Botón « Étape suivante » del popup y chips de la lista (sin JS, la chip es un enlace a la etapa).
+    // Chips de la lista (sin JS, la chip es un enlace a la etapa).
     document.addEventListener('click', function (e) {
-        var b = e.target.closest('[data-etape-next]');
-        if (b && map) { open(+b.dataset.etapeNext, true); return; }
         var c = e.target.closest('.etapes-chip');
         if (c && map) {
             e.preventDefault();
