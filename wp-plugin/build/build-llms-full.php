@@ -40,7 +40,7 @@ foreach ([
     'Voies vertes et véloroutes' => '/voie-verte-et-veloroute/',
     'Les ouvrages du canal' => '/le-canal/ouvrages/',
     'Foire aux questions' => '/foire-aux-question-faq-canal-du-midi/',
-    'Plan officiel 2026 (PDF)' => '/wp-content/uploads/pdf/Plan-Canal-du-Midi-2026.pdf',
+    'Plan officiel (PDF, édition en cours)' => '/plan-canal-du-midi.pdf',
     'Recevoir le plan par courrier' => '/recevoir-le-plan-du-canal-du-midi-2/',
 ] as $label => $path) {
     $o .= "- [$label]($base$path)\n";

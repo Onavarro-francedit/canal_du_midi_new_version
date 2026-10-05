@@ -121,7 +121,7 @@ Recherche sur la carte : https://www.plan-canal-du-midi.com/explorer/
 - [Voies vertes et véloroutes](https://www.plan-canal-du-midi.com/voie-verte-et-veloroute/)
 - [Les ouvrages du canal](https://www.plan-canal-du-midi.com/le-canal/ouvrages/)
 - [Foire aux questions](https://www.plan-canal-du-midi.com/foire-aux-question-faq-canal-du-midi/)
-- [Plan officiel 2026 (PDF)](https://www.plan-canal-du-midi.com/wp-content/uploads/pdf/Plan-Canal-du-Midi-2026.pdf)
+- [Plan officiel (PDF, édition en cours)](https://www.plan-canal-du-midi.com/plan-canal-du-midi.pdf)
 - [Recevoir le plan par courrier](https://www.plan-canal-du-midi.com/recevoir-le-plan-du-canal-du-midi-2/)
 
 ## Contact

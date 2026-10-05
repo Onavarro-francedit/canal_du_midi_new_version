@@ -259,7 +259,7 @@ Al publicar, el mismo router sirve la URL original (sin `-2026`). Las URLs « no
 
 - GA4 no mide conversiones: no hay *key events* útiles ni búsqueda interna. Conviene definir eventos en las páginas
   2026, por ejemplo clic en teléfono o web de la ficha, descarga del plan y demanda del planificador.
-- El PDF de 2023 recibe más clics que el de 2026. Al publicar, convendría redirigirlo al vigente. Eso es tocar
+- ✅ Resuelto el 05/10 (TASK-054): URL fija `/plan-canal-du-midi.pdf` con la última edición y 301 desde todas las ediciones anuales.
   `.htaccess`, así que requiere autorización.
 - La caída interanual de Google (−35/−44 % en verano) no se explica solo con este análisis. Hay que mirar si es por
   posición o por CTR (AI Overviews) antes de achacarla al diseño.

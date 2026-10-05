@@ -38,7 +38,7 @@ foreach (['Organization', 'WebSite', 'WebPage', 'TouristDestination', 'ItemList'
     $check(isset($types[$t]), "schema $t");
 }
 $map = $types['Map'] ?? [];
-$check(($map['isAccessibleForFree'] ?? null) === true && substr((string) ($map['url'] ?? ''), -strlen('Plan-Canal-du-Midi-2026.pdf')) === 'Plan-Canal-du-Midi-2026.pdf', 'schema Map: gratuito + url al PDF');
+$check(($map['isAccessibleForFree'] ?? null) === true && substr((string) ($map['url'] ?? ''), -strlen('/plan-canal-du-midi.pdf')) === '/plan-canal-du-midi.pdf', 'schema Map: gratuito + url al PDF');
 $check(!empty($map['@id']) && ($types['TouristDestination']['hasMap']['@id'] ?? '') === ($map['@id'] ?? 'x'), 'hasMap.@id == Map.@id');
 $org = $types['Organization'] ?? [];
 $check(($org['parentOrganization']['name'] ?? '') === 'Azur Communications' && in_array('https://www.facebook.com/canaldumidi.officiel/', (array) ($org['sameAs'] ?? []), true), 'Organization: editor Azur Communications + sameAs Facebook');

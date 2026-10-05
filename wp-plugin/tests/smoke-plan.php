@@ -51,7 +51,7 @@ $m = $mails[0] ?? [];
 $check($status === 'ok' && count($mails) === 1, 'e-mail válido → ok, 1 envío');
 $check(($m['to'] ?? '') === 'visiteur@example.com', 'destinatario recortado');
 $check(($m['subject'] ?? '') === 'Votre plan du Canal du Midi 2026', 'asunto fijo');
-$check(strpos((string) ($m['message'] ?? ''), 'uploads/pdf/Plan-Canal-du-Midi-2026.pdf') !== false && strpos((string) $m['message'], 'calameo.com/read/003331405edc35288442a') !== false, 'cuerpo con PDF y Calaméo');
+$check(strpos((string) ($m['message'] ?? ''), '/plan-canal-du-midi.pdf') !== false && strpos((string) $m['message'], 'calameo.com/read/003331405edc35288442a') !== false, 'cuerpo con PDF y Calaméo');
 $check(strpos((string) $m['message'], 'canaldumidi.fr') === false, 'sin el dominio ajeno canaldumidi.fr');
 $check(strpos(implode("\n", (array) ($m['headers'] ?? [])), 'text/html') !== false, 'cabecera HTML');
 $check((int) $dayCount() === 1, 'contador diario en wp_options = 1');

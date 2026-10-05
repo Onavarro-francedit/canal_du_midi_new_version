@@ -237,7 +237,7 @@ function canal_footer_menu(): array
             'Foire aux questions' => '/foire-aux-question-faq-canal-du-midi/',
         ],
         'Le plan officiel' => [
-            'Télécharger le plan 2026 (PDF)' => '/wp-content/uploads/pdf/Plan-Canal-du-Midi-2026.pdf',
+            'Télécharger le plan (PDF)' => '/plan-canal-du-midi.pdf',
             'Recevoir le plan par courrier' => '/recevoir-le-plan-du-canal-du-midi-2/',
             'Boutique' => '/boutique-canal-du-midi/',
         ],

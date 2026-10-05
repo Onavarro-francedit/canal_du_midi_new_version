@@ -368,9 +368,9 @@ get_header();
 
                 <div style="margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10.4px;flex-wrap:wrap;">
                     <span style="font-size:13.6px;color:var(--muted);font-weight:bold;">ou</span>
-                    <a href="<?= $upload(CANAL_HOME_PLAN_PDF) ?>" download class="btn-pdf">
+                    <a href="<?= esc_url(home_url(CANAL_PLAN_PDF_PATH)) ?>" download class="btn-pdf">
                         <i class="bi bi-file-earmark-arrow-down"></i> Télécharger le PDF
-                        <span class="btn-pdf__size">32 Mo</span>
+                        <span class="btn-pdf__size"><?= esc_html(str_replace(' MB', ' Mo', size_format((int) @filesize(canal_plan_pdf_file())))) ?></span>
                     </a>
                 </div>
             </div>

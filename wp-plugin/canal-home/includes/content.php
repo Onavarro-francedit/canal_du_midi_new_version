@@ -7,9 +7,6 @@
  */
 defined('ABSPATH') || exit;
 
-// PDF del plan oficial (relativo a uploads): lo usan la plantilla y el schema Map.
-const CANAL_HOME_PLAN_PDF = 'pdf/Plan-Canal-du-Midi-2026.pdf';
-
 // Preguntas frecuentes: respuesta en texto plano + enlace interno opcional + fuente externa
 // de autoridad opcional ('source' => [etiqueta, url]).
 const CANAL_HOME_FAQ = [

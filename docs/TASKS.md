@@ -360,6 +360,15 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-054 — Plan PDF: URL fija con la edición más reciente — DESPLEGADO ✅ — 2026-10-05
+- `https://www.plan-canal-du-midi.com/plan-canal-du-midi.pdf` sirve el `uploads/pdf/Plan-Canal-du-Midi-AAAA.pdf` de año más
+  alto (`includes/plan.php`, nginx vía `X-Accel-Redirect`: rangos 206, sin ocupar PHP).
+- `.htaccess` raíz, bloque `canal-plan-pdf`: todas las ediciones (2022–2026) → 301 a la URL fija. Copia previa
+  `.htaccess.bak-2026-10-05`. Motivo: el PDF de 2023 recibía 841 clics/año de Google frente a 36 el de 2026.
+- Home, schema Map, footer 2026, correo del plan y llms*.txt enlazan a la URL fija; el tamaño del botón se calcula.
+- **Cada año:** subir el nuevo `Plan-Canal-du-Midi-AAAA.pdf` a `wp-content/uploads/pdf/`. Nada más. (La portada
+  `assets/plan-canal-du-midi-2026.jpg` y el visor Calaméo de la home sí son de cada edición.)
+
 ### TASK-051 — Páginas 2026: PageSpeed (WebP, Sirdata en el body, accesibilidad 100) — DESPLEGADO ✅ — 2026-10-02
 - Pedido del usuario: « 100 en todo ». Hecho: WebP de todas las imágenes propias del body (`canal_home_webp_html`),
   srcset en fotos pequeñas, péniche 480 px, CSS en línea minificado, sin reflow en `home.js`, fondos de tarjetas
