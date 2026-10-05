@@ -59,7 +59,7 @@ get_header();
                     <article class="etapes-prop" data-mode="<?= esc_attr($c['mode']) ?>" data-duree="<?= esc_attr($c['duree']) ?>">
                         <img src="<?= esc_url($images[$c['from']['slug']] ?? '') ?>" alt="" loading="lazy" width="384" height="256">
                         <div class="etapes-prop-body">
-                            <span class="etapes-prop-tag"><?= esc_html(ucfirst($label[$c['mode']]) . ' · ' . $label[$c['duree']] . ($c['tag'] !== '' ? ' · ' . $c['tag'] : '')) ?></span>
+                            <?php if ($c['tag'] !== ''): ?><span class="etapes-prop-tag"><?= esc_html($c['tag']) ?></span><?php endif; ?>
                             <h3><?= esc_html($c['title']) ?></h3>
                             <ul class="etapes-chips">
                                 <?php foreach ($c['chips'] as $i => $chip): ?><li<?= $i === count($c['chips']) - 1 ? ' class="is-key"' : '' ?>><?= esc_html($chip) ?></li><?php endforeach; ?>

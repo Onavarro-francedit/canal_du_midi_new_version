@@ -12,7 +12,7 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
-### TASK-067 — /etapes/ « Quel parcours faire ? » (rediseño, 2026-10-05) — local, falta deploy
+### TASK-067 — /etapes/ « Quel parcours faire ? » (rediseño, 2026-10-05) — desplegado y verificado (privado)
 - El usuario: el índice de 20 fichas no ayuda a decidir. Investigación (Loire à Vélo, Canal des 2 Mers, Le Boat,
   canal-du-midi.com): entrar por modo + duración y proponer pocos parcours con cifras. Maqueta `docs/mockups/etapes-2026.html`.
 - Hecho: selectores bateau/vélo × journée/week-end/semaine → parcours (km, esclusas, horas, días del calcul; etapas por las
