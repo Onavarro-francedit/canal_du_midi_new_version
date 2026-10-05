@@ -23,7 +23,7 @@
             + (p.voir.length ? '<p class="etapes-iw-voir"><b>À voir :</b> ' + p.voir.map(esc).join(', ') + '</p>' : '')
             + next
             + '<div class="etapes-iw-actions"><a class="etapes-btn etapes-btn--primary" href="' + esc(p.url) + '">Découvrir l’étape</a>'
-            + (markers[i + 1] ? '<button type="button" class="etapes-btn" data-etape-next="' + (i + 1) + '">Étape suivante →</button>' : '')
+            + (D.points[i + 1] && D.points[i + 1].canal === p.canal ? '<button type="button" class="etapes-btn" data-etape-next="' + (i + 1) + '">Étape suivante →</button>' : '')
             + '</div></div></div>';
     }
 
