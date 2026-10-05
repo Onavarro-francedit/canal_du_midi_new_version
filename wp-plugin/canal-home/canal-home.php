@@ -71,6 +71,7 @@ require_once CANAL_HOME_DIR . 'includes/contenu-core.php';
 require_once CANAL_HOME_DIR . 'includes/contenu-route.php';
 require_once CANAL_HOME_DIR . 'includes/calcul-core.php';
 require_once CANAL_HOME_DIR . 'includes/guide-core.php';
+require_once CANAL_HOME_DIR . 'includes/meteo-core.php';
 require_once CANAL_HOME_DIR . 'includes/calcul-route.php';
 require_once CANAL_HOME_DIR . 'includes/archive-route.php';
 require_once CANAL_HOME_DIR . 'includes/etape-core.php';

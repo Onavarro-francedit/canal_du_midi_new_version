@@ -149,9 +149,23 @@
 
 /* FAQ (fase 2) */
 .cdm-contenu .contenu-faq { margin-top: 48px; }
-.cdm-contenu .contenu-faq details { border-bottom: 1px solid var(--line); padding: 14px 0; }
-.cdm-contenu .contenu-faq summary { cursor: pointer; font-weight: 700; color: var(--ink); }
-.cdm-contenu .contenu-faq details p { margin: 10px 0 0; }
+.cdm-contenu .contenu-faq-item { border-bottom: 1px solid var(--line); padding: 14px 0; }
+.cdm-contenu .contenu-faq-item h3 { margin: 0; font-size: 17px; font-weight: 700; color: var(--ink); }
+.cdm-contenu .contenu-faq-item p { margin: 8px 0 0; }
+/* Météo: clima mes a mes (meteo-core.php) */
+.cdm-contenu .contenu-meteo { margin: 0 0 40px; }
+.cdm-contenu .contenu-meteo h2 { margin-top: 0; }
+.cdm-contenu .contenu-meteo-lead { font-size: 17px; color: var(--ink); }
+.cdm-contenu .contenu-meteo-scroll { overflow-x: auto; margin: 18px 0 10px; border: 1px solid var(--line); border-radius: 16px; }
+.cdm-contenu .contenu-meteo table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 14px; line-height: 1.35; }
+.cdm-contenu .contenu-meteo th, .cdm-contenu .contenu-meteo td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.cdm-contenu .contenu-meteo thead th { font-size: 12px; font-weight: 700; color: var(--muted); background: #faf9ff; }
+.cdm-contenu .contenu-meteo thead small { display: block; font-weight: 500; }
+.cdm-contenu .contenu-meteo tbody th { font-weight: 700; color: var(--ink); }
+.cdm-contenu .contenu-meteo tr.is-best { background: #e9f7f8; }
+.cdm-contenu .contenu-meteo tr.is-best th span { margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #13606b; color: #fff; font-size: 11px; font-weight: 700; }
+.cdm-contenu .contenu-meteo tbody tr:last-child th, .cdm-contenu .contenu-meteo tbody tr:last-child td { border-bottom: 0; }
+.cdm-contenu .contenu-meteo-source { font-size: 13px; color: var(--muted); }
 
 /* Columna lateral */
 .cdm-contenu .contenu-card {

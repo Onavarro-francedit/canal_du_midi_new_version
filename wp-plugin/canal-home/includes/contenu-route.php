@@ -89,7 +89,9 @@ function canal_contenu_data(WP_Post $p): array
         'title'       => $title,
         'description' => $description,
         'summary'     => $meta('_canal_2026_summary'),
-        'faq'         => canal_contenu_faq($meta('_canal_2026_faq')),
+        // Météo (TASK-066 M1): clima mes a mes y sus preguntas, salvo que la página tenga su propia FAQ.
+        'meteo'       => $p->post_name === CANAL_METEO_SLUG,
+        'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: ($p->post_name === CANAL_METEO_SLUG ? canal_meteo_faq() : []),
         'html'        => $html,
         'published'   => (string) get_post_time('c', false, $p),
         'modified'    => (string) get_post_modified_time('c', false, $p),

@@ -53,16 +53,48 @@ get_header();
         <div class="contenu-grid">
             <article class="contenu-body">
                 <?= $c['thumb'] // phpcs:ignore — HTML de WordPress (get_the_post_thumbnail). ?>
+                <?php if (!empty($c['meteo'])): $best = canal_meteo_best_months(); ?>
+                    <section class="contenu-meteo" aria-labelledby="contenu-meteo-title">
+                        <h2 id="contenu-meteo-title">Quand venir sur le Canal du Midi ? Le climat mois par mois</h2>
+                        <p class="contenu-meteo-lead"><?= esc_html(canal_meteo_faq()[0]['a']) ?></p>
+                        <div class="contenu-meteo-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Mois</th>
+                                        <?php foreach (CANAL_METEO_STATIONS as $st): ?><th scope="col"><?= esc_html($st['name']) ?><small>min / max</small></th><?php endforeach; ?>
+                                        <th scope="col">Pluie<small>Carcassonne</small></th>
+                                        <th scope="col">Navigation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach (canal_meteo_rows() as $row): ?>
+                                        <tr<?= $row['best'] ? ' class="is-best"' : '' ?>>
+                                            <th scope="row"><?= esc_html($row['month']) ?><?= $row['best'] ? ' <span>conseillé</span>' : '' ?></th>
+                                            <?php foreach ($row['temps'] as $t): ?><td><?= esc_html($t) ?></td><?php endforeach; ?>
+                                            <td><?= esc_html($row['rain']) ?></td>
+                                            <td><?= esc_html($row['nav']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="contenu-meteo-source">Températures minimales et maximales moyennes et nombre moyen de jours avec au moins 1 mm de pluie : Météo-France, fiches climatologiques
+                            <?php foreach (CANAL_METEO_STATIONS as $k => $st): ?><?= $k ? ', ' : '' ?><a href="<?= esc_url($st['url']) ?>" target="_blank" rel="noopener"><?= esc_html($st['station']) ?> (<?= esc_html($st['period']) ?>)</a><?php endforeach; ?>,
+                            Licence Ouverte Etalab 2.0. « Conseillé » : maximale moyenne de 20 à 27 °C à Carcassonne et navigation en saison. Saisons de navigation : <a href="<?= esc_url(home_url(CANAL_METEO_NAV_URL)) ?>">Période de navigation</a>.</p>
+                    </section>
+                <?php endif; ?>
                 <?= $c['html'] // phpcs:ignore — contenido del editor, como the_content. ?>
 
                 <?php if ($c['faq']): ?>
                     <section class="contenu-faq" aria-labelledby="contenu-faq-title">
                         <h2 id="contenu-faq-title">Questions fréquentes</h2>
+                        <?php // Visibles sin clic: los bots no despliegan acordeones. ?>
                         <?php foreach ($c['faq'] as $qa): ?>
-                            <details>
-                                <summary><?= esc_html($qa['q']) ?></summary>
+                            <div class="contenu-faq-item">
+                                <h3><?= esc_html($qa['q']) ?></h3>
                                 <p><?= esc_html($qa['a']) ?></p>
-                            </details>
+                            </div>
                         <?php endforeach; ?>
                     </section>
                 <?php endif; ?>
