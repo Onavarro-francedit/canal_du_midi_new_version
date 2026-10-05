@@ -5,6 +5,16 @@ sesión.
 
 ---
 
+## ESTADO 2026-10-05 (cierre del día) — TODAS las páginas públicas tienen versión 2026, lista tras el interruptor (apagado)
+
+Hecho hoy: inventario, plan PDF fijo, contenido, calcul, archivos, étapes, navbar, formularios, fase 0 de publicación,
+categorías/regiones/etiquetas/404/búsqueda (TASK-064), Mon compte (TASK-065). Solo quedan con el tema: tienda Woo (0 productos),
+pantallas internas de edición de fichas, wp-login y archivos de autor/fecha.
+**Pendiente:** bloqueantes del usuario (PayPal, Anthropic, CANAL_PLANNER_LIVE, pm.max_children, dirección) → orden de publicar
+(fase 1 de `docs/plan-publicacion-2026.md`). Pregunta abierta: ocultar « Se connecter » de la cabecera a los visitantes.
+
+---
+
 ## CIERRE 2026-10-05 (tarde-noche) — Fase 0 de la publicación HECHA · Siguiente: bloqueantes del usuario → orden de publicar
 
 **Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado y commiteado (tag `pre-publicacion-2026`).

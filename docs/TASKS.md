@@ -387,6 +387,9 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 - Verificado en la vista previa (con sesión): panel, Mes fiches y Détails du compte. El formulario de inicio de sesión de un
   visitante solo se puede ver al publicar (la vista previa exige sesión). Las páginas de edición de fichas del tema
   (« Modifier ») siguen con el diseño del tema.
+- Estadísticas por ficha (`/mon-compte/?listing=<id>`) vacías ANTES y después: los 8 widgets `stats_*_enabled` están desactivados
+  en los ajustes del tema y la tabla `mylisting_visits` apenas registra visitas desde la caché WPFC (65 en total). Decisión del
+  usuario 05/10: dejarlo como está.
 
 ### TASK-064 — Categorías, regiones, etiquetas y 404 en 2026 (modo publicado) — DESPLEGADO ✅ (apagado) — 2026-10-05
 - Faltaba en el plan: `/categorie/` recibe 106 k impresiones/año y se habría quedado con el diseño antiguo. Ahora, publicado,
