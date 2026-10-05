@@ -1,8 +1,8 @@
 <?php
 /**
  * Índice /etapes/ (rediseño 05/10, maqueta docs/mockups/etapes-2026.html): « Quel parcours faire ? » — parcours por modo y
- * duración (menú de wp-admin, cifras del calcul) y el mapa de las etapas con popup (assets/etapes.js). Sin JS: todos los
- * parcours y la lista de etapas como enlaces.
+ * duración y, si se elige, salida (assets/etapes.js con canal_parcours_all); el mapa dibuja el parcours seleccionado.
+ * Sin JS: los parcours propuestos (menú de wp-admin) y la lista de etapas como enlaces.
  */
 defined('ABSPATH') || exit;
 
@@ -12,7 +12,7 @@ $images = [];
 foreach (array_merge($idx['midi'], $idx['robine']) as $it) {
     $images[$it['e']['slug']] = $it['image'];
 }
-$label = ['bateau' => 'en bateau', 'velo' => 'à vélo', 'jour' => '1 journée', 'weekend' => 'un week-end', 'semaine' => 'une semaine'];
+$midiIdx = array_flip(array_map(function ($it) { return $it['e']['slug']; }, $idx['midi']));
 
 get_header();
 ?>
@@ -31,13 +31,13 @@ get_header();
             <p class="etapes-lead">Dites-nous comment vous voyagez et combien de temps vous avez : voici les parcours qui tiennent, avec les kilomètres, les écluses et le temps réel.</p>
         </header>
 
-        <?php if ($idx['parcours']): ?>
         <div class="etapes-ask" hidden>
             <fieldset>
                 <legend>Comment ?</legend>
                 <div class="etapes-seg" data-q="mode">
                     <button type="button" data-v="bateau" aria-pressed="true">En bateau</button>
                     <button type="button" data-v="velo" aria-pressed="false">À vélo</button>
+                    <button type="button" data-v="pied" aria-pressed="false">À pied</button>
                 </div>
             </fieldset>
             <fieldset>
@@ -48,48 +48,55 @@ get_header();
                     <button type="button" data-v="semaine" aria-pressed="true">Une semaine</button>
                 </div>
             </fieldset>
+            <label class="etapes-depart">
+                <span>Au départ de</span>
+                <select id="etapes-depart">
+                    <option value="">Les parcours conseillés</option>
+                    <?php foreach ($idx['midi'] as $i => $it): ?><option value="<?= (int) $i ?>"><?= esc_html($it['e']['name']) ?></option><?php endforeach; ?>
+                </select>
+            </label>
         </div>
 
-        <section class="etapes-props" aria-labelledby="etapes-props-title" aria-live="polite">
+        <section class="etapes-props" aria-labelledby="etapes-props-title">
             <div class="etapes-props-head">
-                <h2 id="etapes-props-title">Parcours en bateau et à vélo</h2>
-                <p>Calcul : 7 km/h et 10 min par sas d’écluse, 6 h de navigation par jour · vélo 15 km/h.</p>
+                <h2 id="etapes-props-title" aria-live="polite">Parcours en bateau, à vélo et à pied</h2>
+                <p>Calcul : bateau 7 km/h et 10 min par sas d’écluse, 6 h de navigation par jour · vélo 15 km/h · à pied 4 km/h.</p>
             </div>
-            <div class="etapes-prop-grid">
-                <?php foreach ($idx['parcours'] as $c): ?>
-                    <article class="etapes-prop" data-mode="<?= esc_attr($c['mode']) ?>" data-duree="<?= esc_attr($c['duree']) ?>">
-                        <img src="<?= esc_url($images[$c['from']['slug']] ?? '') ?>" alt="" loading="lazy" width="384" height="256">
-                        <div class="etapes-prop-body">
-                            <?php if ($c['tag'] !== ''): ?><span class="etapes-prop-tag"><?= esc_html($c['tag']) ?></span><?php endif; ?>
-                            <h3><?= esc_html($c['title']) ?></h3>
-                            <ul class="etapes-chips">
-                                <?php foreach ($c['chips'] as $i => $chip): ?><li<?= $i === count($c['chips']) - 1 ? ' class="is-key"' : '' ?>><?= esc_html($chip) ?></li><?php endforeach; ?>
-                            </ul>
-                            <?php if ($c['via']): ?>
-                                <p><b>Vous passez par :</b> <?php foreach ($c['via'] as $k => $e): ?><?= $k ? ' · ' : '' ?><a href="<?= esc_url(canal_etape_url($e['slug'])) ?>"><?= esc_html($e['name']) ?></a><?php endforeach; ?></p>
-                            <?php endif; ?>
-                            <div class="etapes-prop-actions">
-                                <a class="etapes-btn etapes-btn--primary" href="<?= esc_url(canal_parcours_url($c)) ?>">Voir le détail</a>
-                                <a class="etapes-btn" href="<?= esc_url(canal_parcours_loueurs_url($c)) ?>"><?= $c['mode'] === 'bateau' ? 'Loueurs ' . esc_html(canal_etape_a($c['from'])) : 'Louer un vélo' ?></a>
+            <div class="etapes-results">
+                <div class="etapes-list" id="etapes-list">
+                    <?php foreach ($idx['parcours'] as $c): ?>
+                        <article class="etapes-prop" data-mode="<?= esc_attr($c['mode']) ?>" data-duree="<?= esc_attr($c['duree']) ?>" data-a="<?= (int) ($midiIdx[$c['from']['slug']] ?? 0) ?>" data-b="<?= (int) ($midiIdx[$c['to']['slug']] ?? 0) ?>">
+                            <img src="<?= esc_url($images[$c['from']['slug']] ?? '') ?>" alt="" loading="lazy" width="384" height="256">
+                            <div class="etapes-prop-body">
+                                <?php if ($c['tag'] !== ''): ?><span class="etapes-prop-tag"><?= esc_html($c['tag']) ?></span><?php endif; ?>
+                                <h3><?= esc_html($c['title']) ?></h3>
+                                <ul class="etapes-chips">
+                                    <?php foreach ($c['chips'] as $i => $chip): ?><li<?= $i === count($c['chips']) - 1 ? ' class="is-key"' : '' ?>><?= esc_html($chip) ?></li><?php endforeach; ?>
+                                </ul>
+                                <?php if ($c['via']): ?>
+                                    <p><b>Vous passez par :</b> <?php foreach ($c['via'] as $k => $e): ?><?= $k ? ' · ' : '' ?><a href="<?= esc_url(canal_etape_url($e['slug'])) ?>"><?= esc_html($e['name']) ?></a><?php endforeach; ?></p>
+                                <?php endif; ?>
+                                <div class="etapes-prop-actions">
+                                    <a class="etapes-btn etapes-btn--primary" href="<?= esc_url(canal_parcours_url($c)) ?>">Voir le détail</a>
+                                    <a class="etapes-btn" href="<?= esc_url(canal_parcours_loueurs_url($c)) ?>"><?= esc_html(canal_parcours_loueurs_label($c)) ?></a>
+                                </div>
                             </div>
-                        </div>
-                    </article>
-                <?php endforeach; ?>
+                        </article>
+                    <?php endforeach; ?>
+                    <p class="etapes-empty" hidden>Aucun parcours de cette durée au départ de cette étape : essayez une autre durée ou une autre étape.</p>
+                </div>
+                <div class="etapes-map-box is-unavailable" id="etapes-map-box">
+                    <div id="etapes-map" role="img" aria-label="Carte du parcours sélectionné"></div>
+                    <span class="etapes-map-credit">Tracé du canal © OpenStreetMap</span>
+                </div>
             </div>
         </section>
-        <?php endif; ?>
 
-        <section class="etapes-line" aria-labelledby="etapes-line-title">
-            <p class="etapes-eyebrow">Le canal étape par étape</p>
-            <h2 id="etapes-line-title">De Toulouse à l’étang de Thau</h2>
-            <p class="etapes-line-intro">Touchez un point pour découvrir l’étape : ce qu’on y trouve, ce qu’il y a à voir et le temps jusqu’à la suivante.</p>
-            <div class="etapes-map-box is-unavailable" id="etapes-map-box">
-                <div id="etapes-map" role="region" aria-label="Carte des étapes du Canal du Midi"></div>
-                <span class="etapes-map-credit">Tracé du canal © OpenStreetMap</span>
-            </div>
+        <section class="etapes-all" aria-labelledby="etapes-all-title">
+            <h2 id="etapes-all-title">Toutes les étapes, de Toulouse à la Méditerranée</h2>
             <ol class="etapes-chips-list">
-                <?php foreach (array_merge($idx['midi'], $idx['robine']) as $i => $it): ?>
-                    <li><a class="etapes-chip<?= $it['e']['canal'] === 'robine' ? ' is-robine' : '' ?>" data-i="<?= (int) $i ?>" href="<?= esc_url($it['url']) ?>"><?= esc_html($it['e']['name']) ?></a></li>
+                <?php foreach (array_merge($idx['midi'], $idx['robine']) as $it): ?>
+                    <li><a class="etapes-chip<?= $it['e']['canal'] === 'robine' ? ' is-robine' : '' ?>" href="<?= esc_url($it['url']) ?>"><?= esc_html($it['e']['name']) ?></a></li>
                 <?php endforeach; ?>
             </ol>
         </section>
@@ -103,33 +110,5 @@ get_header();
     </div>
 </main>
 </div>
-<script>
-(function () {
-    var ask = document.querySelector('.etapes-ask');
-    if (!ask) return;
-    var state = {mode: 'bateau', duree: 'semaine'};
-    var label = <?= wp_json_encode($label) ?>;
-    var title = document.getElementById('etapes-props-title');
-    function apply() {
-        var n = 0;
-        document.querySelectorAll('.etapes-prop').forEach(function (el) {
-            var on = el.dataset.mode === state.mode && el.dataset.duree === state.duree;
-            el.hidden = !on;
-            n += on ? 1 : 0;
-        });
-        title.textContent = n + ' parcours ' + label[state.mode] + ' pour ' + label[state.duree];
-    }
-    ask.hidden = false;
-    ask.addEventListener('click', function (e) {
-        var b = e.target.closest('button');
-        if (!b) return;
-        var seg = b.parentNode;
-        seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-        state[seg.dataset.q] = b.dataset.v;
-        apply();
-    });
-    apply();
-})();
-</script>
 <?php
 get_footer();

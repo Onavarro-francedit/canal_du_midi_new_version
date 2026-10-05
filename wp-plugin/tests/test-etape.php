@@ -118,16 +118,19 @@ check($v['chips'] === ['65 km', '4 h 20 à vélo', '≈ 2 jours'], 'parcours: bi
 $howlong = canal_etapes_howlong_faq();
 check(strpos($howlong['a'], '240,5 km') !== false && strpos($howlong['a'], '63 écluses') !== false && strpos($howlong['a'], '≈ 5 jours') !== false, 'faq: cuánto tiempo, con cifras del calcul');
 
-// Mapa de /etapes/: un punto por etapa con lo que el popup necesita.
-$mk = function (string $slug, array $counts = [], array $voir = []) {
-    return ['e' => canal_etape_find($slug), 'url' => '/etape/' . $slug . '/', 'image' => 'i.jpg', 'counts' => $counts, 'voir' => $voir];
-};
-$pts = canal_etapes_map_points(['midi' => [$mk('toulouse', ['bateau' => 2, 'dormir' => 5]), $mk('ramonville')], 'robine' => [$mk('narbonne')]]);
-check(count($pts) === 3 && $pts[0]['name'] === 'Toulouse' && $pts[0]['lat'] === 43.59609, 'mapa: un punto por etapa con coordenadas');
-check($pts[0]['next']['name'] === 'Ramonville-Saint-Agne' && $pts[0]['next']['km'] === '12 km' && strpos($pts[0]['next']['boat'], 'h') !== false, 'mapa: tramo hasta la etapa siguiente');
-check($pts[1]['next'] === null && $pts[1]['from'] === '12 km depuis Toulouse', 'mapa: última del Midi sin siguiente; distancia desde Toulouse');
-check($pts[0]['offer'] === ['2 loueurs de bateaux', '5 hébergements'], 'mapa: oferta legible, sin grupos vacíos');
-check($pts[2]['pk'] === '' && $pts[2]['canal'] === 'robine' && $pts[2]['next'] === null, 'mapa: Robine sin PK ni tramo');
+// Parcours calculados (todas las salidas) y modo « à pied ».
+$pied = canal_parcours_card(canal_parcours_parse([['title' => 'x', 'url' => '?de=Carcassonne&a=Trèbes', 'classes' => ['pied', 'jour']]])[0]);
+check($pied['chips'] === ['12 km', '3 h 10 à pied', 'dans la journée'], 'parcours: à pied, km y días');
+check(count(array_filter(canal_parcours_parse(CANAL_PARCOURS_DEFAULT), function ($p) { return $p['mode'] === 'pied'; })) >= 3, 'parcours: hay propuestas à pied por defecto');
+check(canal_parcours_duree('bateau', canal_calcul_compute(165.6, 188.4)) === 'jour', 'duración: Le Somail → Capestang en barco, un día');
+check(canal_parcours_duree('velo', canal_calcul_compute(105.1, 165.6)) === 'weekend', 'duración: Carcassonne → Le Somail en bici, fin de semana');
+check(canal_parcours_duree('velo', canal_calcul_compute(0.0, 240.5)) === 'semaine', 'duración: el canal entero en bici, semana');
+check(canal_parcours_duree('pied', canal_calcul_compute(0.0, 12.3)) === 'jour' && canal_parcours_duree('pied', canal_calcul_compute(0.0, 240.5)) === null, 'duración: a pie, 12 km un día; 240 km no cabe');
+$all = canal_parcours_all();
+$fromCarca = array_filter($all, function ($r) { return ($r['a'] === 5 || $r['b'] === 5) && $r['mode'] === 'velo' && $r['duree'] === 'weekend'; });
+check(count($fromCarca) >= 2, 'todos: desde Carcassonne en bici un fin de semana hay varios (' . count($fromCarca) . ')');
+$one = array_values($all)[0];
+check(isset($one['a'], $one['b'], $one['mode'], $one['duree'], $one['chips'], $one['km']) && $one['a'] < $one['b'], 'todos: entrada compacta, una por par y modo');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

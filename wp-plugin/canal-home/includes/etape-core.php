@@ -228,7 +228,13 @@ function canal_etapes_faq(array $index): ?array
 // Parcours de /etapes/ (rediseño 05/10): se editan en wp-admin (menú « Parcours (Étapes 2026) »). Cada elemento es un
 // enlace al calcul (?de=…&a=…), su título es la etiqueta y sus clases CSS dicen el modo, la duración y « aller-retour ».
 // Sin menú, esta lista. Las cifras salen siempre del calcul.
-const CANAL_PARCOURS_MODES = ['bateau', 'velo'];
+const CANAL_PARCOURS_MODES = ['bateau', 'velo', 'pied'];
+// Qué cabe en cada duración (barco: horas de navegación; bici y a pie: km), sobre el modelo del calcul.
+const CANAL_PARCOURS_WINDOWS = [
+    'bateau' => ['jour' => [1.5, 6], 'weekend' => [6, 12], 'semaine' => [18, 36]],
+    'velo'   => ['jour' => [20, 60], 'weekend' => [60, 110], 'semaine' => [160, 330]],
+    'pied'   => ['jour' => [6, 20], 'weekend' => [20, 40], 'semaine' => [60, 140]],
+];
 const CANAL_PARCOURS_DUREES = ['jour', 'weekend', 'semaine'];
 const CANAL_PARCOURS_DEFAULT = [
     ['title' => 'Sans écluse', 'url' => '?de=Le Somail&a=Capestang', 'classes' => ['bateau', 'jour']],
@@ -242,6 +248,12 @@ const CANAL_PARCOURS_DEFAULT = [
     ['title' => 'Deux jours', 'url' => '?de=Carcassonne&a=Le Somail', 'classes' => ['velo', 'weekend']],
     ['title' => 'Deux jours', 'url' => '?de=Toulouse&a=Castelnaudary', 'classes' => ['velo', 'weekend']],
     ['title' => 'Le canal en entier', 'url' => '?de=Toulouse&a=Étang de Thau (Les Onglous)', 'classes' => ['velo', 'semaine']],
+    ['title' => 'Balade', 'url' => '?de=Carcassonne&a=Trèbes', 'classes' => ['pied', 'jour']],
+    ['title' => 'Jusqu’à Fonseranes', 'url' => '?de=Capestang&a=Béziers', 'classes' => ['pied', 'jour']],
+    ['title' => 'Deux jours', 'url' => '?de=Le Somail&a=Capestang', 'classes' => ['pied', 'weekend']],
+    ['title' => 'Deux jours', 'url' => '?de=Trèbes&a=Homps', 'classes' => ['pied', 'weekend']],
+    ['title' => 'Itinérance', 'url' => '?de=Carcassonne&a=Le Somail', 'classes' => ['pied', 'semaine']],
+    ['title' => 'Itinérance', 'url' => '?de=Le Somail&a=Agde', 'classes' => ['pied', 'semaine']],
 ];
 
 /** Elementos de menú [title, url, classes] → parcours válidos (ciudades del calcul, modo y duración conocidos). */
@@ -282,13 +294,7 @@ function canal_parcours_card(array $p): array
     $pa = canal_calcul_pk($p['de']);
     $pb = canal_calcul_pk($p['a']);
     $r = canal_calcul_compute($pa, $pb);
-    $k = $p['retour'] ? 2 : 1;
-    $km = number_format($r['km'] * $k, 0, ',', ' ') . ' km';
-    if ($p['mode'] === 'bateau') {
-        $chips = [$km, mb_strtolower(canal_calcul_locks_label($r['sites'] * $k, $r['sas'] * $k), 'UTF-8'), canal_calcul_duration($r['boat'] * $k), canal_calcul_days_boat($r['boat'] * $k)];
-    } else {
-        $chips = [$km, canal_calcul_duration($r['bike'] * $k) . ' à vélo', canal_calcul_days_bike($r['km'] * $k)];
-    }
+    $chips = canal_parcours_chips($p['mode'], $r, $p['retour'] ? 2 : 1);
     $via = array_values(array_filter(CANAL_ETAPES, function ($e) use ($pa, $pb) {
         $pk = canal_etape_pk($e);
         return $pk !== null && $pk > min($pa, $pb) + 0.5 && $pk < max($pa, $pb) - 0.5;
@@ -303,6 +309,56 @@ function canal_parcours_card(array $p): array
         'to'    => canal_etape_at($p['a']),
         'via'   => $via,
     ];
+}
+
+/** Cifras de la tarjeta según el modo; $k = 2 para un aller-retour. */
+function canal_parcours_chips(string $mode, array $r, int $k = 1): array
+{
+    $km = number_format($r['km'] * $k, 0, ',', ' ') . ' km';
+    if ($mode === 'bateau') {
+        return [$km, mb_strtolower(canal_calcul_locks_label($r['sites'] * $k, $r['sas'] * $k), 'UTF-8'), canal_calcul_duration($r['boat'] * $k), canal_calcul_days_boat($r['boat'] * $k)];
+    }
+    if ($mode === 'velo') {
+        return [$km, canal_calcul_duration($r['bike'] * $k) . ' à vélo', canal_calcul_days_bike($r['km'] * $k)];
+    }
+    return [$km, canal_calcul_duration($r['walk'] * $k) . ' à pied', canal_calcul_days_walk($r['km'] * $k)];
+}
+
+/** Duración en la que cabe un tramo (o null si en ninguna). */
+function canal_parcours_duree(string $mode, array $r): ?string
+{
+    $v = $mode === 'bateau' ? $r['boat'] : $r['km'];
+    foreach (CANAL_PARCOURS_WINDOWS[$mode] as $duree => [$min, $max]) {
+        if ($v >= $min && $v <= $max) {
+            return $duree;
+        }
+    }
+    return null;
+}
+
+/**
+ * Todos los tramos entre dos etapas del Canal du Midi que caben en alguna duración, por modo (una entrada por par: a < b,
+ * índices de las etapas del Midi). Los usa etapes.js cuando el visitante elige su salida.
+ */
+function canal_parcours_all(): array
+{
+    $midi = array_values(array_filter(CANAL_ETAPES, function ($e) { return $e['canal'] === 'midi'; }));
+    $out = [];
+    foreach ($midi as $a => $ea) {
+        foreach ($midi as $b => $eb) {
+            if ($b <= $a) {
+                continue;
+            }
+            $r = canal_calcul_compute((float) canal_etape_pk($ea), (float) canal_etape_pk($eb));
+            foreach (CANAL_PARCOURS_MODES as $mode) {
+                $duree = canal_parcours_duree($mode, $r);
+                if ($duree !== null) {
+                    $out[] = ['a' => $a, 'b' => $b, 'mode' => $mode, 'duree' => $duree, 'km' => round($r['km'], 1), 'chips' => canal_parcours_chips($mode, $r)];
+                }
+            }
+        }
+    }
+    return $out;
 }
 
 /** « Étang de Thau (Les Onglous) » → « l’étang de Thau » en el título; el resto, tal cual. */
@@ -321,58 +377,6 @@ function canal_etapes_howlong_faq(): array
             . 'En bateau, comptez ' . canal_calcul_duration($r['boat']) . ' de navigation, soit ' . canal_calcul_days_boat($r['boat'])
             . ' ; à vélo, ' . canal_calcul_duration($r['bike']) . ' de selle, soit ' . canal_calcul_days_bike($r['km']) . '.',
     ];
-}
-
-// Mapa de /etapes/ (05/10): datos de cada punto y de su popup. $idx: ['midi' => [...], 'robine' => [...]] de canal_etapes_index().
-const CANAL_ETAPE_OFFER = [
-    'bateau' => ['loueur de bateaux', 'loueurs de bateaux'],
-    'dormir' => ['hébergement', 'hébergements'],
-    'manger' => ['restaurant ou commerce', 'restaurants et commerces'],
-    'velo'   => ['service vélo', 'services vélo'],
-];
-
-function canal_etapes_map_points(array $idx): array
-{
-    $out = [];
-    foreach (['midi', 'robine'] as $canal) {
-        $list = $idx[$canal] ?? [];
-        foreach ($list as $i => $it) {
-            $e = $it['e'];
-            $pk = canal_etape_pk($e);
-            $offer = [];
-            foreach (CANAL_ETAPE_OFFER as $key => $words) {
-                $n = (int) ($it['counts'][$key] ?? 0);
-                if ($n) {
-                    $offer[] = $n . ' ' . $words[$n > 1 ? 1 : 0];
-                }
-            }
-            $next = null;
-            if ($pk !== null && isset($list[$i + 1])) {
-                $r = canal_calcul_compute($pk, (float) canal_etape_pk($list[$i + 1]['e']));
-                $next = [
-                    'name'  => $list[$i + 1]['e']['name'],
-                    'km'    => (int) round($r['km']) . ' km',
-                    'locks' => mb_strtolower(canal_calcul_locks_label($r['sites'], $r['sas']), 'UTF-8'),
-                    'boat'  => canal_calcul_duration($r['boat']),
-                    'bike'  => canal_calcul_duration($r['bike']),
-                ];
-            }
-            $out[] = [
-                'name'  => $e['name'],
-                'url'   => $it['url'],
-                'img'   => $it['image'],
-                'lat'   => $e['lat'],
-                'lng'   => $e['lng'],
-                'canal' => $canal,
-                'pk'    => $pk !== null ? canal_etape_pk_label($pk) : '',
-                'from'  => $pk ? (int) round($pk) . ' km depuis Toulouse' : ($pk === null ? '' : 'Point de départ du canal'),
-                'offer' => $offer,
-                'voir'  => array_slice($it['voir'], 0, 3),
-                'next'  => $next,
-            ];
-        }
-    }
-    return $out;
 }
 
 function canal_etape_title(array $e): string

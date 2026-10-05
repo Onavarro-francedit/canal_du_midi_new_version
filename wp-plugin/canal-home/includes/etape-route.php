@@ -127,7 +127,6 @@ function canal_etapes_index(): array
         $out[$e['canal']][] = [
             'e' => $e, 'url' => canal_etape_url($e['slug']), 'lead' => canal_etape_lead($e), 'count' => canal_etape_count($groups),
             'image' => canal_etape_hero($groups), 'voir' => canal_etape_highlights($e, $groups), 'read' => canal_etape_pages($e),
-            'counts' => array_map(function ($g) { return $g['count']; }, $groups),
         ];
     }
     $out['faq'] = array_values(array_filter([canal_etapes_howlong_faq(), canal_etapes_faq($out['midi'])]));
@@ -158,10 +157,18 @@ function canal_parcours_url(array $c): string
     return add_query_arg(['de' => $c['de'], 'a' => $c['a']], canal_calcul_url());
 }
 
-/** Loueurs de bateaux o de vélos alrededor de la etapa de salida, en la carte. */
+// Segundo botón de la tarjeta: lo que se busca en la etapa de salida según el modo (barco, bici, a pie → dormir).
+const CANAL_PARCOURS_CARTE_TYPE = ['bateau' => 'location-bateau', 'velo' => 'location-de-velo', 'pied' => 'hebergement'];
+
 function canal_parcours_loueurs_url(array $c): string
 {
-    return add_query_arg(['type' => $c['mode'] === 'bateau' ? 'location-bateau' : 'location-de-velo', 'search_location' => $c['from']['search']], home_url(CANAL_CARTE_PATH));
+    return add_query_arg(['type' => CANAL_PARCOURS_CARTE_TYPE[$c['mode']], 'search_location' => $c['from']['search']], home_url(CANAL_CARTE_PATH));
+}
+
+function canal_parcours_loueurs_label(array $c): string
+{
+    $at = canal_etape_a($c['from']);
+    return $c['mode'] === 'bateau' ? 'Loueurs ' . $at : ($c['mode'] === 'velo' ? 'Louer un vélo ' . $at : 'Où dormir ' . $at);
 }
 
 // Sitemap: las étapes no son posts; proveedor propio solo con el sitio publicado (TASK-063).
@@ -247,8 +254,16 @@ add_action('wp_enqueue_scripts', function () {
     wp_add_inline_style('canal-fiche-theme', CANAL_THEME_FIX_CSS);
     if (isset(canal_etape_state()['index'])) {
         wp_enqueue_script('canal-etapes', CANAL_HOME_URL . 'assets/etapes.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/etapes.js'), ['in_footer' => true, 'strategy' => 'defer']);
+        $midi = canal_etape_state()['index']['midi'];
         wp_localize_script('canal-etapes', 'CDM_ETAPES', [
-            'points'   => canal_etapes_map_points(canal_etape_state()['index']),
+            'etapes'   => array_map(function ($it) {
+                $c = ['from' => $it['e']];
+                return ['name' => $it['e']['name'], 'calcul' => $it['e']['calcul'], 'url' => $it['url'], 'img' => $it['image'], 'pk' => (float) canal_etape_pk($it['e']),
+                    'links' => array_combine(CANAL_PARCOURS_MODES, array_map(function ($m) use ($c) { return canal_parcours_loueurs_url($c + ['mode' => $m]); }, CANAL_PARCOURS_MODES)),
+                    'labels' => array_combine(CANAL_PARCOURS_MODES, array_map(function ($m) use ($c) { return canal_parcours_loueurs_label($c + ['mode' => $m]); }, CANAL_PARCOURS_MODES))];
+            }, $midi),
+            'routes'   => canal_parcours_all(),
+            'calcul'   => canal_calcul_url(),
             'traceUrl' => CANAL_HOME_URL . 'assets/calcul/canal-du-midi-trace.json?ver=' . filemtime(CANAL_HOME_DIR . 'assets/calcul/canal-du-midi-trace.json'),
         ]);
     }

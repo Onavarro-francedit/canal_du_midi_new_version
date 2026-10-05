@@ -64,7 +64,6 @@
 .cdm-etape .etapes-props-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 16px; }
 .cdm-etape .etapes-props-head h2 { margin: 0; font: 700 24px 'Sora', sans-serif; color: var(--ink); }
 .cdm-etape .etapes-props-head p { margin: 0; font-size: 13px; color: var(--muted); }
-.cdm-etape .etapes-prop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .cdm-etape .etapes-prop { display: grid; grid-template-columns: 42% 1fr; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 20px; }
 .cdm-etape .etapes-prop[hidden] { display: none; }
 .cdm-etape .etapes-prop img { display: block; width: 100%; height: 100%; min-height: 220px; object-fit: cover; }
@@ -80,42 +79,39 @@
 .cdm-etape .etapes-prop-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 4px; }
 .cdm-etape .etapes-btn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 700; color: var(--text); text-decoration: none; }
 .cdm-etape .etapes-btn--primary { border-color: #6a63d9; background: #6a63d9; color: #fff; }
-.cdm-etape .etapes-line { margin-top: 56px; }
-.cdm-etape .etapes-line h2 { margin: 0 0 6px; font: 700 clamp(22px, 2.6vw, 28px) 'Sora', sans-serif; color: var(--ink); }
-.cdm-etape .etapes-line-intro { margin: 0 0 22px; max-width: 680px; color: var(--muted); }
 .cdm-etape .etapes-faq p { margin: 0; max-width: 820px; }
-@media (max-width: 900px) {
-    .cdm-etape .etapes-prop-grid { grid-template-columns: 1fr; }
-}
 @media (max-width: 560px) {
     .cdm-etape .etapes-prop { grid-template-columns: 1fr; }
     .cdm-etape .etapes-prop img { min-height: 0; aspect-ratio: 16 / 9; height: auto; }
     .cdm-etape .etapes-ask { padding: 14px; }
     .cdm-etape .etapes-seg button { padding: 9px 13px; font-size: 14px; }
 }
-/* Mapa de las etapas (assets/etapes.js) */
-.cdm-etape .etapes-map-box { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: #eef3f6; }
-.cdm-etape .etapes-map-box.is-unavailable { display: none; }
-.cdm-etape #etapes-map { height: 600px; }
-@media (max-width: 900px) { .cdm-etape #etapes-map { height: 460px; } }
-.cdm-etape .etapes-map-credit { position: absolute; left: 10px; bottom: 6px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, .8); font-size: 11px; color: #55607a; }
 .cdm-etape .etapes-chips-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
 .cdm-etape .etapes-chip { display: inline-block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; color: var(--text); text-decoration: none; }
 .cdm-etape .etapes-chip.is-robine { background: #f6f4ff; }
-.cdm-etape .etapes-chip[aria-current="true"] { border-color: #2BB6C4; background: #e3f6f8; color: #13606b; }
-.cdm-etape .etapes-iw { width: 260px; overflow: hidden; margin: -6px 0 0; font-family: 'Manrope', system-ui, sans-serif; color: var(--text); }
-.cdm-etape .etapes-iw img { display: block; width: 100%; height: 96px; object-fit: cover; border-radius: 12px; }
-.cdm-etape .etapes-iw-body { padding: 8px 2px 0; }
-.cdm-etape .etapes-iw-meta { margin: 0; font-size: 12px; font-weight: 700; color: #13606b; }
-.cdm-etape .etapes-iw h3 { margin: 0 0 6px; font: 700 19px/1.2 'Sora', sans-serif; color: var(--ink); }
-.cdm-etape .etapes-iw-offer { display: flex; flex-wrap: wrap; gap: 3px; margin: 0 0 6px; padding: 0; list-style: none; }
-.cdm-etape .etapes-iw-offer li { padding: 1px 7px; border-radius: 999px; background: #f3f1fd; font-size: 11.5px; font-weight: 700; }
-.cdm-etape .etapes-iw p { margin: 0 0 4px; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
-.cdm-etape .etapes-iw p b { color: var(--text); }
-.cdm-etape .etapes-iw-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.cdm-etape .etapes-iw .etapes-btn { min-height: 34px; padding: 0 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
-@media (max-width: 560px) {
-    .cdm-etape #etapes-map { height: 420px; }
-    .cdm-etape .etapes-iw { width: 230px; }
-    .cdm-etape .etapes-iw img { display: none; }
+
+/* Resultados: lista de parcours + mapa del seleccionado (assets/etapes.js) */
+.cdm-etape .etapes-depart { display: flex; flex-direction: column; gap: 8px; font: 700 13px 'Sora', sans-serif; color: var(--muted); }
+.cdm-etape .etapes-depart select { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: #f3f1fd; font: 700 15px 'Manrope', sans-serif; color: var(--text); }
+.cdm-etape .etapes-results { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.cdm-etape .etapes-list { display: grid; gap: 16px; }
+.cdm-etape .etapes-prop { cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.cdm-etape .etapes-prop.is-selected { border-color: #6a63d9; box-shadow: 0 0 0 2px #6a63d9; }
+.cdm-etape .etapes-empty { margin: 0; padding: 18px; border: 1px dashed var(--line); border-radius: 16px; color: var(--muted); }
+.cdm-etape .etapes-empty[hidden] { display: none; }
+.cdm-etape .etapes-map-box { position: sticky; top: 96px; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: #eef3f6; }
+.cdm-etape .etapes-map-box.is-unavailable { display: none; }
+.cdm-etape #etapes-map { height: 560px; }
+.cdm-etape .etapes-map-credit { position: absolute; left: 10px; bottom: 6px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, .8); font-size: 11px; color: #55607a; }
+.cdm-etape .etapes-all { margin-top: 56px; }
+.cdm-etape .etapes-all h2 { margin: 0 0 14px; font: 700 clamp(20px, 2.4vw, 24px) 'Sora', sans-serif; color: var(--ink); }
+.cdm-etape .etapes-chips-list { margin-top: 0; }
+@media (max-width: 1100px) {
+    .cdm-etape .etapes-prop { grid-template-columns: 1fr; }
+    .cdm-etape .etapes-prop img { min-height: 0; aspect-ratio: 16 / 9; height: auto; }
+}
+@media (max-width: 900px) {
+    .cdm-etape .etapes-results { grid-template-columns: 1fr; }
+    .cdm-etape .etapes-map-box { position: relative; top: 0; order: -1; }
+    .cdm-etape #etapes-map { height: 300px; }
 }
