@@ -56,11 +56,18 @@ function canal_contenu_data(WP_Post $p): array
     $meta = function (string $key) use ($p): string {
         return trim((string) get_post_meta($p->ID, $key, true));
     };
+    $meteo = $p->post_name === CANAL_METEO_SLUG;
     $title = $meta('_canal_2026_title');
+    if ($title === '' && $meteo) {
+        $title = 'Météo du Canal du Midi : quand partir, le climat mois par mois';
+    }
     if ($title === '') {
         $title = canal_fiche_display_title(wp_strip_all_tags($p->post_title));
     }
     $description = $meta('_canal_2026_description');
+    if ($description === '' && $meteo) {
+        $description = canal_fiche_excerpt(canal_meteo_faq()[0]['a']);
+    }
     if ($description === '') {
         $description = canal_fiche_excerpt(canal_contenu_plain($p->post_excerpt !== '' ? $p->post_excerpt : $html));
     }
@@ -90,11 +97,11 @@ function canal_contenu_data(WP_Post $p): array
         'description' => $description,
         'summary'     => $meta('_canal_2026_summary'),
         // Météo (TASK-066 M1): clima mes a mes y sus preguntas, salvo que la página tenga su propia FAQ.
-        'meteo'       => $p->post_name === CANAL_METEO_SLUG,
-        'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: ($p->post_name === CANAL_METEO_SLUG ? canal_meteo_faq() : []),
+        'meteo'       => $meteo,
+        'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: ($meteo ? canal_meteo_faq() : []),
         'html'        => $html,
         'published'   => (string) get_post_time('c', false, $p),
-        'modified'    => $p->post_name === CANAL_METEO_SLUG
+        'modified'    => $meteo
             ? max((string) get_post_modified_time('c', false, $p), CANAL_METEO_UPDATED)
             : (string) get_post_modified_time('c', false, $p),
         'image'       => $image !== '' ? $image : home_url(CANAL_HOME_HERO_IMAGE),

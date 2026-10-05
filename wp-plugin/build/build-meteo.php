@@ -7,10 +7,15 @@
 $last = (int) ($argv[1] ?? date('Y') - 1);
 $first = $last - 4;
 $base = 'https://object.files.data.gouv.fr/meteofrance/data/synchro_ftp/BASE/MENS/';
-$stations = [
-    ['31', '31069001', 'Toulouse', 'Toulouse-Blagnac'],
-    ['11', '11069001', 'Carcassonne', 'Carcassonne'],
-    ['34', '34209002', 'Béziers', 'Béziers-Vias'],
+$stations = [ // [departamento, estación, lugar del canal (texto de la página), nombre de la estación, PK]
+    ['31', '31069001', 'Toulouse', 'Toulouse-Blagnac', 0],
+    ['31', '31374001', 'Lauragais', 'Montesquieu-Lauragais', 33],
+    ['11', '11076001', 'Castelnaudary', 'Castelnaudary', 64],
+    ['11', '11069001', 'Carcassonne', 'Carcassonne', 100],
+    ['11', '11203004', 'Homps–Lézignan', 'Lézignan-Corbières', 151],
+    ['11', '11012001', 'Le Somail', 'Argeliers', 172],
+    ['34', '34032002', 'Béziers', 'Béziers-Courtade', 202],
+    ['34', '34150001', 'Étang de Thau', 'Marseillan', 240],
 ];
 // Los ficheros « previous » van hasta el año anterior al en curso; « latest » cubre el año en curso y el anterior.
 $files = ['MENSQ_%s_previous-1950-' . (date('Y') - 2) . '.csv.gz', 'MENSQ_%s_latest-' . (date('Y') - 1) . '-' . date('Y') . '.csv.gz'];
@@ -19,7 +24,7 @@ $f1 = function (array $v): string {
     return '[' . implode(', ', array_map(function ($x) { return number_format($x, 1, '.', ''); }, $v)) . ']';
 };
 fwrite(STDERR, "Años {$first}–{$last}\n");
-foreach ($stations as [$dep, $num, $name, $label]) {
+foreach ($stations as [$dep, $num, $name, $label, $pk]) {
     $rows = [];
     foreach ($files as $pattern) {
         $csv = @gzdecode((string) @file_get_contents($base . sprintf($pattern, $dep)));
@@ -40,36 +45,21 @@ foreach ($stations as [$dep, $num, $name, $label]) {
             }
         }
     }
-    $out = ['tmin' => [], 'tmax' => [], 'rain' => [], 'hot' => [], 'heat' => [], 'record' => []];
+    $out = ['tmin' => [], 'tmax' => [], 'rain' => [], 'hot' => []];
     for ($m = 1; $m <= 12; $m++) {
         $month = array_filter($rows, function ($r) use ($m) { return (int) substr($r['AAAAMM'], 4) === $m; });
         if (count($month) !== 5) {
             fwrite(STDERR, "$name: mes $m con " . count($month) . " años (se esperan 5)\n");
             exit(1);
         }
-        $avg = function (string $k) use ($month): float {
-            return round(array_sum(array_map('floatval', array_column($month, $k))) / count($month), 1);
-        };
-        foreach (['tmin' => 'TN', 'tmax' => 'TX', 'rain' => 'NBJRR1', 'hot' => 'NBJTX30', 'heat' => 'NBJTX35'] as $key => $col) {
-            $out[$key][] = $avg($col);
+        foreach (['tmin' => 'TN', 'tmax' => 'TX', 'rain' => 'NBJRR1', 'hot' => 'NBJTX30'] as $key => $col) {
+            $out[$key][] = round(array_sum(array_map('floatval', array_column($month, $col))) / count($month), 1);
         }
-        $best = [0.0, 0];
-        foreach ($month as $r) {
-            $v = (float) $r['TXAB'];
-            $y = (int) substr($r['AAAAMM'], 0, 4);
-            if ($v > $best[0] || ($v === $best[0] && $y > $best[1])) { // empate: el año más reciente
-                $best = [$v, $y];
-            }
-        }
-        $out['record'][] = $best;
     }
     echo "    [\n";
-    echo "        'name' => '$name', 'station' => '$label', 'id' => '$num',\n";
-    foreach (['tmin', 'tmax', 'rain'] as $k) {
+    echo "        'name' => '$name', 'station' => '$label', 'id' => '$num', 'pk' => $pk,\n";
+    foreach (['tmin', 'tmax', 'rain', 'hot'] as $k) {
         echo "        '$k' => " . $f1($out[$k]) . ",\n";
     }
-    echo "        'hot'  => " . $f1($out['hot']) . ",\n";
-    echo "        'heat' => " . $f1($out['heat']) . ",\n";
-    echo "        'record' => [" . implode(', ', array_map(function ($r) { return '[' . number_format($r[0], 1, '.', '') . ', ' . $r[1] . ']'; }, $out['record'])) . "],\n";
     echo "    ],\n";
 }
