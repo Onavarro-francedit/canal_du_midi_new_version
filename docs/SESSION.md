@@ -5,6 +5,25 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-05 (tarde-noche) — Fase 0 de la publicación HECHA · Siguiente: bloqueantes del usuario → orden de publicar
+
+**Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado y commiteado (tag `pre-publicacion-2026`).
+**Dónde quedamos:** el sitio 2026 completo puede publicarse con `remote.sh wp option update canal_2026_live 1` (hoy apagado);
+vuelta atrás `wp option delete canal_2026_live`. Vista previa solo admin: `/?canal_2026_preview=1` (=0 la quita).
+**Archivos nuevos:** `includes/live.php`, `includes/redirects-2026.php`, `includes/events-2026.php`, `tests/test-live.php`;
+rutas en modo publicado en canal-home.php, fiche-route, contenu-route, calcul-route, archive-route, etape-route, head-fix.
+**Decisiones:** interruptor = opción de WP (no constante); `/categorie/`, `/region/`, `/mot-cle/` siguen con el tema (los sirve la
+página explorer con query vars explore_*); nuestra plantilla en template_include a prioridad 99 (Elementor).
+**Copia de BD:** `/var/www/vhosts/plan-canal-du-midi.com/backups-canal/db-pre-publicacion-2026-20261005-1145-completa.sql.gz`.
+**Próxima acción:**
+```
+1. Usuario: pedido real del plan (PayPal) en /recevoir-le-plan-du-canal-du-midi-2-2026/, crédito Anthropic, CANAL_PLANNER_LIVE,
+   pm.max_children, informar a dirección (docs/para-direccion.md).
+2. Con la orden explícita: fase 1 de docs/plan-publicacion-2026.md (opción + planificador 18505 publish/slug + llms + smoke + sitemap/Bing).
+```
+
+---
+
 ## CIERRE PARCIAL 2026-10-05 (noche) — TASK-058/059/060: enlaces 2026, archivos del blog, Villes & étapes · Siguiente: navbar de 5 entradas
 
 **Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado en privado y commiteado.
