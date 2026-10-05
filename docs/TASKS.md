@@ -28,7 +28,7 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 - ✅ M3 (05/10, desplegado y verificado en navegador): FAQ de la carte con « Où télécharger une carte détaillée… en PDF ? » (año de
   `canal_plan_pdf_year()`, test en `test-carte-filter.php`); texto del bloque plan de la home con la edición; `version` en el
   schema Map. Falta: botón « Hecha » en GEO-IA.
-- ✅ M2 + M4 (05/10, local; falta deploy): `includes/guide-core.php` — en `/categorie/camping/` y `/categorie/location-bateau/`
+- ✅ M2 + M4 (05/10, desplegado y verificado en navegador; falta botón « Hecha » en GEO-IA): `includes/guide-core.php` — en `/categorie/camping/` y `/categorie/location-bateau/`
   (plantilla carte) respuesta directa (intro), tabla por PK y pregunta FAQ (FAQPage), solo datos: PK y distancia a la orilla de
   cada ficha sobre el trazado OSM del calcul; bases de loueurs con km/esclusas/horas hasta la base siguiente (calcul-core).
   Reglas del permiso y 8 km/h de `/navigation/regles-de-navigation/`. Excluye `lieux-dinformations`. Test `test-guide.php`.
