@@ -82,3 +82,46 @@ public/index.php (front controller)
 - No concatenar input de usuario en cabeceras de correo (CRLF injection).
 - No usar `basename()`-less paths al servir/leer `public/clients_images/`.
 - No dejar `display_errors`/mensajes de excepción visibles en `APP_ENV = prod`.
+
+---
+
+## Sitio 2026 en el WordPress de producción (plugin `wp-plugin/canal-home`) — estado 2026-10-05
+
+**Principio:** no se modifica nada existente del WordPress; el plugin añade plantillas que pintan el diseño 2026 encima
+de los datos de siempre (páginas, artículos, fichas, términos).
+
+**Interruptor de publicación** (`includes/live.php`, plan en `docs/plan-publicacion-2026.md`):
+- Opción `canal_2026_live` = '1' → constante `CANAL_2026_LIVE` y rutas definitivas (`/`, `/explorer/`, `/fiche/`,
+  `/etape/`, sufijo de contenido `''`). Apagado (hoy): rutas privadas `-2026`.
+- Vista previa solo para administradores: `/?canal_2026_preview=1` (cookie) / `=0`. No toca reglas de URL globales.
+- Las rutas se definen en `plugins_loaded` (no son `const`): nunca usarlas al cargar un archivo.
+
+**Qué pinta cada plantilla** (detección en privado → publicado):
+
+| Plantilla | Privado | Publicado |
+|---|---|---|
+| `template-home.php` | página 18500 `/accueil-2026/` | `is_front_page()` |
+| `template-carte.php` | página 18502 | `is_page('explorer')`; también `/categorie/`, `/region/`, `/mot-cle/` (query vars `explore_*` → `canal_carte_term()`) |
+| `template-fiche.php` | regla `/fiche-2026/<slug>/` | `is_singular('job_listing')` |
+| `template-contenu.php` | `parse_request` `/<ruta>-2026/` | `is_singular()` elegible (`canal_contenu_post_eligible`) |
+| `template-calcul.php`, `template-archive.php`, `template-etape(s).php` | rutas `-2026` | página del calcul, `is_category()`, `/etape/` |
+| `template-planner.php` | página 18505 | `/planificateur/` → página por su plantilla |
+| `template-404.php`, « Mon compte » (`compte.css` sobre el tema) | — | `is_404()`, `is_account_page()` |
+
+**Transversal:**
+- `includes/links-2026.php`: reescribe los `href` del `<body>` hacia la versión 2026.
+- `includes/redirects-2026.php`: 301, solo en modo publicado.
+- `includes/events-2026.php`: eventos de GA4.
+- `includes/head-fix.php`: arregla el `<head>` del tema, mueve el consentimiento al body y aplica WebP.
+- Caché de la carte por modo (`canal_carte_cache_key()`).
+
+**Reglas aprendidas:**
+- Elementor reasigna `template_include` → la nuestra va a prioridad 99.
+- MyListing fija el `<title>` de las páginas explore a prioridad 10000 → la nuestra va a 10001.
+- `cat_slugs` de la carte incluye las categorías madre.
+- Las páginas con plugins (CF7 + PayPal, TablePress) conservan sus scripts (`CANAL_CONTENU_PLUGIN_SLUGS`).
+
+**Lo que NO se hace:**
+- generar o reescribir el contenido de los artículos (los publican los clientes);
+- tocar `.htaccess` o los ajustes de WP sin orden expresa;
+- publicar sin la orden explícita del usuario.
