@@ -114,7 +114,8 @@ function canal_etape_groups(array $listings, float $lat, float $lng, float $radi
         if ($km > $radius) {
             continue;
         }
-        foreach (CANAL_ETAPE_GROUPS as $key => $g) {
+        // Esclusas y puertos primero: cat_slugs incluye las categorías madre y la suya es náutica.
+        foreach (['eau' => CANAL_ETAPE_GROUPS['eau']] + CANAL_ETAPE_GROUPS as $key => $g) {
             if (array_intersect($item['cat_slugs'] ?? [], $g[1])) {
                 $item['distance_km'] = $km;
                 $out[$key][] = $item;

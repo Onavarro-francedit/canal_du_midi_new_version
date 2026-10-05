@@ -53,12 +53,13 @@ $listings = [
     $L(6, 'Loin F', ['hotel'], 43.6000, 1.4500),
     $L(7, 'Sans coords', ['hotel'], null, null),
     $L(8, 'Mairie G', ['lieux-dinformations'], 43.2662, 2.9040),
+    $L(9, 'Port H', ['ports', 'nautique'], 43.2650, 2.9030), // cat_slugs incluye las categorías madre
 ];
 $g = canal_etape_groups($listings, 43.26642, 2.90414, 5.0);
 check($g['bateau']['count'] === 2 && $g['dormir']['count'] === 2 && $g['voir']['count'] === 1, 'grupos: conteos por tipo dentro del radio');
 check(!isset($g['manger']) && !isset($g['velo']), 'grupos: sin grupos vacíos');
 check($g['dormir']['items'][0]['title'] === 'Hôtel C' && $g['dormir']['items'][0]['distance_km'] < 0.1, 'grupos: ordenados por distancia');
-check(count($g['eau']['items']) === 1 && $g['eau']['items'][0]['title'] === 'Écluse E', 'grupos: esclusas y puertos aparte');
+check(count($g['eau']['items']) === 2 && $g['eau']['items'][0]['title'] === 'Port H', 'grupos: esclusas y puertos aparte, aunque su categoría madre sea náutica');
 check(canal_etape_count($g) === 5, 'grupos: total de prestatarios');
 
 // FAQ con datos (sin datos, sin pregunta).

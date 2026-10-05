@@ -359,6 +359,16 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-060 — Villes & étapes 2026: `/etape-2026/<slug>/` (20 etapas) + índice `/etapes-2026/` — DESPLEGADO ✅ (privado) — 2026-10-05
+- Spec `docs/superpowers/specs/2026-10-05-etapes-2026-design.md`. `includes/etape-core.php` (datos y funciones puras, test
+  `tests/test-etape.php`), `includes/etape-route.php`, `template-etape.php`, `template-etapes.php`, `assets/etape.css`.
+- 17 etapas del Canal du Midi (repères del calcul: desde Toulouse, hasta Thau, etapa anterior/siguiente) + 3 de la Robine
+  (Sallèles-d'Aude, Narbonne, Port-la-Nouvelle: ~120 k impresiones). Todo con datos: prestatarios de la carte en un radio,
+  agrupados (barco, dormir, comer, vélo, ver), esclusas y puertos, páginas y artículos del sitio, FAQ calculada (FAQPage),
+  TouristDestination con geo. Sin textos redactados. Port-Lauragais añadido al calcul (PK 50,2).
+- Privadas: `wp option update canal_etape_public 1`. Verificado: 20 × 200 con sesión, 404 sin; 390 px sin scroll horizontal.
+- Pendiente: enlazarlas desde el navbar (tarea del navbar de 5 entradas), mapa en la etapa, Robine en el calcul.
+
 ### TASK-059 — Archivos del blog 2026 `/post-category/<ruta>-2026/[page/N/]` — DESPLEGADO ✅ (privado) — 2026-10-05
 - `includes/archive-route.php` + `template-archive.php` (estilos en `contenu.css`); funciones puras en `contenu-core.php`
   (`canal_archive_parse/path/pages/window`, `canal_contenu_plain`, test en `test-contenu.php`).

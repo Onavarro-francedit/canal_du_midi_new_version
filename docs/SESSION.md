@@ -5,6 +5,20 @@ sesión.
 
 ---
 
+## CIERRE PARCIAL 2026-10-05 (noche) — TASK-058/059/060: enlaces 2026, archivos del blog, Villes & étapes · Siguiente: navbar de 5 entradas
+
+**Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado en privado y commiteado.
+**Hecho:** enlaces internos de las páginas 2026 → 2026 (links-2026.php); archivos `/post-category/<x>-2026/`; 20 etapas
+`/etape-2026/<slug>/` + índice `/etapes-2026/`; las 63 esclusas del calcul enlazan a su ficha (los nombres de Pimcore difieren).
+**Abrir para medir:** opciones `canal_contenu_public`, `canal_calcul_public`, `canal_etape_public` (= '1'); `/accueil-2026/` sigue publicada.
+**Próxima acción:**
+```
+1. Navbar de 5 entradas (En bateau | Vélo & balades | Villes & étapes | Se loger & manger | Préparer), −16 enlaces vacíos.
+2. Formularios (recevoir-le-plan-2 CF7, demandes) o retirarlos; luego plan de publicación (orden explícita).
+```
+
+---
+
 ## CIERRE PARCIAL 2026-10-05 (tarde) — TASK-057 Calcul de distance 2026 desplegado (privado) · Siguiente: listados de categoría o Robine
 
 **Agente activo:** sesión principal (skills superpowers, sin agentes del pipeline). **Handoff pendiente:** ninguno.
