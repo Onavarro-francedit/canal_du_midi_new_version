@@ -23,6 +23,11 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   bateau/vélo/à pied; « Au départ de… » calcula todos los tramos que caben (`canal_parcours_all`, ventanas
   `CANAL_PARCOURS_WINDOWS`, hasta 6 por salida); el mapa dibuja el parcours seleccionado (A/B y etapas intermedias).
   Verificado en escritorio (vélo · week-end · Carcassonne → 6 parcours; à pied). Móvil sin verificar.
+- Enlaces a la carte con recuento previo (`canal_carte_count`, PRD-017) en /etapes/, página de etapa y calcul.
+- FAQ de /etapes/ con las preguntas de Search Console (12 meses): parcours, bateau combien de temps, vélo 3/4/5 jours
+  (reparto calculado), à pied, sans permis, vélo en famille; visible sin clic + FAQPage. Pendiente de otra página:
+  « combien de temps pour passer les écluses de Fonseranes » (877 imp.) → Béziers/Fonseranes; « réglementation chemin
+  de halage » (302) solo con fuente oficial.
 
 ### TASK-066 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
 - **Leer primero:** `docs/geo-ia-mejoras-2026-10-05.md` (lo escribió la sesión de GEO-IA para esta sesión: metodología,
