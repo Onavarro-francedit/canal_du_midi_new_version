@@ -311,17 +311,6 @@ function canal_etape_a_name(string $calcul): string
     return $calcul === 'Étang de Thau (Les Onglous)' ? 'l’étang de Thau' : $calcul;
 }
 
-/** Tramos entre etapas consecutivas del Canal du Midi (para la línea del índice). */
-function canal_etapes_legs(): array
-{
-    $midi = array_values(array_filter(CANAL_ETAPES, function ($e) { return $e['canal'] === 'midi'; }));
-    $legs = [];
-    for ($i = 1, $n = count($midi); $i < $n; $i++) {
-        $legs[] = canal_calcul_compute((float) canal_etape_pk($midi[$i - 1]), (float) canal_etape_pk($midi[$i]));
-    }
-    return $legs;
-}
-
 /** « Combien de temps pour faire le Canal du Midi ? » con las cifras del calcul. */
 function canal_etapes_howlong_faq(): array
 {
@@ -332,6 +321,58 @@ function canal_etapes_howlong_faq(): array
             . 'En bateau, comptez ' . canal_calcul_duration($r['boat']) . ' de navigation, soit ' . canal_calcul_days_boat($r['boat'])
             . ' ; à vélo, ' . canal_calcul_duration($r['bike']) . ' de selle, soit ' . canal_calcul_days_bike($r['km']) . '.',
     ];
+}
+
+// Mapa de /etapes/ (05/10): datos de cada punto y de su popup. $idx: ['midi' => [...], 'robine' => [...]] de canal_etapes_index().
+const CANAL_ETAPE_OFFER = [
+    'bateau' => ['loueur de bateaux', 'loueurs de bateaux'],
+    'dormir' => ['hébergement', 'hébergements'],
+    'manger' => ['restaurant ou commerce', 'restaurants et commerces'],
+    'velo'   => ['service vélo', 'services vélo'],
+];
+
+function canal_etapes_map_points(array $idx): array
+{
+    $out = [];
+    foreach (['midi', 'robine'] as $canal) {
+        $list = $idx[$canal] ?? [];
+        foreach ($list as $i => $it) {
+            $e = $it['e'];
+            $pk = canal_etape_pk($e);
+            $offer = [];
+            foreach (CANAL_ETAPE_OFFER as $key => $words) {
+                $n = (int) ($it['counts'][$key] ?? 0);
+                if ($n) {
+                    $offer[] = $n . ' ' . $words[$n > 1 ? 1 : 0];
+                }
+            }
+            $next = null;
+            if ($pk !== null && isset($list[$i + 1])) {
+                $r = canal_calcul_compute($pk, (float) canal_etape_pk($list[$i + 1]['e']));
+                $next = [
+                    'name'  => $list[$i + 1]['e']['name'],
+                    'km'    => (int) round($r['km']) . ' km',
+                    'locks' => mb_strtolower(canal_calcul_locks_label($r['sites'], $r['sas']), 'UTF-8'),
+                    'boat'  => canal_calcul_duration($r['boat']),
+                    'bike'  => canal_calcul_duration($r['bike']),
+                ];
+            }
+            $out[] = [
+                'name'  => $e['name'],
+                'url'   => $it['url'],
+                'img'   => $it['image'],
+                'lat'   => $e['lat'],
+                'lng'   => $e['lng'],
+                'canal' => $canal,
+                'pk'    => $pk !== null ? canal_etape_pk_label($pk) : '',
+                'from'  => $pk ? (int) round($pk) . ' km depuis Toulouse' : ($pk === null ? '' : 'Point de départ du canal'),
+                'offer' => $offer,
+                'voir'  => array_slice($it['voir'], 0, 3),
+                'next'  => $next,
+            ];
+        }
+    }
+    return $out;
 }
 
 function canal_etape_title(array $e): string

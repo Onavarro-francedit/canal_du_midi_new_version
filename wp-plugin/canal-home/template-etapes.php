@@ -1,7 +1,8 @@
 <?php
 /**
  * Índice /etapes/ (rediseño 05/10, maqueta docs/mockups/etapes-2026.html): « Quel parcours faire ? » — parcours por modo y
- * duración (menú de wp-admin, cifras del calcul) y el canal en línea con los tramos entre etapas. Sin JS se ven todos.
+ * duración (menú de wp-admin, cifras del calcul) y el mapa de las etapas con popup (assets/etapes.js). Sin JS: todos los
+ * parcours y la lista de etapas como enlaces.
  */
 defined('ABSPATH') || exit;
 
@@ -81,26 +82,14 @@ get_header();
         <section class="etapes-line" aria-labelledby="etapes-line-title">
             <p class="etapes-eyebrow">Le canal étape par étape</p>
             <h2 id="etapes-line-title">De Toulouse à l’étang de Thau</h2>
-            <p class="etapes-line-intro"><?= count($idx['midi']) ?> étapes dans l’ordre, avec la distance et le temps entre chacune. Touchez une étape pour voir ses ports, hébergements et loueurs.</p>
-            <ol class="etapes-route">
-                <?php foreach ($idx['midi'] as $i => $it): ?>
-                    <li class="etapes-stop">
-                        <img src="<?= esc_url($it['image']) ?>" alt="" loading="lazy" width="82" height="82">
-                        <a class="etapes-stop-body" href="<?= esc_url($it['url']) ?>">
-                            <strong><?= esc_html($it['e']['name']) ?></strong>
-                            <span class="etapes-pk"><?= esc_html(canal_etape_pk_label((float) canal_etape_pk($it['e']))) ?></span>
-                            <?php if ($it['count']): ?><span class="etapes-n"><?= (int) $it['count'] ?> prestataires</span><?php endif; ?>
-                            <?php if ($it['voir']): ?><span class="etapes-voir"><b>À voir :</b> <?= esc_html(canal_etape_list($it['voir'])) ?></span><?php endif; ?>
-                        </a>
-                    </li>
-                    <?php if ($it['e']['slug'] === 'le-somail' && $idx['robine']): ?>
-                        <li class="etapes-branch">↘ Embranchement : canal de la Robine vers
-                            <?php foreach ($idx['robine'] as $k => $rb): ?><?= $k ? ($k === count($idx['robine']) - 1 ? ' et ' : ', ') : '' ?><a href="<?= esc_url($rb['url']) ?>"><?= esc_html($rb['e']['name']) ?></a><?php endforeach; ?>
-                        </li>
-                    <?php endif; ?>
-                    <?php if (isset($idx['legs'][$i])): $l = $idx['legs'][$i]; ?>
-                        <li class="etapes-leg"><span><b><?= (int) round($l['km']) ?> km</b> · <?= esc_html(mb_strtolower(canal_calcul_locks_label($l['sites'], $l['sas']), 'UTF-8')) ?> · <?= esc_html(canal_calcul_duration($l['boat'])) ?> en bateau · <?= esc_html(canal_calcul_duration($l['bike'])) ?> à vélo</span></li>
-                    <?php endif; ?>
+            <p class="etapes-line-intro">Touchez un point pour découvrir l’étape : ce qu’on y trouve, ce qu’il y a à voir et le temps jusqu’à la suivante.</p>
+            <div class="etapes-map-box is-unavailable" id="etapes-map-box">
+                <div id="etapes-map" role="region" aria-label="Carte des étapes du Canal du Midi"></div>
+                <span class="etapes-map-credit">Tracé du canal © OpenStreetMap</span>
+            </div>
+            <ol class="etapes-chips-list">
+                <?php foreach (array_merge($idx['midi'], $idx['robine']) as $i => $it): ?>
+                    <li><a class="etapes-chip<?= $it['e']['canal'] === 'robine' ? ' is-robine' : '' ?>" data-i="<?= (int) $i ?>" href="<?= esc_url($it['url']) ?>"><?= esc_html($it['e']['name']) ?></a></li>
                 <?php endforeach; ?>
             </ol>
         </section>

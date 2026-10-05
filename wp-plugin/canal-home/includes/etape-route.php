@@ -127,10 +127,10 @@ function canal_etapes_index(): array
         $out[$e['canal']][] = [
             'e' => $e, 'url' => canal_etape_url($e['slug']), 'lead' => canal_etape_lead($e), 'count' => canal_etape_count($groups),
             'image' => canal_etape_hero($groups), 'voir' => canal_etape_highlights($e, $groups), 'read' => canal_etape_pages($e),
+            'counts' => array_map(function ($g) { return $g['count']; }, $groups),
         ];
     }
     $out['faq'] = array_values(array_filter([canal_etapes_howlong_faq(), canal_etapes_faq($out['midi'])]));
-    $out['legs'] = canal_etapes_legs();
     $out['parcours'] = array_map('canal_parcours_card', canal_parcours_parse(canal_parcours_items()));
     return $out;
 }
@@ -245,7 +245,23 @@ add_action('wp_enqueue_scripts', function () {
     canal_home_inline_file('canal-home-header', 'assets/header.css', ['canal-home-base']);
     wp_enqueue_style('canal-fiche-theme', CANAL_HOME_URL . 'assets/fiche-theme.css', ['canal-etape', 'canal-home-header'], (string) filemtime(CANAL_HOME_DIR . 'assets/fiche-theme.css'));
     wp_add_inline_style('canal-fiche-theme', CANAL_THEME_FIX_CSS);
+    if (isset(canal_etape_state()['index'])) {
+        wp_enqueue_script('canal-etapes', CANAL_HOME_URL . 'assets/etapes.js', [], (string) filemtime(CANAL_HOME_DIR . 'assets/etapes.js'), ['in_footer' => true, 'strategy' => 'defer']);
+        wp_localize_script('canal-etapes', 'CDM_ETAPES', [
+            'points'   => canal_etapes_map_points(canal_etape_state()['index']),
+            'traceUrl' => CANAL_HOME_URL . 'assets/calcul/canal-du-midi-trace.json?ver=' . filemtime(CANAL_HOME_DIR . 'assets/calcul/canal-du-midi-trace.json'),
+        ]);
+    }
 }, 20);
+
+// Google Maps: como en el calcul, se quita de la cola y etapes.js lo carga al acercarse el mapa (misma URL y clave).
+add_action('wp_print_footer_scripts', function () {
+    if (!canal_etape_is_page() || !isset(canal_etape_state()['index'])) {
+        return;
+    }
+    $maps = wp_scripts()->registered['google-maps'] ?? null;
+    wp_add_inline_script('canal-etapes', 'window.CDM_ETAPES_MAPS = ' . wp_json_encode($maps ? (string) $maps->src : '') . ';', 'before');
+}, 1);
 
 const CANAL_ETAPES_TITLE = 'Quel parcours faire sur le Canal du Midi ? Étapes, distances et durées en bateau ou à vélo';
 

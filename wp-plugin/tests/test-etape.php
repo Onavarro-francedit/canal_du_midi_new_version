@@ -115,10 +115,19 @@ $r = canal_parcours_card($parsed[1]);
 check($r['title'] === 'Homps → Le Somail et retour' && $r['chips'][0] === '41 km' && $r['chips'][2] === '7 h 50', 'parcours: aller-retour dobla km y tiempo');
 $v = canal_parcours_card(canal_parcours_parse([['title' => 'x', 'url' => '?de=Toulouse&a=Castelnaudary', 'classes' => ['velo', 'weekend']]])[0]);
 check($v['chips'] === ['65 km', '4 h 20 à vélo', '≈ 2 jours'], 'parcours: bici, km y días');
-$legs = canal_etapes_legs();
-check(count($legs) === 16 && $legs[9]['sites'] === 0 && (int) round($legs[9]['km']) === 23, 'línea: 16 tramos; Le Somail → Capestang sin esclusas');
 $howlong = canal_etapes_howlong_faq();
 check(strpos($howlong['a'], '240,5 km') !== false && strpos($howlong['a'], '63 écluses') !== false && strpos($howlong['a'], '≈ 5 jours') !== false, 'faq: cuánto tiempo, con cifras del calcul');
+
+// Mapa de /etapes/: un punto por etapa con lo que el popup necesita.
+$mk = function (string $slug, array $counts = [], array $voir = []) {
+    return ['e' => canal_etape_find($slug), 'url' => '/etape/' . $slug . '/', 'image' => 'i.jpg', 'counts' => $counts, 'voir' => $voir];
+};
+$pts = canal_etapes_map_points(['midi' => [$mk('toulouse', ['bateau' => 2, 'dormir' => 5]), $mk('ramonville')], 'robine' => [$mk('narbonne')]]);
+check(count($pts) === 3 && $pts[0]['name'] === 'Toulouse' && $pts[0]['lat'] === 43.59609, 'mapa: un punto por etapa con coordenadas');
+check($pts[0]['next']['name'] === 'Ramonville-Saint-Agne' && $pts[0]['next']['km'] === '12 km' && strpos($pts[0]['next']['boat'], 'h') !== false, 'mapa: tramo hasta la etapa siguiente');
+check($pts[1]['next'] === null && $pts[1]['from'] === '12 km depuis Toulouse', 'mapa: última del Midi sin siguiente; distancia desde Toulouse');
+check($pts[0]['offer'] === ['2 loueurs de bateaux', '5 hébergements'], 'mapa: oferta legible, sin grupos vacíos');
+check($pts[2]['pk'] === '' && $pts[2]['canal'] === 'robine' && $pts[2]['next'] === null, 'mapa: Robine sin PK ni tramo');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);
