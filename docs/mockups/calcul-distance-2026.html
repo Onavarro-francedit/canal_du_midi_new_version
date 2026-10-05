@@ -72,6 +72,16 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .calc-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-top:18px;font-size:13px;color:var(--muted)}
 .share{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:99px;border:1.5px solid #dcd8f2;background:#fff;font:700 14px var(--f-body);color:var(--primary-deep);cursor:pointer}
 
+/* Écluse choisie comme départ ou arrivée : sa photo */
+.ends{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.ends:empty{display:none}
+.end{display:flex;gap:14px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:16px;background:#fff;text-decoration:none;color:var(--text)}
+.end img{width:96px;height:68px;border-radius:12px;object-fit:cover;flex:none}
+.end small{display:block;font:800 11px var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--water-ink)}
+.end strong{display:block;font:700 15px var(--f-head);line-height:1.25}
+.end span{font-size:13px;font-weight:700;color:var(--primary-deep)}
+.end:hover{border-color:#cfc8f7;box-shadow:0 10px 24px rgba(61,72,124,.1)}
+
 /* Carte Google Maps du trajet */
 .map-box{position:relative;margin-top:26px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#eef3f6}
 #map{height:380px}
@@ -89,11 +99,16 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .locks-list summary small{font:600 13px var(--f-body);color:var(--muted);margin-left:8px}
 .locks-list ol{list-style:none;margin:0;padding:0 20px 14px;columns:2;column-gap:32px}
 .locks-list li{break-inside:avoid;display:flex;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
-.locks-list .pk{flex:none;min-width:62px;font:700 12px var(--f-head);color:var(--water-ink)}
+.locks-list li{align-items:center}
+.locks-list .thumb{flex:none;width:64px;height:46px;border-radius:10px;object-fit:cover;background:var(--soft)}
+.locks-list .thumb--none{display:grid;place-items:center;color:#b9b4dc}
+.locks-list .name{display:flex;flex-direction:column;line-height:1.3}
+.locks-list .pk{flex:none;min-width:0;font:700 12px var(--f-head);color:var(--water-ink)}
 .locks-list a{color:var(--text);text-decoration:none;font-weight:600}
 .locks-list a:hover{color:var(--primary-deep);text-decoration:underline}
 .locks-list .sas{color:var(--muted);font-size:13px}
-.iw{font:14px var(--f-body);color:var(--text);line-height:1.45}
+.iw{font:14px var(--f-body);color:var(--text);line-height:1.45;width:240px}
+.iw img{display:block;width:240px;height:120px;object-fit:cover;border-radius:10px;margin-bottom:8px}
 .iw strong{font:700 14px var(--f-head);display:block}
 .iw a{display:inline-block;margin-top:6px;font-weight:700;color:var(--primary-deep)}
 
@@ -225,6 +240,8 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
           </div>
         </div>
 
+        <div class="ends" id="ends"></div>
+
         <div class="map-box" id="map-box">
           <div id="map" role="img" aria-label="Carte du trajet sur le Canal du Midi"></div>
           <button type="button" class="map-open" id="map-open"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Voir le trajet sur la carte</button>
@@ -306,7 +323,7 @@ footer{padding:40px 0;background:linear-gradient(180deg,var(--bg),#efeafd);color
 <script src="maps-key.local.js"></script>
 <script>
 // PK réels des 63 écluses (select du calculateur actuel) + sas par site ; Fonseranes ajoutée (PK à vérifier).
-const LOCKS = [[1.11,1,"Béarnais","ecluse-du-bearnais"],[2.05,1,"Minimes","ecluse-des-minimes"],[3.72,1,"Bayard","ecluse-bayard"],[15.73,1,"Castanet","ecluse-de-castanet"],[17.45,1,"Vic","ecluse-de-vic"],[24.94,2,"Montgiscard","ecluse-de-montgiscard"],[28.11,1,"Ayguesvives","ecluse-dayguesvives"],[29.66,2,"Sanglier","ecluse-du-sanglier"],[33.3,1,"Négra","ecluse-de-negra"],[37.51,2,"Laval","ecluse-de-laval"],[38.96,1,"Gardouch","ecluse-de-gardouch"],[43.05,1,"Renneville","ecluse-de-renneville"],[45.92,2,"Encassan","ecluse-dencassan"],[47.51,1,"Emborrel","ecluse-demborrel"],[51.632,1,"l'Océan","ecluse-de-locean"],[56.631,1,"la Méditerranée","ecluse-de-la-mediterranee"],[57.503,2,"Roc","ecluse-du-roc"],[58.741,3,"Laurens","ecluse-de-laurens"],[59.701,1,"la Domergue","ecluse-de-la-domergue"],[60.918,1,"Laplanque",""],[65.597,4,"Saint-Roch","ecluses-de-saint-roch"],[67.068,2,"Gay","ecluse-de-gay"],[68.716,3,"Vivier","ecluse-du-vivier"],[69.135,1,"Guilhermin",""],[69.672,1,"Saint-Sernin","ecluse-de-saint-sernin"],[70.564,1,"Guerre","ecluse-de-guerre"],[71.659,1,"la Peyruque","ecluse-de-la-peyruque"],[72.161,1,"la Criminelle","ecluse-de-la-criminelle"],[73.55,1,"Tréboul","ecluse-de-treboul"],[77.372,1,"Villepinte","ecluse-de-villepinte"],[79.046,1,"Sauzens","ecluse-de-sauzens"],[80.256,1,"Bram","ecluse-de-bram"],[85.874,1,"Béteille","ecluse-de-beteille"],[93.392,1,"Villesèquelande",""],[98.215,2,"Lalande","ecluse-de-lalande"],[98.53,1,"Herminis","ecluse-dherminis"],[99.901,1,"Ladouce",""],[105.26,1,"Carcassonne","ecluse-de-carcassonne"],[107.97,1,"Saint-Jean","ecluse-de-saint-jean"],[108.75,2,"Fresquel (double)","ecluse-double-de-fresquel"],[109,1,"Fresquel (simple)","ecluse-simple-de-fresquel"],[112.61,1,"l'Évêque","ecluse-de-leveque"],[113.4,1,"Villedubert","ecluse-de-villedubert"],[118.01,3,"Trèbes","ecluse-de-trebes"],[127.2,1,"Marseillette","ecluse-de-marseillette"],[130.352,3,"Fonfile",""],[131.594,2,"Saint-Martin","ecluse-de-saint-martin"],[133.359,2,"l'Aiguille","ecluse-de-laiguille"],[136.396,2,"Puichéric","ecluse-de-puicheric"],[142.7,1,"Jouarres","ecluse-de-jouarres"],[146.39,1,"Homps","ecluse-dhomps"],[147.08,2,"Ognon","ecluse-dognon"],[149.81,2,"Pechlaurier","ecluse-de-pechlaurier"],[152.29,1,"Argens","ecluse-dargens"],[206.6,8,"Fonseranes","ecluses-de-fonseranes"],[208.012,1,"l'Orb","ecluse-de-lorb"],[208.39,1,"Béziers","ecluse-de-beziers"],[212.452,1,"Arièges","ecluse-darieges"],[213.796,1,"Villeneuve","ecluse-de-villeneuve"],[218.262,1,"Portiragnes","ecluse-de-portiragnes"],[231.42,1,"ronde d'Agde","ecluse-ronde-dagde"],[232.04,1,"Prades","ecluse-de-prades"],[235.3,1,"Bagnas","ecluse-de-bagnas"]];
+const LOCKS = [[1.11,1,"Béarnais","ecluse-du-bearnais","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/CanalDuMidiEcluseDuBearnaisToulouseRueDuBearn.jpg"],[2.05,1,"Minimes","ecluse-des-minimes","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Toulouse_minimes_canal_du_midi_postcard_1906.jpg"],[3.72,1,"Bayard","ecluse-bayard","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-J20_701_Ecluse_de_Bayard_Unterwasser.jpg"],[15.73,1,"Castanet","ecluse-de-castanet","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-EcluseCastanet_05.jpg"],[17.45,1,"Vic","ecluse-de-vic","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Vic_Lock_on_the_Canal_du_Midi.jpg"],[24.94,2,"Montgiscard","ecluse-de-montgiscard","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Montgiscard_Haute-Garonne_Fr_Canal_du_Midi_ecluse_avec_bateau_2.jpg"],[28.11,1,"Ayguesvives","ecluse-dayguesvives","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_dAyguesvives_sas.jpg"],[29.66,2,"Sanglier","ecluse-du-sanglier","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_double_du_sanglier_-_partie_amont.jpg"],[33.3,1,"Négra","ecluse-de-negra","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-France_Canal_du_Midi_ecluse_de_Negra.jpg"],[37.51,2,"Laval","ecluse-de-laval","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Laval_Lock_-_Canal_du_Midi.jpg"],[38.96,1,"Gardouch","ecluse-de-gardouch","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Le_port_de_Gardouch_sur_le_canal_du_midi.jpg"],[43.05,1,"Renneville","ecluse-de-renneville",""],[45.92,2,"Encassan","ecluse-dencassan","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1280px-Encassan_Lock_-_Canal_du_Midi.jpg"],[47.51,1,"Emborrel","ecluse-demborrel","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/800px-Emborrel_Lock_on_the_Canal_du_Midi.jpg"],[51.632,1,"l'Océan","ecluse-de-locean","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-France_Canal_du_Midi_ecluse_de_locean.jpg"],[56.631,1,"la Méditerranée","ecluse-de-la-mediterranee","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Lock_house_at_Mediterranee_Lock_on_the_Canal_du_Midi.jpg"],[57.503,2,"Roc","ecluse-du-roc","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/ecluse_du_Roc.png"],[58.741,3,"Laurens","ecluse-de-laurens","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/ecluse_de_laurens.png"],[59.701,1,"la Domergue","ecluse-de-la-domergue","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/ecluse_de_la_domergue.png"],[60.918,1,"Laplanque","",""],[65.597,4,"Saint-Roch","ecluses-de-saint-roch","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Canal_du_Midi_Schleussen_bei_Castelnaudary.jpg"],[67.068,2,"Gay","ecluse-de-gay","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/ecluse_de_gay.png"],[68.716,3,"Vivier","ecluse-du-vivier","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_du_Vivier.jpeg"],[69.135,1,"Guilhermin","",""],[69.672,1,"Saint-Sernin","ecluse-de-saint-sernin","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_de_Saint-Sernin.jpeg"],[70.564,1,"Guerre","ecluse-de-guerre","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_la_Guerre.jpeg"],[71.659,1,"la Peyruque","ecluse-de-la-peyruque","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_la_Peyruque.jpeg"],[72.161,1,"la Criminelle","ecluse-de-la-criminelle","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_la_Criminelle.jpeg"],[73.55,1,"Tréboul","ecluse-de-treboul","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_Treboul.jpeg"],[77.372,1,"Villepinte","ecluse-de-villepinte","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_Villepinte.jpeg"],[79.046,1,"Sauzens","ecluse-de-sauzens","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_Sauzens.jpeg"],[80.256,1,"Bram","ecluse-de-bram","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_de_Bram.jpeg"],[85.874,1,"Béteille","ecluse-de-beteille","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_de_Beteille.jpg"],[93.392,1,"Villesèquelande","",""],[98.215,2,"Lalande","ecluse-de-lalande","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_de_Lalande.jpg"],[98.53,1,"Herminis","ecluse-dherminis","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_dHerminis.jpg"],[99.901,1,"Ladouce","",""],[105.26,1,"Carcassonne","ecluse-de-carcassonne","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Port_de_Carcassonne.jpg"],[107.97,1,"Saint-Jean","ecluse-de-saint-jean","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_de_Saint_Jean.jpg"],[108.75,2,"Fresquel (double)","ecluse-double-de-fresquel","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_double_de_Fresquel.jpg"],[109,1,"Fresquel (simple)","ecluse-simple-de-fresquel","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_simple_de_Fresquel.jpg"],[112.61,1,"l'Évêque","ecluse-de-leveque","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_de_lEveque_-_Canal_du_Midi.jpg"],[113.4,1,"Villedubert","ecluse-de-villedubert","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Ecluse_de_Villedubert_-_Canal_du_Midi_-_01.jpg"],[118.01,3,"Trèbes","ecluse-de-trebes","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Trebes_Lock_on_the_Canal_du_Midi.jpg"],[127.2,1,"Marseillette","ecluse-de-marseillette","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Marseillette_Lock.jpg"],[130.352,3,"Fonfile","",""],[131.594,2,"Saint-Martin","ecluse-de-saint-martin","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-St_Martin_lock_-_Canal_du_Midi_Nancy.jpg"],[133.359,2,"l'Aiguille","ecluse-de-laiguille","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Peniche_Le_Tourville_ecluse_de_l_Aiguille_Canal-du-Midi.jpg"],[136.396,2,"Puichéric","ecluse-de-puicheric","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Puicheric_Lock_-_Canal_du_Midi_Nancy.jpg"],[142.7,1,"Jouarres","ecluse-de-jouarres","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Jouarres_Lock_-_Canal_du_Midi_Nancy.jpg"],[146.39,1,"Homps","ecluse-dhomps","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/260px-Homps_Lock_on_the_Canal_du_Midi.jpg"],[147.08,2,"Ognon","ecluse-dognon","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/800px-Ognon_Lock_on_the_Canal_du_Midi.jpg"],[149.81,2,"Pechlaurier","ecluse-de-pechlaurier","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/800px-Pechlaurier_Lock_on_the_Canal_du_Midi.jpg"],[152.29,1,"Argens","ecluse-dargens","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Argens_Lock_on_the_Canal_du_Midi.jpg"],[206.6,8,"Fonseranes","ecluses-de-fonseranes","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Beziers_Fonseranes.jpg"],[208.012,1,"l'Orb","ecluse-de-lorb","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/280px-Orb_Lock_on_the_Canal_du_Midi_Nancy.jpg"],[208.39,1,"Béziers","ecluse-de-beziers","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Beziers_Lock.jpg"],[212.452,1,"Arièges","ecluse-darieges","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Ariege_Lock.jpg"],[213.796,1,"Villeneuve","ecluse-de-villeneuve","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/280px-Villeneuve_lock.jpg"],[218.262,1,"Portiragnes","ecluse-de-portiragnes","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Portiragnes_Lock_1.jpg"],[231.42,1,"ronde d'Agde","ecluse-ronde-dagde","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/1920px-Ecluse_canal_du_midi_AGDEFR34.jpg"],[232.04,1,"Prades","ecluse-de-prades","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Prades_lock_2.jpg"],[235.3,1,"Bagnas","ecluse-de-bagnas","https://www.plan-canal-du-midi.com/wp-content/uploads/2021/05/Bagnas_lock_2.jpg"]];
 // Villes et ports (PK indicatifs, à vérifier) ; keep = étiquette visible sur mobile.
 const TOWNS = [["Toulouse",0,1],["Toulouse Port Saint-Sauveur",5.4],["Ramonville",12.3],["Castanet-Tolosan",15.7],["Montgiscard",24.9],["Seuil de Naurouze",51.6],["Castelnaudary",64.9,1],["Bram",80.9],["Carcassonne",105.1,1],["Trèbes",117.5],["Marseillette",127.2],["Puichéric",136.4],["Homps",145.2,1],["Argens-Minervois",151.4],["Le Somail",165.6],["Capestang",188.4],["Poilhes",194],["Colombiers",200.6],["Béziers",208.4,1],["Portiragnes (Cassafières)",222.4],["Agde",231.2],["Étang de Thau (Les Onglous)",240.5,1]];
 const MATRIX = ["Toulouse","Castelnaudary","Carcassonne","Trèbes","Homps","Le Somail","Capestang","Béziers","Agde","Étang de Thau (Les Onglous)"];
@@ -314,14 +331,16 @@ const SPEED_BOAT=7, MIN_PER_SAS=10, SPEED_BIKE=15, SPEED_WALK=4, BOAT_H_DAY=6, B
 
 const places = new Map();
 TOWNS.forEach(([n,pk])=>places.set(n,pk));
-const lockName=n=>n==="Fonseranes"?"Écluses de Fonseranes":n.startsWith("ronde")?"Écluse "+n:"Écluse "+(/^(l'|la )/.test(n)?"de ":/^[AEIOUYÉÈ]/.test(n)?"d'":"de ")+n;
+const lockName=n=>n==="Fonseranes"?"Écluses de Fonseranes":n.startsWith("ronde")?"Écluse "+n:"Écluse "+(/^(l'|la )/.test(n)?"de ":/^([AEIOUYÉÈ]|Homps)/.test(n)?"d'":"de ")+n;
 LOCKS.forEach(([pk,,n])=>places.set(lockName(n),pk));
 document.getElementById("places").innerHTML=[...places.keys()].map(n=>`<option value="${n}">`).join("");
 
 const $=id=>document.getElementById(id);
 const fmtH=h=>{const t=Math.round(h*6)*10;const H=Math.floor(t/60),M=t%60;return H?`${H} h${M?" "+String(M).padStart(2,"0"):""}`:`${M} min`};
 const days=n=>n<=1?"dans la journée":`≈ ${n} jours`;
-const de=n=>(/^[AEIOUYÉÈ]/.test(n)?"d'":"de ")+n;
+const lower=n=>n.replace(/^Écluses? /,m=>m.toLowerCase());
+const de=n=>/^Écluses /.test(n)?"des "+lower(n):/^Écluse /.test(n)?"de l'"+lower(n):(/^([AEIOUYÉÈ]|Homps)/.test(n)?"d'":"de ")+n;
+const a_=n=>/^Écluses /.test(n)?"aux "+lower(n):/^Écluse /.test(n)?"à l'"+lower(n):"à "+n;
 
 function calc(a,b){
   const lo=Math.min(a,b),hi=Math.max(a,b),km=hi-lo;
@@ -337,12 +356,13 @@ function update(){
   const r=calc(places.get(fa),places.get(fb));
   $("km").innerHTML=`${Math.round(r.km)}<small>km</small>`;
   $("locks").innerHTML=r.sites?`${r.sites} écluse${r.sites>1?"s":""} <span>· ${r.sas} sas</span>`:"Aucune écluse";
-  $("sentence").textContent=`${de(fa).replace(/^./,c=>c.toUpperCase())} à ${fb} : ${Math.round(r.km)} km par le Canal du Midi${r.sites?` et ${r.sites} écluse${r.sites>1?"s":""} à franchir`:""}.`;
-  $("t-boat").textContent=fmtH(r.boat); $("d-boat").textContent=days(Math.ceil(r.boat/BOAT_H_DAY))+" de navigation";
+  $("sentence").textContent=`${de(fa).replace(/^./,c=>c.toUpperCase())} ${a_(fb)} : ${Math.round(r.km)} km par le Canal du Midi${r.sites?` et ${r.sites} écluse${r.sites>1?"s":""} à franchir`:""}.`;
+  $("t-boat").textContent=fmtH(r.boat); $("d-boat").textContent=r.boat<=BOAT_H_DAY?"dans la journée":`≈ ${Math.ceil(r.boat/BOAT_H_DAY)} jours de navigation`;
   $("t-bike").textContent=fmtH(r.bike); $("d-bike").textContent=r.km<=60?"dans la journée":days(Math.ceil(r.km/BIKE_KM_DAY));
   $("t-walk").textContent=fmtH(r.walk); $("d-walk").textContent=days(Math.ceil(r.km/WALK_KM_DAY));
   $("arrival-title").textContent=`Que faire à ${fb.replace(/^Écluses? (de |d')?/,"")} ?`;
   drawLockList(r,places.get(fa),places.get(fb));
+  drawEnds(fa,fb);
   history.replaceState(null,"",`?de=${encodeURIComponent(fa)}&a=${encodeURIComponent(fb)}`);
   drawMap();
 }
@@ -356,12 +376,17 @@ function drawMatrix(){
 }
 
 const FICHE=slug=>`https://www.plan-canal-du-midi.com/fiche-2026/${slug}/`;
+const lockByName=new Map(LOCKS.map(l=>[lockName(l[2]),l]));
+function drawEnds(fa,fb){
+  $("ends").innerHTML=[["Départ",fa],["Arrivée",fb]].map(([lab,name])=>{const l=lockByName.get(name);
+    return l&&l[4]?`<a class="end" href="${l[3]?FICHE(l[3]):"#"}"><img src="${l[4]}" alt=""><div><small>${lab}</small><strong>${name}</strong>${l[3]?"<span>Voir la fiche →</span>":""}</div></a>`:""}).join("");
+}
 function drawLockList(r,a,b){
   const ls=LOCKS.filter(([pk])=>pk>r.lo+0.01&&pk<=r.hi+0.01);
   if(a>b)ls.reverse(); // dans le sens du trajet
   $("locks-list").hidden=!ls.length;
   $("locks-title").innerHTML=`Les ${ls.length} écluse${ls.length>1?"s":""} du trajet <small>dans l'ordre de passage</small>`;
-  $("locks-ol").innerHTML=ls.map(([pk,c,n,slug])=>`<li><span class="pk">PK ${pk.toFixed(1).replace(".",",")}</span><span>${slug?`<a href="${FICHE(slug)}">${lockName(n)}</a>`:lockName(n)}${c>1?` <span class="sas">· ${c} sas</span>`:""}</span></li>`).join("");
+  $("locks-ol").innerHTML=ls.map(([pk,c,n,slug,img])=>`<li>${img?`<img class="thumb" src="${img}" alt="" loading="lazy">`:`<span class="thumb thumb--none">◦</span>`}<span class="name">${slug?`<a href="${FICHE(slug)}">${lockName(n)}</a>`:lockName(n)}<span class="pk">PK ${pk.toFixed(1).replace(".",",")}${c>1?` <span class="sas">· ${c} sas</span>`:""}</span></span></li>`).join("");
 }
 // ---- Carte : tracé OSM [lat,lng,PK] + Google Maps (clé du site, fichier local hors git) ----
 let TRACE=null, map=null, layers=[], iw=null;
@@ -376,10 +401,10 @@ function drawMap(){
   const seg=pathBetween(r.lo,r.hi);
   layers.push(new google.maps.Polyline({map,path:seg,strokeColor:"#ffffff",strokeWeight:11,strokeOpacity:1,zIndex:2}));
   layers.push(new google.maps.Polyline({map,path:seg,strokeColor:"#6a63d9",strokeWeight:6,strokeOpacity:1,zIndex:3}));
-  LOCKS.filter(([pk])=>pk>r.lo+0.01&&pk<=r.hi+0.01).forEach(([pk,c,n,slug])=>{
+  LOCKS.filter(([pk])=>pk>r.lo+0.01&&pk<=r.hi+0.01).forEach(([pk,c,n,slug,img])=>{
     const m=new google.maps.Marker({map,position:atPk(pk),title:lockName(n),zIndex:4,cursor:"pointer",
       icon:{path:google.maps.SymbolPath.CIRCLE,scale:c>1?6:5,fillColor:"#fff",fillOpacity:1,strokeColor:"#4f48b7",strokeWeight:2}});
-    m.addListener("click",()=>{iw.setContent(`<div class="iw"><strong>${lockName(n)}</strong>PK ${pk.toFixed(1).replace(".",",")}${c>1?` · ${c} sas`:""}${slug?`<br><a href="${FICHE(slug)}">Voir la fiche →</a>`:""}</div>`);iw.open({map,anchor:m});});
+    m.addListener("click",()=>{iw.setContent(`<div class="iw">${img?`<img src="${img}" alt="">`:""}<strong>${lockName(n)}</strong>PK ${pk.toFixed(1).replace(".",",")}${c>1?` · ${c} sas`:""}${slug?`<br><a href="${FICHE(slug)}">Voir la fiche →</a>`:""}</div>`);iw.open({map,anchor:m});});
     layers.push(m);});
   [[a,"#13606b","A",fa],[b,"#4f48b7","B",fb]].forEach(([pk,col,lab,name])=>layers.push(new google.maps.Marker({map,position:atPk(pk),title:name,zIndex:5,
     label:{text:lab,color:"#fff",fontWeight:"800",fontSize:"12px"},icon:{path:google.maps.SymbolPath.CIRCLE,scale:12,fillColor:col,fillOpacity:1,strokeColor:"#fff",strokeWeight:3}})));
@@ -388,7 +413,7 @@ function drawMap(){
 function initMap(){
   map=new google.maps.Map($("map"),{center:{lat:43.33,lng:2.4},zoom:8,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,clickableIcons:false,
     styles:[{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#bfe6ec"}]},{featureType:"landscape",stylers:[{color:"#f4f2fa"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#ffffff"}]},{featureType:"road",elementType:"labels.icon",stylers:[{visibility:"off"}]}]});
-  iw=new google.maps.InfoWindow();
+  iw=new google.maps.InfoWindow({minWidth:256,maxWidth:256});
   new google.maps.Polyline({map,path:TRACE.map(p=>({lat:p[0],lng:p[1]})),strokeColor:"#c9c4e6",strokeWeight:4,strokeOpacity:1,zIndex:1});
   drawMap();
 }

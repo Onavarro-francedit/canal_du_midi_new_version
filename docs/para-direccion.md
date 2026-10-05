@@ -5,6 +5,16 @@ nuevos arriba.
 
 ---
 
+## 3. Fotos de las fichas de esclusas tomadas de Wikipedia (detectado el 2026-10-05)
+
+De las 71 fotos de las fichas de esclusas, **46 tienen nombres de archivo de Wikipedia/Wikimedia Commons** (p. ej.
+`260px-Ecluse_de_Bram.jpeg`, `Portiragnes_Lock_1.jpg`) y 16 están en baja resolución (260 px). Las fotos de Wikimedia
+suelen estar bajo licencias como CC BY-SA, que **obligan a citar al autor y la licencia** junto a la imagen; hoy no se
+cita. Opciones: añadir el crédito en cada ficha, sustituirlas por fotos propias o de los clientes, o confirmar que
+tenemos otro permiso. No se ha tocado nada; la calculadora 2026 las mostraría tal como están en las fichas.
+
+---
+
 ## 2. Seguridad: contraseña de la base de datos de Pimcore visible en el tema (detectado el 2026-10-02 y el 2026-10-05)
 
 Hay dos archivos del tema my-listing que contienen **el usuario y la contraseña de la base de datos `pimcore`**
