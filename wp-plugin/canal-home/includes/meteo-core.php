@@ -62,8 +62,9 @@ const CANAL_METEO_NAV = [
     ['Basse saison', '8 h 30 – 16 h 30, à la demande', false],
 ];
 
-// « Meilleure période »: máxima media de Carcassonne (centro del canal) entre 20 y 27 °C y navegación en temporada.
-const CANAL_METEO_BEST = ['station' => 1, 'min' => 20.0, 'max' => 27.0];
+// Meses aconsejados: en las tres ciudades, como mucho 7 días a 30 °C o más, máxima media de 20 °C o más, y navegación en
+// temporada (medias del periodo de CANAL_METEO_YEARS).
+const CANAL_METEO_BEST = ['hot_max' => 7.0, 'tmax_min' => 20.0];
 
 function canal_meteo_num(float $v): string
 {
@@ -76,17 +77,28 @@ function canal_meteo_days(float $v): string
     return (string) (int) round($v);
 }
 
-/** Meses (1–12) que cumplen la regla de CANAL_METEO_BEST. */
+/** Meses (1–12) que cumplen la regla de CANAL_METEO_BEST en las tres ciudades. */
 function canal_meteo_best_months(): array
 {
-    $s = CANAL_METEO_STATIONS[CANAL_METEO_BEST['station']];
     $out = [];
-    foreach ($s['tmax'] as $i => $t) {
-        if ($t >= CANAL_METEO_BEST['min'] && $t <= CANAL_METEO_BEST['max'] && CANAL_METEO_NAV[$i][2]) {
+    for ($i = 0; $i < 12; $i++) {
+        $ok = CANAL_METEO_NAV[$i][2];
+        foreach (CANAL_METEO_STATIONS as $s) {
+            $ok = $ok && $s['hot'][$i] <= CANAL_METEO_BEST['hot_max'] && $s['tmax'][$i] >= CANAL_METEO_BEST['tmax_min'];
+        }
+        if ($ok) {
             $out[] = $i + 1;
         }
     }
     return $out;
+}
+
+/** « 22,6 à 23,3 °C » : de la máxima media más baja a la más alta de las tres ciudades en el mes $i (0–11). */
+function canal_meteo_range(string $key, int $i, string $unit): string
+{
+    $v = array_map(function ($s) use ($key, $i) { return $s[$key][$i]; }, CANAL_METEO_STATIONS);
+    $f = $unit === ' °C' ? 'canal_meteo_num' : 'canal_meteo_days';
+    return $f(min($v)) === $f(max($v)) ? $f(min($v)) . $unit : $f(min($v)) . ' à ' . $f(max($v)) . $unit;
 }
 
 function canal_meteo_months_label(array $months): string
@@ -124,7 +136,6 @@ function canal_meteo_faq(): array
     [$tls, $car, $bez] = CANAL_METEO_STATIONS;
     $y = CANAL_METEO_YEARS;
     $best = canal_meteo_best_months();
-    $bestT = array_map(function ($m) use ($car) { return $car['tmax'][$m - 1]; }, $best);
     $max = function (array $s, array $months): array {
         $r = [0.0, 0];
         foreach ($months as $m) {
@@ -146,11 +157,13 @@ function canal_meteo_faq(): array
     return [
         [
             'q' => 'Quelle est la meilleure période pour faire le Canal du Midi ?',
-            'a' => ucfirst(canal_meteo_months_label($best)) . ' : en moyenne sur ' . $y . ', à Carcassonne, au centre du canal, la température maximale moyenne y va de '
-                . canal_meteo_num(min($bestT)) . ' à ' . canal_meteo_num(max($bestT)) . ' °C et la navigation est ouverte en journée. '
-                . 'En juillet et août, la maximale moyenne y atteint ' . canal_meteo_num($car['tmax'][6]) . ' et ' . canal_meteo_num($car['tmax'][7])
-                . ' °C, avec ' . canal_meteo_days($car['hot'][6] + $car['hot'][7]) . ' jours à 30 °C ou plus sur les deux mois et jusqu’à '
-                . canal_meteo_num($peak[0]) . ' °C (' . CANAL_METEO_MONTHS[$peak[2] - 1] . ' ' . $peak[1] . ').',
+            'a' => 'Pour éviter les fortes chaleurs : ' . canal_meteo_months_label($best) . '. Sur ' . $y . ', ces mois comptent au plus '
+                . canal_meteo_days(CANAL_METEO_BEST['hot_max']) . ' jours à 30 °C ou plus à Toulouse, Carcassonne et Béziers, pour une maximale moyenne de '
+                . implode(' ; ', array_map(function ($m) { return canal_meteo_range('tmax', $m - 1, ' °C') . ' en ' . CANAL_METEO_MONTHS[$m - 1]; }, $best))
+                . ', et le canal est ouvert à la navigation. En juillet, la maximale moyenne est de ' . canal_meteo_range('tmax', 6, ' °C') . ' avec '
+                . canal_meteo_range('hot', 6, ' jours') . ' à 30 °C ou plus selon la ville ; en août, ' . canal_meteo_range('tmax', 7, ' °C') . ' et '
+                . canal_meteo_range('hot', 7, ' jours') . '. La température a atteint ' . canal_meteo_num($peak[0]) . ' °C à Carcassonne en '
+                . CANAL_METEO_MONTHS[$peak[2] - 1] . ' ' . $peak[1] . '.',
         ],
         [
             'q' => 'Quel temps fait-il sur le Canal du Midi en été ?',

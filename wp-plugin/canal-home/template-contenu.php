@@ -56,7 +56,6 @@ get_header();
                 <?php if (!empty($c['meteo'])): $best = canal_meteo_best_months(); ?>
                     <section class="contenu-meteo" aria-labelledby="contenu-meteo-title">
                         <h2 id="contenu-meteo-title">Quand venir sur le Canal du Midi ? Le climat mois par mois</h2>
-                        <p class="contenu-meteo-lead"><?= esc_html(canal_meteo_faq()[0]['a']) ?></p>
                         <div class="contenu-meteo-scroll">
                             <table>
                                 <thead>
@@ -85,7 +84,7 @@ get_header();
                         </div>
                         <p class="contenu-meteo-source">Moyennes <?= esc_html(CANAL_METEO_YEARS) ?> (5 dernières années complètes) des températures maximales quotidiennes, nombre moyen de jours à 30 °C ou plus et avec au moins 1 mm de pluie, température la plus haute relevée sur ces années :
                             <a href="<?= esc_url(CANAL_METEO_SOURCE_URL) ?>" target="_blank" rel="noopener">Météo-France, données climatologiques mensuelles</a>
-                            (stations <?= esc_html(implode(', ', array_column(CANAL_METEO_STATIONS, 'station'))) ?>), Licence Ouverte. « Conseillé » : maximale moyenne de 20 à 27 °C à Carcassonne et navigation en saison. Saisons de navigation : <a href="<?= esc_url(home_url(CANAL_METEO_NAV_URL)) ?>">Période de navigation</a>.</p>
+                            (stations <?= esc_html(implode(', ', array_column(CANAL_METEO_STATIONS, 'station'))) ?>), Licence Ouverte. « Conseillé » : au plus 7 jours à 30 °C ou plus et maximale moyenne d’au moins 20 °C dans les trois villes, navigation ouverte. Saisons de navigation : <a href="<?= esc_url(home_url(CANAL_METEO_NAV_URL)) ?>">Période de navigation</a>.</p>
                     </section>
                 <?php endif; ?>
                 <?= $c['html'] // phpcs:ignore — contenido del editor, como the_content. ?>
