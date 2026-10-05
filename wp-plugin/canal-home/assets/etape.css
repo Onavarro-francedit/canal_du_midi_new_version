@@ -117,5 +117,5 @@
 @media (max-width: 560px) {
     .cdm-etape #etapes-map { height: 420px; }
     .cdm-etape .etapes-iw { width: 230px; }
-    .cdm-etape .etapes-iw img { height: 72px; }
+    .cdm-etape .etapes-iw img { display: none; }
 }
