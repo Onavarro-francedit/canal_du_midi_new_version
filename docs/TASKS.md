@@ -12,6 +12,13 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
+### TASK-063 — Publicación del sitio 2026 — plan listo, SOLO con orden explícita
+- Plan completo: `docs/plan-publicacion-2026.md` (agrupa TASK-028/029b/030b/044b). Un solo interruptor `CANAL_2026_LIVE`
+  (URLs originales, sin noindex, 301 activas); vuelta atrás = constante a false + deploy (~2 min).
+- Fase 0 (sin cambios visibles): modo LIVE + mapa de 301 + eventos GA4 + copia de BD + línea base de medición + llms.
+  Bloqueantes: pedido real del plan (PayPal), crédito Anthropic, `CANAL_PLANNER_LIVE`, `pm.max_children`.
+- Fase 1 (30–45 min) publicación + smoke anónimo + sitemap/Bing. Fase 2: vigilancia +1 h / +1 d / +3 d / +7 d / +28 d.
+
 ### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
 - `wp-content/themes/my-listing/affiche_pub_940.php` conecta a la BD `pimcore` (51.38.234.212) con usuario y contraseña
   escritos en el código y mete `$_SERVER['HTTP_REFERER']` sin escapar en la consulta SQL → cualquiera puede inyectar SQL.
