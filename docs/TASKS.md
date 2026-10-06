@@ -47,6 +47,11 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   étapes », bloque « à vélo en bref » (240,5 km, 16 h, 5 jours; étapes en 5/4/3 jours; familia; cuándo; botones con recuento) y FAQ
   de Search Console (`includes/velo-core.php`, `parts/contenu-velo.php`, test-velo). Bloques por página en `parts/`; « Mis à jour »
   = fecha más reciente entre WordPress y el bloque. ⚠️ El texto antiguo de la página dice « 250 km » (no se toca: prod).
+- ✅ T2 (06/10, desplegado y verificado): Sallèles-d'Aude en el canal de jonction (cabecera, title, « Que voir », bloque
+  de las 7 esclusas en orden); etiqueta « Étape : … » en cada ficha (Google muestra la ficha de la mairie: 27k impresiones);
+  FAQ de las etapas visible sin clic.
+- ✅ Fonseranes (06/10): « Combien de temps pour passer les écluses de Fonseranes ? » en la etapa de Béziers — 45 min (Office
+  de tourisme Béziers Méditerranée) a 1 h (Le Boat), horarios 2 mayo–30 sept. de la OT (subidas confirmadas por Le Boat).
 - Pendiente de deploy (local): `canal_fiche_display_title` trata cada tramo « – » por separado (ENSÉRUNE… – Centre des
   monuments nationaux) y « PK » sin corte de línea en las tablas de las guías. Queda en TASK-066: M1 météo (fuente climática
   citada), T2 Sallèles-d'Aude, T4 vélo/distances.

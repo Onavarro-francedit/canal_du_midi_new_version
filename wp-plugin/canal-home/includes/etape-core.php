@@ -195,6 +195,16 @@ function canal_etape_list(array $names): string
 }
 
 /** Preguntas frecuentes con respuestas calculadas; sin datos, no hay pregunta. */
+// Fonseranes (TASK-066, Search Console: 877 impresiones/año). Duración: Office de tourisme Béziers Méditerranée (45 min,
+// FAQ de beziers-mediterranee.uk) y Le Boat (« about 1hr »); horarios 2 mayo–30 sept.: Office de tourisme, con las subidas
+// confirmadas por Le Boat (10 h–12 h 15 y 16 h–18 h 45 en temporada alta). Consultado el 06/10/2026.
+const CANAL_ETAPE_FONSERANES_FAQ = [
+    'q' => 'Combien de temps pour passer les écluses de Fonseranes ?',
+    'a' => 'Entre 45 minutes (Office de tourisme Béziers Méditerranée) et 1 heure environ (Le Boat) pour franchir l’escalier d’écluses. '
+        . 'Le passage se fait par phases de descente et de montée : du 2 mai au 30 septembre, descentes de 8 h 10 à 9 h 25 et de 13 h 05 à 15 h 20, '
+        . 'montées de 10 h 15 à 12 h 15 et de 16 h 10 à 18 h 50. Hors saison de navigation, le passage se fait sur demande.',
+];
+
 function canal_etape_faq(array $e, array $groups): array
 {
     $at = canal_etape_a($e);
@@ -213,6 +223,9 @@ function canal_etape_faq(array $e, array $groups): array
                     . ($r['sites'] ? ' et ' . $r['sites'] . ' écluse' . ($r['sites'] > 1 ? 's' : '') : '') . ' jusqu’à ' . $n['next']['name']
                     . ', et ' . canal_calcul_duration($r['bike']) . ' à vélo par le chemin de halage.',
             ];
+        }
+        if ($e['slug'] === 'beziers') {
+            $faq[] = CANAL_ETAPE_FONSERANES_FAQ;
         }
     } else {
         $faq[] = ['q' => 'Où se trouve ' . $e['name'] . ' ?', 'a' => !empty($e['jonction'])

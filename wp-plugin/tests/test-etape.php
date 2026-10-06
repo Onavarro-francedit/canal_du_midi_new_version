@@ -167,5 +167,9 @@ check(count($voir) === 1 && strpos($voir[0]['a'], 'Cesse, Truilhas, Empare, Arge
 check(canal_etape_title($sal) === "Sallèles-d'Aude — canal de jonction : que faire, où dormir, distances", 'Sallèles: title con el canal de jonction');
 check(canal_etape_nearest(43.2573, 2.9498)['slug'] === 'salleles-daude' && canal_etape_nearest(43.6, 1.45)['slug'] === 'toulouse' && canal_etape_nearest(48.85, 2.35) === null, 'ficha → etapa más cercana dentro de su radio; París → ninguna');
 
+$bzFaq = array_column(canal_etape_faq(canal_etape_find('beziers'), []), 'q');
+check(in_array('Combien de temps pour passer les écluses de Fonseranes ?', $bzFaq, true), 'Béziers: pregunta de Fonseranes (Search Console)');
+check(!in_array('Combien de temps pour passer les écluses de Fonseranes ?', array_column(canal_etape_faq(canal_etape_find('agde'), []), 'q'), true), 'Fonseranes solo en Béziers');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);
