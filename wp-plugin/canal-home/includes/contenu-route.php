@@ -58,7 +58,6 @@ function canal_contenu_data(WP_Post $p): array
     };
     // Bloques propios de algunas páginas (parts/contenu-<bloque>.php): météo (M1) y vélo (T4) de TASK-066.
     $block = ['' => '', CANAL_METEO_SLUG => 'meteo', CANAL_VELO_SLUG => 'velo'][$p->post_name] ?? '';
-    $meteo = $block === 'meteo';
     $title = $meta('_canal_2026_title');
     if ($title === '' && $block !== '') {
         $title = ['meteo' => 'Météo du Canal du Midi : quand partir, le climat mois par mois', 'velo' => 'Le Canal du Midi à vélo : voie verte, distances et étapes'][$block];
@@ -104,8 +103,8 @@ function canal_contenu_data(WP_Post $p): array
         'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: $blockFaq,
         'html'        => $html,
         'published'   => (string) get_post_time('c', false, $p),
-        'modified'    => $meteo
-            ? max((string) get_post_modified_time('c', false, $p), CANAL_METEO_UPDATED)
+        'modified'    => $block !== ''
+            ? max((string) get_post_modified_time('c', false, $p), ['meteo' => CANAL_METEO_UPDATED, 'velo' => CANAL_VELO_UPDATED][$block])
             : (string) get_post_modified_time('c', false, $p),
         'image'       => $image !== '' ? $image : home_url(CANAL_HOME_HERO_IMAGE),
         'thumb'       => (string) get_the_post_thumbnail($p, 'large', ['class' => 'contenu-cover', 'loading' => 'eager', 'fetchpriority' => 'high']),

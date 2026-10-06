@@ -9,6 +9,8 @@ defined('ABSPATH') || defined('CANAL_HOME_TESTING') || exit;
 
 const CANAL_VELO_SLUG = 'voie-verte-et-veloroute';
 const CANAL_VELO_END = 'Étang de Thau (Les Onglous)';
+// Fecha de este bloque: la página muestra la más reciente entre esta y la de WordPress (« Mis à jour le »).
+const CANAL_VELO_UPDATED = '2026-10-06T12:00:00+02:00';
 
 /** Cifras del canal entero en bici: km, horas de pedaleo, días (modelo del calcul: 15 km/h, 55 km al día). */
 function canal_velo_facts(): array
