@@ -5,6 +5,17 @@ sesión.
 
 ---
 
+## 2026-10-06 (mañana) — TASK-069 « À savoir » VALIDADA · Siguiente: análisis SEO/AEO/GEO de todas las páginas 2026
+
+**Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Desplegado, commiteado y en origin.
+**Dónde quedamos:** la FAQ y la guía por datos de las cartes/categorías pasan a una 3.ª columna plegable « À savoir »; validado.
+**Archivos:** `canal-home/template-carte.php`, `includes/guide-core.php`, `build/carte-extra.css` (+ `assets/carte.css` generado),
+`tests/test-guide.php`.
+**Próxima acción:** análisis SEO/AEO/GEO + mejora de contenido de todas las páginas 2026 (pedido del usuario); TASK-063 publicar
+sigue solo con orden explícita.
+
+---
+
 ## CIERRE 2026-10-06 — Desarrollo de las páginas 2026 TERMINADO · Siguiente: publicar (TASK-063) con orden explícita
 
 **Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado, commiteado y en origin (`a7c135a`).

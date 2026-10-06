@@ -418,6 +418,14 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-069 — Cartes y categorías 2026: 3.ª columna « À savoir » (2026-10-06) — DESPLEGADO ✅ VALIDADO por el usuario
+- Problema: la FAQ y la tabla « … par point kilométrique » iban al pie de la lista de fichas (nadie las leía, alargaban su scroll).
+- Ahora: columna propia entre lista y mapa (`template-carte.php`, `aside.carte-info`): guía por datos (camping / location-bateau,
+  lista compacta, títulos « Campings le long du canal » / « Bases de location, de Toulouse à la mer ») + FAQ (FAQPage se mantiene).
+- ≥1181 px: 320 px (280 px hasta 1400), scroll propio en `#carte-info-body`; plegable con botón redondo centrado sobre el
+  borde columna/mapa, **desplegada por defecto**, sin recordar el estado. ≤1180 px: debajo de la lista, sin botón.
+- CSS en `build/carte-extra.css` (§ « 3.ª columna »). Commits a6333db…854166b.
+
 ### TASK-068 — Revisión semanal de las webs de las fichas (2026-10-06) — DESPLEGADO ✅ (primera revisión 06/10: 12 caídas; próxima lun. 12/10 7:00)
 - El usuario encontró la web de Sallèles (sallelesdaude.fr con www) mostrando la página por defecto de Apache.
   Revisión de 137 webs: 12 caídas, 3 a verificar → `docs/webs-caidas-fiches.md`.
