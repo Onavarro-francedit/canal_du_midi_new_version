@@ -43,6 +43,10 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   Symbols de Google, nada de emojis), 4 estaciones, previsiones existentes, FAQ visible. 8 estaciones Météo-France (Toulouse,
   Lauragais, Castelnaudary, Carcassonne, Homps–Lézignan, Le Somail, Béziers, étang de Thau), contrastadas con Open-Meteo.
   Cada enero: `php wp-plugin/build/build-meteo.php` → CANAL_METEO_STATIONS, YEARS, UPDATED y tests.
+- ✅ T4 (06/10, desplegado y verificado): /voie-verte-et-veloroute/ 2026 — H1 « Le Canal du Midi à vélo : voie verte, distances et
+  étapes », bloque « à vélo en bref » (240,5 km, 16 h, 5 jours; étapes en 5/4/3 jours; familia; cuándo; botones con recuento) y FAQ
+  de Search Console (`includes/velo-core.php`, `parts/contenu-velo.php`, test-velo). Bloques por página en `parts/`; « Mis à jour »
+  = fecha más reciente entre WordPress y el bloque. ⚠️ El texto antiguo de la página dice « 250 km » (no se toca: prod).
 - Pendiente de deploy (local): `canal_fiche_display_title` trata cada tramo « – » por separado (ENSÉRUNE… – Centre des
   monuments nationaux) y « PK » sin corte de línea en las tablas de las guías. Queda en TASK-066: M1 météo (fuente climática
   citada), T2 Sallèles-d'Aude, T4 vélo/distances.
