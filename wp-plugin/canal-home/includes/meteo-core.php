@@ -14,6 +14,13 @@ const CANAL_METEO_SLUG = 'meteo-du-canal-du-midi';
 const CANAL_METEO_NAV_URL = '/navigation/periode-de-navigation/';
 const CANAL_METEO_SOURCE_URL = 'https://meteo.data.gouv.fr/datasets/donnees-climatologiques-de-base-mensuelles';
 const CANAL_METEO_YEARS = '2021–2025';
+// Previsiones a 7 días: enlaces a Météo-France, las mismas ciudades que los widgets de antes (06/10).
+// Sin widget: la API gratuita de Open-Meteo es solo para uso no comercial y booked.net metía scripts y enlaces de terceros.
+const CANAL_METEO_FORECAST_URL = 'https://meteofrance.com/previsions-meteo-france/';
+const CANAL_METEO_FORECAST = [
+    'Toulouse' => 'toulouse/31000', 'Castelnaudary' => 'castelnaudary/11400', 'Carcassonne' => 'carcassonne/11000',
+    'Homps' => 'homps/11200', 'Béziers' => 'beziers/34500', 'Agde' => 'agde/34300', 'Frontignan' => 'frontignan/34110',
+];
 const CANAL_METEO_UPDATED = '2026-10-05T12:00:00+02:00';
 const CANAL_METEO_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 const CANAL_METEO_SHORT = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.'];

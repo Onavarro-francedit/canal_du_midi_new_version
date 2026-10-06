@@ -105,7 +105,9 @@ function canal_contenu_data(WP_Post $p): array
         // Météo (TASK-066 M1): clima mes a mes y sus preguntas, salvo que la página tenga su propia FAQ.
         'block'       => $block,
         'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: $blockFaq,
-        'html'        => $html,
+        // Météo: el contenido del editor son solo los widgets de booked.net (scripts de terceros, enlaces vacíos a
+        // hotelmix.fr; Lighthouse 06/10) → lo sustituyen los enlaces a Météo-France de parts/contenu-meteo.php.
+        'html'        => $block === 'meteo' ? '' : $html,
         'published'   => (string) get_post_time('c', false, $p),
         'modified'    => $block !== ''
             ? max((string) get_post_modified_time('c', false, $p), ['meteo' => CANAL_METEO_UPDATED, 'velo' => CANAL_VELO_UPDATED][$block])

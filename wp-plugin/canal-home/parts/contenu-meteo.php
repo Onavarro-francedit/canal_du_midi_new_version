@@ -69,6 +69,12 @@ $meteoMonths = canal_meteo_months();
                     </section>
 
                     <h2 class="meteo-forecast-title">La météo des 7 prochains jours</h2>
+                    <p>Les prévisions officielles de Météo-France, ville par ville le long du canal :</p>
+                    <ul class="meteo-forecast">
+                        <?php foreach (CANAL_METEO_FORECAST as $town => $path): ?>
+                            <li><a href="<?= esc_url(CANAL_METEO_FORECAST_URL . $path) ?>" rel="noopener">Météo à <?= esc_html($town) ?></a></li>
+                        <?php endforeach; ?>
+                    </ul>
                     <script>
                     (function () {
                         var year = document.querySelector('.meteo-year');
