@@ -52,7 +52,10 @@ function canal_contenu_data(WP_Post $p): array
     setup_postdata($p);
     // the_content del núcleo sin los filtros de plugins: Elementor no pinta su constructor (su CSS/JS no se carga);
     // las páginas Elementor guardan en post_content su versión HTML.
-    $html = canal_contenu_clean_html(wp_filter_content_tags(do_shortcode(shortcode_unautop(wpautop(wptexturize(do_blocks($p->post_content)))))));
+    // Como el núcleo: sin wpautop en contenido de bloques (si no, los saltos de línea pegados de Word dentro de un <p> se
+    // vuelven <br> y el texto se corta a media frase: Poilhes, Colombiers…).
+    $text = wptexturize(do_blocks($p->post_content));
+    $html = canal_contenu_clean_html(wp_filter_content_tags(do_shortcode(shortcode_unautop(has_blocks($p->post_content) ? $text : wpautop($text)))));
     $html = canal_contenu_drop_cover($html, (string) get_the_post_thumbnail_url($p, 'full'));
     $meta = function (string $key) use ($p): string {
         return trim((string) get_post_meta($p->ID, $key, true));
