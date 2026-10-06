@@ -415,7 +415,15 @@ get_header();
         <?php // WP: 3.ª columna (06/10): datos y preguntas frecuentes (AEO) fuera de la lista de fichas; en tablet/móvil va debajo. ?>
         <?php if ($faq): ?>
         <aside class="carte-info" aria-label="À savoir">
-            <p class="carte-info-kicker">À savoir</p>
+            <div class="carte-info-head">
+                <p class="carte-info-kicker">À savoir</p>
+                <?php // WP: plegable en escritorio, desplegada por defecto (el contenido sigue en el HTML). ?>
+                <button type="button" class="carte-info-toggle" aria-expanded="true" aria-controls="carte-info-body" aria-label="Replier « À savoir »"
+                    onclick="var c=this.closest('.search-workspace').classList.toggle('is-info-collapsed');this.setAttribute('aria-expanded',String(!c));this.setAttribute('aria-label',(c?'Déplier':'Replier')+' « À savoir »')">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div id="carte-info-body">
             <?php if ($guide): ?>
             <section class="carte-guide" aria-labelledby="carte-guide-title">
                 <h2 id="carte-guide-title"><?= esc_html($guide['title']) ?></h2>
@@ -440,6 +448,7 @@ get_header();
                 <?php endforeach; ?>
                 <p class="carte-faq-sources">Le Canal du Midi est inscrit au <a href="https://whc.unesco.org/fr/list/770/" target="_blank" rel="noopener">patrimoine mondial de l'UNESCO</a> depuis 1996. Conditions de navigation et chômages : <a href="https://www.vnf.fr/" target="_blank" rel="noopener">Voies navigables de France</a>.</p>
             </section>
+            </div>
         </aside>
         <?php endif; ?>
 

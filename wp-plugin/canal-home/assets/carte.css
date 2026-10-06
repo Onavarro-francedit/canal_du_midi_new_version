@@ -4329,9 +4329,28 @@
 }
 @media (min-width: 1181px) and (max-width: 1400px) {
     .cdm-carte .search-workspace--info { grid-template-columns: 280px 360px 280px minmax(0, 1fr); }
+    .cdm-carte .search-workspace--info.is-info-collapsed { grid-template-columns: 280px 360px 44px minmax(0, 1fr); }
+}
+/* Plegada: tira de 44 px con « À savoir » en vertical; el mapa gana el ancho. */
+@media (min-width: 1401px) {
+    .cdm-carte .search-workspace--info.is-info-collapsed { grid-template-columns: 320px 400px 44px minmax(0, 1fr); }
+}
+@media (min-width: 1181px) {
+    .cdm-carte .is-info-collapsed .carte-info { padding: 14px 0; overflow: hidden; }
+    .cdm-carte .is-info-collapsed #carte-info-body { display: none; }
+    .cdm-carte .is-info-collapsed .carte-info-head { flex-direction: column-reverse; gap: 12px; }
+    .cdm-carte .is-info-collapsed .carte-info-kicker { margin: 0; writing-mode: vertical-rl; transform: rotate(180deg); }
+    .cdm-carte .is-info-collapsed .carte-info-toggle i { transform: rotate(180deg); }
+}
+@media (max-width: 1180px) {
+    .cdm-carte .carte-info .carte-info-toggle { display: none; }
 }
 .cdm-carte .carte-info { min-width: 0; padding: 20px 22px 28px; background: #faf9f7; border-right: 1px solid rgba(0, 0, 0, 0.06); }
-.cdm-carte .carte-info-kicker { margin: 0 0 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6a63d9; }
+.cdm-carte .carte-info-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 14px; }
+.cdm-carte .carte-info-toggle { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; background: #fff; color: #475569; cursor: pointer; }
+.cdm-carte .carte-info-toggle:hover { color: #6a63d9; border-color: #6a63d9; }
+.cdm-carte .carte-info-toggle:focus-visible { outline: 2px solid #6a63d9; outline-offset: 2px; }
+.cdm-carte .carte-info-kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6a63d9; }
 .cdm-carte .carte-info h2 { margin: 0 0 10px; font-size: 16px; font-weight: 700; line-height: 1.3; color: #1a1d26; }
 .cdm-carte .carte-guide { margin: 0 0 26px; }
 .cdm-carte .carte-guide-list { margin: 0 0 10px; padding: 0; list-style: none; }
