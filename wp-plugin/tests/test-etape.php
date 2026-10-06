@@ -147,5 +147,24 @@ foreach ($faq as $qa) {
     check(substr($qa['q'], -2) === ' ?' && strlen($qa['a']) > 60, 'faq: « ' . $qa['q'] . ' » con respuesta');
 }
 
+// T2 Sallèles-d'Aude: canal de jonction (7 écluses), « Que voir », enlace ficha → etapa.
+$sal = canal_etape_find('salleles-daude');
+check(strpos(canal_etape_lead($sal), 'canal de jonction') !== false && strpos(canal_etape_lead($sal), '7 écluses') !== false, 'Sallèles: cabecera en el canal de jonction, 7 esclusas');
+check(strpos(canal_etape_lead(canal_etape_find('narbonne')), 'canal de la Robine') !== false, 'Narbonne: sigue en la Robine');
+$lock = function (string $slug, string $title) { return ['slug' => $slug, 'title' => $title, 'url' => '/fiche/' . $slug . '/', 'distance_km' => 1.0, 'cat_slugs' => ['ecluses']]; };
+$salGroups = [
+    'eau'  => ['items' => [$lock('ecluse-de-gailhousty', 'Écluse de Gailhousty'), $lock('port-de-salleles-daude', 'Port de Sallèles d’Aude'), $lock('ecluse-de-cesse', 'Écluse de Cesse'),
+        $lock('ecluse-de-salleles', 'Écluse de Sallèles-d’Aude'), $lock('ecluse-de-truilhas', 'Écluse de Truilhas'), $lock('ecluse-dempare', 'Écluse d’Empare'),
+        $lock('ecluse-dargelliers', 'Écluse d’Argelliers'), $lock('ecluse-de-saint-cyr', 'Écluse de Saint-Cyr'), $lock('ecluse-de-moussoulens', 'Écluse de Moussoulens')]],
+    'voir' => ['items' => [['title' => 'Vélorail', 'distance_km' => 0.4, 'cat_slugs' => ['loisir-de-plein-air']], ['title' => 'Office de Tourisme', 'distance_km' => 3.7, 'cat_slugs' => ['lieux-dinformations']]]],
+];
+$j = canal_etape_jonction($salGroups);
+check(array_column($j, 'slug') === CANAL_ETAPE_JONCTION && count($j) === 7, 'jonction: las 7 esclusas en orden de paso, sin Moussoulens (Robine)');
+check(canal_etape_jonction(['eau' => ['items' => [$lock('ecluse-de-cesse', 'Écluse de Cesse')]]]) === [], 'jonction: incompleta → nada');
+$salFaq = canal_etape_faq($sal, $salGroups);
+$voir = array_values(array_filter($salFaq, function ($qa) { return strpos($qa['q'], 'Que voir') === 0; }));
+check(count($voir) === 1 && strpos($voir[0]['a'], 'Cesse, Truilhas, Empare, Argelliers, Saint-Cyr, Sallèles et Gailhousty') !== false && strpos($voir[0]['a'], 'Vélorail') !== false && strpos($voir[0]['a'], 'Office') === false, 'Sallèles: « Que voir » con las 7 esclusas y el Vélorail, sin la oficina de turismo');
+check(canal_etape_nearest(43.2573, 2.9498)['slug'] === 'salleles-daude' && canal_etape_nearest(43.6, 1.45)['slug'] === 'toulouse' && canal_etape_nearest(48.85, 2.35) === null, 'ficha → etapa más cercana dentro de su radio; París → ninguna');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

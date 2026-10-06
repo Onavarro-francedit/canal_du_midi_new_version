@@ -117,3 +117,9 @@
     .cdm-etape .etapes-map-box { position: relative; top: 0; order: -1; }
     .cdm-etape #etapes-map { height: 300px; }
 }
+/* Canal de jonction (Sallèles-d'Aude) */
+.cdm-etape .etape-jonction-intro { margin: -8px 0 12px; color: var(--muted); }
+.cdm-etape .etape-jonction { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: lock; }
+.cdm-etape .etape-jonction li { counter-increment: lock; }
+.cdm-etape .etape-jonction a { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--text); text-decoration: none; font-weight: 600; }
+.cdm-etape .etape-jonction a::before { content: counter(lock); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #13606b; color: #fff; font-size: 12px; font-weight: 800; }

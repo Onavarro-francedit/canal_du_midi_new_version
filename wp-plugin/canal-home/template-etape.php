@@ -74,6 +74,18 @@ get_header();
             </section>
         <?php endforeach; ?>
 
+        <?php if ($jonction = canal_etape_jonction($s['groups'])): ?>
+            <section class="etape-section" aria-labelledby="etape-jonction">
+                <h2 id="etape-jonction">Les <?= count($jonction) ?> écluses du canal de jonction</h2>
+                <p class="etape-jonction-intro">Du Canal du Midi au canal de la Robine, dans l’ordre de passage.</p>
+                <ol class="etape-jonction">
+                    <?php foreach ($jonction as $lock): ?>
+                        <li><a href="<?= esc_url($lock['url']) ?>"><?= esc_html(canal_fiche_display_title($lock['title'])) ?></a></li>
+                    <?php endforeach; ?>
+                </ol>
+            </section>
+        <?php endif; ?>
+
         <?php if (!empty($s['groups']['eau'])): ?>
             <section class="etape-section" aria-labelledby="etape-eau">
                 <h2 id="etape-eau">Écluses et ports</h2>
@@ -99,11 +111,12 @@ get_header();
         <?php if ($s['faq']): ?>
             <section class="contenu-faq etape-section" aria-labelledby="etape-faq">
                 <h2 id="etape-faq">Questions fréquentes</h2>
+                <?php // Visibles sin clic: los bots no despliegan acordeones. ?>
                 <?php foreach ($s['faq'] as $qa): ?>
-                    <details>
-                        <summary><?= esc_html($qa['q']) ?></summary>
+                    <div class="contenu-faq-item">
+                        <h3><?= esc_html($qa['q']) ?></h3>
                         <p><?= esc_html($qa['a']) ?></p>
-                    </details>
+                    </div>
                 <?php endforeach; ?>
             </section>
         <?php endif; ?>

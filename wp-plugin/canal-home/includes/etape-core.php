@@ -28,7 +28,7 @@ const CANAL_ETAPES = [
     ['slug' => 'portiragnes', 'name' => 'Portiragnes', 'canal' => 'midi', 'calcul' => 'Portiragnes (Cassafières)', 'lat' => 43.29220, 'lng' => 3.37106, 'radius' => 5, 'search' => 'Portiragnes', 'dept' => 'Hérault', 'pages' => []],
     ['slug' => 'agde', 'name' => 'Agde', 'canal' => 'midi', 'calcul' => 'Agde', 'lat' => 43.32007, 'lng' => 3.46471, 'radius' => 6, 'search' => 'Agde', 'dept' => 'Hérault', 'pages' => ['visiter-cap-dagde', 'ouvrage-sur-le-libron']],
     ['slug' => 'marseillan', 'name' => 'Marseillan', 'canal' => 'midi', 'calcul' => 'Étang de Thau (Les Onglous)', 'lat' => 43.34017, 'lng' => 3.53862, 'radius' => 7, 'search' => 'Marseillan', 'dept' => 'Hérault', 'pages' => ['visiter-marseillan', 'bassin-de-thau', 'visiter-sete']],
-    ['slug' => 'salleles-daude', 'name' => "Sallèles-d'Aude", 'canal' => 'robine', 'calcul' => '', 'lat' => 43.25840, 'lng' => 2.94921, 'radius' => 4, 'search' => 'Sallèles', 'dept' => 'Aude', 'pages' => ['canal-de-la-robine']],
+    ['slug' => 'salleles-daude', 'name' => "Sallèles-d'Aude", 'canal' => 'robine', 'jonction' => true, 'calcul' => '', 'lat' => 43.25840, 'lng' => 2.94921, 'radius' => 4, 'search' => 'Sallèles', 'dept' => 'Aude', 'pages' => ['canal-de-la-robine']],
     ['slug' => 'narbonne', 'name' => 'Narbonne', 'canal' => 'robine', 'calcul' => '', 'lat' => 43.18440, 'lng' => 3.00390, 'radius' => 6, 'search' => 'Narbonne', 'dept' => 'Aude', 'pages' => ['visiter-narbonne', 'canal-de-la-robine']],
     ['slug' => 'port-la-nouvelle', 'name' => 'Port-la-Nouvelle', 'canal' => 'robine', 'calcul' => '', 'lat' => 43.01930, 'lng' => 3.04530, 'radius' => 6, 'search' => 'Port-la-Nouvelle', 'dept' => 'Aude', 'pages' => ['canal-de-la-robine']],
 ];
@@ -89,6 +89,10 @@ function canal_etape_pk_label(float $pk): string
 /** Frase de cabecera, solo con datos. */
 function canal_etape_lead(array $e): string
 {
+    if (!empty($e['jonction'])) {
+        return 'Sur le canal de jonction, creusé entre 1775 et 1780, qui relie le Canal du Midi au canal de la Robine par '
+            . count(CANAL_ETAPE_JONCTION) . ' écluses, de Cesse à Gailhousty.';
+    }
     if ($e['canal'] === 'robine') {
         return 'Sur le canal de la Robine, la branche du Canal du Midi qui rejoint la Méditerranée par Narbonne et Port-la-Nouvelle.';
     }
@@ -98,6 +102,48 @@ function canal_etape_lead(array $e): string
         return $pk . 'entre ' . $n['prev']['name'] . ' et ' . $n['next']['name'] . '.';
     }
     return $n['next'] ? $pk . 'point de départ du canal, avant ' . $n['next']['name'] . '.' : $pk . "arrivée du canal sur l'étang de Thau, après " . $n['prev']['name'] . '.';
+}
+
+// Canal de jonction (Sallèles-d'Aude, T2 de TASK-066): sus 7 esclusas en orden de paso, del Canal du Midi a la Robine
+// (slugs de las fichas). Fechas 1775–1780: nuestra página « Le Canal de la Robine ».
+const CANAL_ETAPE_JONCTION = ['ecluse-de-cesse', 'ecluse-de-truilhas', 'ecluse-dempare', 'ecluse-dargelliers', 'ecluse-de-saint-cyr', 'ecluse-de-salleles', 'ecluse-de-gailhousty'];
+
+/** Las 7 esclusas del canal de jonction en orden (fichas del grupo « eau »), o [] si falta alguna. */
+function canal_etape_jonction(array $groups): array
+{
+    $bySlug = [];
+    foreach ($groups['eau']['items'] ?? [] as $it) {
+        $bySlug[$it['slug'] ?? ''] = $it;
+    }
+    $out = [];
+    foreach (CANAL_ETAPE_JONCTION as $slug) {
+        if (!isset($bySlug[$slug])) {
+            return [];
+        }
+        $out[] = $bySlug[$slug];
+    }
+    return $out;
+}
+
+/** « Écluse de Sallèles-d’Aude » → « Sallèles ». */
+function canal_etape_lock_short(string $title): string
+{
+    return (string) preg_replace(['/^Écluses? (de |d’|d\')/u', '/-d’Aude$/u'], '', $title);
+}
+
+/** Etapa más cercana a un punto, si está dentro de su radio (enlace « Étape : … » de la ficha), o null. */
+function canal_etape_nearest(float $lat, float $lng): ?array
+{
+    $best = null;
+    $bestKm = INF;
+    foreach (CANAL_ETAPES as $e) {
+        $km = canal_fiche_distance_km($lat, $lng, $e['lat'], $e['lng']);
+        if ($km <= $e['radius'] && $km < $bestKm) {
+            $best = $e;
+            $bestKm = $km;
+        }
+    }
+    return $best;
 }
 
 /** Prestatarios del radio agrupados por tipo (cada uno en su primer grupo), los más cercanos primero. */
@@ -169,7 +215,24 @@ function canal_etape_faq(array $e, array $groups): array
             ];
         }
     } else {
-        $faq[] = ['q' => 'Où se trouve ' . $e['name'] . ' ?', 'a' => $e['name'] . ' se trouve sur le canal de la Robine, la branche du Canal du Midi qui rejoint la Méditerranée par Narbonne et Port-la-Nouvelle, dans le département de l’Aude.'];
+        $faq[] = ['q' => 'Où se trouve ' . $e['name'] . ' ?', 'a' => !empty($e['jonction'])
+            ? $e['name'] . ' se trouve sur le canal de jonction, qui relie le Canal du Midi au canal de la Robine, dans le département de l’Aude.'
+            : $e['name'] . ' se trouve sur le canal de la Robine, la branche du Canal du Midi qui rejoint la Méditerranée par Narbonne et Port-la-Nouvelle, dans le département de l’Aude.'];
+        $locks = !empty($e['jonction']) ? canal_etape_jonction($groups) : [];
+        if ($locks) {
+            $near = array_filter($groups['voir']['items'] ?? [], function ($it) {
+                return !in_array('lieux-dinformations', $it['cat_slugs'] ?? [], true);
+            });
+            $faq[] = [
+                'q' => 'Que voir à ' . $e['name'] . ' ?',
+                'a' => 'Le port et les ' . count($locks) . ' écluses du canal de jonction ('
+                    . canal_etape_list(array_map(function ($l) { return canal_etape_lock_short($l['title']); }, $locks))
+                    . '), qui relie le Canal du Midi au canal de la Robine : à Gailhousty, il rejoint la Robine.'
+                    . ($near ? ' À proximité : ' . canal_etape_list(array_map(function ($it) {
+                        return canal_fiche_display_title($it['title']) . ' (' . canal_fiche_km_label($it['distance_km']) . ')';
+                    }, array_values($near))) . '.' : ''),
+            ];
+        }
     }
     if (!empty($groups['bateau'])) {
         $names = array_slice(array_column($groups['bateau']['items'], 'title'), 0, 3);

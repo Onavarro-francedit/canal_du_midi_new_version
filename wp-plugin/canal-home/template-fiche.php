@@ -34,6 +34,9 @@ get_header();
                     <?php if ($f['zones']): ?>
                         <div class="service-rating-pill"><i class="bi bi-map"></i> <?= esc_html(implode(' · ', $f['zones'])) ?></div>
                     <?php endif; ?>
+                    <?php if ($f['lat'] !== null && $f['lng'] !== null && ($etape = canal_etape_nearest((float) $f['lat'], (float) $f['lng']))): ?>
+                        <a class="service-rating-pill service-etape-link" href="<?= esc_url(canal_etape_url($etape['slug'])) ?>"><i class="bi bi-signpost-2"></i> Étape : <?= esc_html($etape['name']) ?></a>
+                    <?php endif; ?>
                 </div>
                 <?php if ($f['categories']): ?>
                     <div class="hero-facts">
