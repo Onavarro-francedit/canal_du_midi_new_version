@@ -99,7 +99,13 @@ Pendiente para el 100:
   primera tarjeta, una sola imagen sin lazy → móvil 83 → 89–91, escritorio 98–99; categoría móvil 83–88 (ruido entre
   pasadas). Techo actual: fotos de tarjeta de 90–120 KB (768 px WebP q78) y fuentes Sora+Manrope (57 KB) en 4G simulado.
   Siguiente palanca: tarjetas a 480–600 px o calidad 65 (afecta a todas las imágenes del plugin).
-- ⬜ Rendimiento móvil < 95: home (91), archivo (92); carte/categoría ver arriba. LCP 3–4 s en 4G simulado: HTML de la carte
+- ⬜ Rendimiento móvil < 95: home (91), archivo (92); carte/categoría ver arriba.
+- ✅ Fotos de tarjeta de la carte: variante `archivo.jpg.c640.webp` (640 px, calidad 65), generadas para las 251 fichas
+  (`tests/gen-card-images.php`, solo añade archivos): 75 KB → 30 KB de media.
+- ⬜ **Los `.webp` generales del plugin (TASK-048) salen a calidad 86, no 78:** al convertir JPG → WebP WordPress
+  restablece la calidad por defecto del formato e ignora `set_quality()`; solo el filtro `wp_editor_set_quality` la
+  fija. Por eso pesan casi lo mismo que los JPG (91 KB vs 91 KB). Rehacerlos con el filtro (sobrescribe solo archivos
+  generados por el plugin) aligeraría fichas, artículos y home. LCP 3–4 s en 4G simulado: HTML de la carte
   (140 KB, 254 tarjetas), fuentes precargadas en la home, imágenes de 90–120 KB en las tarjetas.
 - ⬜ Buenas prácticas 96 en escritorio con mapa (calcul, carte, categoría, étapes): `image-size-responsive` de una imagen
   interna de Google Maps (`transparent.png`). Es de Google: no se arregla desde el sitio sin quitar el mapa.

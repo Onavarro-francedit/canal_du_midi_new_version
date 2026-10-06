@@ -85,19 +85,13 @@ function canal_home_webp_html(string $html, callable $exists, string $host = 'ht
 // (DONOTCACHEPAGE) y las siguientes completan el resto. Con miles de imágenes nuevas: script de generación previa.
 function canal_home_webp_exists(string $rel): bool
 {
-    static $made = 0;
     $file = ABSPATH . ltrim($rel, '/');
     if (is_file($file . '.webp')) {
         return true;
     }
-    if (!is_file($file) || !is_writable(dirname($file))) {
+    if (!is_file($file) || !is_writable(dirname($file)) || !canal_home_image_budget()) {
         return false;
     }
-    if ($made >= 8) {
-        $GLOBALS['canal_home_webp_pending'] = true;
-        return false;
-    }
-    $made++;
     $editor = wp_get_image_editor($file);
     if (is_wp_error($editor)) {
         return false;
@@ -105,6 +99,56 @@ function canal_home_webp_exists(string $rel): bool
     $editor->set_quality(78);
     $saved = $editor->save($file . '.webp', 'image/webp');
     return !is_wp_error($saved) && is_file($file . '.webp');
+}
+
+// Imágenes generadas al vuelo (WebP, tarjetas): como mucho 8 por petición entre todas; si quedan pendientes,
+// esa respuesta no entra en la caché de página (ver DONOTCACHEPAGE en el búfer).
+function canal_home_image_budget(): bool
+{
+    static $made = 0;
+    if ($made >= (defined('CANAL_HOME_IMAGE_BUDGET') ? CANAL_HOME_IMAGE_BUDGET : 8)) {
+        $GLOBALS['canal_home_webp_pending'] = true;
+        return false;
+    }
+    $made++;
+    return true;
+}
+
+// Foto de tarjeta (carte, 06/10): variante « archivo.jpg.c640.webp » de 640 px y calidad 65 (≈40 KB frente a 90–110 KB
+// de la 768 px en WebP 78; Lighthouse móvil). Solo se añade un archivo junto al original. Sin variante → la URL de siempre.
+const CANAL_HOME_CARD_WIDTH = 640;
+
+function canal_home_card_image(string $url): string
+{
+    $host = untrailingslashit(home_url());
+    if (strpos($url, $host . '/wp-content/uploads/') !== 0 || !preg_match('/\.(jpe?g|png)$/i', $url)) {
+        return $url;
+    }
+    $file = ABSPATH . ltrim(substr($url, strlen($host)), '/');
+    $out = $file . '.c' . CANAL_HOME_CARD_WIDTH . '.webp';
+    if (!is_file($out) || defined('CANAL_HOME_CARD_REBUILD')) {
+        if (!is_file($file) || !is_writable(dirname($file)) || !canal_home_image_budget()) {
+            return $url;
+        }
+        $editor = wp_get_image_editor($file);
+        if (is_wp_error($editor)) {
+            return $url;
+        }
+        $size = $editor->get_size();
+        if ($size['width'] > CANAL_HOME_CARD_WIDTH) {
+            $editor->resize(CANAL_HOME_CARD_WIDTH, null);
+        }
+        // Al cambiar de formato (JPG → WebP) WordPress vuelve a la calidad por defecto del WebP (86) e ignora
+        // set_quality(): solo el filtro la fija (06/10: 64 KB → 38 KB en la misma foto).
+        $quality = function () { return 65; };
+        add_filter('wp_editor_set_quality', $quality, PHP_INT_MAX);
+        $saved = $editor->save($out, 'image/webp');
+        remove_filter('wp_editor_set_quality', $quality, PHP_INT_MAX);
+        if (is_wp_error($saved) || !is_file($out)) {
+            return $url;
+        }
+    }
+    return $url . '.c' . CANAL_HOME_CARD_WIDTH . '.webp';
 }
 
 /** ¿Esta petición la pinta una plantilla 2026? (rutas -2026 privadas o, publicado, las URLs de siempre) */

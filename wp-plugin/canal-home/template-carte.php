@@ -60,8 +60,9 @@ if ($lcp && $lcp['image'] !== '') {
         $webp = function (string $v): string {
             return substr(canal_home_webp_html('<body>' . $v . '"', 'canal_home_webp_exists', untrailingslashit(home_url())), 6, -1);
         };
-        echo '<link rel="preload" as="image" href="' . esc_url($webp($lcp['image'])) . '"'
-            . ($lcp['image_srcset'] !== '' ? ' imagesrcset="' . esc_attr($webp($lcp['image_srcset'])) . '" imagesizes="(max-width: 1180px) 100vw, 360px"' : '')
+        $card = canal_home_card_image($lcp['image']); // la misma que la tarjeta (variante 640 px si existe)
+        echo '<link rel="preload" as="image" href="' . esc_url($card !== $lcp['image'] ? $card : $webp($lcp['image'])) . '"'
+            . ($card === $lcp['image'] && $lcp['image_srcset'] !== '' ? ' imagesrcset="' . esc_attr($webp($lcp['image_srcset'])) . '" imagesizes="(max-width: 1180px) 100vw, 360px"' : '')
             . ' fetchpriority="high">' . "\n";
     }, 1);
 }
@@ -316,7 +317,9 @@ get_header();
                         // WP: $s es un array de canal_carte_listings() (antes, un objeto Service).
                         $serviceTitle = $s['title'] !== '' ? $s['title'] : 'Adresse Canal du Midi';
                         $serviceDesc  = mb_substr($s['description'], 0, 120, 'UTF-8');
-                        $serviceImage = $s['image'];
+                        // WP: foto de tarjeta en 640 px WebP calidad 65 (head-fix.php); sin variante, la de siempre con srcset.
+                        $serviceImage = $s['image'] !== '' ? canal_home_card_image($s['image']) : '';
+                        $cardSrcset = $serviceImage === $s['image'] ? $s['image_srcset'] : '';
                         $ficheUrl     = $s['url'];
                         ?>
                         <article
@@ -334,7 +337,7 @@ get_header();
                                         <?php // WP: portada en 768 px + srcset (la original llega a 1024 px). ?>
                                         <img
                                             src="<?= esc_url($serviceImage) ?>"
-                                            <?php if ($s['image_srcset'] !== ''): ?>srcset="<?= esc_attr($s['image_srcset']) ?>" sizes="(max-width: 1180px) 100vw, 360px"<?php endif; ?>
+                                            <?php if ($cardSrcset !== ''): ?>srcset="<?= esc_attr($cardSrcset) ?>" sizes="(max-width: 1180px) 100vw, 360px"<?php endif; ?>
                                             <?= $i === 0 ? 'fetchpriority="high"' : ($i >= CANAL_CARTE_EAGER_IMAGES ? 'loading="lazy"' : '') ?>
                                             alt="<?= esc_attr($serviceTitle) ?>"
                                             width="400"
