@@ -4,6 +4,12 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🔴 En curso
 
+### TASK-070 — Auditoría SEO/AEO/GEO de todas las páginas 2026 + mejora de contenido (2026-10-06)
+- Inventario y medición hechos: `docs/auditoria-seo-geo-2026.md` (seguimiento con ⬜/🔍/✅), datos por URL en
+  `docs/data/auditoria-2026.tsv` (2 495 URLs, vista previa de publicación). Medir de nuevo:
+  `wp-plugin/remote.sh run tests/auditoria-2026.php` + `wp-plugin/build/auditoria-informe.py`.
+- Orden: §2 sitio entero → §3 plantillas → §4 páginas por clics.
+
 ### TASK-053 — Generador de páginas 2026 (resto del sitio)
 - Fase 1 inventario ✅ (`docs/inventario-paginas-2026-10-05.md`, CSV por URL). Decisión del usuario 05/10: **todas** las páginas
   y artículos pasan a 2026 (también los sin tráfico) y hay que mejorar SEO/AEO/GEO de todo.
