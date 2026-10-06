@@ -76,8 +76,9 @@ Señales del inventario (columna `nota` del TSV), para revisar por tráfico:
 
 ## 4. Siguientes pasos
 
-1. **301 de las fichas caducadas a su categoría** (440 clics al año): es lo que más visitantes recupera.
-2. **301 de `/zone/<tramo>/` → `/etapes/`** (113 clics al año).
+1. ✅ **301 de las fichas caducadas a su categoría** (06/10, activa ya: solo sustituye el 404). Categoría principal según el
+   orden del editor que tenga fichas publicadas; si no hay ninguna, `/explorer/`.
+2. ✅ **301 de `/zone/<tramo>/` → `/etapes/`** (06/10), solo al publicar (hoy esas páginas funcionan con el tema).
 3. Revisar en el navegador las páginas Elementor con más de 50 clics que aún no se han visto (Histoire, Le Grand Bief,
    Villeneuve-lès-Béziers, Bassin de Thau, Colombiers, Poilhes).
 4. Volver a ejecutar el inventario antes de publicar (TASK-063): `remote.sh run tests/inventario-2026.php`.

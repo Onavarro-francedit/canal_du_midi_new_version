@@ -7,6 +7,8 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 ### TASK-053 — Generador de páginas 2026 (resto del sitio)
 - Fase 1 inventario ✅ (`docs/inventario-paginas-2026-10-05.md`, CSV por URL). Decisión del usuario 05/10: **todas** las páginas
   y artículos pasan a 2026 (también los sin tráfico) y hay que mejorar SEO/AEO/GEO de todo.
+- ✅ Inventario de cobertura 06/10 (`docs/inventario-cobertura-2026-10-06.md`): 95 % de los clics de Google ya tienen
+  versión 2026. 301 nuevas: ficha caducada → su categoría (activa ya), `/zone/` → `/etapes/` (al publicar).
 - ✅ TASK-055 plantilla de contenido (ver 🟢). TASK-056 (IA) descartada. ✅ TASK-057 calcul de distance 2026. Siguiente:
   listados de categoría, villes & étapes, navbar de 5 entradas.
 
