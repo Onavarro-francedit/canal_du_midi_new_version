@@ -272,7 +272,7 @@ check(strpos($min, "\n") === false && strlen($min) < strlen($css) * 0.8, 'minify
 check(strpos($min, '@media (max-width: 760px){.b > .c{margin : 0}}') !== false, 'minify: llaves y bloques @media');
 
 
-// ── Sirdata (stub, cmp) y pcm.js: del <head> al principio del <body>, mismo orden ──
+// ── Sirdata (stub, cmp) y pcm.js: del <head> a un cargador diferido al principio del <body> (TASK-070) ──
 $stub = '<script type="text/javascript" src="https://cache.consentframework.com/js/pa/21931/c/fpKZO/stub"' . "\n" . 'referrerpolicy="unsafe-url" charset="utf-8"></script>';
 $cmp = '<script type="text/javascript" src="https://choices.consentframework.com/js/pa/21931/c/fpKZO/cmp"' . "\n" . 'referrerpolicy="unsafe-url" charset="utf-8" async></script>';
 $pcm = '<script type="text/javascript" src="https://a.rltd.net/tags/pcm.js" async></script>';
@@ -280,12 +280,19 @@ $doc = "<html><head><title>x</title>\n$stub\n$cmp\n$pcm\n<style>a{}</style></hea
 $mv = canal_home_move_consent_to_body($doc);
 $head = substr($mv, 0, strpos($mv, '</head>'));
 check(strpos($head, 'consentframework') === false && strpos($head, 'rltd.net') === false, 'consent: fuera del <head>');
+check(strpos($mv, '<script type="text/javascript" src=') === false, 'consent: ningún script de Sirdata/pcm se carga solo');
 $after = substr($mv, strpos($mv, '<body class="home">') + strlen('<body class="home">'));
-check(strpos($after, $stub) === 0 || strpos(ltrim($after), $stub) === 0, 'consent: el stub es lo primero del <body>');
-check(strpos($after, $stub) < strpos($after, $cmp) && strpos($after, $cmp) < strpos($after, $pcm) && strpos($after, $pcm) < strpos($after, '<p>hola'), 'consent: orden stub → cmp → pcm antes del contenido');
-check(substr_count($mv, 'consentframework.com/js/pa') === 2, 'consent: sin duplicados');
+check(strpos(ltrim($after), '<script>(function(w,d){w.canalConsentDeferred=1;') === 0, 'consent: el cargador es lo primero del <body>');
+$js = substr($after, 0, strpos($after, '</script>'));
+$iStub = strpos($js, 'cache.consentframework.com/js/pa/21931/c/fpKZO/stub');
+$iCmp = strpos($js, 'choices.consentframework.com/js/pa/21931/c/fpKZO/cmp');
+check($iStub !== false && $iCmp !== false && strpos($js, 'add("https://cache.consentframework.com/js/pa/21931/c/fpKZO/stub",rest)') !== false, 'consent: el stub carga primero y después el resto (rest)');
+check(strpos($js, 'function rest(){["https://choices.consentframework.com/js/pa/21931/c/fpKZO/cmp","https://a.rltd.net/tags/pcm.js"]') !== false, 'consent: cmp → pcm, en orden');
+check(strpos($js, 'if(w.canalGtag){add(w.canalGtag);}') !== false, 'consent: GA4 después del stub');
 check(canal_home_move_consent_to_body($mv) === $mv, 'consent: idempotente');
 check(canal_home_move_consent_to_body('<html><head></head><body>x</body></html>') === '<html><head></head><body>x</body></html>', 'consent: sin scripts → intacto');
+$g = canal_home_swap_gtag('<script async src="https://www.googletagmanager.com/gtag/js?id=UA-641851-4"></script><script>gtag(\'config\', \'UA-641851-4\');</script>');
+check(strpos($g, "if(window.canalConsentDeferred)return;") !== false && strpos($g, "window.canalGtag='https://www.googletagmanager.com/gtag/js?id=G-R0M81JSWP0'") !== false, 'gtag: espera al cargador si lo hay');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

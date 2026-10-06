@@ -219,12 +219,14 @@ const CANAL_THEME_FIX_CSS = 'footer.footer{position:static}'
 
 // TASK-048: el header.php del tema carga gtag.js con el contenedor UA-641851-4 (síncrono en el <head>) y GA4
 // (G-R0M81JSWP0) llega como destino enlazado de ese contenedor. En NUESTRAS páginas se sustituye por GA4 directo,
-// cargado en `load`; el stub de gtag() queda síncrono porque gtag_report_conversion (Ads) lo llama. Sin
+// cargado en `load` (o tras el stub de Sirdata, si va diferido: head-fix.php); el stub de gtag() queda síncrono porque gtag_report_conversion (Ads) lo llama. Sin
 // coincidencia (el tema cambió) el head queda intacto. El resto del sitio sigue con UA.
 function canal_home_swap_gtag(string $head): string
 {
     $stub = "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-R0M81JSWP0');"
-        . "window.addEventListener('load',function(){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R0M81JSWP0';document.head.appendChild(s);});</script>";
+        . "window.canalGtag='https://www.googletagmanager.com/gtag/js?id=G-R0M81JSWP0';"
+        // Con Sirdata diferido (head-fix.php) lo carga el cargador tras el stub; si no hay cargador, en `load` como antes.
+        . "window.addEventListener('load',function(){if(window.canalConsentDeferred)return;var s=document.createElement('script');s.async=true;s.src=window.canalGtag;document.head.appendChild(s);});</script>";
     return (string) preg_replace(
         '#<script[^>]+googletagmanager\.com/gtag/js\?id=UA-641851-4[^>]*></script>\s*<script>[^<]*gtag\(\'config\',\s*\'UA-641851-4\'\)[^<]*</script>#',
         $stub,

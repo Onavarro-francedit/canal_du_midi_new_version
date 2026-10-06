@@ -19,10 +19,11 @@ function canal_home_fix_head(string $html): string
     return (string) preg_replace('/<body[^>]*>/', "$0\n$div", $html, 1);
 }
 
-// Banner de cookies Sirdata (stub síncrono + cmp) y pcm.js de publicidad: el tema los pone en el <head>; allí el stub
-// crea sus iframes de consentimiento con reintentos hasta que existe <body> y Chrome (Lighthouse/PageSpeed) no presenta
-// ningún frame hasta ~2,3 s (medido 02/10: FCP 0,2 s → 2,2 s). Se mueven, en el mismo orden, al principio del <body>:
-// el stub sigue siendo síncrono y anterior a la publicidad (el consentimiento no cambia).
+// Banner de cookies Sirdata (stub + cmp) y pcm.js de publicidad: el tema los pone en el <head>, donde el stub síncrono
+// retrasa toda la pintura (02/10: FCP 0,2 → 2,2 s) y en móvil el texto del banner llega a ser el LCP (06/10, météo).
+// Se sustituyen por un cargador al principio del <body>: a la primera interacción (scroll, toque, tecla, ratón) carga el
+// stub y, cuando ha cargado, cmp, pcm.js y GA4 (window.canalGtag, fiche-core.php), en ese orden: nada de publicidad ni
+// medición antes del stub de consentimiento. Quien no interactúa no ve el banner y no se le mide (TASK-070).
 function canal_home_move_consent_to_body(string $html): string
 {
     $headEnd = stripos($html, '</head>');
@@ -30,13 +31,37 @@ function canal_home_move_consent_to_body(string $html): string
         return $html;
     }
     $head = substr($html, 0, $headEnd);
-    if (!preg_match_all('#<script\b[^>]*\bsrc="https://(?:cache\.consentframework\.com|choices\.consentframework\.com|a\.rltd\.net)/[^"]*"[^>]*>\s*</script>#i', $head, $m)) {
+    $re = '#<script\b[^>]*\bsrc="(https://(?:cache\.consentframework\.com|choices\.consentframework\.com|a\.rltd\.net)/[^"]*)"[^>]*>\s*</script>#i';
+    if (!preg_match_all($re, $head, $m)) {
         return $html;
     }
-    $head = str_replace($m[0], '', $head);
+    $srcs = array_map('html_entity_decode', $m[1]);
+    $stub = null;
+    foreach ($srcs as $i => $src) {
+        if (strpos($src, '/stub') !== false) {
+            $stub = $src;
+            unset($srcs[$i]);
+        }
+    }
     $rest = substr($html, $headEnd);
-    $moved = preg_replace('#<body\b[^>]*>#i', '$0' . "\n" . implode("\n", $m[0]), $rest, 1, $count);
-    return $count ? $head . $moved : $html;
+    $loader = '<script>' . canal_home_consent_loader($stub, array_values($srcs)) . '</script>';
+    $moved = preg_replace('#<body\b[^>]*>#i', '$0' . "\n" . str_replace(['\\', '$'], ['\\\\', '\\$'], $loader), $rest, 1, $count);
+    return $count ? str_replace($m[0], '', $head) . $moved : $html;
+}
+
+/** JS del cargador diferido: $stub primero (si lo hay) y después $then, en orden. */
+function canal_home_consent_loader(?string $stub, array $then): string
+{
+    $json = function ($v) {
+        return json_encode($v, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
+    };
+    return '(function(w,d){w.canalConsentDeferred=1;var ev=["pointerdown","keydown","touchstart","scroll","wheel","mousemove"],done=0;'
+        . 'function add(src,cb){var s=d.createElement("script");s.src=src;s.async=true;s.setAttribute("referrerpolicy","unsafe-url");s.charset="utf-8";'
+        . 'if(cb){s.onload=s.onerror=cb;}d.body.appendChild(s);}'
+        . 'function rest(){' . $json($then) . '.forEach(function(src){add(src);});if(w.canalGtag){add(w.canalGtag);}}'
+        . 'function go(){if(done)return;done=1;ev.forEach(function(e){w.removeEventListener(e,go,true);});'
+        . ($stub !== null ? 'add(' . $json($stub) . ',rest);' : 'rest();') . '}'
+        . 'ev.forEach(function(e){w.addEventListener(e,go,{capture:true,passive:true});});})(window,document);';
 }
 
 // WebP en el <body>: cada JPG/PNG propio (uploads o assets del plugin) en src, srcset o url() pasa a su

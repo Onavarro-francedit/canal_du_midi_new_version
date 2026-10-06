@@ -69,6 +69,8 @@ case "${1:-}" in
             && find '$DEST' -type d -exec chmod 755 {} + \
             && find '$DEST' -type f -exec chmod 644 {} + \
             && rm -rf $TMP"
+        # La caché de página (WP Fastest Cache) guardaba el HTML de antes del despliegue (06/10): se vacía siempre.
+        ssh "$REMOTE" "$WP eval \"do_action('wpfc_clear_all_cache');\""
         ;;
     *)
         echo "uso: $0 test|smoke|deploy|run <archivo>|wp <args…>" >&2
