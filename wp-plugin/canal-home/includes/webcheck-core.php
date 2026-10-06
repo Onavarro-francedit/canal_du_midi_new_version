@@ -27,8 +27,11 @@ const CANAL_WEBCHECK_PLACEHOLDERS = [
 function canal_webcheck_classify(int $code, string $error, string $body): array
 {
     if ($code === 0) {
-        $dns = stripos($error, 'resolve') !== false || stripos($error, 'Could not resolve') !== false;
-        return ['status' => 'down', 'reason' => $dns ? 'le nom de domaine n’existe plus' : 'le serveur ne répond pas'];
+        // Sin DNS = caída segura. Sin conexión puede ser un cortafuegos que bloquea solo nuestro servidor (olydea.com, 06/10:
+        // timeout desde el servidor, 200 en un navegador) → a verificar, el enlace se queda.
+        return stripos($error, 'resolve') !== false
+            ? ['status' => 'down', 'reason' => 'le nom de domaine n’existe plus']
+            : ['status' => 'check', 'reason' => 'le serveur ne répond pas à notre robot'];
     }
     if (in_array($code, [401, 403, 429, 503], true)) {
         return ['status' => 'check', 'reason' => 'accès refusé aux robots (HTTP ' . $code . ')'];

@@ -7,9 +7,10 @@ mostrar el enlace « Site web » mientras la web siga caída, y vuelve solo en c
 
 - **Revisión semanal:** cada lunes a las 7:00 (WP-Cron, `canal-home/includes/webcheck.php`) se piden las webs de todas
   las fichas publicadas, como lo haría un navegador. Si una falla, se reintenta una vez antes de darla por caída.
-- **Caída** = dominio inexistente, servidor que no responde, error 404/410/5xx, o página que no es la del prestatario
+- **Caída** = dominio inexistente, error 404/410/5xx, o página que no es la del prestatario
   (página por defecto de Apache/nginx, hosting suspendido, dominio en venta). → enlace oculto.
-- **A verificar** = 401/403/429/503: protecciones anti-robots (hoteles, OVH) que un visitante sí atraviesa. → enlace visible.
+- **A verificar** = 401/403/429/503 o servidor que no contesta a nuestro servidor: protecciones anti-robots o cortafuegos
+  (hoteles, OVH, olydea.com) que un visitante sí atraviesa. → enlace visible.
 - **E-mail** cada semana a agomes@francedit.com y onavarro@francedit.com: caídas (con « depuis le » y enlace para editar
   la ficha), a verificar y las que vuelven a funcionar.
 - Si alguien corrige la URL en la ficha, el enlace reaparece enseguida (la ocultación va ligada a la URL revisada).
@@ -36,7 +37,7 @@ mostrar el enlace « Site web » mientras la web siga caída, y vuelve solo en c
 
 La columna « Web correcta » es para quien gestione las fichas: corregirlas es decisión suya (desde wp-admin), no del plugin.
 
-### A verificar — enlace visible (3)
+### A verificar — enlace visible (4)
 
 Hôtel Première Classe Toulouse Nord-Sesquières y Hôtel Campanile Toulouse Nord-Sesquières (403 a robots; en navegador
-funcionan) y La Roue qui Tourne (503: control anti-robots de OVH). Le Jardin d'Homps solo rechazaba a un robot sin cabeceras de navegador: funciona.
+funcionan) y La Roue qui Tourne (503: control anti-robots de OVH), Résidence Château de Jouarres (olydea.com: no contesta a nuestro servidor, en navegador sí). Le Jardin d'Homps solo rechazaba a un robot sin cabeceras de navegador: funciona.

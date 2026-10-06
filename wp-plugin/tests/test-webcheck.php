@@ -24,7 +24,7 @@ check(canal_webcheck_classify(521, '', '')['status'] === 'down', 'port-carcasson
 check(canal_webcheck_classify(403, '', '')['status'] === 'check', 'hoteles (403 a robots) → a verificar, enlace visible');
 check(canal_webcheck_classify(503, '', '')['status'] === 'check', 'OVH anti-robots (503) → a verificar');
 check(canal_webcheck_classify(200, '', '<title>Mairie de Sallèles d’Aude</title>')['status'] === 'ok', 'web correcta → ok');
-check(canal_webcheck_classify(0, 'Operation timed out', '')['reason'] === 'le serveur ne répond pas', 'sin respuesta → caída');
+check(canal_webcheck_classify(0, 'cURL error 28: Failed to connect to www.olydea.com port 443', '')['status'] === 'check', 'olydea.com: timeout solo desde el servidor → a verificar, enlace visible');
 
 $row = ['title' => 'Ville de Sallèles-d’Aude', 'url' => 'http://www.sallelesdaude.fr', 'reason' => 'page par défaut du serveur (Apache)', 'since' => '6 octobre 2026', 'edit' => 'https://x/wp-admin/post.php?post=1&action=edit'];
 $mail = canal_webcheck_email([$row], [], [], 137, '6 octobre 2026');
