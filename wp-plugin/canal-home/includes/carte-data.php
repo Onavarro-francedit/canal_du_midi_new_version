@@ -13,7 +13,7 @@ function canal_carte_cache_key(): string
     return CANAL_CARTE_CACHE . (CANAL_2026_LIVE ? '_live' : '');
 }
 const CANAL_CARTE_GALLERY_MAX = 8;
-const CANAL_CARTE_EAGER_IMAGES = 2; // tarjetas sin lazy: las visibles al cargar (1–2 en la columna; con 6 competían con el LCP, 06/10)
+const CANAL_CARTE_EAGER_IMAGES = 1; // solo la primera sin lazy (el LCP): la segunda le quitaba ancho de banda en móvil (06/10)
 
 function canal_carte_listings(): array
 {
@@ -161,7 +161,8 @@ function canal_carte_public(array $item): array
         'image'       => $item['image'],
         'gallery'     => $item['gallery'],
         'address'     => $item['address'],
-        'description' => $item['description'],
+        // Sin 'description' (06/10): solo la usaba el modal de detalle, que ya no se abre (las tarjetas enlazan a la
+        // ficha); eran 19 KB comprimidos del HTML de /explorer/ (Lighthouse móvil).
         'type'        => $item['type'],
         'label'       => '',
         'phone'       => $item['phone'],

@@ -52,6 +52,19 @@ if ($guide) {
 }
 canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified, 'term' => $term, 'termSeo' => $termSeo]);
 
+// WP: precarga de la imagen de la primera tarjeta (el LCP): con el CSS en línea delante, el navegador la
+// descubría tarde (Load Delay 2,9 s en móvil, 06/10). Misma URL WebP que pinta el <body> (head-fix.php).
+$lcp = $results ? array_values($results)[0] : null;
+if ($lcp && $lcp['image'] !== '') {
+    add_action('wp_head', function () use ($lcp) {
+        $webp = function (string $v): string {
+            return substr(canal_home_webp_html('<body>' . $v . '"', 'canal_home_webp_exists', untrailingslashit(home_url())), 6, -1);
+        };
+        echo '<link rel="preload" as="image" href="' . esc_url($webp($lcp['image'])) . '"'
+            . ($lcp['image_srcset'] !== '' ? ' imagesrcset="' . esc_attr($webp($lcp['image_srcset'])) . '" imagesizes="(max-width: 1180px) 100vw, 360px"' : '')
+            . ' fetchpriority="high">' . "\n";
+    }, 1);
+}
 get_header();
 ?>
 <div class="cdm-carte">

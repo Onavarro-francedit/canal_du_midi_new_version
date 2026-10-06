@@ -43,7 +43,7 @@ $ecluses = canal_carte_filter($listings, canal_carte_params(['type' => 'ecluses'
 $check(count($ecluses) >= 50, 'filtro real: ?type=ecluses (' . count($ecluses) . ')');
 
 $public = canal_carte_public($listings[0]);
-$expected = ['id', 'slug', 'lat', 'lng', 'title', 'image', 'gallery', 'address', 'description', 'type', 'label', 'phone', 'email', 'url', 'distance_km'];
+$expected = ['id', 'slug', 'lat', 'lng', 'title', 'image', 'gallery', 'address', 'type', 'label', 'phone', 'email', 'url', 'distance_km'];
 $check(array_keys($public) === $expected, 'public: claves del JSON de local');
 
 $check(has_action('save_post_job_listing', 'canal_carte_flush') !== false, 'invalidación: save_post_job_listing');

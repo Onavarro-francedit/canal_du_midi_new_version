@@ -261,20 +261,20 @@ add_action('wp_print_styles', 'canal_carte_dequeue_unused', 0);
 add_action('wp_print_scripts', 'canal_carte_dequeue_unused', 0);
 add_action('wp_print_footer_scripts', 'canal_carte_dequeue_unused', 0);
 
-// Carte: Google Maps lo carga ya el tema en todas las páginas (footer, síncrono): no se carga otra vez.
-// Nuestros scripts van en el footer y search-map.js arranca en DOMContentLoaded, cuando Maps ya existe.
+// Carte: Google Maps lo carga search-map.js al crear el mapa (el del tema se quita de la cola, 06/10).
+// CSS en línea como en la home (06/10): tres hojas bloqueaban el primer pintado (Lighthouse móvil).
 add_action('wp_enqueue_scripts', function () {
     if (!canal_carte_is_page()) {
         return;
     }
     $ver = function (string $rel): string { return (string) filemtime(CANAL_HOME_DIR . $rel); };
     canal_home_inline_style('canal-home-base', canal_home_base_css());
-    wp_enqueue_style('canal-carte', CANAL_HOME_URL . 'assets/carte.css', [], $ver('assets/carte.css'));
-    // El cargador a pantalla completa del tema tapa el skeleton de la carte hasta window.load: solo en esta plantilla.
+    canal_home_inline_file('canal-carte', 'assets/carte.css', ['canal-home-base']);
+    // El cargador a pantalla completa del tema tapa la carte hasta window.load: solo en esta plantilla.
     wp_add_inline_style('canal-carte', 'body.page-template-template-carte .loader-bg.main-loader{display:none!important}');
-    wp_enqueue_style('canal-home-header', CANAL_HOME_URL . 'assets/header.css', [], $ver('assets/header.css'));
+    canal_home_inline_file('canal-home-header', 'assets/header.css', ['canal-home-base']);
     // Lo que la carte usa del CSS del tema (TASK-034), después de lo nuestro como antes.
-    wp_enqueue_style('canal-carte-theme', CANAL_HOME_URL . 'assets/carte-theme.css', ['canal-carte', 'canal-home-header'], $ver('assets/carte-theme.css'));
+    canal_home_inline_file('canal-carte-theme', 'assets/carte-theme.css', ['canal-carte', 'canal-home-header']);
     wp_add_inline_style('canal-carte-theme', CANAL_THEME_FIX_CSS);
     // TASK-035: skeleton-controler sin dependencias (corre en cuanto se lee: muestra la lista); el resto en
     // defer para no bloquear el análisis (search-map arranca en DOMContentLoaded, tras el Maps síncrono del tema).
