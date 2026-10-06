@@ -64,6 +64,8 @@ require_once CANAL_HOME_DIR . 'includes/carte-data.php';
 require_once CANAL_HOME_DIR . 'includes/carte-faq.php';
 require_once CANAL_HOME_DIR . 'includes/seo-carte.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-core.php';
+require_once CANAL_HOME_DIR . 'includes/webcheck-core.php';
+require_once CANAL_HOME_DIR . 'includes/webcheck.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-data.php';
 require_once CANAL_HOME_DIR . 'includes/fiche-route.php';
 require_once CANAL_HOME_DIR . 'includes/seo-fiche.php';

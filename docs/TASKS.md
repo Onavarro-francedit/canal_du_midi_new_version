@@ -407,6 +407,13 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
+### TASK-068 — Revisión semanal de las webs de las fichas (2026-10-06) — HECHO (pendiente de desplegar)
+- El usuario encontró la web de Sallèles (sallelesdaude.fr con www) mostrando la página por defecto de Apache.
+  Revisión de 137 webs: 12 caídas, 3 a verificar → `docs/webs-caidas-fiches.md`.
+- `includes/webcheck(-core).php`: WP-Cron cada lunes 7:00, reintento antes de dar por caída, opción `canal_webcheck`;
+  `fiche-data.php` no enlaza una web caída (página, sameAs, « via son site »). **Nunca se modifica la ficha.**
+- E-mail semanal a agomes@ y onavarro@ (caídas, a verificar, de nuevo en línea). Test `tests/test-webcheck.php`.
+
 ### TASK-067 — /etapes/ « Quel parcours faire ? » (rediseño, 2026-10-05) — COMPLETADO ✅ (privado, desplegado y verificado) — 2026-10-05
 - El usuario: el índice de 20 fichas no ayuda a decidir. Investigación (Loire à Vélo, Canal des 2 Mers, Le Boat,
   canal-du-midi.com): entrar por modo + duración y proponer pocos parcours con cifras. Maqueta `docs/mockups/etapes-2026.html`.

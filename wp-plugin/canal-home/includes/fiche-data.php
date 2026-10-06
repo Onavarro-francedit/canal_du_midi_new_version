@@ -71,7 +71,8 @@ function canal_fiche_data(WP_Post $post): array
         'mobile'           => $meta('_telephone-portable'),
         'fax'              => $meta('_fax'),
         'email'            => sanitize_email($meta('_job_email')),
-        'website'          => $website !== '' ? esc_url_raw($website) : '',
+        // Web caída en la revisión semanal (webcheck.php): no se enlaza; el dato de la ficha no se toca.
+        'website'          => $website !== '' && !canal_webcheck_is_down($id, $website) ? esc_url_raw($website) : '',
         'social'           => canal_fiche_social($meta('_facebook'), get_post_meta($id, '_links', true)),
         'video'            => canal_fiche_video_embed($meta('_job_video_url')),
         'categories'       => $categories,

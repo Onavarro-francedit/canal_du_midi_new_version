@@ -35,6 +35,7 @@ run_test() {
         $PHP74 $TMP/tests/test-velo.php
         $PHP74 $TMP/tests/test-links.php
         $PHP74 $TMP/tests/test-etape.php
+        $PHP74 $TMP/tests/test-webcheck.php
         $PHP74 $TMP/tests/test-live.php"
 }
 
