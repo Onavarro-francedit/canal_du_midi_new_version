@@ -57,6 +57,29 @@ function canal_contenu_clean_html(string $html): string
     return (string) preg_replace('~<p>(?:\s|&nbsp;|\xC2\xA0|<br\s*/?>)*</p>~i', '', $html);
 }
 
+/** « …/2020/01/Poilhes_droit_ok-1024x708.jpg.webp » → « 2020/01/poilhes_droit_ok »: el mismo archivo en cualquier tamaño. */
+function canal_contenu_image_key(string $url): string
+{
+    $path = strtolower((string) parse_url($url, PHP_URL_PATH));
+    $path = (string) preg_replace('~^.*/uploads/~', '', $path);
+    return (string) preg_replace(['~(\.(jpe?g|png|gif|webp))+$~', '~-\d+x\d+$~', '~-scaled$~'], '', $path);
+}
+
+/**
+ * La portada (imagen destacada) ya va arriba: si la primera imagen del texto es el mismo archivo, sobra (páginas Elementor:
+ * Poilhes, Colombiers, Le Grand Bief… la repetían justo debajo). Se quita con su enlace y su párrafo si quedan vacíos.
+ */
+function canal_contenu_drop_cover(string $html, string $coverUrl): string
+{
+    if ($coverUrl === '' || !preg_match('~<img\b[^>]*\bsrc="([^"]+)"[^>]*>~i', $html, $m, PREG_OFFSET_CAPTURE)
+        || canal_contenu_image_key($m[1][0]) !== canal_contenu_image_key($coverUrl)) {
+        return $html;
+    }
+    $html = substr_replace($html, '', $m[0][1], strlen($m[0][0]));
+    $html = (string) preg_replace('~<a\b[^>]*>\s*</a>~i', '', $html, 1);
+    return (string) preg_replace('~<(p|figure)\b[^>]*>(?:\s|&nbsp;|<br\s*/?>)*</\1>~i', '', $html, 1);
+}
+
 /** Texto plano para resúmenes: sin etiquetas ni entidades (&nbsp; cortado a medias por el recorte). */
 function canal_contenu_plain(string $html): string
 {

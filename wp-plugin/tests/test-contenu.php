@@ -103,5 +103,11 @@ check(canal_archive_window(1, 159) === [1, 2, 159] && canal_archive_window(80, 1
 
 check(canal_contenu_clean_html("<p><a href=\"x.jpg\"></a><br>\n\t\tPrécédent<br>\n\t\tSuivant</p>") === '<p><a href="x.jpg"></a></p>', 'carrusel Elementor: sin « Précédent / Suivant » sueltos');
 
+$cover = 'https://x.fr/wp-content/uploads/2020/01/Poilhes_droit_ok.jpg';
+$dup = '<p><a href="https://x.fr/wp-content/uploads/2020/01/Poilhes_droit_ok.jpg"><img src="https://x.fr/wp-content/uploads/2020/01/Poilhes_droit_ok-1024x708.jpg.webp" alt=""></a></p><p>À une douzaine de kilomètres de Béziers</p>';
+check(canal_contenu_drop_cover($dup, $cover) === '<p>À une douzaine de kilomètres de Béziers</p>', 'portada repetida como primera imagen → fuera (con su enlace y su párrafo)');
+$other = '<p><img src="https://x.fr/wp-content/uploads/2020/01/autre.jpg"> Texte</p>';
+check(canal_contenu_drop_cover($other, $cover) === $other && canal_contenu_drop_cover($dup, '') === $dup, 'otra imagen o sin portada → intacto');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

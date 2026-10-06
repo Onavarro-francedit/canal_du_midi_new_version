@@ -53,6 +53,7 @@ function canal_contenu_data(WP_Post $p): array
     // the_content del núcleo sin los filtros de plugins: Elementor no pinta su constructor (su CSS/JS no se carga);
     // las páginas Elementor guardan en post_content su versión HTML.
     $html = canal_contenu_clean_html(wp_filter_content_tags(do_shortcode(shortcode_unautop(wpautop(wptexturize(do_blocks($p->post_content)))))));
+    $html = canal_contenu_drop_cover($html, (string) get_the_post_thumbnail_url($p, 'full'));
     $meta = function (string $key) use ($p): string {
         return trim((string) get_post_meta($p->ID, $key, true));
     };
