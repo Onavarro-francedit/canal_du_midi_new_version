@@ -98,14 +98,18 @@ function canal_2026_redirect_target(string $path): ?string
 }
 
 /**
- * Ficha caducada (el cliente no renovó; 30 con clics de Google, 06/10): su categoría con más fichas publicadas, para no
- * llevar a una carte vacía (PRD-017); sin ninguna → /explorer/. $cats: [slug de categoría => fichas publicadas].
+ * Ficha caducada (el cliente no renovó; 30 con clics de Google, 06/10): su categoría principal (la primera que le asignó
+ * el editor) que tenga fichas publicadas, para no llevar a una carte vacía (PRD-017); sin ninguna → /explorer/.
+ * $cats: [slug => fichas publicadas], en el orden del editor (term_order).
  */
 function canal_2026_expired_fiche_target(array $cats): string
 {
-    $cats = array_filter($cats);
-    arsort($cats);
-    return $cats ? '/categorie/' . array_key_first($cats) . '/' : '/explorer/';
+    foreach ($cats as $slug => $count) {
+        if ($count > 0) {
+            return '/categorie/' . $slug . '/';
+        }
+    }
+    return '/explorer/';
 }
 
 /** Destino con la query original (utm, etc.) añadida. */
@@ -130,7 +134,7 @@ if (function_exists('add_action')) {
             return;
         }
         $cats = [];
-        foreach (wp_get_post_terms($p->ID, 'job_listing_category') as $t) {
+        foreach (wp_get_object_terms($p->ID, 'job_listing_category', ['orderby' => 'term_order']) as $t) {
             $cats[$t->slug] = canal_carte_count(['type' => $t->slug]);
         }
         wp_safe_redirect(home_url(canal_2026_expired_fiche_target($cats)), 301, 'canal-home 2026');
