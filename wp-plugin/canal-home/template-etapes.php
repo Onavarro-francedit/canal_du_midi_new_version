@@ -56,6 +56,8 @@ get_header();
                 </select>
             </label>
         </div>
+        <?php // WP: visible antes de la primera pintura si hay JS (sin salto de la lista, CLS 0,46 → 0). ?>
+        <script>document.querySelector('.etapes-ask').hidden = false;</script>
 
         <section class="etapes-props" aria-labelledby="etapes-props-title">
             <div class="etapes-props-head">
@@ -85,7 +87,19 @@ get_header();
                     <?php endforeach; ?>
                     <p class="etapes-empty" hidden>Aucun parcours de cette durée au départ de cette étape : essayez une autre durée ou une autre étape.</p>
                 </div>
-                <div class="etapes-map-box is-unavailable" id="etapes-map-box">
+                <?php // WP: estado inicial de etapes.js (bateau · une semaine) antes de la primera pintura: sin salto (CLS 0,38 → 0).
+                // Sin JS se ven todos los parcours. ?>
+                <script>(function () {
+                    var n = 0, first = null;
+                    document.querySelectorAll('#etapes-list .etapes-prop').forEach(function (e) {
+                        var on = e.dataset.mode === 'bateau' && e.dataset.duree === 'semaine';
+                        e.hidden = !on;
+                        if (on) { n++; first = first || e; }
+                    });
+                    if (first) first.classList.add('is-selected');
+                    document.getElementById('etapes-props-title').textContent = n + ' parcours en bateau pour une semaine';
+                })();</script>
+                <div class="etapes-map-box" id="etapes-map-box"><?php // WP: hueco reservado (CLS); etapes.js lo oculta si no hay clave de Maps. ?>
                     <div id="etapes-map" role="img" aria-label="Carte du parcours sélectionné"></div>
                     <span class="etapes-map-credit">Tracé du canal © OpenStreetMap</span>
                 </div>

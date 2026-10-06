@@ -128,8 +128,9 @@
     apply();
 
     var box = document.getElementById('etapes-map-box');
-    if (window.CDM_ETAPES_MAPS) {
-        box.classList.remove('is-unavailable');
+    if (!window.CDM_ETAPES_MAPS) {
+        box.classList.add('is-unavailable'); // el hueco viene reservado en el HTML (CLS)
+    } else {
         if ('IntersectionObserver' in window) {
             var io = new IntersectionObserver(function (es) {
                 if (es.some(function (x) { return x.isIntersecting; })) { io.disconnect(); loadMap(); }

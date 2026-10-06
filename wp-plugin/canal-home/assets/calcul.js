@@ -186,11 +186,12 @@
         $('calc-from').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
-    // Sin clave de Maps en el tema, el mapa queda oculto (is-unavailable) y el resto funciona.
-    if (window.CDM_CALCUL_MAPS) {
-        $('calc-map-box').classList.remove('is-unavailable');
+    // El hueco del mapa viene reservado en el HTML (is-lazy: en móvil, botón « voir la carte »; en escritorio no hace nada).
+    // Sin clave de Maps en el tema, se oculta (is-unavailable) y el resto funciona.
+    if (!window.CDM_CALCUL_MAPS) {
+        $('calc-map-box').classList.add('is-unavailable');
+    } else {
         if (matchMedia('(max-width: 600px)').matches) {
-            $('calc-map-box').classList.add('is-lazy');
             $('calc-map-open').addEventListener('click', loadMap);
         } else if (document.readyState === 'complete') {
             setTimeout(loadMap, 300);

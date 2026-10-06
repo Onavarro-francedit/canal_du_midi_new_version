@@ -76,7 +76,7 @@ get_header();
           </div>
         </div>
 
-        <div class="calc-map-box is-unavailable" id="calc-map-box">
+        <div class="calc-map-box is-lazy" id="calc-map-box"><?php // WP: hueco reservado desde el HTML (CLS); calcul.js lo oculta solo si no hay clave de Maps. ?>
           <div id="calc-map" role="img" aria-label="Carte du trajet sur le Canal du Midi"></div>
           <button type="button" class="calc-map-open" id="calc-map-open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Voir le trajet sur la carte</button>
           <span class="calc-map-credit">Tracé du canal © OpenStreetMap</span>

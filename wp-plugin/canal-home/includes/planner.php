@@ -418,3 +418,39 @@ add_action('rest_api_init', function () {
         register_rest_route('canal-home/v1', $route, ['methods' => 'POST', 'callback' => $callback, 'permission_callback' => '__return_true']);
     }
 });
+
+// <head> SEO del planificador (TASK-070): la plantilla conserva el <head> del tema, que no trae description,
+// canonical, OG ni JSON-LD (Lighthouse SEO 82). Mientras la ruta sea -2026: noindex, como el resto.
+const CANAL_PLANNER_SEO_TITLE = 'Planifier son séjour sur le Canal du Midi | L\'Officiel';
+const CANAL_PLANNER_SEO_DESC = 'Bateau, vélo, hébergement : décrivez votre séjour sur le Canal du Midi et recevez un plan avec les '
+    . 'prestataires référencés, de Toulouse à l\'étang de Thau.';
+
+add_filter('pre_get_document_title', function ($title) {
+    return canal_planner_is_page() ? CANAL_PLANNER_SEO_TITLE : $title;
+}, 20);
+
+add_filter('wp_robots', function (array $robots) {
+    if (canal_planner_is_page() && !CANAL_2026_LIVE) {
+        $robots['noindex']  = true;
+        $robots['nofollow'] = true;
+        unset($robots['follow'], $robots['index']);
+    }
+    return $robots;
+});
+
+add_action('wp_head', function () {
+    if (!canal_planner_is_page()) {
+        return;
+    }
+    $url = home_url(CANAL_PLANNER_PATH);
+    echo '<link rel="canonical" href="' . esc_url($url) . '">' . "\n";
+    echo canal_home_seo_social(CANAL_PLANNER_SEO_TITLE, CANAL_PLANNER_SEO_DESC, $url, 'Le Canal du Midi'); // phpcs:ignore — escapado dentro.
+    echo canal_home_seo_jsonld(['@context' => 'https://schema.org', '@graph' => [ // phpcs:ignore — JSON_HEX_TAG.
+        ['@type' => 'WebPage', '@id' => $url . '#webpage', 'url' => $url, 'name' => CANAL_PLANNER_SEO_TITLE,
+            'description' => CANAL_PLANNER_SEO_DESC, 'inLanguage' => 'fr-FR', 'isPartOf' => ['@id' => home_url('/') . '#website']],
+        ['@type' => 'BreadcrumbList', 'itemListElement' => [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Accueil', 'item' => home_url(CANAL_HOME_PATH)],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Planifier son séjour', 'item' => $url],
+        ]],
+    ]]);
+}, 5);

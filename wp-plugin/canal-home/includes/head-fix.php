@@ -59,7 +59,8 @@ function canal_home_consent_loader(?string $stub, array $then): string
         . 'function add(src,cb){var s=d.createElement("script");s.src=src;s.async=true;s.setAttribute("referrerpolicy","unsafe-url");s.charset="utf-8";'
         . 'if(cb){s.onload=s.onerror=cb;}d.body.appendChild(s);}'
         . 'function rest(){' . $json($then) . '.forEach(function(src){add(src);});if(w.canalGtag){add(w.canalGtag);}}'
-        . 'function go(){if(done)return;done=1;ev.forEach(function(e){w.removeEventListener(e,go,true);});'
+        // Chrome lanza un mousemove sintético (movimiento 0) al cargar con el puntero encima: no es una interacción.
+        . 'function go(e){if(done||(e&&e.type==="mousemove"&&!e.movementX&&!e.movementY))return;done=1;ev.forEach(function(e){w.removeEventListener(e,go,true);});'
         . ($stub !== null ? 'add(' . $json($stub) . ',rest);' : 'rest();') . '}'
         . 'ev.forEach(function(e){w.addEventListener(e,go,{capture:true,passive:true});});})(window,document);';
 }
