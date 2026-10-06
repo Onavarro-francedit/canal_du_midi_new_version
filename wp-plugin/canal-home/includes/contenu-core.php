@@ -50,6 +50,7 @@ function canal_contenu_is_eligible(string $type, string $status, string $templat
 function canal_contenu_clean_html(string $html): string
 {
     $html = (string) preg_replace('~\[/?Zoomer\]~i', '', $html); // shortcode de un plugin ya borrado
+    $html = (string) preg_replace('~(?:<br\s*/?>\s*)?Précédent\s*<br\s*/?>\s*Suivant~u', '', $html); // botones del carrusel Elementor (sin JS)
     $html = (string) preg_replace('~<h1(\s[^>]*)?>(.*?)</h1>~is', '<h2$1>$2</h2>', $html);
     $html = (string) preg_replace('~<p>\s*<(strong|b)>([^<:]{3,90})</\1>\s*</p>~i', '<h2>$2</h2>', $html);
     $html = (string) preg_replace('~<p>\s*<(strong|b)>([^<:]{3,90})</\1>\s*<br\s*/?>\s*~i', "<h2>$2</h2>\n<p>", $html);

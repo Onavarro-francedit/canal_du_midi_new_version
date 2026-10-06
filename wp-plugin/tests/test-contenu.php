@@ -101,5 +101,7 @@ check(canal_archive_path('actualites', 1, '-2026') === '/post-category/actualite
 check(canal_archive_pages(1900, 12) === 159 && canal_archive_pages(0, 12) === 0 && canal_archive_pages(12, 12) === 1, 'archivo: número de páginas');
 check(canal_archive_window(1, 159) === [1, 2, 159] && canal_archive_window(80, 159) === [1, 79, 80, 81, 159] && canal_archive_window(2, 3) === [1, 2, 3], 'archivo: paginación compacta');
 
+check(canal_contenu_clean_html("<p><a href=\"x.jpg\"></a><br>\n\t\tPrécédent<br>\n\t\tSuivant</p>") === '<p><a href="x.jpg"></a></p>', 'carrusel Elementor: sin « Précédent / Suivant » sueltos');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);
