@@ -47,6 +47,9 @@ check(count(CANAL_2026_LEGACY_REDIRECTS) >= 50, 'mapa: ≥ 50 páginas antiguas 
 foreach (['/', '/explorer/', '/fiche/port-de-sete/', '/canal-de-la-robine/', '/calcul-de-distance-canal-du-midi/', '/wp-admin/', '/plan-canal-du-midi.pdf', '/categorie/hotel/', '/2026/'] as $keep) {
     check($r($keep) === null, "sin redirección: $keep");
 }
+check($r('/zone/homps-capestang/') === '/etapes/' && $r('/zone/toulouse-castelnaudary') === '/etapes/', '301: zonas → étapes');
+check(canal_2026_expired_fiche_target(['bateau-promenade' => 0, 'location-bateau' => 12, 'croisiere-bateau' => 5]) === '/categorie/location-bateau/', 'ficha caducada → su categoría con más fichas');
+check(canal_2026_expired_fiche_target(['vide' => 0]) === '/explorer/' && canal_2026_expired_fiche_target([]) === '/explorer/', 'ficha caducada sin categoría con fichas → explorer (nunca una carte vacía)');
 check(canal_2026_redirect_url('/hotels/', 'utm_source=x') === '/categorie/hotel/?utm_source=x' && canal_2026_redirect_url('/fiche-2026/a/', 'x=1') === '/fiche/a/?x=1', 'la query se conserva');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";

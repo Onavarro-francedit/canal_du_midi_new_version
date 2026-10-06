@@ -82,6 +82,9 @@ function canal_2026_redirect_target(string $path): ?string
     if (isset($fixed[$trim])) {
         return $fixed[$trim];
     }
+    if (preg_match('#^zone/[^/]+$#', $trim)) { // tramos del canal (8 términos, 113 clics/año): misma intención que /etapes/
+        return '/etapes/';
+    }
     if (preg_match('#^(fiche|etape)-2026/([^/]+)$#', $trim, $m)) {
         return '/' . $m[1] . '/' . $m[2] . '/';
     }
@@ -92,6 +95,17 @@ function canal_2026_redirect_target(string $path): ?string
         return '/' . $m[1] . '/';
     }
     return null;
+}
+
+/**
+ * Ficha caducada (el cliente no renovó; 30 con clics de Google, 06/10): su categoría con más fichas publicadas, para no
+ * llevar a una carte vacía (PRD-017); sin ninguna → /explorer/. $cats: [slug de categoría => fichas publicadas].
+ */
+function canal_2026_expired_fiche_target(array $cats): string
+{
+    $cats = array_filter($cats);
+    arsort($cats);
+    return $cats ? '/categorie/' . array_key_first($cats) . '/' : '/explorer/';
 }
 
 /** Destino con la query original (utm, etc.) añadida. */
@@ -105,6 +119,23 @@ function canal_2026_redirect_url(string $path, string $query): ?string
 }
 
 if (function_exists('add_action')) {
+    // Fichas caducadas: hoy 404 → 301 a su categoría, ya, sin esperar a la publicación (solo sustituye un 404; la ficha no
+    // se toca y, si se renueva, vuelve a publicarse y esto deja de aplicarse).
+    add_action('template_redirect', function () {
+        if (!is_404() || !preg_match('#^/fiche/([^/]+)/?$#', (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH), $m)) {
+            return;
+        }
+        $p = get_page_by_path(sanitize_title(rawurldecode($m[1])), OBJECT, 'job_listing');
+        if (!$p || $p->post_status !== 'expired') {
+            return;
+        }
+        $cats = [];
+        foreach (wp_get_post_terms($p->ID, 'job_listing_category') as $t) {
+            $cats[$t->slug] = canal_carte_count(['type' => $t->slug]);
+        }
+        wp_safe_redirect(home_url(canal_2026_expired_fiche_target($cats)), 301, 'canal-home 2026');
+        exit;
+    }, -21);
     add_action('template_redirect', function () {
         if (!CANAL_2026_LIVE) {
             return;
