@@ -5,16 +5,15 @@ sesión.
 
 ---
 
-## 2026-10-06 (tarde) — TASK-070 auditoría + Lighthouse · páginas 2026 ABIERTAS para medir (cerrar)
+## 2026-10-06 (tarde) — TASK-070 auditoría + Lighthouse · páginas 2026 cerradas de nuevo (404 sin sesión)
 
 **Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado, commiteado y en origin.
 **Dónde quedamos:** inventario SEO/AEO/GEO (`docs/auditoria-seo-geo-2026.md`, §2b Lighthouse + OpenSEO); accesibilidad 100 en
 todas las plantillas, rendimiento móvil 83–99, escritorio 91–100. Sirdata/pcm/GA4 a la primera interacción.
-**⚠️ Páginas 2026 abiertas al público para medir** (opciones canal_*_public y posts 18500/18502/18505 publicados): cerrar.
+Páginas 2026 abiertas para medir y **cerradas** al terminar (comprobado: 404 sin sesión; /accueil-2026/ también, publicada desde el 02/10).
 **Próxima acción:**
 ```
-! cd wp-plugin && for o in canal_contenu_public canal_fiche_public canal_calcul_public canal_etape_public; do ./remote.sh wp option delete $o; done && for id in 18500 18502 18505; do ./remote.sh wp post update $id --post_status=private; done
-Después: §2b pendientes (rendimiento móvil carte/home, enlaces rotos, descriptions de fichas) y §3 plantillas.
+§2b pendientes (rendimiento móvil carte/home, enlaces rotos, descriptions de fichas) y §3 plantillas.
 ```
 
 ---
