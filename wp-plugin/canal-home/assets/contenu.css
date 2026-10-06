@@ -7,7 +7,7 @@
     --line: rgba(92, 97, 140, 0.16);
     --sand-warm: #F4EFE7;
     --terracotta: #A9572F;
-    --water: #1E8C98;
+    --water: #187C86; /* 4,9:1 sobre blanco (WCAG AA); antes #1E8C98, 3,99 */
     background: #fff;
     color: var(--text);
     font-family: 'Manrope', sans-serif;
@@ -268,11 +268,11 @@
 .cdm-contenu .meteo-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
 .cdm-contenu .meteo-legend li::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 6px; border-radius: 3px; background: var(--k); vertical-align: -1px; }
 .cdm-contenu .meteo-legend b { color: var(--text); }
-.cdm-contenu .is-ideal { --k: #1f9d6b; --kb: #e3f6ee; }
-.cdm-contenu .is-mild { --k: #3a7bd5; --kb: #e6effb; }
-.cdm-contenu .is-hot { --k: #c97316; --kb: #fdf0e1; }
+.cdm-contenu .is-ideal { --k: #13734f; --kb: #e3f6ee; }
+.cdm-contenu .is-mild { --k: #2f67b8; --kb: #e6effb; }
+.cdm-contenu .is-hot { --k: #9a540d; --kb: #fdf0e1; }
 .cdm-contenu .is-vhot { --k: #c4452d; --kb: #fbe5e0; }
-.cdm-contenu .is-off { --k: #6f7389; --kb: #eef0f5; }
+.cdm-contenu .is-off { --k: #5a5e72; --kb: #eef0f5; }
 .cdm-contenu .meteo-year { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
 .cdm-contenu .meteo-month { padding: 10px 6px 12px; border: 1px solid var(--line); border-top: 4px solid var(--k); border-radius: 14px; background: #fff; font: inherit; color: var(--text); text-align: center; cursor: pointer; transition: transform .15s, box-shadow .15s; }
 .cdm-contenu .meteo-month:hover, .cdm-contenu .meteo-month[aria-pressed="true"] { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(31, 35, 64, .12); }
@@ -294,7 +294,7 @@
 .cdm-contenu .meteo-way-icon { grid-row: span 3; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #e9f7f8; color: #13606b; }
 .cdm-contenu .meteo-way-icon svg { width: 26px; height: 26px; fill: currentColor; }
 .cdm-contenu .meteo-way h3 { margin: 0; font-size: 19px; }
-.cdm-contenu .meteo-best { justify-self: start; padding: 2px 10px; border-radius: 999px; background: #e3f6ee; color: #1f9d6b; font-size: 13px; font-weight: 800; }
+.cdm-contenu .meteo-best { justify-self: start; padding: 2px 10px; border-radius: 999px; background: #e3f6ee; color: #13734f; font-size: 13px; font-weight: 800; }
 .cdm-contenu .meteo-way ul { margin: 6px 0 0; padding-left: 18px; font-size: 15px; }
 .cdm-contenu .meteo-way li { margin: 3px 0; }
 .cdm-contenu .meteo-seasons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }

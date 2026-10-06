@@ -54,6 +54,8 @@ function canal_contenu_clean_html(string $html): string
     $html = (string) preg_replace('~<h1(\s[^>]*)?>(.*?)</h1>~is', '<h2$1>$2</h2>', $html);
     $html = (string) preg_replace('~<p>\s*<(strong|b)>([^<:]{3,90})</\1>\s*</p>~i', '<h2>$2</h2>', $html);
     $html = (string) preg_replace('~<p>\s*<(strong|b)>([^<:]{3,90})</\1>\s*<br\s*/?>\s*~i', "<h2>$2</h2>\n<p>", $html);
+    // Imagen enlazada (a su archivo) con alt vacío: el enlace no tendría nombre accesible (Lighthouse link-name).
+    $html = (string) preg_replace('~(<a\b[^>]*>\s*<img\b[^>]*?)\salt=""~i', '$1 alt="Agrandir l’image"', $html);
     return (string) preg_replace('~<p>(?:\s|&nbsp;|\xC2\xA0|<br\s*/?>)*</p>~i', '', $html);
 }
 

@@ -225,7 +225,7 @@ body.search-page-loading .site-footer {
     gap: 7px;
     flex: 1;
     min-height: 42px;
-    color: #64748b;
+    color: #475569;
     font-size: clamp(0.50rem, 0.50rem + 0.35vw, 0.96rem);
     font-weight: 600;
     border-radius: 9px;
@@ -637,7 +637,7 @@ body.search-page-loading .site-footer {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: #94a3b8;
+    color: #64748b;
     font-size: 0.88rem;
     font-weight: 600;
     transition: color 0.2s ease;
@@ -710,7 +710,7 @@ body.search-page-loading .site-footer {
     padding: 5px 12px;
     border-radius: 999px;
     background: rgba(99, 102, 241, 0.08);
-    color: #6366f1;
+    color: #4f46e5;
     font-size: 0.78rem;
     font-weight: 700;
 }
@@ -720,7 +720,7 @@ body.search-page-loading .site-footer {
     align-items: center;
     gap: 4px;
     margin-left: auto;
-    color: #94a3b8;
+    color: #64748b;
     font-size: 0.8rem;
     font-weight: 600;
     transition: color 0.2s ease;

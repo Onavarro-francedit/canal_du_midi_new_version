@@ -360,7 +360,7 @@ get_header();
                             onmouseenter="window.highlightMarker && window.highlightMarker(<?= (int) $s['id'] ?>)"
                             onmouseleave="window.resetMarker && window.resetMarker(<?= (int) $s['id'] ?>)"
                         >
-                            <a class="explore-card-link" href="<?= esc_url($ficheUrl) ?>">
+                            <a class="explore-card-link" href="<?= esc_url($ficheUrl) ?>" aria-label="<?= esc_attr($serviceTitle) ?>">
                                 <?php // WP: las primeras imágenes van en el HTML sin fundido (LCP); el resto con lazy nativo. ?>
                                 <div class="card-image<?= $serviceImage ? ($i < CANAL_CARTE_EAGER_IMAGES ? ' is-loaded' : '') : ' card-image--placeholder' ?>">
                                     <?php if ($serviceImage): ?>
@@ -507,13 +507,13 @@ get_header();
     </div>
 
     <nav class="search-mobile-nav" aria-label="Navigation mobile des résultats">
-        <button type="button" class="search-mobile-nav-item mobile-view-trigger" data-mobile-target="filters">
+        <button type="button" class="search-mobile-nav-item mobile-view-trigger" data-mobile-target="filters" aria-label="Filtres">
             <i class="bi bi-search"></i>
         </button>
-        <button type="button" class="search-mobile-nav-item is-active mobile-view-trigger" data-mobile-target="list">
+        <button type="button" class="search-mobile-nav-item is-active mobile-view-trigger" data-mobile-target="list" aria-label="Liste des adresses">
             <i class="bi bi-list-ul"></i>
         </button>
-        <button type="button" class="search-mobile-nav-item mobile-view-trigger" data-mobile-target="map">
+        <button type="button" class="search-mobile-nav-item mobile-view-trigger" data-mobile-target="map" aria-label="Carte">
             <i class="bi bi-map"></i>
         </button>
     </nav>

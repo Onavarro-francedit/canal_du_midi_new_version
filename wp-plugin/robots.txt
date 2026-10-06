@@ -4,8 +4,8 @@
 User-agent: *
 Disallow: /wp-admin/
 Allow: /wp-admin/admin-ajax.php
-# Signaux d'usage du contenu (contentsignals.org) : recherche et réponses IA oui, entraînement non.
-Content-Signal: search=yes, ai-input=yes, ai-train=no
+# Recherche et réponses IA oui, entraînement non : exprimé bot par bot ci-dessous. (La ligne Content-Signal a été retirée
+# le 2026-10-06 : directive inconnue pour Lighthouse, « robots.txt is not valid » sur toutes les pages.)
 
 # Moteurs de réponse / recherche IA (citent et renvoient vers le site) : autorisés.
 User-agent: OAI-SearchBot

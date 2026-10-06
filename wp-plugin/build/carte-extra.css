@@ -31,7 +31,7 @@ p { color: inherit; }
 .explore-card { content-visibility: auto; contain-intrinsic-size: auto 420px; }
 
 /* WP: editor + fecha (E-E-A-T). */
-.search-results-publisher { margin: 0; font-size: 10.5px; line-height: 1.4; color: #94a3b8; }
+.search-results-publisher { margin: 0; font-size: 10.5px; line-height: 1.4; color: #64748b; }
 /* WP: 3.ª columna « À savoir » (06/10): guía por datos + FAQ fuera de la lista de fichas, con su propio scroll.
    Por debajo de 1181 px el grid es de una columna: va debajo de la lista (el mapa es una capa aparte). */
 @media (min-width: 1181px) {
