@@ -362,6 +362,20 @@ function canal_etape_a_name(string $calcul): string
     return $calcul === 'Étang de Thau (Les Onglous)' ? 'l’étang de Thau' : $calcul;
 }
 
+/** Tramos de 10 a 25 km entre dos etapas consecutivas del Canal du Midi (salidas cortas en bici, en familia). */
+function canal_etapes_short_legs(): array
+{
+    $out = [];
+    $midi = array_values(array_filter(CANAL_ETAPES, function ($e) { return $e['canal'] === 'midi'; }));
+    for ($i = 1, $n = count($midi); $i < $n; $i++) {
+        $r = canal_calcul_compute((float) canal_etape_pk($midi[$i - 1]), (float) canal_etape_pk($midi[$i]));
+        if ($r['km'] >= 10 && $r['km'] <= 25) {
+            $out[] = $midi[$i - 1]['name'] . ' → ' . $midi[$i]['name'] . ' (' . (int) round($r['km']) . ' km, ' . canal_calcul_duration($r['bike']) . ')';
+        }
+    }
+    return $out;
+}
+
 /** Reparto del canal entero en $days jornadas, cortando en la etapa más cercana a cada fracción del recorrido. */
 function canal_etapes_split(int $days): array
 {
@@ -409,14 +423,7 @@ function canal_etapes_search_faq(): array
             return $s['from'] . ' → ' . $s['to'] . ' (' . (int) round($s['km']) . ' km)';
         }, canal_etapes_split($d))) . '.';
     }
-    $short = [];
-    $midi = array_values(array_filter(CANAL_ETAPES, function ($e) { return $e['canal'] === 'midi'; }));
-    for ($i = 1, $n = count($midi); $i < $n; $i++) {
-        $r = canal_calcul_compute((float) canal_etape_pk($midi[$i - 1]), (float) canal_etape_pk($midi[$i]));
-        if ($r['km'] >= 10 && $r['km'] <= 25) {
-            $short[] = $midi[$i - 1]['name'] . ' → ' . $midi[$i]['name'] . ' (' . (int) round($r['km']) . ' km, ' . canal_calcul_duration($r['bike']) . ')';
-        }
-    }
+    $short = canal_etapes_short_legs();
     return [
         [
             'q' => 'Quel est le parcours du Canal du Midi ?',

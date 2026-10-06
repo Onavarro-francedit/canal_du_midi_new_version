@@ -310,3 +310,25 @@
     .cdm-contenu .meteo-year { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .cdm-contenu .meteo-places, .cdm-contenu .meteo-seasons { grid-template-columns: 1fr; }
 }
+/* Vélo (parts/contenu-velo.php): reutiliza meteo-block / meteo-season */
+.cdm-contenu .velo-block h3 { margin: 22px 0 10px; font-size: 18px; }
+.cdm-contenu .velo-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.cdm-contenu .velo-stats li { padding: 14px 16px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+.cdm-contenu .velo-stats b { display: block; font: 800 26px/1.1 'Sora', sans-serif; color: var(--ink); }
+.cdm-contenu .velo-stats span { font-size: 13px; color: var(--muted); }
+.cdm-contenu .velo-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.cdm-contenu .velo-plans .meteo-season h3 { margin: 0 0 8px; }
+.cdm-contenu .velo-plans ol { margin: 0; padding-left: 18px; font-size: 13.5px; }
+.cdm-contenu .velo-plans li { margin: 0 0 6px; }
+.cdm-contenu .velo-plans li span { display: block; color: var(--muted); }
+.cdm-contenu .velo-short { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.cdm-contenu .velo-short li { padding: 5px 10px; border-radius: 999px; background: #f3f1fd; font-size: 13px; }
+.cdm-contenu .velo-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.cdm-contenu .velo-btn { display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-weight: 700; font-size: 14px; color: var(--text); text-decoration: none; }
+.cdm-contenu .velo-btn--primary { border-color: #6a63d9; background: #6a63d9; color: #fff; }
+@media (max-width: 760px) {
+    .cdm-contenu .velo-plans { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+    .cdm-contenu .velo-stats { grid-template-columns: 1fr; }
+}

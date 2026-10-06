@@ -56,17 +56,20 @@ function canal_contenu_data(WP_Post $p): array
     $meta = function (string $key) use ($p): string {
         return trim((string) get_post_meta($p->ID, $key, true));
     };
-    $meteo = $p->post_name === CANAL_METEO_SLUG;
+    // Bloques propios de algunas páginas (parts/contenu-<bloque>.php): météo (M1) y vélo (T4) de TASK-066.
+    $block = ['' => '', CANAL_METEO_SLUG => 'meteo', CANAL_VELO_SLUG => 'velo'][$p->post_name] ?? '';
+    $meteo = $block === 'meteo';
     $title = $meta('_canal_2026_title');
-    if ($title === '' && $meteo) {
-        $title = 'Météo du Canal du Midi : quand partir, le climat mois par mois';
+    if ($title === '' && $block !== '') {
+        $title = ['meteo' => 'Météo du Canal du Midi : quand partir, le climat mois par mois', 'velo' => 'Le Canal du Midi à vélo : voie verte, distances et étapes'][$block];
     }
     if ($title === '') {
         $title = canal_fiche_display_title(wp_strip_all_tags($p->post_title));
     }
     $description = $meta('_canal_2026_description');
-    if ($description === '' && $meteo) {
-        $description = canal_fiche_excerpt(canal_meteo_faq()[0]['a']);
+    $blockFaq = $block === 'meteo' ? canal_meteo_faq() : ($block === 'velo' ? canal_velo_faq(canal_velo_rental_faq()) : []);
+    if ($description === '' && $blockFaq) {
+        $description = canal_fiche_excerpt($blockFaq[0]['a']);
     }
     if ($description === '') {
         $description = canal_fiche_excerpt(canal_contenu_plain($p->post_excerpt !== '' ? $p->post_excerpt : $html));
@@ -97,8 +100,8 @@ function canal_contenu_data(WP_Post $p): array
         'description' => $description,
         'summary'     => $meta('_canal_2026_summary'),
         // Météo (TASK-066 M1): clima mes a mes y sus preguntas, salvo que la página tenga su propia FAQ.
-        'meteo'       => $meteo,
-        'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: ($meteo ? canal_meteo_faq() : []),
+        'block'       => $block,
+        'faq'         => canal_contenu_faq($meta('_canal_2026_faq')) ?: $blockFaq,
         'html'        => $html,
         'published'   => (string) get_post_time('c', false, $p),
         'modified'    => $meteo
@@ -203,3 +206,14 @@ add_action('wp_head', function () {
     echo canal_home_seo_social(canal_contenu_seo_title($c['title']), $c['description'], $c['url'], $c['title'], $c['image']); // phpcs:ignore — escapado dentro.
     echo canal_home_seo_jsonld(canal_contenu_seo_graph($c, $c['url'], home_url('/'), CANAL_HOME_SITE_NAME)); // phpcs:ignore — JSON_HEX_TAG.
 }, 5);
+
+/** Pregunta « Où louer un vélo… » de la carte (recuentos reales), o null si no hay loueurs de vélos. */
+function canal_velo_rental_faq(): ?array
+{
+    foreach (canal_carte_faq(canal_carte_listings()) as $qa) {
+        if (strpos($qa['q'], 'louer un vélo') !== false) {
+            return $qa;
+        }
+    }
+    return null;
+}
