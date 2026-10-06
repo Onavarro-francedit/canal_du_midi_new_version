@@ -248,8 +248,8 @@ function canal_carte_dequeue_unused(): void
             if (canal_contenu_is_page() && !empty(canal_contenu_state()['plugins']) && preg_match(CANAL_CONTENU_PLUGIN_ASSETS, $handle)) {
                 continue;
             }
-            // Carte: conserva Google Maps; ficha y home (sin mapa propio del tema): fuera.
-            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle) || (canal_carte_is_page() ? canal_theme_is_unused_asset($handle) : canal_fiche_is_unused_asset($handle))) {
+            // Google Maps del tema fuera en todas (06/10 también en la carte): search-map.js lo carga cuando crea un mapa.
+            if (preg_match(CANAL_CARTE_UNUSED_ASSETS, $handle) || canal_fiche_is_unused_asset($handle)) {
                 $deps->dequeue($handle);
             }
         }
@@ -319,6 +319,16 @@ add_action('wp_enqueue_scripts', function () {
         'confirm'    => $token !== '' ? canal_planner_confirm_preview($token) : null,
     ]);
 }, 20);
+
+// Google Maps de la carte (06/10): la misma URL que registra el tema; search-map.js lo carga al crear el mapa
+// (escritorio: al arrancar; móvil: al abrir la vista Carte o el detalle). Antes iba síncrono en todas las pantallas.
+add_action('wp_print_footer_scripts', function () {
+    if (!canal_carte_is_page()) {
+        return;
+    }
+    $maps = wp_scripts()->registered['google-maps'] ?? null;
+    wp_add_inline_script('canal-carte-search-map', 'window.CDM_CARTE_MAPS = ' . wp_json_encode($maps ? (string) $maps->src : '') . ';', 'before');
+}, 1);
 
 // Google Maps del modal de demanda: misma URL (clave y bibliotecas) que registra el tema, cargada por planner.js
 // solo al abrir el modal (como la ficha). El tema lo registra tarde: se lee justo antes de los scripts del pie.

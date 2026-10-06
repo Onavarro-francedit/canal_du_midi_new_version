@@ -13,7 +13,7 @@ function canal_carte_cache_key(): string
     return CANAL_CARTE_CACHE . (CANAL_2026_LIVE ? '_live' : '');
 }
 const CANAL_CARTE_GALLERY_MAX = 8;
-const CANAL_CARTE_EAGER_IMAGES = 6; // tarjetas cuya imagen se pide sin lazy (las visibles al cargar)
+const CANAL_CARTE_EAGER_IMAGES = 2; // tarjetas sin lazy: las visibles al cargar (1–2 en la columna; con 6 competían con el LCP, 06/10)
 
 function canal_carte_listings(): array
 {

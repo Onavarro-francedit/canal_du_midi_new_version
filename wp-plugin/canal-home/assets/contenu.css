@@ -271,7 +271,7 @@
 .cdm-contenu .is-ideal { --k: #13734f; --kb: #e3f6ee; }
 .cdm-contenu .is-mild { --k: #2f67b8; --kb: #e6effb; }
 .cdm-contenu .is-hot { --k: #9a540d; --kb: #fdf0e1; }
-.cdm-contenu .is-vhot { --k: #c4452d; --kb: #fbe5e0; }
+.cdm-contenu .is-vhot { --k: #a83a24; --kb: #fbe5e0; }
 .cdm-contenu .is-off { --k: #5a5e72; --kb: #eef0f5; }
 .cdm-contenu .meteo-year { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
 .cdm-contenu .meteo-month { padding: 10px 6px 12px; border: 1px solid var(--line); border-top: 4px solid var(--k); border-radius: 14px; background: #fff; font: inherit; color: var(--text); text-align: center; cursor: pointer; transition: transform .15s, box-shadow .15s; }

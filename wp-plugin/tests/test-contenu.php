@@ -109,5 +109,9 @@ check(canal_contenu_drop_cover($dup, $cover) === '<p>À une douzaine de kilomèt
 $other = '<p><img src="https://x.fr/wp-content/uploads/2020/01/autre.jpg"> Texte</p>';
 check(canal_contenu_drop_cover($other, $cover) === $other && canal_contenu_drop_cover($dup, '') === $dup, 'otra imagen o sin portada → intacto');
 
+// Títulos: si el texto empieza por h3, todos suben un nivel (heading-order, TASK-070).
+check(canal_contenu_clean_html('<p>a</p><h3 class="x">T</h3><h4>U</h4><h3>V</h3>') === '<p>a</p><h2 class="x">T</h2><h3>U</h3><h2>V</h2>', 'títulos: h3 inicial → h2, jerarquía conservada');
+check(canal_contenu_clean_html('<h2>A</h2><h3>B</h3>') === '<h2>A</h2><h3>B</h3>', 'títulos: con h2 primero, intactos');
+
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);

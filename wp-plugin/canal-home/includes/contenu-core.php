@@ -54,6 +54,14 @@ function canal_contenu_clean_html(string $html): string
     $html = (string) preg_replace('~<h1(\s[^>]*)?>(.*?)</h1>~is', '<h2$1>$2</h2>', $html);
     $html = (string) preg_replace('~<p>\s*<(strong|b)>([^<:]{3,90})</\1>\s*</p>~i', '<h2>$2</h2>', $html);
     $html = (string) preg_replace('~<p>\s*<(strong|b)>([^<:]{3,90})</\1>\s*<br\s*/?>\s*~i', "<h2>$2</h2>\n<p>", $html);
+    // Si el texto empieza por un h3/h4 (sin h2 antes), todos los títulos suben de nivel: tras el H1 de la página
+    // no puede ir un h3 (Lighthouse heading-order, 06/10). Se conserva la jerarquía relativa.
+    if (preg_match('~<h([2-6])\b~i', $html, $first) && (int) $first[1] > 2) {
+        $shift = (int) $first[1] - 2;
+        $html = (string) preg_replace_callback('~<(/?)h([2-6])\b~i', function (array $m) use ($shift): string {
+            return '<' . $m[1] . 'h' . max(2, (int) $m[2] - $shift);
+        }, $html);
+    }
     // Imagen enlazada (a su archivo) con alt vacío: el enlace no tendría nombre accesible (Lighthouse link-name).
     $html = (string) preg_replace('~(<a\b[^>]*>\s*<img\b[^>]*?)\salt=""~i', '$1 alt="Agrandir l’image"', $html);
     return (string) preg_replace('~<p>(?:\s|&nbsp;|\xC2\xA0|<br\s*/?>)*</p>~i', '', $html);

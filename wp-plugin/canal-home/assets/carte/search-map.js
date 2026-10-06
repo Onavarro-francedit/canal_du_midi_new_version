@@ -272,9 +272,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.dispatchEvent(new CustomEvent('search:map-ready'));
     };
 
-    if (!mapElement || typeof google === 'undefined' || !google.maps) {
-        // WP: sin Google Maps (clave ausente o bloqueada) → aviso en lugar de un panel vacío.
-        if (mapElement) {
+    // WP: sin Google Maps (clave ausente o bloqueada) → aviso en lugar de un panel vacío.
+    const mapUnavailable = () => {
+        if (mapElement && !mapElement.querySelector('.map-unavailable')) {
             const notice = document.createElement('div');
             notice.className = 'map-unavailable';
             notice.textContent = 'Carte indisponible';
@@ -282,8 +282,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         mapElement?.classList.add('is-map-ready');
         signalMapReady();
+    };
+    if (!mapElement) {
+        signalMapReady();
         return;
     }
+
+    // WP (06/10): Google Maps ya no viene síncrono del tema; se carga la primera vez que hace falta un mapa
+    // (móvil: solo al abrir la vista Carte o el detalle → 376 KB menos antes del LCP).
+    let mapsPromise = null;
+    const loadMaps = () => {
+        if (window.google && window.google.maps) return Promise.resolve();
+        if (!mapsPromise) {
+            mapsPromise = new Promise((resolve, reject) => {
+                if (!window.CDM_CARTE_MAPS) { reject(); return; }
+                window.cdmCarteMapsReady = resolve;
+                const s = document.createElement('script');
+                s.src = window.CDM_CARTE_MAPS + (window.CDM_CARTE_MAPS.indexOf('?') < 0 ? '?' : '&') + 'callback=cdmCarteMapsReady';
+                s.async = true;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            mapsPromise.catch(mapUnavailable);
+        }
+        return mapsPromise;
+    };
 
     const compactMedia = window.matchMedia('(max-width: 1180px)');
 
@@ -312,6 +335,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ensureMap = () => {
         if (map) return;
+        if (!(window.google && window.google.maps)) {
+            loadMaps().then(ensureMap, () => {});
+            return;
+        }
         map = new google.maps.Map(mapElement, {
             center: { lat: 43.6, lng: 1.44 },
             zoom: 10,
@@ -344,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const marker = new google.maps.Marker({
             position: { lat: item.lat, lng: item.lng },
             icon: buildPinIcon(false),
+            title: item.title || '', // WP: nombre accesible del marcador (Lighthouse aria-command-name)
         });
         marker.set('serviceId', item.id);
 
@@ -430,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clusterRenderer = {
         render: ({ count, position }) => {
             const { icon, label } = buildClusterIcon(count);
-            return new google.maps.Marker({ position, icon, label, zIndex: 1000 + count });
+            return new google.maps.Marker({ position, icon, label, title: count + ' adresses', zIndex: 1000 + count });
         },
     };
 
@@ -563,6 +591,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderDetailMap = (service) => {
         const mapTarget = document.getElementById('listing-detail-map');
         if (!mapTarget) return;
+        if (!(window.google && window.google.maps)) {
+            loadMaps().then(() => renderDetailMap(service), () => {});
+            return;
+        }
 
         if (!detailMap) {
             detailMap = new google.maps.Map(mapTarget, {

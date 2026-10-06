@@ -1,7 +1,7 @@
 (function () {
     // WP: las imágenes ya vienen con src en el HTML (TASK-035: LCP); aquí solo el fundido del resto,
     // el icono si fallan y el aviso de « listas » cuando han cargado las primeras.
-    const FIRST_IMAGES = 6; // = CANAL_CARTE_EAGER_IMAGES
+    const FIRST_IMAGES = 2; // = CANAL_CARTE_EAGER_IMAGES
     const images = Array.from(document.querySelectorAll('.search-layout-page .card-image img'));
     const target = Math.min(images.length, FIRST_IMAGES);
     let settledImages = 0;
