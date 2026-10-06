@@ -79,6 +79,8 @@ Señales del inventario (columna `nota` del TSV), para revisar por tráfico:
 1. ✅ **301 de las fichas caducadas a su categoría** (06/10, activa ya: solo sustituye el 404). Categoría principal según el
    orden del editor que tenga fichas publicadas; si no hay ninguna, `/explorer/`.
 2. ✅ **301 de `/zone/<tramo>/` → `/etapes/`** (06/10), solo al publicar (hoy esas páginas funcionan con el tema).
-3. Revisar en el navegador las páginas Elementor con más de 50 clics que aún no se han visto (Histoire, Le Grand Bief,
-   Villeneuve-lès-Béziers, Bassin de Thau, Colombiers, Poilhes).
+3. ✅ Revisadas en el navegador (06/10) Histoire, Le Grand Bief, Villeneuve-lès-Béziers, Bassin de Thau (vídeo y mapa bien),
+   Colombiers y Poilhes. Dos fallos corregidos para todo el sitio: la portada se repetía como primera imagen del texto
+   (`canal_contenu_drop_cover`), y en el contenido de bloques (93 páginas y artículos) se aplicaba `wpautop`, que cortaba
+   el texto a media frase con `<br>`; ahora se hace como el núcleo de WordPress.
 4. Volver a ejecutar el inventario antes de publicar (TASK-063): `remote.sh run tests/inventario-2026.php`.
