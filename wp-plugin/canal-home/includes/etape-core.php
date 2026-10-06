@@ -523,5 +523,6 @@ function canal_etapes_search_faq(): array
 
 function canal_etape_title(array $e): string
 {
-    return $e['name'] . ($e['canal'] === 'midi' ? ' — étape du Canal du Midi' : ' — canal de la Robine') . ' : que faire, où dormir, distances';
+    $where = $e['canal'] === 'midi' ? ' — étape du Canal du Midi' : (!empty($e['jonction']) ? ' — canal de jonction' : ' — canal de la Robine');
+    return $e['name'] . $where . ' : que faire, où dormir, distances';
 }

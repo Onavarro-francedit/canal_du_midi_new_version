@@ -164,6 +164,7 @@ check(canal_etape_jonction(['eau' => ['items' => [$lock('ecluse-de-cesse', 'Écl
 $salFaq = canal_etape_faq($sal, $salGroups);
 $voir = array_values(array_filter($salFaq, function ($qa) { return strpos($qa['q'], 'Que voir') === 0; }));
 check(count($voir) === 1 && strpos($voir[0]['a'], 'Cesse, Truilhas, Empare, Argelliers, Saint-Cyr, Sallèles et Gailhousty') !== false && strpos($voir[0]['a'], 'Vélorail') !== false && strpos($voir[0]['a'], 'Office') === false, 'Sallèles: « Que voir » con las 7 esclusas y el Vélorail, sin la oficina de turismo');
+check(canal_etape_title($sal) === "Sallèles-d'Aude — canal de jonction : que faire, où dormir, distances", 'Sallèles: title con el canal de jonction');
 check(canal_etape_nearest(43.2573, 2.9498)['slug'] === 'salleles-daude' && canal_etape_nearest(43.6, 1.45)['slug'] === 'toulouse' && canal_etape_nearest(48.85, 2.35) === null, 'ficha → etapa más cercana dentro de su radio; París → ninguna');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
