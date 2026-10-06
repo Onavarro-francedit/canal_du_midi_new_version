@@ -12,7 +12,7 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
 
 ## 🟡 Pendiente
 
-### TASK-066 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — aplicar al terminar TASK-053
+### TASK-066 — Mejoras GEO/AEO de la medición GEO-IA (2026-10-05) — COMPLETADO ✅ (06/10: T1, T2, T4, M1–M5, Fonseranes)
 - **Leer primero:** `docs/geo-ia-mejoras-2026-10-05.md` (lo escribió la sesión de GEO-IA para esta sesión: metodología,
   resultados, páginas competidoras y detalle de cada mejora). Panel: `http://localhost/geo-ia/?site=canal-du-midi`.
 - Medición: nos citan en el 20 % de las respuestas de IA (Google IA 5/10, Perplexity 3/10, Gemini 2/10, ChatGPT/Claude 0).
@@ -412,7 +412,7 @@ _(TASK-009 y TASK-010 movidas a 🔴 En curso — Incremento 1)_
 
 ## 🟢 Completadas
 
-### TASK-068 — Revisión semanal de las webs de las fichas (2026-10-06) — HECHO (pendiente de desplegar)
+### TASK-068 — Revisión semanal de las webs de las fichas (2026-10-06) — DESPLEGADO ✅ (primera revisión 06/10: 12 caídas; próxima lun. 12/10 7:00)
 - El usuario encontró la web de Sallèles (sallelesdaude.fr con www) mostrando la página por defecto de Apache.
   Revisión de 137 webs: 12 caídas, 3 a verificar → `docs/webs-caidas-fiches.md`.
 - `includes/webcheck(-core).php`: WP-Cron cada lunes 7:00, reintento antes de dar por caída, opción `canal_webcheck`;
