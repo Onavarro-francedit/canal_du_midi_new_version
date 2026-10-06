@@ -39,17 +39,18 @@ $activeFilters = array_filter(array_merge(
 ));
 
 // WP: datos para el <head> (título, meta, JSON-LD), que get_header() imprime.
-// Sin FAQ visible ni FAQPage (06/10): al pie de la lista nadie la leía y alargaba el scroll de las fichas.
+$faq      = $results ? canal_carte_faq($listings, canal_plan_pdf_year()) : []; // WP: solo se muestra (y se marca) si hay lista
 $modified = canal_carte_last_modified();
 $termSeo  = $term ? canal_carte_term_seo($term, $resultsCount) : null;
-// WP: introducción por datos en /categorie/camping/ y /categorie/location-bateau/ (TASK-066), en la columna de filtros.
-$guideIntro = ($term && $term['tax'] === 'job_listing_category' && $results)
+// WP: guía por datos en /categorie/camping/ y /categorie/location-bateau/ (TASK-066): respuesta, tabla por PK y su pregunta.
+$guide = ($term && $term['tax'] === 'job_listing_category' && $results)
     ? canal_guide_for($term['slug'], $listings, canal_guide_trace(CANAL_HOME_DIR . 'assets/calcul/canal-du-midi-trace.json'))
     : null;
-if ($guideIntro) {
-    $termSeo['intro'] = $guideIntro;
+if ($guide) {
+    $termSeo['intro'] = $guide['intro'];
+    array_unshift($faq, $guide['faq']);
 }
-canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => [], 'modified' => $modified, 'term' => $term, 'termSeo' => $termSeo]);
+canal_carte_seo_state(['results' => $results, 'total' => count($listings), 'faq' => $faq, 'modified' => $modified, 'term' => $term, 'termSeo' => $termSeo]);
 
 get_header();
 ?>
@@ -103,7 +104,7 @@ get_header();
         </div>
     </div>
 
-    <div class="search-workspace">
+    <div class="search-workspace<?= $faq ? ' search-workspace--info' : '' ?>">
         <aside class="search-sidebar" id="search-sidebar-panel">
             <div class="search-sidebar-tabs">
                 <div class="search-sidebar-tab is-active" data-tab-target="filters-content"><i class="bi bi-sliders2"></i> Filtres</div>
@@ -410,6 +411,37 @@ get_header();
                 </div>
             <?php endif; ?>
         </section>
+
+        <?php // WP: 3.ª columna (06/10): datos y preguntas frecuentes (AEO) fuera de la lista de fichas; en tablet/móvil va debajo. ?>
+        <?php if ($faq): ?>
+        <aside class="carte-info" aria-label="À savoir">
+            <p class="carte-info-kicker">À savoir</p>
+            <?php if ($guide): ?>
+            <section class="carte-guide" aria-labelledby="carte-guide-title">
+                <h2 id="carte-guide-title"><?= esc_html($guide['title']) ?></h2>
+                <ol class="carte-guide-list">
+                    <?php foreach ($guide['rows'] as $i => $row): ?>
+                        <li>
+                            <?php if (!empty($guide['links'][$i])): ?><a href="<?= esc_url($guide['links'][$i]) ?>"><?= esc_html($row[0]) ?></a><?php else: ?><strong><?= esc_html($row[0]) ?></strong><?php endif; ?>
+                            <span><?= esc_html(str_replace('PK ', "PK\u{00A0}", implode(' · ', array_filter(array_slice($row, 1), function ($c) { return $c !== '' && $c !== '—'; })))) ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+                <p class="carte-guide-source"><?= esc_html($guide['source']) ?><?php if ($term['slug'] === 'location-bateau'): ?> <a href="<?= esc_url(home_url(CANAL_GUIDE_RULES_URL)) ?>">Règles de navigation</a> · <a href="<?= esc_url(canal_calcul_url()) ?>">Calcul de distance</a><?php endif; ?></p>
+            </section>
+            <?php endif; ?>
+            <section class="carte-faq" aria-labelledby="carte-faq-title">
+                <h2 class="carte-faq-title" id="carte-faq-title">Questions fréquentes</h2>
+                <?php foreach ($faq as $item): ?>
+                    <div class="carte-faq-item">
+                        <h3><?= esc_html($item['q']) ?></h3>
+                        <p><?= esc_html($item['a']) ?></p>
+                    </div>
+                <?php endforeach; ?>
+                <p class="carte-faq-sources">Le Canal du Midi est inscrit au <a href="https://whc.unesco.org/fr/list/770/" target="_blank" rel="noopener">patrimoine mondial de l'UNESCO</a> depuis 1996. Conditions de navigation et chômages : <a href="https://www.vnf.fr/" target="_blank" rel="noopener">Voies navigables de France</a>.</p>
+            </section>
+        </aside>
+        <?php endif; ?>
 
         <aside class="explore-map-wrapper" id="search-map-panel">
             <div class="map-panel-shell">
