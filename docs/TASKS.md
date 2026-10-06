@@ -67,6 +67,8 @@ Convención de IDs: `TASK-NNN` tareas · `BUG-NNN` bugs · `SEC-NNN` seguridad.
   (URLs originales, sin noindex, 301 activas); vuelta atrás = constante a false + deploy (~2 min).
 - Fase 0 (sin cambios visibles): modo LIVE + mapa de 301 + eventos GA4 + copia de BD + línea base de medición + llms.
   Bloqueantes: pedido real del plan (PayPal), crédito Anthropic, `CANAL_PLANNER_LIVE`, `pm.max_children`.
+  ✅ 06/10: pedido del plan probado en la página 2026 hasta PayPal (sin pagar): formulario → PayPal checkout, producto
+  « Guide Canal du Midi » 7,00 €, sin error de correo en Easy WP SMTP. Sin probar: el aviso de pago confirmado.
 - Fase 1 (30–45 min) publicación + smoke anónimo + sitemap/Bing. Fase 2: vigilancia +1 h / +1 d / +3 d / +7 d / +28 d.
 
 ### SEC-001 — Tema my-listing: `affiche_pub_940.php` con credenciales en claro e inyección SQL (detectado 2026-10-02)
