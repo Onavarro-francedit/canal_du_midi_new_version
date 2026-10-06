@@ -1,5 +1,5 @@
 <?php
-// Tests de guide-core.php (campings y location de bateau por PK) — PHP CLI puro (7.4+), sin WordPress.
+// Tests de guide-core.php (introducción de campings y location de bateau) — PHP CLI puro (7.4+), sin WordPress.
 // Uso: php wp-plugin/tests/test-guide.php   (exit 1 si algo falla)
 define('CANAL_HOME_TESTING', true);
 require __DIR__ . '/../canal-home/includes/calcul-core.php';
@@ -31,10 +31,6 @@ check($p['m'] > 3000, 'proyección: Montolieu lejos del canal (' . $p['m'] . ' m
 $p = canal_guide_project($trace, 43.3126509, 1.9553227); // Cris'Boat, Castelnaudary
 check(abs($p['pk'] - 64.9) < 2, 'proyección: Castelnaudary ≈ PK 65 (' . $p['pk'] . ')');
 
-check(canal_guide_distance_label(120) === 'Au bord du canal', 'distancia: < 300 m');
-check(canal_guide_distance_label(640) === 'À 600 m', 'distancia: metros redondeados a 100');
-check(canal_guide_distance_label(2440) === 'À 2,4 km', 'distancia: km con coma');
-
 $L = function (string $title, string $city, ?float $lat, ?float $lng, array $cats) {
     return ['title' => $title, 'url' => '/fiche/' . strtolower($title) . '/', 'city' => $city, 'lat' => $lat, 'lng' => $lng, 'cat_slugs' => $cats];
 };
@@ -58,19 +54,12 @@ check(array_column($rows, 'title') === ['Montolieu', 'Berges'], 'filas: por PK, 
 check(canal_guide_for('hotel', $listings, $trace) === null, 'guía: solo camping y location-bateau');
 
 $g = canal_guide_for('camping', $listings, $trace);
-check(count($g['rows']) === 2 && count($g['rows'][0]) === count($g['columns']), 'camping: una celda por columna');
-check(strpos($g['intro'], '2 campings') === 0 && strpos($g['intro'], '1 au bord du canal') !== false, 'camping: intro con recuentos reales');
-check(strpos($g['faq']['a'], 'Berges (Villeneuve-Lès-Béziers, PK') !== false && strpos($g['faq']['a'], 'Montolieu') === false, 'camping: faq nombra solo los de la orilla');
-check(substr($g['faq']['q'], -2) === ' ?', 'camping: puntuación francesa');
+check(strpos($g, '2 campings') === 0 && strpos($g, '1 au bord du canal') !== false, 'camping: intro con recuentos reales');
 
 $b = canal_guide_for('location-bateau', $listings, $trace);
-check(array_column($b['rows'], 0) === ['Castelnaudary', 'Homps', 'Colombiers', 'Agde'], 'bateau: bases por PK con nombre del calcul');
-check($b['rows'][2][2] === '2 loueurs', 'bateau: loueurs agrupados por base');
-check($b['rows'][0][1] === 'PK 64,9', 'bateau: PK de la ciudad del calcul, no el de la ficha');
-check(strpos($b['rows'][0][3], 'Homps') === 0 && strpos($b['rows'][0][3], 'écluses') !== false, 'bateau: tramo hasta la base siguiente');
-check($b['rows'][3][3] === '—', 'bateau: última base sin tramo');
-check(strpos($b['intro'], '8 km/h') !== false && strpos($b['intro'], 'carte de plaisance') !== false, 'bateau: intro con la regla de la fuente');
-check(strpos($b['faq']['q'], 'permis') !== false && strpos($b['faq']['a'], 'Non. ') === 0, 'bateau: faq del permiso (« Faut-il ? » → Non)');
+check(strpos($b, '5 loueurs dans 4 bases, de Castelnaudary à Agde.') !== false, 'bateau: loueurs y bases por PK con nombre del calcul');
+check(strpos($b, '8 km/h') !== false && strpos($b, 'carte de plaisance') !== false, 'bateau: intro con la regla de la fuente');
+check(canal_guide_for('location-bateau', [], $trace) === null, 'bateau: sin loueurs, sin intro');
 
 echo $fails ? "\n$fails FALLO(S)\n" : "\nTODO OK\n";
 exit($fails ? 1 : 0);
