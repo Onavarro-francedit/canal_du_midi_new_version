@@ -95,7 +95,11 @@ Hecho el 06/10 (de 50–91 → 83–99 en móvil; accesibilidad 92 → 100):
 - ✅ `remote.sh deploy` vacía la caché de WP Fastest Cache (servía el HTML de antes del despliegue).
 
 Pendiente para el 100:
-- ⬜ Rendimiento móvil < 95: carte (83), home (91), categoría (88), archivo (92). LCP 3–4 s en 4G simulado: HTML de la carte
+- 🔍 Carte (06/10, 2.ª ronda): CSS en línea, sin `description` en el JSON (−19 KB comprimidos), precarga WebP de la
+  primera tarjeta, una sola imagen sin lazy → móvil 83 → 89–91, escritorio 98–99; categoría móvil 83–88 (ruido entre
+  pasadas). Techo actual: fotos de tarjeta de 90–120 KB (768 px WebP q78) y fuentes Sora+Manrope (57 KB) en 4G simulado.
+  Siguiente palanca: tarjetas a 480–600 px o calidad 65 (afecta a todas las imágenes del plugin).
+- ⬜ Rendimiento móvil < 95: home (91), archivo (92); carte/categoría ver arriba. LCP 3–4 s en 4G simulado: HTML de la carte
   (140 KB, 254 tarjetas), fuentes precargadas en la home, imágenes de 90–120 KB en las tarjetas.
 - ⬜ Buenas prácticas 96 en escritorio con mapa (calcul, carte, categoría, étapes): `image-size-responsive` de una imagen
   interna de Google Maps (`transparent.png`). Es de Google: no se arregla desde el sitio sin quitar el mapa.
