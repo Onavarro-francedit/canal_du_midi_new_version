@@ -49,6 +49,71 @@ solo lo medible página a página.
   privada de prueba) y `/post-category/croisiere-bateau/`, `/histoire/`, `/lieux-dinformations/` (404 en vista previa:
   comprobar si es porque están vacías y si alguien las enlaza).
 
+## 2b. Lighthouse y OpenSEO (06/10, medidas con las páginas 2026 abiertas)
+
+**Objetivo: 100 en las cuatro categorías.** Lighthouse 12 local, una página por plantilla, móvil y escritorio
+(`/explorer-2026/?type=location-bateau` = categoría). El SEO de 66–69 es solo el `noindex` de las rutas privadas `-2026`:
+al publicar pasa a 100 (las páginas ya publicadas en su URL, home y carte, dan 100).
+
+Pasada 4 (tras los arreglos del 06/10):
+
+| Página | Perf | Acc | BP | SEO | LCP s | TBT ms | CLS |
+|---|---|---|---|---|---|---|---|
+| archive-desktop | 99 | 100 | 100 | 69 | 0.9 | 0 | 0.0 |
+| archive-mobile | 92 | 100 | 100 | 69 | 3.3 | 0 | 0.0 |
+| article-desktop | 100 | 100 | 100 | 69 | 0.7 | 0 | 0.001 |
+| article-mobile | 95 | 100 | 100 | 69 | 3.0 | 0 | 0.023 |
+| calcul-desktop | 100 | 100 | 96 | 69 | 0.6 | 0 | 0.004 |
+| calcul-mobile | 98 | 100 | 100 | 66 | 1.9 | 0 | 0.004 |
+| carte-desktop | 98 | 100 | 96 | 100 | 1.0 | 4 | 0.001 |
+| carte-mobile | 83 | 100 | 100 | 100 | 4.2 | 115 | 0.002 |
+| categorie-desktop | 91 | 100 | 96 | 69 | 1.7 | 9 | 0.004 |
+| categorie-mobile | 88 | 100 | 100 | 69 | 3.9 | 0 | 0 |
+| etape-desktop | 100 | 100 | 100 | 69 | 0.5 | 0 | 0.0 |
+| etape-mobile | 99 | 100 | 100 | 69 | 2.1 | 36 | 0.0 |
+| etapes-desktop | 99 | 100 | 96 | 69 | 0.8 | 0 | 0.005 |
+| etapes-mobile | 96 | 100 | 100 | 69 | 2.1 | 81 | 0.04 |
+| fiche-desktop | 100 | 100 | 100 | 69 | 0.8 | 0 | 0.001 |
+| fiche-mobile | 95 | 100 | 100 | 69 | 2.7 | 22 | 0 |
+| home-desktop | 99 | 100 | 100 | 100 | 1.0 | 0 | 0.013 |
+| home-mobile | 91 | 100 | 100 | 100 | 3.2 | 0 | 0.007 |
+| meteo-desktop | 100 | 100 | 100 | 66 | 0.5 | 0 | 0.003 |
+| meteo-mobile | 99 | 100 | 100 | 66 | 1.9 | 0 | 0.005 |
+| page-desktop | 100 | 100 | 100 | 69 | 0.6 | 0 | 0.0 |
+| page-mobile | 95 | 100 | 100 | 69 | 2.9 | 0 | 0.0 |
+| planificateur-desktop | 100 | 100 | 100 | 66 | 0.5 | 0 | 0.01 |
+| planificateur-mobile | 97 | 100 | 100 | 66 | 2.6 | 0 | 0.018 |
+
+Hecho el 06/10 (de 50–91 → 83–99 en móvil; accesibilidad 92 → 100):
+- ✅ robots.txt válido (sin `Content-Signal`, directiva desconocida para Lighthouse).
+- ✅ Contraste AA y nombres accesibles (carte, contenido, étapes, météo, marcadores del mapa); títulos del contenido sin saltos.
+- ✅ Sirdata, pcm.js y GA4 a la primera interacción, en cadena tras el stub de consentimiento (el banner era el LCP).
+- ✅ CLS: calcul 0,13 → 0 y `/etapes/` 0,46 → 0,04 (huecos de mapa reservados, estado inicial antes de pintar).
+- ✅ Carte: sin esqueleto, Google Maps bajo demanda (móvil: al abrir la vista Carte), 2 imágenes sin lazy.
+- ✅ Ficha: precarga de la cabecera en WebP (antes precargaba la JPG). Archivo: primera imagen sin lazy.
+- ✅ Météo: enlaces a las previsiones de Météo-France en lugar de los widgets de booked.net.
+- ✅ `remote.sh deploy` vacía la caché de WP Fastest Cache (servía el HTML de antes del despliegue).
+
+Pendiente para el 100:
+- ⬜ Rendimiento móvil < 95: carte (83), home (91), categoría (88), archivo (92). LCP 3–4 s en 4G simulado: HTML de la carte
+  (140 KB, 254 tarjetas), fuentes precargadas en la home, imágenes de 90–120 KB en las tarjetas.
+- ⬜ Buenas prácticas 96 en escritorio con mapa (calcul, carte, categoría, étapes): `image-size-responsive` de una imagen
+  interna de Google Maps (`transparent.png`). Es de Google: no se arregla desde el sitio sin quitar el mapa.
+- ⬜ Volver a medir tras publicar (TASK-049) con CrUX: datos reales, no laboratorio (PRD-016).
+
+**OpenSEO** (crawl de 3 000 páginas desde `/accueil-2026/`; solo cuenta lo de las páginas 2026, el resto son páginas
+antiguas del tema a las que llega por enlaces):
+- ⬜ Enlaces internos rotos en el texto de 2 artículos: `/le-canal/histoire-2026/Pinpin` (enlace relativo mal escrito) y
+  `/occitanie/toulouse_31555/` (404); un enlace con `%20http:` pegado (`…visiter-castelnaudary…`) y otro con código PHP en
+  el href (`nouveau-catalogue-2014-les-canalous`). Se corrigen en el editor de WordPress o filtrando en la plantilla.
+- ⬜ 100 fichas con meta description corta (33–60 car.): el texto del cliente es corto → completar con categoría y étape.
+- ⬜ 18 artículos sin meta description y 2 sin H1 (contenido vacío o solo imagen).
+- ⬜ 426 titles largos (coincide con §3.3) y 794 páginas con salto de nivel de títulos (H1 → H3 en tarjetas y pies de
+  plantilla; revisar los `<h3>` de las tarjetas de la carte y del pie).
+- ⬜ 564 páginas a profundidad 5+ desde la home (artículos antiguos): enlazarlos desde sus categorías y étapes.
+- ⬜ 37 fichas con respuesta lenta (1,7–2,4 s sin caché): medir de nuevo con la caché activa.
+- ℹ️ 290 « canonicalizadas »: son las variantes `?type=` de la carte privada, correcto (al publicar son `/categorie/…`).
+
 ## 3. Plantillas
 
 % de páginas de cada tipo que pasan cada comprobación. FAQPage no aplica a artículos ni archivos del blog (texto de los
@@ -111,7 +176,7 @@ No responden 200: 4 — /marches-de-produits-locaux-a-port-lauragais-20-juin-202
 - ⬜ 5 étapes con menos de 300 palabras: Narbonne (154), Port-la-Nouvelle (125), Marseillan, Trèbes, Portiragnes.
 
 ### 3.7 Planificateur (1 página)
-- ⬜ Sin meta description, canonical, OG ni schema: la plantilla del planificador no pasa por nuestro `<head>` SEO.
+- ✅ 06/10: title, description, canonical, OG y JSON-LD (WebPage + BreadcrumbList); `<head>` del tema aligerado.
 
 ### 3.8 Archivo del blog (24 páginas, 45 clics)
 - ⬜ Titles cortos y descriptions de 93 car.: patrón de plantilla con el nombre de la categoría + « actualités du Canal du Midi ».
