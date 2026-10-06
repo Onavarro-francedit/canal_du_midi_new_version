@@ -5,6 +5,32 @@ sesión.
 
 ---
 
+## CIERRE 2026-10-06 — Desarrollo de las páginas 2026 TERMINADO · Siguiente: publicar (TASK-063) con orden explícita
+
+**Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado, commiteado y en origin (`a7c135a`).
+**Dónde quedamos:** TASK-066 (GEO-IA) completa; inventario de cobertura hecho (95 % de los clics de Google ya tienen versión
+2026); revisión semanal de las webs de las fichas en marcha; solo falta publicar el sitio 2026.
+**Archivos de la sesión:**
+- `includes/etape-core.php`, `template-etape.php`, `template-fiche.php` — Sallèles en el canal de jonction (7 esclusas), « Étape : … »
+  en cada ficha, FAQ de etapas visible, FAQ Fonseranes en Béziers (fuentes: OT Béziers Méditerranée y Le Boat).
+- `includes/webcheck(-core).php`, `tests/test-webcheck.php` — revisión de webs de las fichas cada lunes 7:00, enlace oculto si cae
+  (la ficha nunca se toca), e-mail a agomes@ y onavarro@. Lista: `docs/webs-caidas-fiches.md` (12 caídas).
+- `includes/redirects-2026.php` — ficha caducada (404) → 301 a su categoría principal con fichas (activa ya); `/zone/` → `/etapes/` al publicar.
+- `includes/contenu-core.php`, `contenu-route.php` — sin « Précédent/Suivant » de Elementor, sin portada repetida, sin wpautop en
+  contenido de bloques (93 páginas cortadas a media frase).
+- `tests/inventario-2026.php`, `docs/inventario-cobertura-2026-10-06.md`, `docs/data/cobertura-2026.tsv` — inventario de cobertura.
+**Decisiones:** webs caídas: solo se ocultan los casos seguros (DNS, 404/410, 5xx, página por defecto); 401/403/429/503 y
+« sin conexión » = « à vérifier » (olydea.com bloquea al servidor). Ficha caducada → categoría por orden del editor (term_order).
+Pedido del plan probado hasta PayPal sin pagar (agomes@ recibió un pedido « TEST – NE PAS EXPÉDIER »).
+**Próxima acción:**
+```
+TASK-063 publicación — solo con orden explícita. Faltan: crédito Anthropic, CANAL_PLANNER_LIVE, pm.max_children, visto bueno de dirección.
+Antes de publicar: wp-plugin/remote.sh run tests/inventario-2026.php > docs/data/cobertura-2026.tsv
+Lunes 12/10 7:00: primera revisión automática de webs (comprobar el e-mail).
+```
+
+---
+
 ## CIERRE 2026-10-05 (noche) — TASK-066 M1 (página météo) HECHA · Siguiente: T2, T4 y Fonseranes
 
 **Agente activo:** sesión principal. **Handoff pendiente:** ninguno. Todo desplegado (privado), commiteado y en origin.

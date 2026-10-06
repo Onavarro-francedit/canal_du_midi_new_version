@@ -99,7 +99,11 @@ redactado si aplica. Los archivos son la memoria permanente, no el chat.
 - **Último desplegado (privado):** **TASK-044 — Planificateur 2026** (`/planificateur-2026/`, página 18505): chat IA
   en el idioma del visitante + vista plan con fotos + modal de demanda con Google Maps; correos solo a onavarro@ hasta
   `CANAL_PLANNER_LIVE = true`. Rama `feat/wp-planner-2026` (sin fusionar). Antes: TASK-037…042 navbar + footer 2026.
-- **Último completado (05/10, noche):** **TASK-066 GEO-IA** M1 (página météo « quand partir », 8 estaciones Météo-France
+- **Último completado (06/10):** **desarrollo de las páginas 2026 terminado** — TASK-066 GEO-IA completa (T2 Sallèles, T4 vélo,
+  Fonseranes), inventario de cobertura (`docs/inventario-cobertura-2026-10-06.md`: 95 % de los clics con versión 2026),
+  TASK-068 revisión semanal de las webs de las fichas (enlace oculto si cae, e-mail los lunes), 301 de fichas caducadas.
+  Solo queda publicar (TASK-063).
+- **Antes (05/10, noche):** **TASK-066 GEO-IA** M1 (página météo « quand partir », 8 estaciones Météo-France
   2021–2025, sin tabla), M2 campings, M3 PDF, M4 location bateau, M5 étapes, T1 alternateName; **TASK-067 `/etapes/`**
   « Quel parcours faire ? » (parcours por modo/duración/salida, mapa del parcours, FAQ de Search Console). Reglas nuevas: datos
   recientes (5 años), iconos de biblioteca, FAQ visibles, ningún enlace a una carte vacía (PRD-017).
