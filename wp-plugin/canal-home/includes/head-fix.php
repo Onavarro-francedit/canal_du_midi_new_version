@@ -129,7 +129,8 @@ function canal_2026_is_template_request(): bool
 if (function_exists('add_action')) {
     // Prioridad -1: antes del template_redirect de la ficha (prioridad 0, que incluye la plantilla y sale).
     add_action('template_redirect', function () {
-        if (canal_2026_is_template_request()) {
+        // El planificador también (06/10): sin reCAPTCHA ni Facebook, y con Sirdata diferido (Lighthouse móvil 54).
+        if (canal_2026_is_template_request() || canal_planner_is_page()) {
             ob_start(function (string $html): string {
                 $html = canal_home_webp_html(canal_home_move_consent_to_body(canal_fiche_lighten_head(canal_home_fix_head($html))), 'canal_home_webp_exists', untrailingslashit(home_url()));
                 $html = canal_2026_links_html($html); // enlaces internos → versión 2026 (links-2026.php)
@@ -138,8 +139,8 @@ if (function_exists('add_action')) {
                 }
                 return $html;
             });
-        } elseif (canal_planner_is_page() || canal_account_is_page()) {
-            ob_start('canal_2026_links_html'); // el planificador conserva su <head> (formulario): solo los enlaces
+        } elseif (canal_account_is_page()) {
+            ob_start('canal_2026_links_html'); // mon compte conserva su <head> (formulario de acceso): solo los enlaces
         }
     }, -1);
 }

@@ -56,54 +56,8 @@ get_header();
 ?>
 <div class="cdm-carte">
 
-<main class="search-layout-page is-loading" id="search-page" data-results-count="<?= (int)$resultsCount ?>">
-    <div class="search-page-skeleton" aria-hidden="true">
-        <div class="search-page-skeleton__sidebar">
-            <div class="search-page-skeleton__block search-page-skeleton__block--title"></div>
-            <div class="search-page-skeleton__stack">
-                <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
-                <span class="search-page-skeleton__line"></span>
-                <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
-            </div>
-            <div class="search-page-skeleton__chip-row">
-                <span class="search-page-skeleton__chip"></span>
-                <span class="search-page-skeleton__chip"></span>
-                <span class="search-page-skeleton__chip"></span>
-            </div>
-            <div class="search-page-skeleton__panel">
-                <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
-                <span class="search-page-skeleton__line"></span>
-                <span class="search-page-skeleton__line"></span>
-                <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
-            </div>
-        </div>
-
-        <div class="search-page-skeleton__results">
-            <?php for ($i = 0; $i < 4; $i++): ?>
-                <article class="search-page-skeleton__card">
-                    <div class="search-page-skeleton__media"></div>
-                    <div class="search-page-skeleton__body">
-                        <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
-                        <span class="search-page-skeleton__line"></span>
-                        <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
-                    </div>
-                </article>
-            <?php endfor; ?>
-        </div>
-
-        <div class="search-page-skeleton__map">
-            <div class="search-page-skeleton__map-header">
-                <span class="search-page-skeleton__line search-page-skeleton__line--wide"></span>
-                <span class="search-page-skeleton__line search-page-skeleton__line--short"></span>
-            </div>
-            <div class="search-page-skeleton__map-canvas"></div>
-            <div class="search-page-skeleton__map-footer">
-                <span class="search-page-skeleton__chip search-page-skeleton__chip--wide"></span>
-                <span class="search-page-skeleton__chip search-page-skeleton__chip--wide"></span>
-            </div>
-        </div>
-    </div>
-
+<?php // WP: visible desde el HTML (06/10): el esqueleto ocultaba la lista hasta el JS y retrasaba el LCP móvil 3–4 s. ?>
+<main class="search-layout-page is-ready" id="search-page" data-results-count="<?= (int)$resultsCount ?>">
     <div class="search-workspace<?= $faq ? ' search-workspace--info' : '' ?>">
         <aside class="search-sidebar" id="search-sidebar-panel">
             <div class="search-sidebar-tabs">
@@ -547,21 +501,6 @@ get_header();
         setHeaderHeight();
         window.addEventListener('resize', setHeaderHeight);
 
-        document.body.classList.add('search-page-loading');
-
-        // WP: se muestra en cuanto cargan las primeras imágenes, sin esperar a Google Maps (TASK-035: el mapa
-        // retrasaba el LCP); el mapa aparece en su panel cuando esté listo. Respaldo a los 5 s.
-        let revealed = false;
-        const reveal = () => {
-            if (revealed) return;
-            revealed = true;
-            page.classList.remove('is-loading');
-            page.classList.add('is-ready');
-            document.body.classList.remove('search-page-loading');
-        };
-        <?php if ($resultsCount === 0): ?>reveal();<?php endif; ?>
-        window.addEventListener('search:images-ready', reveal, { once: true });
-        window.setTimeout(reveal, 5000);
     })();
 </script>
 </div>

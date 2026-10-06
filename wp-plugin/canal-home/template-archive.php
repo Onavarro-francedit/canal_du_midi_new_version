@@ -41,11 +41,11 @@ get_header();
         <div class="contenu-grid">
             <div class="contenu-list">
                 <ul class="contenu-cards">
-                    <?php foreach ($a['items'] as $item): ?>
+                    <?php foreach ($a['items'] as $n => $item): ?>
                         <li class="contenu-item">
                             <a href="<?= esc_url($item['url']) ?>">
                                 <?php if ($item['image'] !== ''): ?>
-                                    <img src="<?= esc_url($item['image']) ?>" alt="" loading="lazy" width="384" height="216">
+                                    <?php // WP: las 2 primeras sin lazy (la primera es el LCP en móvil). ?><img src="<?= esc_url($item['image']) ?>" alt="" <?= $n === 0 ? 'fetchpriority="high"' : ($n > 1 ? 'loading="lazy"' : '') ?> width="384" height="216">
                                 <?php else: ?>
                                     <span class="contenu-item-noimg" aria-hidden="true"></span>
                                 <?php endif; ?>

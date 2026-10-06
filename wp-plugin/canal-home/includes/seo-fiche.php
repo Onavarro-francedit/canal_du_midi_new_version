@@ -47,6 +47,9 @@ add_action('wp_head', function () {
 // LCP: la foto de cabecera es un fondo CSS (el navegador la descubre tarde) → precarga con prioridad alta.
 add_action('wp_head', function () {
     if (canal_fiche_is_page()) {
-        echo '<link rel="preload" as="image" href="' . esc_url(canal_fiche_state()['hero']) . '" fetchpriority="high">' . "\n";
+        // La misma URL que pinta el <body> (WebP, head-fix.php): con la JPG la precarga no servía (Load Delay 2,6 s, 06/10).
+        $hero = canal_fiche_state()['hero'];
+        $webp = canal_home_webp_html('<body>' . $hero . '"', 'canal_home_webp_exists', untrailingslashit(home_url()));
+        echo '<link rel="preload" as="image" href="' . esc_url(substr($webp, 6, -1)) . '" fetchpriority="high">' . "\n";
     }
 }, 1);
